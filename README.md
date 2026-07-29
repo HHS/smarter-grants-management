@@ -1,10 +1,12 @@
 # Smarter Grants Management
 
-TODO
+This repository holds the modular grants management system that will replace GrantSolutions.gov; the platform behind more than 1,500 federal grant programs.
 
 ## About the Project
 
-TODO
+Our mission is to improve the grants experience for everyone. For federal grant making agencies, we're modernizing how funding opportunities are published, applications are reviewed, awards are issued and amended, and funding decisions are communicated. We aim to replace manual workarounds with workflows that fit how grants staff actually work. For recipients, we're making reporting, amendments, and agency communication clear and predictable, so more of their time goes to their mission instead of paperwork. 
+
+We build in modules, so each component can be adopted on its own, meaning agencies aren't locked into a monolith and the work is reusable across government. This is the post-award companion to Simpler.Grants.gov, which modernizes the applicant side. Together they cover the full lifecycle — from posting an opportunity to closing out an award.
 
 ## Core Team
 
