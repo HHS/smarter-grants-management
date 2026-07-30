@@ -13,10 +13,10 @@ def test_get_healthcheck_200(client):
     # Verify the release info is attached
     assert resp_json["data"]["commit_sha"] is not None
     assert resp_json["data"]["commit_link"].startswith(
-        "https://github.com/HHS/smarter-grants-management/commit/"
+        "https://github.com/HHS/simpler-grants-gov/commit/"
     )
     assert resp_json["data"]["release_notes_link"].startswith(
-        "https://github.com/HHS/smarter-grants-management/releases"
+        "https://github.com/HHS/simpler-grants-gov/releases"
     )
     assert datetime.fromisoformat(resp_json["data"]["last_deploy_time"]) is not None
     assert resp_json["data"]["deploy_whoami"] == "local-developer"
