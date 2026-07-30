@@ -1,0 +1,225 @@
+# Development
+
+This application is dockerized. Take a look at [Dockerfile](../../api/Dockerfile) to see how it works.
+
+A very simple [docker-compose.yml](../../api/docker-compose.yml) has been included to support local development and deployment.
+
+Several components like tests, linting, and scripts can be run either inside of the Docker container, or outside on your  machine.
+
+**Running in Docker is the default**, but on some machines like the M1 Mac, running natively may be desirable for performance reasons.
+
+If you are looking to develop using a Windows computer, see [windows-setup.md](./windows-setup.md) for installation and development instructions.
+
+## Docker
+
+This section covers development using Docker. There are a number of Docker commands included in the [Makefile](../../api/Makefile) which are helpful for local development. Run `make help` for a list of commands.
+
+### Setup
+
+The following must be installed in order to run the API locally, these instructions
+focus on setting up on a Mac, but most of this would be applicable regardless of system
+although the installation method will vary. The exact approach detailed here may not
+match exactly what you do, it's one way of getting the tools, some have multiple installation methods.
+
+* Install [xcode-select](https://developer.apple.com/documentation/xcode/installing-the-command-line-tools/) - these are the developer tools needed for most command line tools.
+* Install [Homebrew](https://brew.sh/) - for installing several packages
+* Install [postgres](https://www.postgresql.org/download/macosx/) - Can use brew, make sure to specify the version in our [docker-compose](../../api/docker-compose.yml) (eg. `brew install postgresql@17`)
+* Install [libpq](https://formulae.brew.sh/formula/libpq) - Postgres utils, including one used by a script to verify the DB is ready
+* Install [docker](https://docs.docker.com/engine/install/)
+* Install [uv](https://docs.astral.sh/uv/getting-started/installation/) - For managing packages
+
+These aren't required, but relevant:
+* Install [git](https://git-scm.com/install/mac)
+* Install [pyenv](https://github.com/pyenv/pyenv?tab=readme-ov-file#installation) - for managing multiple python versions / makes upgrading python much easier
+
+---
+
+Run `make init && make run-logs` to start the local containers and watch logs. The application will be available at `http://localhost:8089` and API documentation at `http://localhost:8089/docs`.
+
+If you would prefer not to watch logs, you can use `make init && make start`.
+
+This stands up the following services:
+
+* Flask API (http://localhost:8089)
+* Postgres database
+* [s3Mock](https://github.com/adobe/S3Mock)
+* [elasticMq](https://github.com/softwaremill/elasticmq) - for mocking SQS locally
+* [mock oauth2 server](https://github.com/navikt/mock-oauth2-server) (http://localhost:5008)
+
+
+> [!NOTE]
+> `make init` runs through and sets up every service.
+> If one isn't running, run `make init`, you usually don't need to run
+> many of the direct setup commands unless you are reworking our local setup.
+
+
+### Seed data
+
+Run `make db-seed-local` to create local data in the database. This basically creates everything; if you want to be selective about what data you're seeding, see the Makefile for ways you can populate selective data.
+
+### User Authentication
+
+Run `make setup-env-override-file` to create the `override.env` file which will include the necessary JWT keys for running user authentication within the app.
+
+Note that this runs as part of `make init` so generally does not need to be done separately.
+
+### Accessing the API through swagger docs
+
+To see the current API definition, you can go to the local [swagger docs](http://localhost:8089/docs).
+
+Each endpoint specifies which auth token it needs behind the lock icon. The `ApiJwtAuth` token is printed as part of user creation in `make seed-local-db`, search for `create_jwt_for_user` to see the `auth.token_id` value. For the `ApiUserKeyAuth` token, search for `X-API-Key` for the different values for each role (hint: they typically are the user name + \_key, for instance `one_org_user` the key value is `one_org_user_key`). You can set these tokens per end point, or set them globally at the top on the lock icon labeled Authorize.
+
+For more on auth tokens, see [authentication.md](./authentication.md)
+
+#### Mock Oauth2 Server
+
+A mock Oauth2 server is defined and managed in the API's [docker-compose.yml](../../api/docker-compose.yml) file. It creates a mock endpoint that is configured to work with the API to stand in for login.gov for local development, and is available at `http://localhost:5008` when running the API containers.
+
+### Environment Variables
+
+Most configuration options are managed by environment variables.
+
+Environment variables for local development are stored in the [local.env](../../api/local.env) file. This file is automatically loaded when running. If running within Docker, this file is specified as an `env_file` in the [docker-compose](../../docker-compose.yml) file, and loaded [by a script](../../backend/grants_shared/src/grants_shared/util/local.py) automatically when running most other components outside the container.
+
+Any environment variables specified directly in the [docker-compose](../../api/docker-compose.yml) file will take precedent over those specified in the [local.env](../../api/local.env) file.
+
+### Troubleshooting
+
+Errors in standing up the API can originate from an out of date container, database synchronization, or other issues with previously created services. Helper functions are available to rebuild:
+
+* **db-check-migrations** - check if migrations are out of sync
+* **volume-recreate** - delete all existing volumes and data
+* **remake-backend** - delete all data (`volume-recreate`) and load data (`db-seed-local`)
+   - Note this drops all data in the DB and fully remakes it. If you are missing data, try just running `make db-seed-local` first.
+   - This script should be seen as a last resort for getting the API into a healthy state.
+
+### VSCode Remote Attach Container Debugging
+
+The API can be run in debug mode that allows for remote attach debugging (currently only supported from VSCode) to the container.
+
+- Requirements:
+
+  - VSCode Python extension
+  - Updated UV with the `debugpy` dev package in `pyproject.toml`
+
+- See `./vscode/launch.json` which has the debug config. (Named `API Remote Attach`)
+
+- Start the server in debug mode via `make start-debug` or `make start-debug run-logs`.
+
+  - This will start the `main-app` service with port 5678 exposed.
+
+- The server will start in waiting mode, waiting for you to attach the debugger (see `/src/app.py`) before continuing to run.
+
+- Go to your VSCode debugger window and run the `API Remote Attach` option
+
+- You should now be able to hit set breakpoints throughout the API
+
+## Local (non-Docker)
+
+Run `export PY_RUN_APPROACH=local` to run API and test functions locally when running commands in the Makefile. For example, `make test` or `make format` will run outside of Docker.
+
+**Note:** even with the native mode, many components like the DB and API will only ever run in Docker, and you should always make sure that any implementations work within Docker.
+
+Running in the native/local approach may require additional packages to be installed on your machine to get working.
+
+### Prerequisites
+
+1. Install the version of Python specified in [pyproject.toml](../../api/pyproject.toml)
+   [pyenv](https://github.com/pyenv/pyenv#installation) is one popular option for installing Python,
+   or [asdf](https://asdf-vm.com/).
+   - If using pyenv run `pyenv local <version>` to ensure that version will be used in subsequent steps
+2. Ensure that `python -V` and `python3 -V` are picking up that version.
+   - If not, run `pyenv init -` and/or restart your shell to ensure it was run automatically
+3. After installing and activating the right version of Python, install
+   [uv](https://docs.astral.sh/uv/getting-started/installation/) and follow the instructions to add uv to your path if necessary.
+4. This still requires Docker as the database and services all still run within Docker.
+5. Certain environment variables require different paths when running outside of Docker.
+   You can handle this by setting these environment variables yourself via you `.bashrc`
+   or `.zshrc` file. Another approach is to have an `.envrc` in the api directory and
+   use [direnv](https://direnv.net/) to have a directory-based shell file.
+
+```shell
+#!/bin/bash
+
+# This file can be used by direnv to load the local.env file
+# into your current terminal session.
+# Steps:
+# * Install direnv: https://direnv.net/
+# * Configure direnv: https://direnv.net/docs/hook.html
+# * In this folder, run "direnv allow ."
+
+set -o allexport
+source local.env
+set +o allexport
+
+set -o allexport
+source override.env
+set +o allexport
+
+# If you are running outside of the Docker container, the DB can
+# be found on localhost:5439. Inside the container it's referenced via
+# the name of the docker container.
+#
+# REMEMBER THAT IF YOU USE AN IDE TO CONFIGURE THIS AS WELL
+export DB_HOST=localhost
+export DB_PORT=5439
+export AWS_S3_ENDPOINT_URL=http://localhost:9090
+export AWS_SQS_ENDPOINT_URL=http://localhost:9324
+export LOGIN_GOV_JWK_ENDPOINT=http://localhost:5008/issuer1/jwks
+
+export PY_RUN_APPROACH=local
+
+```
+
+**Note:** All the following commands should be run from the `/api` directory.
+
+### Database setup: Run Migrations/Seeds
+
+If you haven't done local development before you'll need to execute the migrations and seed the DB with data using the steps in [database-local-usage.md](database/database-local-usage.md)
+
+### Services
+
+Individual services can be run through Docker, which can be useful in concert with non-Docker application development:
+
+* **s3Mock**
+   * Run `make init-s3mock`
+* **elasticMq (local sqs)**
+   * Run `make init-sqsmock`
+* **Mock OAuth server**
+   * Run `make init-mock-oauth2`
+
+#### S3 Mock
+
+For local development, we use [S3Mock](https://github.com/adobe/S3Mock) when running
+the API to mock out s3. The s3Mock is used based on setting the endpoint URL when
+calling AWS from our code or the CLI which is set in the `S3_ENDPOINT_URL` environment variable.
+
+If you want to connect to s3 with the AWS CLI, you can do:
+`aws --endpoint-url http://localhost:9090 s3 ls` which in this case would list the buckets.
+
+Files are stored in the `/api/locals3root` folder, although they may not match what
+you've named the files as they store metadata and other information as well. See [their docs](https://github.com/adobe/S3Mock?tab=readme-ov-file#file-system-structure)
+for more information.
+
+S3 buckets are automatically created based on the `COM_ADOBE_TESTING_S3MOCK_STORE_INITIAL_BUCKETS`
+environment variable which we set in the docker-compose file. These won't display in the `locals3root`
+folder until at least one file has been added to s3.
+
+#### SQS Mock
+
+For local development, we use [elasticmq](https://github.com/softwaremill/elasticmq) when running
+the API to mock out SQS.
+
+If you want to connect to SQS with the AWS CLI, you can do:
+`aws --endpoint-url http://localhost:9324 sqs list-queues` which in this case would list the queues.
+
+SQS queues are automatically created based on the configuration that we specify in the
+[custom.conf](../../api/mock-sqs/custom.conf) file which gets passed to the elasticmq docker image during
+startup.
+
+The SQS queues **DO NOT** maintain state if you stop and restart the container. If you stop the SQS
+mock container all messages in the queues will be lost.
+
+## Next steps
+
+Now that you're up and running, read the [application docs](../../api/README.md) to familiarize yourself with the application.
