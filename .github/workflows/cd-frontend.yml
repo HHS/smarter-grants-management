@@ -1,0 +1,91 @@
+name: Deploy frontend
+run-name: Deploy ${{ inputs.version || 'main' }} to Frontend ${{ inputs.environment || 'nonprod' }}
+
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      - "frontend/**"
+      - "infra/frontend/**"
+      - "infra/modules/**"
+  # Release deployments are handled by cd-release.yml to enforce deployment order
+  # (API -> Frontend -> NOFOs -> Analytics)
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Environment to deploy to
+        required: true
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - infra-dev
+          - staging
+          - infra-staging
+          - training
+          - infra-training
+          - grantee1
+          - grantee2
+          - grantor1
+          - infra-grantee1
+          - infra-grantee2
+          - infra-grantor1
+          - prod
+      version:
+        required: true
+        default: "main"
+        description: Tag or branch or SHA to deploy
+      skip_checks:
+        type: boolean
+        default: false
+        description: Skip unit tests, lint, etc
+      skip_vuln_scans:
+        type: boolean
+        default: false
+        description: Skip vulnerability scans
+  workflow_call:
+    inputs:
+      skip_checks:
+        type: boolean
+        default: false
+        description: Skip unit tests, lint, etc while deploying
+      skip_vuln_scans:
+        type: boolean
+        default: false
+        description: Skip vulnerability scans while deploying
+
+jobs:
+  frontend-checks:
+    name: Run Frontend Checks
+    uses: ./.github/workflows/ci-frontend.yml
+    with:
+      skip_checks: ${{ inputs.skip_checks != null && inputs.skip_checks != false }}
+
+  vulnerability-scans:
+    name: Vulnerability Scans
+    uses: ./.github/workflows/vulnerability-scans.yml
+    with:
+      app_name: frontend
+      fail_on_vulns: ${{ ! contains(fromJSON(inputs.environment != null && format('["{0}"]', inputs.environment) || github.ref_name == 'main' && '["staging"]' || '["dev"]'), 'staging') }}
+      skip_vuln_scans: ${{ inputs.skip_vuln_scans != null && inputs.skip_vuln_scans != false }}
+
+  deploy:
+    name: Deploy
+    needs: [frontend-checks, vulnerability-scans]
+    uses: ./.github/workflows/deploy.yml
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        envs: ${{ fromJSON(inputs.environment != null && format('["{0}"]', inputs.environment) || github.ref_name == 'main' && '["staging"]' || '["dev"]')  }}
+    with:
+      app_name: "frontend"
+      environment: ${{ matrix.envs }}
+      version: ${{ inputs.version || github.ref }}
+
+  send-slack-notification:
+    if: failure() && (github.event_name == 'schedule' || (github.event_name == 'push' && github.ref == 'refs/heads/main'))
+    needs: [frontend-checks, vulnerability-scans, deploy]
+    uses: ./.github/workflows/send-slack-notification.yml
+    secrets: inherit

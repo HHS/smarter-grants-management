@@ -1,0 +1,2693 @@
+export const messages = {
+  Homepage: {
+    pageTitle: "Let's build a simpler Grants.gov together",
+    pageDescription:
+      "Simpler.Grants.gov is where we are building new features for the next generation of Grants.gov. With your help, we're setting a new standard for transparency and usability in government services. ",
+    githubLink: "Follow on GitHub",
+    sections: {
+      experimental: {
+        title: "New features, simpler experience",
+        canDoHeader: "Tell us what's working (and what's not)",
+        canDoSubHeader: "What you can do now",
+        canDoParagraph:
+          "Search real Grants.gov data here on Simpler.Grants.gov. Our search aims to deliver closer matches to your keywords and filters. We also redesigned the results and opportunity listings to make them easier to navigate and read.",
+        tryLink: "Use the new simpler search",
+        cantDoHeader: "What we're working on",
+        cantDoParagraph:
+          "We're currently working with agencies on a simpler application process. You may need to visit <grantsLink>Grants.gov</grantsLink> to apply for most opportunities. In the meantime, follow our <roadmapLink>roadmap</roadmapLink> to stay updated on our progress.",
+        iconSections: [
+          {
+            description:
+              "We're excited to hear from you to learn how we can improve.",
+            http: "mailto:simpler@grants.gov",
+            iconName: "build",
+            link: "Contact us at simpler@grants.gov",
+            title: "Send us your feedback and suggestions.",
+          },
+          {
+            description:
+              "Our newsletter delivers the latest news straight to your inbox.",
+            http: "/newsletter",
+            iconName: "mail",
+            link: "Subscribe to our newsletter",
+            title: "Be the first to hear about new features.",
+          },
+        ],
+      },
+      building: {
+        title: "Community-prioritized improvements & open source",
+        paragraph1:
+          "Transparency is the foundation of good government. That's why we're committed to sharing our process and working in the open.",
+        paragraph2:
+          "All of <code>our code is open-source</code> and <roadmap>our roadmap</roadmap> is public. We welcome everyone to collaborate with us on <vision>the vision</vision> and details of every feature we build.",
+      },
+      involved: {
+        title: "More ways to get involved",
+        technicalTitle: "Contribute your technical expertise",
+        technicalDescription:
+          "We're always excited to welcome new open source developers to our community.",
+        fiderLink: "Vote for the feature you want to see implemented next",
+        technicalLink: "Learn how to contribute code",
+        participateTitle: "Participate in user research",
+        participateDescription:
+          "Be a part of the design process by taking part in usability tests and interviews.",
+        participateLink: "Sign up to participate in future studies",
+        discourseLink: "Chat on the Discourse forum",
+      },
+    },
+  },
+  Events: {
+    pageTitle: "Events | Simpler.Grants.gov",
+    pageDescription:
+      "From new developments to upcoming opportunities, we want you to be a part of the journey.",
+    header: "Events",
+    upcoming: {
+      title: "Upcoming Events",
+      startDate: "Begins March 10, 2025",
+      header: "Spring 2025 Collaborative Coding Challenge",
+      description:
+        "The next Simpler.Grants.gov Coding Challenge gives participants an opportunity to showcase their creativity and coding capabilities while competing for awards from our $4,000 prize pool.",
+      link: "Sign up to participate",
+    },
+    demo: {
+      title: "Simpler.Grants.gov Big Demo",
+      description:
+        "The Simpler.Grants.gov team hosts public demonstrations of our newest features and functionality.  These virtual sessions highlight our progress, share user research insights, and showcase community engagement efforts. ",
+      watch: "Watch recordings of past Big Demos",
+      watchLinks: [
+        {
+          text: "June 30, 2026",
+          link: "https://youtu.be/AeHXvMamcnc?si=3dikqd4MU7zNZ5-q",
+        },
+        {
+          text: "January 29, 2026",
+          link: "https://youtu.be/LBIqOTKOFf0?si=O0Ec4PaNuAByeHA9",
+        },
+        {
+          text: "January 15, 2025",
+          link: "https://youtu.be/uASJmvcy0aM?si=OniP7Z7KU8ie3FhS",
+        },
+      ],
+    },
+    codingChallenge: {
+      title: "Collaborative Coding Challenge",
+      descriptionP1:
+        "The Simpler.Grants.gov Collaborative Coding Challenge is an entirely virtual interactive event attended by members of the public, government, stakeholders, and our internal development team.",
+      descriptionP2:
+        "Small teams of external developers, designers, and researchers pitch a proposal to solve a problem with the strongest of them added to the product roadmap.",
+      link: "Read about the Spring 2025 Coding Challenge",
+    },
+  },
+  OpportunityListing: {
+    pageTitle: "Opportunity Listing",
+    metaDescription:
+      "Read detailed information about this funding opportunity.",
+    saveButton: {
+      save: "Save",
+      saved: "Saved",
+      loading: "Updating",
+    },
+    saveMessage: {
+      save: "This opportunity was saved to <linkSavedOpportunities>Saved opportunities</linkSavedOpportunities>.",
+      unsave: "This opportunity was unsaved.",
+      errorSave: "Error saving. Please try again.",
+      errorUnsave: "Error undoing save. Please try again.",
+    },
+    saveloginModal: {
+      button: "Sign in with Login.gov",
+      close: "Cancel",
+      description:
+        "You'll be redirected to Login.gov to sign in or create an account. Then, you'll return to Simpler.Grants.gov as a signed-in user.",
+      help: "Use your Login.gov account to sign in to Simpler.Grants.gov. Don't have an account? You can create one.",
+      title: "Sign in to save this opportunity",
+    },
+    startApplicationModal: {
+      startApplicationButtonText: "Start new application",
+      cancelButtonText: "Cancel",
+      error: "Internal error starting application. Please try again later.",
+      organizationLoadError:
+        "We couldn't load your organizations right now. Please try again.<br></br>If the problem continues, contact product support, <telephone>1-800-518-4726</telephone> or <email>simpler@grants.gov</email>.",
+      login: "Sign in to work on the application",
+      loggedOut:
+        "You must be logged in to proceed. Please login and start your application again.",
+      requiredText: "All fields are required.",
+      saveButtonText: "Create application",
+      title: "Start a new application",
+      helpfulTips: {
+        title: "Helpful tips to get started:",
+        bullet1:
+          "You don't need to finish an application in one session, easily save and return to make changes.",
+        bullet2:
+          "All draft and past applications can be accessed from your <applicationsPageLink>Applications</applicationsPageLink> page.",
+        bullet3:
+          "Only create a new application if you're applying for the first time or need to submit a separate application.",
+      },
+      ineligibleTitle:
+        "It looks like you're not eligible to start a new application through this site",
+      applyingFor: "Applying for: ",
+      fields: {
+        name: {
+          label: "Name this application",
+          description:
+            "Create a unique and descriptive application filing name so it is easy for you and the granting agency to track (e.g. NAA Tech Tribes 2025). You can change this later.",
+          validationError:
+            "Please enter a name to create an application, you may change this anytime.",
+        },
+        organizationSelect: {
+          label: "Who is applying?",
+          default: "-Select-",
+          asIndividual: "As an individual (myself)",
+          notListed: "I don't see my organization listed",
+          validationError:
+            "Select an applicant type, you can add your organization later if it isn't listed.",
+        },
+      },
+      description: {
+        organizationIntro:
+          "This opportunity is part of a pilot program. To apply through Simpler.Grants.gov, you must:",
+        pilotIntro:
+          "Welcome to our new, simpler application process. In partnership with the grantor agency, we ensure your application is processed by the agency.",
+        organizationApply: "To apply as part of an organization you must:",
+        applyingForOrg:
+          "Be applying on behalf of an organization (individual applications aren't accepted at this time)",
+        uei: "Have a valid UEI (a Unique Entity ID <link>registered through SAM.gov</link>)",
+        ineligibleGoToGrants:
+          "If you believe this is an error or prefer not to participate in this pilot, we recommend applying through <link>Grants.gov</link>.",
+        goToGrants:
+          "If you prefer not to participate in this pilot, we recommend applying through <link>Grants.gov</link>.",
+        support:
+          "For product support, contact us at <telephone>1-800-581-4726</telephone> or <email>simpler@grants.gov</email>. You can also apply through <link>Grants.gov</link> if you prefer.",
+        pilotGoToGrants:
+          "This opportunity is part of a pilot program. If you prefer not to participate in this pilot, we recommend applying through <link>Grants.gov</link>.",
+        organizationIndividualIntro:
+          "You can apply as an individual or organization. To apply as part of an organization you must:",
+      },
+    },
+    intro: {
+      agency: "Agency: ",
+      assistanceListings: "Assistance Listings:",
+      lastUpdated: "Last Updated: ",
+      versionHistory: "View version history on Grants.gov",
+    },
+    description: {
+      title: "Description",
+      eligibility: "Eligibility",
+      eligibleApplicants: "Eligible applicants",
+      additionalInfo: "Additional information",
+      contactInfo: "Grantor contact information",
+      contactDescription: "Description",
+      email: "Email",
+      showDescription: "Show full description",
+      hideSummaryDescription: "Hide full description",
+      jumpToDocuments: "Jump to all documents",
+      zipDownload: "Download all",
+    },
+    documents: {
+      title: "Documents",
+      tableColDescription: "Description",
+      tableColFileName: "File name",
+      tableColLastUpdated: "Last updated",
+      type: {
+        fundingDetails: "Funding Details",
+        other: "Other",
+      },
+      noDocuments: "No documents are currently available.",
+    },
+    awardInfo: {
+      yes: "Yes",
+      no: "No",
+      programFunding: "Program Funding",
+      expectedAwards: "Expected awards",
+      awardCeiling: "Award Maximum",
+      awardFloor: "Award Minimum",
+      opportunityNumber: "Funding opportunity number",
+      costSharing: "Cost sharing or matching requirement",
+      fundingInstrument: "Funding instrument type",
+      opportunityCategory: "Opportunity Category",
+      opportunityCategoryExplanation: "Opportunity Category Explanation",
+      fundingActivity: "Category of Funding Activity",
+      categoryExplanation: "Category Explanation",
+    },
+    history: {
+      history: "History",
+      postedDate: "Posted date",
+      forecastPostedDate: "Forecast posted date",
+      closingDate: "Original closing date for applications",
+      archiveDate: "Archive date",
+      forecastedAwardDate: "Estimated Award Date",
+      forecastedPostDate: "Estimated Post Date",
+      forecastedCloseDate: "Estimated Application Due Date",
+      forecastedCloseDateDescription: "Estimated Due Date Description",
+      forecastedCloseDateDescriptionNotAvailable: "Not available",
+      forecastedProjectStartDate: "Estimated Project Start Date",
+      forecastedLastUpdated: "Last Updated Date",
+      fiscalYear: "Fiscal Year",
+
+      version: "Version",
+    },
+    link: {
+      title: "Link to additional information",
+    },
+    statusWidget: {
+      archived: "Archived: ",
+      closed: "Closed: ",
+      closing: "Closing: ",
+      forecasted: "Forecasted",
+    },
+    cta: {
+      applyTitle: "Application process",
+      applyContent:
+        "This site is a work in progress. Go to www.grants.gov to apply, track application status, and subscribe to updates.",
+      buttonContent: "View on Grants.gov",
+    },
+    genericErrorCta: "Please try refreshing the page.",
+  },
+  ShareOpportunityToOrganization: {
+    modal: {
+      description: "Select organizations to share this opportunity with.",
+      opportunity: "Opportunity:",
+      error: "Could not load your organizations. Please try again later.",
+      loadingOrganizations: "Loading organizations...",
+      fallbackError: "You are not a member of any organizations.",
+      close: "Close",
+    },
+  },
+  OpportunityEdit: {
+    pageTitle: "Edit opportunity",
+    metaDescription:
+      "Edit draft opportunity information and non-forecast summary fields.",
+    navTitle: "On this page",
+    button: {
+      backToOverview: "Back to overview page",
+      saveAndExit: "Save and exit",
+      saveAndGoBack: "Save and go back",
+      saveAndContinue: "Save and continue",
+    },
+    sections: {
+      fundingDetails: "Funding details",
+      eligibility: "Eligibility",
+      additionalInformation: "Additional information",
+      attachments: "Attachments",
+    },
+    labels: {
+      fundingType: "Funding type",
+      costSharing: "Cost sharing or matching requirements?",
+      category: "Category",
+      expectedNumberOfAwards: "Expected number of awards",
+      estimatedTotalProgramFunding: "Estimated total program funding",
+      awardMinimum: "Award minimum",
+      awardMaximum: "Award maximum",
+      publishDate: "Publish date",
+      closeDate: "Close date",
+      closeDateExplanation: "Close date explanation",
+      eligibleApplicants: "Eligible applicants",
+      additionalEligibilityInfo: "Additional information on eligibility",
+      fundingCategoryExplanation: "Category explanation",
+      description: "Description",
+      additionalInfoUrl: "Link to additional information",
+      additionalInfoUrlText: "Link display text",
+      grantorContactDetails: "Grantor contact details",
+      contactEmail: "Contact email",
+      contactEmailText: "Email display text",
+      yes: "Yes",
+      no: "No",
+      eligibilityBusiness: "Business",
+      eligibilityEducation: "Education",
+      eligibilityGovernment: "Government entities",
+      eligibilityNonprofit: "Nonprofit",
+      eligibilityMiscellaneous: "Miscellaneous",
+    },
+    content: {
+      fundingDetailsIntro:
+        "Provide the financial structure of this opportunity. This includes the total funding available, expected number of awards, and critical dates for the application window.",
+      eligibilityIntro:
+        "Define who is eligible to apply for these funds. Select all applicable applicant types and provide any specific requirements or restrictions regarding organizational status or geographic location.",
+      additionalInformationIntro:
+        "Use this section to provide supplementary context, such as a summary of the program's goals, agency-specific links, and contact information for programmatic or technical inquiries.",
+      notAvailable: "Not available",
+      fundingTypeHint:
+        "Select the legal relationship between the agency and the recipient",
+      costSharingHint:
+        "Indicate if the applicant is required to provide a specific percentage of non-federal funds.",
+      categoryHint: "Choose the primary functional area this funding supports",
+      fundingCategoryExplanationHint: "If category is Other",
+      expectedNumberOfAwardsHint:
+        "Enter the estimated number of individual awards the agency intends to fund.",
+      estimatedTotalProgramFundingHint:
+        "Enter the total amount of funding available for all awards under this opportunity.",
+      awardMinimumHint:
+        "Enter the smallest dollar amount that can be awarded to a single recipient.",
+      awardMaximumHint:
+        "Enter the largest dollar amount that can be awarded to a single recipient.",
+      publishDateHint:
+        "The date this opportunity will be visible to the public",
+      closeDateHint: "The final deadline for all applications to be submitted",
+      closeDateExplanationHint:
+        "Provide a reason if a specific close date is not set, such as continuous review or a rolling deadline.",
+      select: "Select",
+      selectFundingCategory: "Select funding category",
+      eligibleApplicantsHint:
+        "Select all categories of organizations or individuals that may apply for this grant.",
+      additionalEligibilityInfoHint:
+        "If eligible applicant is Other, provide further clarification on specific requirements",
+      descriptionHint:
+        "Provide a high-level summary of the funding purpose and the problems it intends to solve.",
+      additionalInfoUrlHint:
+        "Enter the full web address for more program details.",
+      additionalInfoUrlTextHint:
+        "Enter the text that will appear as the clickable link.",
+      grantorContactDetailsHint:
+        "Provide the name or department and phone number for the primary contact.",
+      contactEmailHint: "Enter a valid email address.",
+      contactEmailTextHint:
+        "Enter the text that will be shown as the email link.",
+      attachmentsIntro:
+        "Upload the official Notice of Funding Opportunity (NOFO) and any supporting templates or guidelines that applicants need to complete their submission.",
+      alerts: {
+        success: "Saved successfully",
+        successBody: "Your changes have been saved.",
+        genericError: "Unable to save draft opportunity details.",
+        missingSummaryContext: "Missing opportunity summary context for save.",
+        unauthenticated: "You must be signed in to update this opportunity.",
+        forbidden: "You do not have permission to update this opportunity.",
+        notFound: "The opportunity summary could not be found.",
+        draftOnly: "Only draft opportunity summaries can be updated.",
+        validationErrorHeading: "Error(s) Found",
+        validationErrorBody: "Please correct the following errors:",
+      },
+    },
+    validationErrors: {
+      title: "Enter a title.",
+      awardSelectionMethod: "Select an award selection method.",
+      description: "Enter a description.",
+      publishDate: "Enter a publish date.",
+      closeDate: "Enter a close date.",
+      contactEmailRequired: "Enter a contact email.",
+      contactEmailInvalid: "Enter a valid contact email.",
+      contactEmailText: "Enter email display text.",
+      closeDateOrder: "Close date must be on or after publish date.",
+      awardMinimum: "Enter an award minimum.",
+      awardMaximum: "Enter an award maximum.",
+      fundingType: "Select a funding type.",
+      fundingCategory: "Select a funding category.",
+      expectedNumberOfAwards: "Enter the expected number of awards.",
+      estimatedTotalProgramFunding:
+        "Enter the estimated total program funding.",
+      eligibleApplicants: "Select at least one eligible applicant type.",
+      additionalEligibilityInfo: "Enter additional eligibility information.",
+      additionalInfoUrl: "Enter an additional information URL.",
+      additionalInfoUrlText: "Enter additional information URL text.",
+      grantorContactDetails: "Enter grantor contact details.",
+      awardMinCurrencyInput:
+        "Award minimum must be greater than or equal to zero and less than $1,000,000,000,000,000.",
+      awardMaxCurrencyInput:
+        "Award maximum must be greater than or equal to zero and less than $1,000,000,000,000,000.",
+      totalFundingCurrencyInput:
+        "Estimated total program funding must be greater than or equal to zero and less than $1,000,000,000,000,000.",
+      awardMinLessThanTotal:
+        "Award minimum cannot exceed the Estimated Total Program Funding.",
+      awardMaxLessThanTotal:
+        "Award maximum cannot exceed the Estimated Total Program Funding.",
+      awardMinLessThanMax: "Award minimum cannot exceed Award maximum.",
+      awardMaxGreaterThanMin:
+        "Award maximum cannot be less than Award minimum.",
+    },
+    attachments: {
+      removeButton: "Remove",
+      uploadLabel: "Upload files",
+      errorHeading: "Upload error",
+      errorUploadFailed: "Failed to upload {fileName}.",
+      errorDeleteFailed: "Failed to delete {fileName}.",
+      errorFileTooLarge: "{fileName} exceeds the 2GB file size limit.",
+    },
+  },
+  Application: {
+    title: "Application",
+    breadcrumbWorkspace: "Workspace",
+    breadcrumbApplications: "Applications",
+    submissionValidationError: {
+      title: "Your application could not be submitted",
+      description:
+        "All required fields or attachments in required forms must be completed or uploaded.",
+      incompleteForm: "is incomplete. Answer all required questions to submit.",
+      notStartedForm: "has not been started. Complete the form to submit.",
+      missingIncludeInSubmission:
+        'Select Yes or No for "Submit with application?" column in Conditionally-Required Forms section.',
+    },
+    submissionError: {
+      title: "Your application could not be submitted",
+      description:
+        "<p>There was a technical problem on our end. Please try again.</p><p>If the problem persists, contact <email-link>simpler@grants.gov</email-link>.</p>",
+    },
+    submissionSuccess: {
+      title: "Your application has been submitted",
+      description:
+        "<p>The awarding agency will review and process your application independently of Grants.gov. Grants.gov won't have access to the status of your award.</p><p>The award agency will contact your EBiz point of contact or your Authorized Organization Representatives (AOR) with all further updates. Please review the application instructions for information on this agency's application review process. You can return to this submitted application at any time by <linkMyApplications>visiting your applications list</linkMyApplications>.</p><p>Grants.gov does support edits to submitted applications. Please submit a new application if you would like to make changes to submitted information.</p>",
+      contact:
+        "For technical support or feedback, email <email-link>simpler@grants.gov</email-link> and include your Application ID.",
+    },
+    information: {
+      applicant: "Applicant",
+      applicantTypeIndividual: "Individual",
+      applicationDownloadInstructions: "Download application instructions",
+      applicationDownloadInstructionsLabel: "Instructions",
+      applicationSubmissionZipDownload: "Download your submitted application",
+      applicationSubmissionZipDownloadLabel:
+        "Application submission zip download",
+      applicationSubmissionZipDownloadLoadingMessage:
+        "We are preparing your submitted application for download. Please check back later.",
+      specialInstructionsLabel: "Special instructions",
+      specialInstructions: "No longer accepting applications",
+      statusLabel: "Status",
+      statusInProgress: "In progress",
+      statusSubmitted: "Submitted",
+      uei: "UEI",
+      renewal: "Renewal",
+      closeDate: "Close date",
+      closed: "Closed",
+      status: "Status",
+      submit: "Submit application",
+      transferApplicaitonOwnership: "Transfer application ownership",
+      unassociatedApplicationAlert: {
+        title: "This application isn't associated with an organization.",
+        body: "You can continue working and your progress will be saved, but to submit on behalf of an organization you must select that organization and transfer ownership. <link>Click here to transfer application ownership.</link>",
+      },
+      editApplicationFilingNameModal: {
+        buttonText: "Edit filing name",
+        title: "Change application filing name",
+        label: "Application filing name",
+        appliedFor: "Applying for: ",
+        fieldRequirements: "All fields are required.",
+        helperText:
+          "Create a unique and descriptive name for this application so it's easy for you to track. You can change it up until the application is submitted.",
+        buttonAction: "Save",
+        buttonCancel: "Cancel",
+      },
+    },
+    opportunityOverview: {
+      opportunity: "Opportunity",
+      name: "Name",
+      number: "Number",
+      posted: "Posted date",
+      forecastDate: "Forecast posted date",
+      agency: "Agency",
+      assistanceListings: "Assistance listings",
+      costSharingOrMatchingRequirement: "Cost Sharing or matching requirement",
+      applicationInstruction: "Application instructions",
+      grantorContactInfomation: "Grantor contact information",
+      award: "Award",
+      programFunding: "Program funding",
+      expectedAward: "Expected award",
+      awardMaximum: "Award maximum",
+      awardMinimum: "Award minimum",
+      estimatedAwardDate: "Estimated award date",
+      estimatedProjectStartDate: "Estimated project start date",
+    },
+    competitionFormTable: {
+      attachment: "Attachment",
+      attachmentUnavailable: "Unavailable",
+      conditionalForms: "Conditionally-Required Forms",
+      conditionalFormsDescription:
+        "These forms may be required based on your situation. Review the <instructionsLink>opportunity instructions</instructionsLink> and let us know if you plan to submit each form. If so, you'll need to complete it and upload any required documents.",
+      downloadInstructions: "Download instructions",
+      form: "Form",
+      instructions: "Instructions",
+      include: "Include with application",
+      requiredForms: " Required Forms",
+      status: "Status",
+      statuses: {
+        not_started: "Not started.",
+        in_progress: "Some issues found. Check your entries.",
+        complete: "No issues detected.",
+        attachmentDeleted: "An attachment was deleted.",
+      },
+      updated: "Last updated",
+      includeFormInApplicationSubmissionDataLabel: "Submit with application",
+      includeFormInApplicationSubmissionIncompleteMessage:
+        "Some issues found. Check your entries.",
+      updatedBy: "Last updated by",
+    },
+    attachments: {
+      attachedDocument: "Attached document",
+      attachments: "Attachments",
+      attachmentsInstructions:
+        "If the <instructionsLink>opportunity instructions</instructionsLink> require documentation not covered by one of the forms above, upload the files here. They must be in the file format (e.g., PDF, XLS, etc.) and named as specified.",
+      action: "Action",
+      cancelUpload: "Cancel upload",
+      delete: "Delete",
+      uploading: "Uploading...",
+      download: "Download",
+      emptyTable: "No attachments uploaded",
+      fileSize: "File Size",
+      uploadBy: "Upload by",
+      uploadDate: "Upload date",
+    },
+    historyTable: {
+      applicationHistory: "Application History",
+      timestamp: "Timestamp",
+      activity: "Activity",
+      performedBy: "Performed By",
+      error:
+        "We have encountered an error loading your application activity history. Please try again later.",
+      activities: {
+        application_created: "Application created",
+        application_name_changed: "Application name changed",
+        attachment_added: "Attachment added: ",
+        attachment_deleted: "Attachment deleted: ",
+        attachment_updated: "Attachment updated: ",
+        application_submitted: "Application submitted",
+        form_updated: "Form updated: ",
+        user_added: "User added: ",
+        user_updated: "User updated: ",
+        user_removed: "User removed: ",
+        organization_added: "Organization Added",
+        application_submit_rejected: "Application submission failed",
+        submission_created: "Application submission created",
+      },
+    },
+    applyForm: {
+      errorTitle: "This form could not be saved",
+      errorMessage:
+        "<p>There was a technical problem on our end. Please try again.</p><p>If the problem persists, contact <email-link>simpler@grants.gov</email-link>.</p>",
+      savedMessage: "No errors were detected.",
+      savedTitle: "Form was saved",
+      validationMessage:
+        "Correct the following errors before submitting your application.",
+      required: "A red asterisk <abr>*</abr> indicates a required field.",
+      navTitle: "Sections in this form",
+      unsavedChangesWarning:
+        "You have unsaved changes or attachments that will be lost if you select OK.",
+      fieldListWidget: {
+        deleteEntry: "Delete this entry",
+        addEntry: "Add another entry",
+      },
+      returnToApplication: "Return to application",
+      saving: "Saving...",
+      savingAndRefreshing: "Save and refresh",
+      lastUpdatedMessage: "This form was last updated on",
+      createdMessage: "This form was created on",
+    },
+    transferOwnershipModal: {
+      title: "Transfer application ownership",
+      body: "<p>Choose the organization that should own this application. After ownership is transferred, you can continue your work and prepare for submission.</p> <p><strong>Don't see your organization?</strong> If your organization isn't listed, it may not be verified yet, or you may not have been invited. Contact your eBizPOC if you have questions about access.</p>",
+      selectTitle: "Who is applying?",
+      default: "- Select -",
+      warningTitle: "Important to know about ownership",
+      warningBody:
+        "Once you assign an organization, that choice is permanent. An application cannot be transferred to another organization or returned to an individual.",
+      actionConfirm: "Transfer ownership",
+      actionCancel: "Return to application",
+      transferErrorMessage:
+        "We couldn't transfer application ownership right now. Please try again.",
+      failedFetchingOrganizationErrorMessage:
+        "We couldn't load your organizations right now. Please try again.",
+      contactSupport:
+        "If the problem continues, contact product support, <tel>1-800-518-4726</tel> or <link>simpler@grants.gov</link>.",
+    },
+  },
+  Index: {
+    pageTitle: "Simpler.Grants.gov",
+    metaDescription:
+      "Simpler.Grants.gov is improving how you discover, post, and apply for federal discretionary funding on Grants.gov.",
+  },
+  Vision: {
+    pageTitle: "Vision | Simpler.Grants.gov",
+    pageHeaderTitle: "Our vision",
+    pageHeaderParagraph:
+      "We believe that applying for federal financial assistance should be simple and straightforward. We aim to be the best tool for posting, finding, and sharing funding opportunities.",
+    sections: {
+      mission: {
+        title: "Our mission",
+        paragraph:
+          "We're dedicated to making federal funding opportunities simpler to navigate and the grants experience more seamless for everyone.",
+        contentItems: [
+          [
+            {
+              title: "Find",
+              content:
+                "Help applicants and grantors find relevant funding opportunities by improving search and making listings easier to read",
+            },
+          ],
+          [
+            {
+              title: "Apply",
+              content:
+                "Simplify the application process, empowering applicants of all experience levels to confidently submit funding requests with fewer obstacles.",
+            },
+          ],
+          [
+            {
+              title: "Report",
+              content:
+                "Make it easier for applicants and grantors to track, manage, and fulfill reporting requirements throughout the grant lifecycle.",
+            },
+          ],
+        ],
+      },
+      goals: {
+        title: "Our goals",
+        contentItems: [
+          [
+            {
+              title: "Reduce the burden",
+              content:
+                "Make the entire process more efficient for both applicants and grantors by reducing friction and addressing challenges across all stages of the grant journey.",
+            },
+            {
+              title: "Support users at every step",
+              content:
+                "Offer timely, contextual support to meet users where they are. Provide a guided journey that reduces their need to search elsewhere.",
+            },
+          ],
+          [
+            {
+              title: "Demystify the process",
+              content:
+                "Ensure that everyone has easy access to guidance and information that empowers them to navigate the system with confidence.",
+            },
+            {
+              title: "Cultivate trust through consistency",
+              content:
+                "Create a recognizable, reliable experience through our visual brand identity and human-centered approach.",
+            },
+          ],
+        ],
+      },
+      getThere: {
+        title: "How we get there",
+        contentTitle: "Guided by research, shaped by your experience",
+        paragraph1:
+          "To build a better Grants.gov, we listen to the people who use it. Through ongoing research, user feedback, and real conversations with applicants and grantors, we identify challenges and prioritize opportunities for improvement.",
+        paragraph2:
+          "Our research has helped us understand the needs of all types of Grants.gov users—from first-time visitors to experienced applicants managing multiple grants. These insights drive our efforts to create a simpler, more accessible system for everyone.",
+        linkText1: "Read more about the research on our public wiki",
+        linkText2: "Sign up to participate in future user studies",
+        linkText3: "Vote for the feature you want to see implemented next",
+      },
+    },
+  },
+  Subscribe: {
+    pageTitle: "Newsletter | Simpler.Grants.gov",
+    metaDescription:
+      "Sign up for email updates from the Simpler.Grants.gov team.",
+    title: "Simpler.Grants.gov newsletter",
+    paragraph1:
+      "Sign up to get project updates delivered to your inbox every month.",
+    paragraph2:
+      "You'll be the first to hear about feature launches, upcoming events, user research, and more.",
+    formLabel: "Subscribe to our newsletter",
+    form: {
+      name: "First Name",
+      lastName: "Last Name",
+      email: "Email",
+      req: "required",
+      opt: "optional",
+      button: "Subscribe",
+    },
+    errors: {
+      missingName: "Please enter a name.",
+      missingEmail: "Please enter an email address.",
+      invalidEmail:
+        "Enter an email address in the correct format, like name@example.com.",
+      server:
+        "An error occurred when trying to save your subscription. If this continues to happen, email <email-link>simpler@grants.gov</email-link>.",
+      alreadySubscribed: "This email address has already been subscribed.",
+      tooManyRequests:
+        "Too many recent attempts. Please wait a few minutes and try again.",
+    },
+  },
+  SubscriptionConfirmation: {
+    pageTitle: "Subscription Confirmation | Simpler.Grants.gov",
+    title: "You're subscribed",
+    paragraph1:
+      "We'll keep you informed of our progress and every opportunity to get involved.",
+  },
+  UnsubscriptionConfirmation: {
+    pageTitle: "Unsubscribe | Simpler.Grants.gov",
+    title: "You've been unsubscribed",
+    paragraph:
+      "You'll no longer receive project updates from Simpler.Grants.gov.",
+    cta: "Change your mind?",
+    buttonResub: "Re-subscribe",
+  },
+  NewsletterDisclaimer: {
+    disclaimer:
+      "Simpler.Grants.gov newsletter subscriptions are powered by Mailchimp. Personal information is not stored within Simpler.Grants.gov.",
+  },
+  ErrorPages: {
+    genericError: {
+      pageTitle: "Error | Simpler.Grants.gov",
+    },
+    unauthorized: {
+      pageTitle: "Unauthorized | Simpler.Grants.gov",
+    },
+    unauthenticated: {
+      pageTitle: "Unauthenticated | Simpler.Grants.gov",
+    },
+    pageNotFound: {
+      pageTitle: "Page Not Found | Simpler.Grants.gov",
+      title: "Oops, we can't find that page.",
+      messageContent: "It may have been moved or no longer exists.",
+      visitHomepageButton: "Visit our homepage",
+    },
+  },
+  Developers: {
+    pageTitle: "Developers | Simpler.Grants.gov",
+    pageDescription:
+      "Tools and resources for developers working with Simpler.Grants.gov",
+    h1: "Developers",
+    infoTitle: "API tools & management",
+    canDoHeader: "What's available for developers",
+    canDoSubHeader: "What you can do with an API key now",
+    canDoParagraph:
+      "You can call our REST endpoints to search the full catalog of funding opportunities and retrieve detailed information for any record. Current capabilities include keywords, fielded search, pagination, sorting for large result sets, and fetching structured details for a single opportunity. You can also manage your own credentials to create, view, rotate, and revoke API keys.",
+    cantDoHeader: "Current limitations",
+    cantDoParagraph:
+      "<ul><li>Inactive API keys are automatically disabled after 30 days without use.</li><li>Write operations are not supported at this time, which means you cannot apply for funding, post/create opportunities, or create projects within an organization through the API.</li><li>Rate limiting is enforced to ensure reliability for all users; by default, 60 requests per minute and 10,000 requests per day per key. if you need higher throughput for a production integration, please contact us to discuss options.</li></ul><p>Additional management features (such as organization-level projects and roles) are on the roadmap but aren't available yet.</p>",
+    apiDashboardLink: "Manage API Keys",
+    iconSections: [
+      {
+        description:
+          "Make your first API request in minutes. Learn the basics of the Simpler.Grants.gov API.",
+        http: "https://wiki.simpler.grants.gov/product/api",
+        iconName: "code",
+        link: "Get started",
+        title: "Developer quickstart",
+      },
+      {
+        description: "Learn more about integrating our API into your project.",
+        http: "https://api.simpler.grants.gov/docs#/",
+        iconName: "local_library",
+        link: "Read the docs",
+        title: "API reference",
+      },
+    ],
+  },
+  ApiDashboard: {
+    pageTitle: "API dashboard | Simpler.Grants.gov",
+    metaDescription: "Manage your API keys for Simpler.Grants.gov",
+    heading: "API dashboard",
+    errorLoadingKeys: "Failed to load API keys",
+    table: {
+      headers: {
+        apiKey: "Name",
+        status: "Status",
+        secret: "Secret",
+        created: "Created",
+        lastUsed: "Last used",
+        modify: "Modify",
+      },
+      statuses: {
+        active: "Active",
+        inactive: "Inactive",
+      },
+      dateLabels: {
+        created: "Created:",
+        lastUsed: "Last used:",
+        never: "Never",
+      },
+      deleteButton: "Delete Key",
+      deleteButtonTitle: "Delete this API key",
+      emptyState:
+        "You don't have any API keys yet. Create your first API key to get started.",
+    },
+    modal: {
+      apiKeyNameLabel: "Name <required>(required)</required>",
+      placeholder: "e.g., Production API Key",
+      createTitle: "Create New API Key",
+      createDescription:
+        "Create a new key for use with the Simpler.Grants.gov API",
+      editDescription: "Change the name of your Simpler.Grants.gov API key",
+      createSuccessHeading: "Save your key",
+      editSuccessHeading: "API Key Renamed Successfully",
+      createSuccessMessage:
+        'Your API key "{keyName}" has been created successfully. Please save your secret key in a safe place. Keep it secure, as anyone with your API key can make requests on your behalf.',
+      editSuccessMessage:
+        'Your API key has been renamed from "{originalName}" to "{keyName}".',
+      close: "Close",
+      createErrorMessage:
+        "There was an error creating your API key. Please try again.",
+      editErrorMessage:
+        "There was an error renaming your API key. Please try again.",
+      nameRequiredError: "API key name is required",
+      nameChangedError: "Please enter a different name",
+      editTitle: "Rename API Key",
+      createButtonText: "Create API Key",
+      editNameButtonText: "Edit Name",
+      creating: "Creating...",
+      saving: "Saving...",
+      saveChanges: "Save Changes",
+      cancel: "Cancel",
+      deleteTitle: "Delete API Key",
+      deleteDescription:
+        'To confirm deletion, type "delete" in the field below:',
+      deleteConfirmationLabel:
+        'Type "delete" to confirm <required>(required)</required>',
+      deleteConfirmationPlaceholder: "delete",
+      deleteConfirmationError: 'Please type "delete" to confirm deletion',
+      deleteSuccessHeading: "API Key Deleted Successfully",
+      deleteSuccessMessage:
+        'Your API key "{keyName}" has been deleted successfully.',
+      deleteErrorMessage:
+        "There was an error deleting your API key. Please try again.",
+      deleteButtonText: "Delete Key",
+      deleting: "Deleting...",
+      copyApiKey: "Copy API key",
+    },
+  },
+  Header: {
+    navLinks: {
+      about: "About",
+      account: "Account",
+      applications: "Applications",
+      community: "Community",
+      developer: "Developer Portal",
+      developers: "Developers",
+      events: "Events",
+      forum: "Discussion forum",
+      home: "Home",
+      login: "Sign in",
+      logout: "Sign out",
+      menuToggle: "Menu",
+      organizations: "Organizations",
+      research: "Research",
+      roadmap: "Product roadmap",
+      savedOpportunities: "Saved opportunities",
+      savedSearches: "Saved search queries",
+      search: "Search",
+      newsletter: "Newsletter",
+      vision: "Our vision",
+      wiki: "Public wiki",
+      workspace: "Workspace",
+      workspaceDashboard: "Workspace dashboard",
+      settings: "Settings",
+      notifications: "Notifications",
+      testApplication: "Test application",
+    },
+    title: "Simpler.Grants.gov",
+    tokenExpired: "You've been logged out. Please sign in again.",
+  },
+  HeaderLoginModal: {
+    title: "Sign in to Simpler.Grants.gov",
+    help: "Simpler.Grants.gov uses Login.gov to verify your identity and manage your account securely. You don't need a separate username or password for this site.",
+    description:
+      "You'll be redirected to Login.gov to sign in or create an account. Then, you'll return to Simpler.Grants.gov as a signed-in user.",
+    button: "Sign in with Login.gov",
+    close: "Cancel",
+  },
+  PivRequiredModal: {
+    title: "Your account requires additional identity verification.",
+    description:
+      "You must sign in with your government employee ID. Make sure you've set up your Personal Identity Verification (PIV) or Common Access Card (CAC) as a two-factor authentication method.",
+    button: "Sign in using PIV/CAC",
+  },
+  FormSelectModal: {
+    title: "Form Library",
+    heading: "Select Forms",
+    selectAll: "Select all",
+    buttons: {
+      cancel: "Cancel",
+      save: "Save",
+    },
+    requiredStates: {
+      required: "Required",
+      conditional: "Conditionally Required",
+      auto: "Auto added",
+      always: "Always required",
+    },
+  },
+  Footer: {
+    agencyName: "Grants.gov",
+    agencyContactCenter: "Grants.gov Program Management Office",
+    telephone: "1-800-518-4726",
+    returnToTop: "Return to top",
+    logoAlt: "Grants.gov logo",
+    explore: "Explore",
+    simpler: "Simpler.Grants.gov",
+    links: {
+      home: "Home",
+      search: "Search",
+      vision: "Vision",
+      roadmap: "Roadmap",
+      events: "Events",
+      newsletter: "Newsletter",
+      subscribe: "Subscribe",
+    },
+    feedback: "To give feedback, contact: <email>simpler@grants.gov</email>",
+    supportCenter: "Grants.gov Support Center",
+    techSupport:
+      "For technical support, contact: <email>support@grants.gov</email>",
+    grantorSupport:
+      "Grantors, contact the PMO through your <poc>Agency Point of Contact</poc>.",
+  },
+  Identifier: {
+    identity:
+      "An official website of the <hhsLink>U.S. Department of Health and Human Services</hhsLink>",
+    govContent:
+      "Looking for U.S. government information and services? Visit <usaLink>USA.gov</usaLink>",
+    linkAbout: "About HHS",
+    linkAccessibility: "Accessibility support",
+    linkFoia: "FOIA requests",
+    linkFear: "EEO/No Fear Act",
+    linkIg: "Office of the Inspector General",
+    linkPerformance: "Performance reports",
+    linkPrivacy: "Privacy Policy",
+    logoAlt: "HHS logo",
+  },
+  Layout: {
+    skipToMain: "Skip to main content",
+  },
+  Errors: {
+    heading: "We're sorry.",
+    genericMessage: "There seems to have been an error.",
+    tryAgain: "Please try again.",
+    unauthorized: "Unauthorized",
+    unauthenticated: "Not signed in",
+    authorizationFail:
+      "Sign in or user authorization failed. Please try again.",
+    signInCTA: "Sign in first in order to view this page",
+    unauthorizedExplanation: "This content is not available",
+  },
+  Search: {
+    title: "Search | Simpler.Grants.gov",
+    header: "Search funding opportunities",
+    metaDescription:
+      "Search for and discover relevant opportunities using our improved search.",
+    description: "Try out our experimental search page.",
+    goToGG:
+      "Simpler.Grants.gov is the new way to <search-link>search</search-link>. To access classic search, you must sign in to <gg-link>www.grants.gov</gg-link>.",
+    filters: {
+      searchNoResults: {
+        title: "Your search didn't return any results.",
+        heading: "Suggestions:",
+        suggestions: [
+          "Check any terms you've entered for typos",
+          "Try different keywords",
+          "Try resetting filters or selecting fewer options",
+        ],
+      },
+    },
+    table: {
+      headings: {
+        closeDate: "Close date",
+        status: "Status",
+        title: "Title",
+        agency: "Agency",
+        awardMin: "Award min",
+        awardMax: "Award max",
+      },
+      statuses: {
+        posted: "Open",
+        forecasted: "Forecasted",
+        archived: "Archived",
+        closed: "Closed",
+      },
+      number: "Number",
+      published: "Posted date",
+      expectedAwards: "Expected awards",
+      tbd: "TBD",
+      saved: "Saved",
+    },
+    accordion: {
+      any: "Any",
+      all: "All",
+      titles: {
+        funding: "Funding instrument",
+        eligibility: "Eligibility",
+        agency: "Agency",
+        category: "Category",
+        status: "Opportunity status",
+        postedDate: "Posted Date",
+        closeDate: "Closing date range",
+        costSharing: "Cost sharing",
+      },
+      options: {
+        status: {
+          forecasted: "Forecasted",
+          posted: "Open",
+          closed: "Closed",
+          archived: "Archived",
+        },
+      },
+    },
+    bar: {
+      label:
+        "<strong>Search terms </strong><small>Enter keywords, opportunity numbers, or assistance listing numbers</small>",
+      button: "Search",
+      exclusionTip: `Tip: Use a minus sign to exclude words or phrases, like "-research"`,
+    },
+    drawer: {
+      title: "Filters",
+      submit: "View results",
+      clearFilters: "Clear filters",
+      toggleButton: "Filters",
+      loading: "Loading filters",
+    },
+    callToAction: {
+      sharingOptions: "Sharing Options",
+    },
+    opportunitySaved: "Saved",
+    resultsHeader: {
+      message: "{count, plural, =1 {1 Opportunity} other {# Opportunities}}",
+    },
+    resultsListItem: {
+      awardInformation: "Award information",
+      status: {
+        archived: "Archived: ",
+        closed: "Closed: ",
+        posted: "Closing: ",
+        forecasted: "Forecasted",
+      },
+      summary: {
+        forecasted: "Forecast posted date: ",
+        posted: "Posted: ",
+        agency: "Agency: ",
+      },
+      opportunityNumber: "Opportunity Number: ",
+      awardCeiling: "Award Maximum: ",
+      floor: "Minimum: ",
+    },
+    sortBy: {
+      label: "Sort by",
+    },
+    filterToggleAll: {
+      select: "Select All",
+      clear: "Clear All",
+    },
+    loading: "Loading Results",
+    genericErrorCta: "Please try your search again.",
+    validationError: "Search Validation Error",
+    tooLongError: "Search terms must be no longer than 100 characters.",
+    exportButton: {
+      title: "Export results as .csv",
+    },
+    betaAlert: {
+      alertTitle: "How can we build a simpler search experience?",
+      alert:
+        "Fill out a <ethnioSurveyLink>1-minute survey</ethnioSurveyLink> and share your experience with Simpler and Classic Search.",
+    },
+    saveSearch: {
+      heading: "Current search query",
+      defaultSelect: "Select saved query",
+      fetchSavedError: "Error loading saved query. Try again later.",
+      help: {
+        unauthenticated:
+          "Use this set of search terms and filters often? Sign in to save this query to your account and use it again later. You can also copy and share the link to this query without signing in.",
+        noSavedQueries:
+          "Save this frequently used search query to your account. Apply it again later to save time when searching for opportunities.",
+        authenticated:
+          "Manage your saved search queries in your <strong>Workspace</strong>.",
+        general: "About saved searches",
+      },
+      modal: {
+        title: "Name this search query",
+        loading: "Saving",
+        description:
+          "Save these search terms and filters with a name for easy access later.",
+        inputLabel: "Name <required>(required)</required>",
+        saveText: "Save",
+        cancelText: "Cancel",
+        closeText: "Close",
+        emptyNameError: "Please name this query.",
+        successTitle: "Query successfully saved",
+        successDescription:
+          "Manage your queries in your <workspaceLink>Workspace</workspaceLink>.",
+        apiError: "Error loading saved query. Try again later.",
+      },
+      copySearch: {
+        copy: {
+          unauthenticated: "Copy this search query",
+          authenticated: "Copy",
+        },
+        copying: "Copying",
+        copied: "Copied!",
+        snackbar:
+          "This search query was copied to your clipboard. Paste it as a link anywhere.",
+      },
+    },
+    shareWithYourList: "Shared with:",
+    sharingOptions: "Sharing Options",
+  },
+  Maintenance: {
+    heading: "Simpler.Grants.gov Is Currently Undergoing Maintenance",
+    body: "Our team is working to improve the site, and we'll have it back up as soon as possible.",
+    signOff: "Thank you for your patience.",
+    pageTitle: "Simpler.Grants.gov - Maintenance",
+  },
+  SavedSearches: {
+    heading: "Saved search queries",
+    breadcrumbWorkspace: "Workspace",
+    breadcrumbSavedQueries: "Saved search queries",
+    noSavedCTAParagraphOne: "You don't have any saved queries yet.",
+    noSavedCTAParagraphTwo:
+      "As you search for opportunities, save your preferred combinations of terms and filters for easy access later. Return here to view and manage your saved queries.",
+    searchButton: "Start a new search",
+    title: "Saved search queries | Simpler.Grants.gov",
+    error:
+      "We encountered an issue while loading your saved search queries. If this keeps happening, please email simpler@grants.gov for help.",
+    edit: "Edit name",
+    delete: "Delete",
+    // keys need to match exactly against keys defined in validSearchQueryParamKeys
+    parameterNames: {
+      status: "Status",
+      fundingInstrument: "Funding instrument",
+      eligibility: "Eligibility",
+      agency: "Agency",
+      assistanceListingNumber: "Assistance Listing Number",
+      category: "Category",
+      query: "Search terms",
+      page: "Page",
+      sortby: "Sort by",
+      closeDate: "Close date",
+      postedDate: "Posted date",
+      costSharing: "Cost sharing",
+      topLevelAgency: "Top level agency",
+      andOr: "Query and/or operator",
+    },
+    editModal: {
+      loading: "Updating",
+      title: "Edit",
+      inputLabel: "New name <required>(required)</required>",
+      saveText: "Save",
+      cancelText: "Cancel",
+      closeText: "Close",
+      emptyNameError: "Please name this query.",
+      successTitle: "Query successfully updated",
+      updatedNotification: "has been successfully updated to",
+      apiError: "Error updating saved query. Try again later.",
+    },
+    deleteModal: {
+      loading: "Deleting",
+      title: "Delete saved query?",
+      deleteText: "Yes, delete",
+      cancelText: "Cancel",
+      apiError: "Error deleting saved query. Try again later.",
+      description: "Delete ",
+    },
+  },
+  SavedOpportunities: {
+    metaDescription: "View your saved funding opportunities.",
+    heading: "Saved opportunities",
+    breadcrumbWorkspace: "Workspace",
+    breadcrumbSavedOpportunities: "Saved opportunities",
+    noSavedCTAParagraphOne:
+      "To add an opportunity to your list, use the Save button next to its title on the listing's page.",
+    noSavedCTAParagraphTwo:
+      "Saved opportunities will be starred in your search results, but you can only save and un-save from the specific opportunity page",
+    noMatchingStatus:
+      "No saved opportunities match the selected status filter.",
+    searchButton: "Start a new search",
+    statusFilter: {
+      label: "Filter by status",
+    },
+    title: "Saved opportunities | Simpler.Grants.gov",
+    ownershipFilter: {
+      label: "Filter by organization",
+      showAll: "Show all",
+      individual: "Individual",
+    },
+    toNotificationsPreferences:
+      "Take a closer look at the opportunities you've saved and share any that feel like a good fit for your organization. Shared opportunities are saved for all members to view.  <link>Manage your notification preferences here.</link>",
+  },
+  Roadmap: {
+    pageTitle: "Roadmap | Simpler.Grants.gov",
+    pageHeaderTitle: "Product roadmap",
+    pageHeaderParagraph:
+      "This project is transparent, iterative, and agile. All of the code we're writing is open source and our roadmap is public. See what we're building and prioritizing.",
+    sections: {
+      progress: {
+        title: "What we're working on",
+        contentItems: [
+          {
+            title: "Piloting smarter, easier budget forms",
+            content:
+              "<p>In collaboration with users from the Simpler.Grants.gov Co-Design Group, we're prototyping a smarter, easier-to-use budget form to directly address the most common challenges applicants face. The redesigned form will incorporate clearer instructions, simplified user flow, and auto-calculation of fields to reduce confusion and errors.</p><p><linkGithub7832>Follow #7832 on GitHub</linkGithub7832></p>",
+          },
+          {
+            title:
+              "Improve users' confidence in choosing competitive, relevant opportunities",
+            content:
+              "<p>We're excited to help you find and get opportunities you need. We are developing user-requested enhancements to Simpler Search, and we're also developing a new set of initiatives to help organizations find opportunities that are better tailored to their needs. This will result in reducing the time and effort required to discover opportunities, determine whether they're a strong fit, and align as a team to pursue them.</p><p><linkGithub7830>Follow #7830 on GitHub</linkGithub7830></p>",
+          },
+          {
+            title: "Scale opportunity coverage and form creation",
+            content:
+              "<p>Simpler's new, streamlined application experience will support enough forms to cover 35% of competitions on Grants.gov, enabling opportunities to be supported from more grantor agencies. This will be made possible with the addition of internal tools that reduce the manual effort needed to launch opportunities between different environments.</p><p><linkGithub7831>Follow #7831 on GitHub</linkGithub7831></p>",
+          },
+          {
+            title:
+              "Community-prioritized improvements & open source involvement",
+            content:
+              "<p>We remain committed to open, participatory software development. We have deepened our collaboration with the Co-Design Group by establishing routine check-ins and workshops that directly involved them in the agile delivery process. We selected a key agile deliverable to pilot our co-planning methodology and successfully advanced community-prioritized improvements by delivering two highly voted items from the public voting board (known as our <fiderBoardLink>Fider board</fiderBoardLink>). We will continue to host co-planning and working sessions, and increase community engagement.</p><p><linkGithub7790>Follow #7790 on GitHub</linkGithub7790></p>",
+          },
+          {
+            title: "Reducing burden of starting an application",
+            content:
+              "<p>We're making it easier for you to find the right opportunity and start an application. Each opportunity page will contain more information to help you decide if it meets your needs, and guide you through the process of starting an application when you're ready to apply. Usability testing will continue improving our forms so they're approachable and easy to follow. Our workflow will make it faster and easier to fill out applications, with improved navigation, helpful guidance, and clear status indicators.</p><p><linkGithub7906>Follow #7906 on GitHub</linkGithub7906></p>",
+          },
+        ],
+        link: "View all deliverables on GitHub",
+      },
+      milestones: {
+        title: "What we've delivered",
+        contentTitle: "Late 2025",
+        releaseNotesLink: "Read the latest release notes on our public wiki",
+        contentItems: [
+          {
+            title: "Launched Release Notes",
+            content:
+              "<p>We proudly announced the launch of release notes for Simpler.Grants.Gov! Our goal for these updates is to regularly showcase new features, important bug fixes, improvements to enhance your experience, and more. <releaseNotesLink>Read the latest release notes on our public wiki</releaseNotesLink>.</p>",
+          },
+          {
+            title: "Improving the application workflow",
+            content:
+              "<p>We built on lessons learned from our 'Apply' workflow pilot, launching two opportunities for application through Simpler.Grants.gov while adding features based on direct user feedback and testing. We prepared to scale up to support more agencies. And we added an activity history that improves collaborating on applications.</p>",
+          },
+          {
+            title: "Accelerating form development",
+            content:
+              "<p>We scaled our form repository to 15 commonly used forms, unlocking additional agency partnership opportunities for applications in the future. Using a shared JSON schema, our tool now instantly renders the form, letting developers and program staff build and preview forms in real time. This also allows Simpler data to map to the <commonGrantsProtocolLink>CommonGrants Protocol</commonGrantsProtocolLink>.</p>",
+          },
+          {
+            title: "Simplifying user permissions",
+            content:
+              "<p>Grants.gov user roles and permissions can be cumbersome and may not align with how organizations work. We co-designed a new experience with applicants and grantors to simplify onboarding, improve visibility into organizational access, and make collaboration easier and more intuitive.</p>",
+          },
+          {
+            title: "Launched new changes to the Workspace Dashboard",
+            content:
+              "<p>The Simpler.Grants.gov team has created a hub that allows users to quickly access saved searches and applications. To solve for the key pain point of finding active grants and managing work, this Workspace Dashboard centralizes where users can manage their work and track their progress.</p>",
+          },
+        ],
+        archivedRoadmapSections: [
+          {
+            sectionTitle: "Mid 2025",
+            sectionItems: [
+              {
+                title: "Beta launch of Simpler Search on Grants.gov",
+                content:
+                  "<p>We launched Simpler Search directly on Grants.gov alongside the classic search experience. This gave users a choice, helped us test traffic, and supported tools to improve usability and iterate more quickly based on user data.</p>",
+              },
+              {
+                title: "New opportunities for open-source collaboration",
+                content:
+                  "<p>We strengthened our open-source community by hosting our Discourse forum on a .gov domain and establishing regular public meetings to foster collaboration and transparency.</p>",
+              },
+              {
+                title: "An 'Apply' workflow pilot",
+                content:
+                  "<p>We piloted the end-to-end grant application journey with grant seekers, testing submissions to help scale future support for all agencies.</p>",
+              },
+              {
+                title: "SOAP Proxy for the 'Apply' workflow",
+                content:
+                  "<p>We built a SOAP proxy to route all external applicant API traffic through Simpler.Grants.gov, setting the stage for a smooth shift to a modern REST interface.</p>",
+              },
+              {
+                title: "User research on permissions",
+                content:
+                  "<p>We researched how users manage roles and permissions, shaping a new model to support most Grants.gov applicants and simplify authorization.</p>",
+              },
+              {
+                title: "Automated API key management",
+                content:
+                  "<p>We built tools so authorized users can securely generate and manage their API keys independently without admin support.</p>",
+              },
+            ],
+          },
+          {
+            sectionTitle: "Early 2025",
+            sectionItems: [
+              {
+                title: "Simpler application workflow prototype",
+                content:
+                  "<p>We created a comprehensive service blueprint showing how the existing Grants.gov application process could be simplified. Then, we prototyped an application form with persistent data storage and scoped a pilot for a small subset of opportunities.</p>",
+              },
+              {
+                title:
+                  "Full support for opportunity page  attachments (NOFOs/downloads)",
+                content:
+                  "<p>The opportunity listings on Simpler.Grants.gov now show all of the information and file attachments available on Grants.gov. Design updates made the Notice of Funding Opportunity (NOFO) easier to access.</p>",
+              },
+              {
+                title: "Authentication via Login.gov",
+                content:
+                  "<p>Finalizing authentication enabled grant seekers to create an account using Login.gov's single sign-on platform. This move reduced the steps and friction users experience when signing up.</p>",
+              },
+              {
+                title: "Search & opportunity page improvements",
+                content:
+                  "<p>Applying feedback from the community, we iterated on improvements that made it easier to adjust search filter criteria, share search results, and save relevant results and opportunities.</p>",
+              },
+            ],
+          },
+          {
+            sectionTitle: "Late 2024",
+            sectionItems: [
+              {
+                title: "RESTful API launch",
+                content:
+                  "<p>Our new modern API makes grants opportunity data more accessible, with an API‑first approach that prioritizes data and ensures that the Grants.gov website, 3rd‑party apps, and other services can more easily access grants data.</p>",
+              },
+              {
+                title: "Coding Challenge pilot",
+                content:
+                  "<p>We're excited to announce the successful pilot of the Collaborative Coding Challenge, which laid the groundwork for a scalable framework to support future open-source contributions. This event was conducted in a fully remote environment to bring together participants who engaged in innovative problem-solving and collaboration.</p>",
+              },
+              {
+                title: "Search UI usability test",
+                content:
+                  "<p>We've conducted sessions with grant seekers, grantors, and HHS staff to test the new design. This study revealed findings and uncovered tangible issues to be resolved in the next Search UI iteration.</p>",
+              },
+              {
+                title: "Opportunity page launch",
+                content:
+                  "<p>You can now view opportunity details on Simpler.Grants.gov, with action-oriented information in the right column and detailed content on the left. With this new design, grant seekers can make faster, more informed decisions about opportunities.</p>",
+              },
+              {
+                title: "First Co-Design Group recruitment",
+                content:
+                  "<p>We've recruited a cohort of community members with lived experience using Grants.gov to participate in the design process. Through a long-term engagement, these co-designers will ensure what we build delivers the most value to grant seekers who struggle most with the grants experience.</p>",
+              },
+              {
+                title: "Search interface launch",
+                content:
+                  "<p>Simpler.Grants.gov now has improved search capabilities that make it easier to find funding opportunities published by Grants.gov.</p>",
+              },
+            ],
+          },
+        ],
+      },
+      process: {
+        title: "How we work",
+        sectionSummary:
+          "With each iteration of Simpler.Grants.gov, you'll be able to try out functional software and give us feedback on what works and what can be improved to inform what happens next.",
+        contentItems: [
+          {
+            title: "Transparent",
+            content:
+              "We're building a simpler Grants.gov in the open. All of the code we're writing is open source and our roadmap is public.",
+          },
+          {
+            title: "Agile",
+            content:
+              "We swiftly adapt to changing priorities and requirements based on the feedback we receive.",
+          },
+          {
+            title: "Iterative",
+            content:
+              "We continuously release features, refining the product with each cycle based on public input. Send us your feedback and suggestions.",
+            link: "mailto:simpler@grants.gov",
+            linkText: "Contact us at simpler@grants.gov",
+          },
+          {
+            title: "Co-planning",
+            content:
+              "We prioritize improvements to align with user needs through public ranking. Let us know what's important to you.",
+            link: "https://simplergrants.fider.io",
+            linkText: "Vote on our proposals board",
+          },
+        ],
+      },
+      timeline: {
+        title: "Key milestones",
+        contentItems: [
+          {
+            date: "Early 2026",
+            title: "A new way to apply",
+            content:
+              "<p>Simpler Search is now the default search for funding opportunities, and we're testing a simpler, more intuitive application workflow with a small number of partner agencies and funding opportunities.</p>",
+          },
+          {
+            date: "Mid-2026",
+            title: "Expanding the Simpler experience",
+            content:
+              "<p>We'll pilot new budget forms and support scaling for all agencies to increase the number of opportunities that can be applied for through Simpler.Grants.gov.</p>",
+          },
+          {
+            date: "2027",
+            title: "Simpler.Grants.gov replaces legacy Grants.gov",
+            content:
+              "<p>The Simpler.Grants.gov experience becomes the default experience of Grants.gov, providing a modern, consistent experience for all users.</p>",
+          },
+        ],
+      },
+    },
+  },
+  // These values are currently for form enum translation, values coming fromt the API
+  Form: {
+    "AL: Alabama": "Alabama",
+    "AK: Alaska": "Alaska",
+    "AZ: Arizona": "Arizona",
+    "AR: Arkansas": "Arkansas",
+    "CA: California": "California",
+    "CO: Colorado": "Colorado",
+    "CT: Connecticut": "Connecticut",
+    "DE: Delaware": "Delaware",
+    "DC: District of Columbia": "District of Columbia",
+    "FL: Florida": "Florida",
+    "GA: Georgia": "Georgia",
+    "HI: Hawaii": "Hawaii",
+    "ID: Idaho": "Idaho",
+    "IL: Illinois": "Illinois",
+    "IN: Indiana": "Indiana",
+    "IA: Iowa": "Iowa",
+    "KS: Kansas": "Kansas",
+    "KY: Kentucky": "Kentucky",
+    "LA: Louisiana": "Louisiana",
+    "ME: Maine": "Maine",
+    "MD: Maryland": "Maryland",
+    "MA: Massachusetts": "Massachusetts",
+    "MI: Michigan": "Michigan",
+    "MN: Minnesota": "Minnesota",
+    "MS: Mississippi": "Mississippi",
+    "MO: Missouri": "Missouri",
+    "MT: Montana": "Montana",
+    "NE: Nebraska": "Nebraska",
+    "NV: Nevada": "Nevada",
+    "NH: New Hampshire": "New Hampshire",
+    "NJ: New Jersey": "New Jersey",
+    "NM: New Mexico": "New Mexico",
+    "NY: New York": "New York",
+    "NC: North Carolina": "North Carolina",
+    "ND: North Dakota": "North Dakota",
+    "OH: Ohio": "Ohio",
+    "OK: Oklahoma": "Oklahoma",
+    "OR: Oregon": "Oregon",
+    "PA: Pennsylvania": "Pennsylvania",
+    "RI: Rhode Island": "Rhode Island",
+    "SC: South Carolina": "South Carolina",
+    "SD: South Dakota": "South Dakota",
+    "TN: Tennessee": "Tennessee",
+    "TX: Texas": "Texas",
+    "UT: Utah": "Utah",
+    "VT: Vermont": "Vermont",
+    "VA: Virginia": "Virginia",
+    "WA: Washington": "Washington",
+    "WV: West Virginia": "West Virginia",
+    "WI: Wisconsin": "Wisconsin",
+    "WY: Wyoming": "Wyoming",
+    "AS: American Samoa": "American Samoa",
+    "FM: Federated States of Micronesia": "Federated States of Micronesia",
+    "GU: Guam": "Guam",
+    "MH: Marshall Islands": "Marshall Islands",
+    "MP: Northern Mariana Islands": "Northern Mariana Islands",
+    "PW: Palau": "Palau",
+    "PR: Puerto Rico": "Puerto Rico",
+    "VI: Virgin Islands": "Virgin Islands",
+    "FQ: Baker Island": "Baker Island",
+    "HQ: Howland Island": "Howland Island",
+    "DQ: Jarvis Island": "Jarvis Island",
+    "JQ: Johnston Atoll": "Johnston Atoll",
+    "KQ: Kingman Reef": "Kingman Reef",
+    "MQ: Midway Islands": "Midway Islands",
+    "BQ: Navassa Island": "Navassa Island",
+    "LQ: Palmyra Atoll": "Palmyra Atoll",
+    "WQ: Wake Island": "Wake Island",
+    "AA: Armed Forces Americas (except Canada)":
+      "Armed Forces Americas (except Canada)",
+    "AE: Armed Forces Europe, the Middle East, and Canada":
+      "Armed Forces Europe, the Middle East, and Canada",
+    "AP: Armed Forces Pacific": "Armed Forces Pacific",
+    "AFG: AFGHANISTAN": "Afghanistan",
+    "XQZ: AKROTIRI": "Akrotiri",
+    "ALB: ALBANIA": "Albania",
+    "DZA: ALGERIA": "Algeria",
+    "AND: ANDORRA": "Andorra",
+    "AGO: ANGOLA": "Angola",
+    "AIA: ANGUILLA": "Anguilla",
+    "ATA: ANTARCTICA": "Antarctica",
+    "ATG: ANTIGUA AND BARBUDA": "Antigua And Barbuda",
+    "ARG: ARGENTINA": "Argentina",
+    "ARM: ARMENIA": "Armenia",
+    "ABW: ARUBA": "Aruba",
+    "XAC: ASHMORE AND CARTIER ISLANDS": "Ashmore And Cartier Islands",
+    "AUS: AUSTRALIA": "Australia",
+    "AUT: AUSTRIA": "Austria",
+    "AZE: AZERBAIJAN": "Azerbaijan",
+    "BHS: BAHAMAS, THE": "Bahamas, The",
+    "BHR: BAHRAIN": "Bahrain",
+    "BGD: BANGLADESH": "Bangladesh",
+    "BRB: BARBADOS": "Barbados",
+    "XBI: BASSAS DA INDIA": "Bassas Da India",
+    "BLR: BELARUS": "Belarus",
+    "BEL: BELGIUM": "Belgium",
+    "BLZ: BELIZE": "Belize",
+    "BEN: BENIN": "Benin",
+    "BMU: BERMUDA": "Bermuda",
+    "BTN: BHUTAN": "Bhutan",
+    "BOL: BOLIVIA": "Bolivia",
+    "BES: BONAIRE, SINT EUSTATIUS, AND SABA":
+      "Bonaire, Sint Eustatius, And Saba",
+    "BIH: BOSNIA AND HERZEGOVINA": "Bosnia And Herzegovina",
+    "BWA: BOTSWANA": "Botswana",
+    "BVT: BOUVET ISLAND": "Bouvet Island",
+    "BRA: BRAZIL": "Brazil",
+    "IOT: BRITISH INDIAN OCEAN TERRITORY": "British Indian Ocean Territory",
+    "BRN: BRUNEI": "Brunei",
+    "BGR: BULGARIA": "Bulgaria",
+    "BFA: BURKINA FASO": "Burkina Faso",
+    "MMR: BURMA": "Burma",
+    "BDI: BURUNDI": "Burundi",
+    "CPV: CABO VERDE": "Cabo Verde",
+    "KHM: CAMBODIA": "Cambodia",
+    "CMR: CAMEROON": "Cameroon",
+    "CAN: CANADA": "Canada",
+    "CYM: CAYMAN ISLANDS": "Cayman Islands",
+    "CAF: CENTRAL AFRICAN REPUBLIC": "Central African Republic",
+    "TCD: CHAD": "Chad",
+    "CHL: CHILE": "Chile",
+    "CHN: CHINA": "China",
+    "CXR: CHRISTMAS ISLAND": "Christmas Island",
+    "CPT: CLIPPERTON ISLAND": "Clipperton Island",
+    "CCK: COCOS (KEELING) ISLANDS": "Cocos (Keeling) Islands",
+    "COL: COLOMBIA": "Colombia",
+    "COM: COMOROS": "Comoros",
+    "COG: CONGO (BRAZZAVILLE)": "Congo (Brazzaville)",
+    "COD: CONGO (KINSHASA)": "Congo (Kinshasa)",
+    "COK: COOK ISLANDS": "Cook Islands",
+    "XCS: CORAL SEA ISLANDS": "Coral Sea Islands",
+    "CRI: COSTA RICA": "Costa Rica",
+    "CIV: CÔTE D'IVOIRE": "Côte D'Ivoire",
+    "HRV: CROATIA": "Croatia",
+    "CUB: CUBA": "Cuba",
+    "CUW: CURAÇAO": "Curaçao",
+    "CYP: CYPRUS": "Cyprus",
+    "CZE: CZECHIA": "Czechia",
+    "DNK: DENMARK": "Denmark",
+    "XXD: DHEKELIA": "Dhekelia",
+    "DGA: DIEGO GARCIA": "Diego Garcia",
+    "DJI: DJIBOUTI": "Djibouti",
+    "DMA: DOMINICA": "Dominica",
+    "DOM: DOMINICAN REPUBLIC": "Dominican Republic",
+    "ECU: ECUADOR": "Ecuador",
+    "EGY: EGYPT": "Egypt",
+    "SLV: EL SALVADOR": "El Salvador",
+    "XAZ: ENTITY 1": "Entity 1",
+    "XCR: ENTITY 2": "Entity 2",
+    "XCY: ENTITY 3": "Entity 3",
+    "XKM: ENTITY 4": "Entity 4",
+    "XKN: ENTITY 5": "Entity 5",
+    "AX3: ENTITY 6": "Entity 6",
+    "GNQ: EQUATORIAL GUINEA": "Equatorial Guinea",
+    "ERI: ERITREA": "Eritrea",
+    "EST: ESTONIA": "Estonia",
+    "SWZ: ESWATINI": "Eswatini",
+    "ETH: ETHIOPIA": "Ethiopia",
+    "XEU: EUROPA ISLAND": "Europa Island",
+    "FLK: FALKLAND ISLANDS (ISLAS MALVINAS)":
+      "Falkland Islands (Islas Malvinas)",
+    "FRO: FAROE ISLANDS": "Faroe Islands",
+    "FJI: FIJI": "Fiji",
+    "FIN: FINLAND": "Finland",
+    "FRA: FRANCE": "France",
+    "GUF: FRENCH GUIANA": "French Guiana",
+    "PYF: FRENCH POLYNESIA": "French Polynesia",
+    "ATF: FRENCH SOUTHERN AND ANTARCTIC LANDS":
+      "French Southern And Antarctic Lands",
+    "GAB: GABON": "Gabon",
+    "GMB: GAMBIA, THE": "Gambia, The",
+    "XGZ: GAZA STRIP": "Gaza Strip",
+    "GEO: GEORGIA": "Georgia",
+    "DEU: GERMANY": "Germany",
+    "GHA: GHANA": "Ghana",
+    "GIB: GIBRALTAR": "Gibraltar",
+    "XGL: GLORIOSO ISLANDS": "Glorioso Islands",
+    "GRC: GREECE": "Greece",
+    "GRL: GREENLAND": "Greenland",
+    "GRD: GRENADA": "Grenada",
+    "GLP: GUADELOUPE": "Guadeloupe",
+    "GTM: GUATEMALA": "Guatemala",
+    "GGY: GUERNSEY": "Guernsey",
+    "GIN: GUINEA": "Guinea",
+    "GNB: GUINEA-BISSAU": "Guinea-Bissau",
+    "GUY: GUYANA": "Guyana",
+    "HTI: HAITI": "Haiti",
+    "HMD: HEARD ISLAND AND MCDONALD ISLANDS":
+      "Heard Island And Mcdonald Islands",
+    "HND: HONDURAS": "Honduras",
+    "HKG: HONG KONG": "Hong Kong",
+    "HUN: HUNGARY": "Hungary",
+    "ISL: ICELAND": "Iceland",
+    "IND: INDIA": "India",
+    "IDN: INDONESIA": "Indonesia",
+    "IRN: IRAN": "Iran",
+    "IRQ: IRAQ": "Iraq",
+    "IRL: IRELAND": "Ireland",
+    "IMN: ISLE OF MAN": "Isle Of Man",
+    "ISR: ISRAEL": "Israel",
+    "ITA: ITALY": "Italy",
+    "JAM: JAMAICA": "Jamaica",
+    "XJM: JAN MAYEN": "Jan Mayen",
+    "JPN: JAPAN": "Japan",
+    "JEY: JERSEY": "Jersey",
+    "JOR: JORDAN": "Jordan",
+    "XJN: JUAN DE NOVA ISLAND": "Juan De Nova Island",
+    "KAZ: KAZAKHSTAN": "Kazakhstan",
+    "KEN: KENYA": "Kenya",
+    "KIR: KIRIBATI": "Kiribati",
+    "PRK: KOREA, NORTH": "Korea, North",
+    "KOR: KOREA, SOUTH": "Korea, South",
+    "XKS: KOSOVO": "Kosovo",
+    "KWT: KUWAIT": "Kuwait",
+    "KGZ: KYRGYZSTAN": "Kyrgyzstan",
+    "LAO: LAOS": "Laos",
+    "LVA: LATVIA": "Latvia",
+    "LBN: LEBANON": "Lebanon",
+    "LSO: LESOTHO": "Lesotho",
+    "LBR: LIBERIA": "Liberia",
+    "LBY: LIBYA": "Libya",
+    "LIE: LIECHTENSTEIN": "Liechtenstein",
+    "LTU: LITHUANIA": "Lithuania",
+    "LUX: LUXEMBOURG": "Luxembourg",
+    "MAC: MACAU": "Macau",
+    "MDG: MADAGASCAR": "Madagascar",
+    "MWI: MALAWI": "Malawi",
+    "MYS: MALAYSIA": "Malaysia",
+    "MDV: MALDIVES": "Maldives",
+    "MLI: MALI": "Mali",
+    "MLT: MALTA": "Malta",
+    "MTQ: MARTINIQUE": "Martinique",
+    "MRT: MAURITANIA": "Mauritania",
+    "MUS: MAURITIUS": "Mauritius",
+    "MYT: MAYOTTE": "Mayotte",
+    "MEX: MEXICO": "Mexico",
+    "MDA: MOLDOVA": "Moldova",
+    "MCO: MONACO": "Monaco",
+    "MNG: MONGOLIA": "Mongolia",
+    "MNE: MONTENEGRO": "Montenegro",
+    "MSR: MONTSERRAT": "Montserrat",
+    "MAR: MOROCCO": "Morocco",
+    "MOZ: MOZAMBIQUE": "Mozambique",
+    "NAM: NAMIBIA": "Namibia",
+    "NRU: NAURU": "Nauru",
+    "NPL: NEPAL": "Nepal",
+    "NLD: NETHERLANDS": "Netherlands",
+    "NCL: NEW CALEDONIA": "New Caledonia",
+    "NZL: NEW ZEALAND": "New Zealand",
+    "NIC: NICARAGUA": "Nicaragua",
+    "NER: NIGER": "Niger",
+    "NGA: NIGERIA": "Nigeria",
+    "NIU: NIUE": "Niue",
+    "NFK: NORFOLK ISLAND": "Norfolk Island",
+    "MKD: NORTH MACEDONIA": "North Macedonia",
+    "NOR: NORWAY": "Norway",
+    "OMN: OMAN": "Oman",
+    "PAK: PAKISTAN": "Pakistan",
+    "PAN: PANAMA": "Panama",
+    "PNG: PAPUA NEW GUINEA": "Papua New Guinea",
+    "XPR: PARACEL ISLANDS": "Paracel Islands",
+    "PRY: PARAGUAY": "Paraguay",
+    "PER: PERU": "Peru",
+    "PHL: PHILIPPINES": "Philippines",
+    "PCN: PITCAIRN ISLANDS": "Pitcairn Islands",
+    "POL: POLAND": "Poland",
+    "PRT: PORTUGAL": "Portugal",
+    "QAT: QATAR": "Qatar",
+    "REU: REUNION": "Reunion",
+    "ROU: ROMANIA": "Romania",
+    "RUS: RUSSIA": "Russia",
+    "RWA: RWANDA": "Rwanda",
+    "BLM: SAINT BARTHELEMY": "Saint Barthelemy",
+    "SHN: SAINT HELENA, ASCENSION, AND TRISTAN DA CUNHA":
+      "Saint Helena, Ascension, And Tristan Da Cunha",
+    "KNA: SAINT KITTS AND NEVIS": "Saint Kitts And Nevis",
+    "LCA: SAINT LUCIA": "Saint Lucia",
+    "MAF: SAINT MARTIN": "Saint Martin",
+    "SPM: SAINT PIERRE AND MIQUELON": "Saint Pierre And Miquelon",
+    "VCT: SAINT VINCENT AND THE GRENADINES": "Saint Vincent And The Grenadines",
+    "WSM: SAMOA": "Samoa",
+    "SMR: SAN MARINO": "San Marino",
+    "STP: SAO TOME AND PRINCIPE": "Sao Tome And Principe",
+    "SAU: SAUDI ARABIA": "Saudi Arabia",
+    "SEN: SENEGAL": "Senegal",
+    "SRB: SERBIA": "Serbia",
+    "SYC: SEYCHELLES": "Seychelles",
+    "SLE: SIERRA LEONE": "Sierra Leone",
+    "SGP: SINGAPORE": "Singapore",
+    "SXM: SINT MAARTEN": "Sint Maarten",
+    "SVK: SLOVAKIA": "Slovakia",
+    "SVN: SLOVENIA": "Slovenia",
+    "SLB: SOLOMON ISLANDS": "Solomon Islands",
+    "SOM: SOMALIA": "Somalia",
+    "ZAF: SOUTH AFRICA": "South Africa",
+    "SGS: SOUTH GEORGIA AND SOUTH SANDWICH ISLANDS":
+      "South Georgia And South Sandwich Islands",
+    "SSD: SOUTH SUDAN": "South Sudan",
+    "ESP: SPAIN": "Spain",
+    "XSP: SPRATLY ISLANDS": "Spratly Islands",
+    "LKA: SRI LANKA": "Sri Lanka",
+    "SDN: SUDAN": "Sudan",
+    "SUR: SURINAME": "Suriname",
+    "XSV: SVALBARD": "Svalbard",
+    "SWE: SWEDEN": "Sweden",
+    "CHE: SWITZERLAND": "Switzerland",
+    "SYR: SYRIA": "Syria",
+    "TWN: TAIWAN": "Taiwan",
+    "TJK: TAJIKISTAN": "Tajikistan",
+    "TZA: TANZANIA": "Tanzania",
+    "THA: THAILAND": "Thailand",
+    "TLS: TIMOR-LESTE": "Timor-Leste",
+    "TGO: TOGO": "Togo",
+    "TKL: TOKELAU": "Tokelau",
+    "TON: TONGA": "Tonga",
+    "TTO: TRINIDAD AND TOBAGO": "Trinidad And Tobago",
+    "XTR: TROMELIN ISLAND": "Tromelin Island",
+    "TUN: TUNISIA": "Tunisia",
+    "TUR: TURKEY": "Turkey",
+    "TKM: TURKMENISTAN": "Turkmenistan",
+    "TCA: TURKS AND CAICOS ISLANDS": "Turks And Caicos Islands",
+    "TUV: TUVALU": "Tuvalu",
+    "UGA: UGANDA": "Uganda",
+    "UKR: UKRAINE": "Ukraine",
+    "ARE: UNITED ARAB EMIRATES": "United Arab Emirates",
+    "GBR: UNITED KINGDOM": "United Kingdom",
+    "USA: UNITED STATES": "United States",
+    "URY: URUGUAY": "Uruguay",
+    "UZB: UZBEKISTAN": "Uzbekistan",
+    "VUT: VANUATU": "Vanuatu",
+    "VAT: VATICAN CITY": "Vatican City",
+    "VEN: VENEZUELA": "Venezuela",
+    "VNM: VIETNAM": "Vietnam",
+    "VGB: VIRGIN ISLANDS, BRITISH": "Virgin Islands, British",
+    "WLF: WALLIS AND FUTUNA": "Wallis And Futuna",
+    "XWB: WEST BANK": "West Bank",
+    "ESH: WESTERN SAHARA": "Western Sahara",
+    "YEM: YEMEN": "Yemen",
+    "ZMB: ZAMBIA": "Zambia",
+    "ZWE: ZIMBABWE": "Zimbabwe",
+  },
+  Settings: {
+    pageTitle: "Settings | Simpler.Grants.gov",
+    title: "Settings",
+    contactInfoHeading: "Contact information",
+    contactInfoBody:
+      "Your name and email will be visible to others in your organization as you collaborate. You may update your name here at any time, but your email and password are managed by <link>login.gov</link>.",
+    inputs: {
+      firstName: "First name",
+      middleName: "Middle name",
+      lastName: "Last name",
+      email: "Email",
+    },
+    save: "Save changes",
+    validationErrors: {
+      firstName: "You must enter a first name to complete your profile",
+      lastName: "You must enter a last name to complete your profile",
+    },
+    fetchError: "Error fetching user data. Please try refreshing the page.",
+    pending: "Saving...",
+    errorHeading: "Error",
+    successHeading: "Account updated",
+    profileIncomplete: "Your profile is incomplete",
+    addFullNameDescription:
+      "Add your first and last name to complete your profile.",
+    firstNameRequired: "First name is required",
+    lastNameRequired: "Last name is required",
+    requiredForProfile: "Required to complete your profile.",
+  },
+  WorkspaceDashboard: {
+    pageTitle: "Workspace | Simpler.Grants.gov",
+    title: "Welcome to your workspace dashboard.",
+    fetchError: "Error fetching user data. Please try refreshing the page.",
+    organizations: "Your organizations",
+    noOrganizations: {
+      title: "You're not a member of any organizations yet",
+      description:
+        "You'll be notified when an organization adds you, and you can accept the invitation to access their details.",
+    },
+    organizationButtons: {
+      view: "View details",
+      manage: "Manage users",
+    },
+    linksSection: {
+      heading: "Your recent activity",
+      applications: {
+        heading: "Applications",
+        description: "You can now apply for select opportunities on Simpler.",
+        linkText: "View applications",
+      },
+      savedQueries: {
+        heading: "Saved queries",
+        description: "Return to your preferred search terms and filters.",
+        linkText: "View saved queries",
+      },
+      savedOpportunities: {
+        heading: "Saved opportunities",
+        description: "Keep track of oppportunities you're interested in.",
+        linkText: "View saved opportunities",
+      },
+    },
+    invitationReply: {
+      ctaTitle: "would like to add you to their team.",
+      description:
+        "Click Accept to join and gain access to your team, organization details and available applications.",
+      accept: "Accept",
+      reject: "Reject",
+      dismiss: "Dismiss",
+      accepted: {
+        ctaTitle: "Congrats, you've been added to {orgName}!",
+        description:
+          "Join your team by collaborating on applications and searching for the right opportunities.",
+      },
+      rejected: {
+        ctaTitle: "The invitation has been rejected.",
+        description:
+          "If you change your mind, an organization admin can add you again.",
+      },
+      rejectConfirmation: {
+        ctaTitle:
+          "Are you sure you want to reject this organization's invitation?",
+        description:
+          "You'll need to be re-added by an organization admin if you change your mind later.",
+        confirm: "Reject invitation",
+        cancel: "Cancel",
+      },
+      apiError: "Unable to update user organization invitation.",
+    },
+  },
+  OrganizationDetail: {
+    pageTitle: "Organization",
+    breadcrumbWorkspace: "Workspace",
+    breadcrumbOrganizations: "Organizations",
+    fetchError: "Unable to fetch organization details",
+    organizationDetailsHeader: "Organization details",
+    ebizPoc: "eBiz POC",
+    contact: "Contact",
+    uei: "UEI",
+    expiration: "Exp",
+    visitSam:
+      "Visit <link>sam.gov</link> to make changes to your organization's details.",
+    rosterTable: {
+      title: "Organization roster",
+      explanation: "Your organization's active members are listed below.",
+      manageUsersExplanation:
+        "Manage Users to add or update roles and permissions.",
+      manageUsersCTA: "Manage Users",
+      headings: {
+        email: "Email",
+        name: "Name",
+        roles: "Roles",
+      },
+    },
+  },
+  ManageUsers: {
+    pageTitle: "Manage users | Simpler.Grants.gov",
+    breadcrumbWorkspace: "Workspace",
+    breadcrumbOrganizations: "Organizations",
+    pageHeading: "Manage users",
+    activeUsersHeading: "Active Users Roster",
+    activeUsersTableDescription:
+      "Adjust permissions for active users so they have the right access for their role.",
+    activeUsersFetchError:
+      "We have encountered an error retrieving the Active Users roster, please try again later.",
+    activeUsersTableZeroState: "There are no active users.",
+    grantsGovUsersHeading: "Grants.gov Users",
+    grantsGovUsersTableDescription:
+      "Manage users from your Grants.gov organization here in Simpler.",
+    invitedUsersHeading: "Invited users",
+    invitedUsersTableDescription:
+      "These users have been invited to join your organization but haven't accepted yet. Once they accept, the'll appear in your Active User Roster and be able to collaborate on grants and other organizational work.",
+    invitedUsersFetchError:
+      "We have encountered an error retrieving the Invited Users list, please try again later.",
+    invitedUsersTableZeroState: "There are no invited users.",
+    inviteLegacyUsers: "Invite Grants.gov users",
+    roleManager: {
+      errorState:
+        "We were unable to make the change requested at this time. Please try again.",
+      cancel: "Cancel",
+      changeUserRole: "Change user role",
+    },
+    removeUserModal: {
+      header: "Are you sure you want to remove this user?",
+      description:
+        "Removing them will revoke their access and may impact any work they have not yet submitted. If they need access again, an administrator will have to add them back.",
+      errorState: "We couldn't remove this user. Please try again.",
+      cancel: "Cancel",
+      removeUser: "Remove User",
+      removing: "Removing...",
+    },
+    usersTable: {
+      actionsHeading: "Actions",
+      admin: "Administrator",
+      emailHeading: "Email",
+      member: "Member",
+      nameHeading: "Name",
+      noUsersFound: "No users found.",
+      roleHeading: "Role",
+      selectRoleFor: "Select role for",
+    },
+    confirmationModal: {
+      header: "Confirm role change",
+      description: "Are you sure you want to change this user's role to",
+      cancel: "Cancel",
+      confirm: "Confirm",
+      saving: "Saving...",
+    },
+    inviteUser: {
+      heading: "Add users to collaborate on opportunities.",
+      errorHeading: "Error",
+      errorMessage: "Error inviting user, please try again",
+      description:
+        "Users are automatically added to your organization when they sign up. Until then, their status will be pending.",
+      inputs: {
+        email: {
+          label: "Email address",
+          placeholder: "Enter a valid email address",
+        },
+        role: {
+          label: "Role",
+          placeholder: "- Select a role -",
+        },
+      },
+      button: {
+        label: "Add to organization",
+        success: "User invited to organization",
+      },
+      validationErrors: {
+        email: "Email is required",
+        role: "Role is required",
+      },
+    },
+  },
+  Applications: {
+    numApplications: "{num, plural, =1 {1 application} other {# applications}}",
+    errorMessage:
+      "We have encountered an error loading your applications, please try again later.",
+    metaDescription: "View your saved applications",
+    noApplicationsMessage: {
+      primary: "You have not started any applications yet.",
+      secondary:
+        "Applications you start or work on will be saved here.  Return anytime to view, continue, or manage them.",
+    },
+    pageHeading: "Applications",
+    pageTitle: "Applications | Simpler.Grants.gov",
+    breadcrumbWorkspace: "Workspace",
+    breadcrumbApplications: "Applications",
+    tableContents: {
+      agency: "Agency: ",
+      draft: "Draft",
+      individual: "Individual",
+      submitted: "Submitted",
+    },
+    tableHeadings: {
+      closeDate: "Close date",
+      status: "Status",
+      applicationName: "Application filing name",
+      type: "Type",
+      opportunity: "Opportunity",
+    },
+  },
+  Opportunities: {
+    createOpportunityButton: "Create Opportunity",
+    numOpportunities:
+      "{num, plural, =1 {1 opportunity} other {# opportunities}}",
+    errorMessage:
+      "We have encountered an error loading your opportunities, please try again later.",
+    metaDescription: "View draft and published funding opportunities",
+    noOpportunitiesMessage: {
+      primary: "You have not started any opportunities yet.",
+      secondary:
+        "Opportunities you start or work on will be saved here.  Return anytime to view, continue, or manage them.",
+    },
+    showingOpportunitiesFor: "Showing opportunities for {agencyName}",
+    agencySelector: "Select agency",
+    agencyNotAuthorized:
+      "You do not have access to this agency's opportunities.",
+    noAgencies: "You are not associated with any agencies.",
+    pageHeading: "Opportunities",
+    pageTitle: "Opportunities List",
+    pageApplication: "Smarter Grants Management",
+    tableContents: {
+      agency: "Agency: ",
+      draft: "Draft",
+      individual: "Individual",
+      submitted: "Submitted",
+    },
+    tableHeadings: {
+      agency: "Agency",
+      title: "Title",
+      status: "Status",
+      actions: "Actions",
+    },
+    actionButtons: {
+      edit: "Edit",
+      copy: "Copy",
+      delete: "Delete",
+    },
+  },
+  Organizations: {
+    errorMessage:
+      "We have encountered an error loading your organizations, please try again later.",
+    manageUsers: "Manage Users",
+    metaDescription: "View your organizations",
+    pageHeading: "Organizations",
+    pageTitle: "Organizations",
+    breadcrumbWorkspace: "Workspace",
+    breadcrumbOrganizations: "Organizations",
+  },
+  AwardRecommendation: {
+    list: {
+      pageTitle: "Award recommendations",
+      pageHeading: "Award recommendations",
+      numAwardRecommendations:
+        "{num, plural, =1 {1 Award recommendation} other {# Award recommendations}}",
+      createRecommendationButton: "Create recommendation",
+      agencyNotAuthorized:
+        "You do not have access to this agency's award recommendations.",
+      noAgencies: "You are not associated with any agencies.",
+      empty: "No award recommendations found.",
+      fetchError:
+        "We have encountered an error loading award recommendations. Please try again.",
+      columns: {
+        awardRecId: "Award Rec ID",
+        opportunityName: "Opportunity name",
+        opportunityId: "Opportunity ID",
+        applicationsReceived: "Applications received",
+        status: "Status",
+        action: "Action",
+      },
+      actions: {
+        delete: "Delete",
+      },
+    },
+    summary: {
+      showDescription: "Show full description",
+      hideSummaryDescription: "Hide full description",
+    },
+    awardRecs: "Award Recs",
+    errorMessage:
+      "We have encountered an error loading your award recommendations, please try again later.",
+    metaDescription: "View your award recommendations",
+    metaDescriptionEdit: "Edit your award recommendations",
+    pageTitleEditApplicationSubmissionDetails:
+      "Edit application submission details",
+    pageHeading: "Award Recommendations",
+    heroTitle: "Award Rec #",
+    createHeroTitle: "Create recommendation",
+    datePrepared: "Date prepared",
+    status: "Status",
+    onThisPage: "On this page",
+    statusTag: {
+      draft: "In Progress",
+      in_review: "Pending Review",
+      approved: "Approved",
+    },
+    heroButtons: {
+      save: "Save",
+      cancel: "Cancel",
+      create: "Create",
+      edit: "Edit",
+      preview: "Preview",
+      submitForReview: "Submit for review",
+      backToEdit: "Back to Edit",
+      backToSubmissions: "Back to submissions",
+    },
+    save: {
+      success: "Your changes have been saved.",
+      error: "We encountered an error saving your changes. Please try again.",
+    },
+    submissionEdit: {
+      editTitle: "Edit {applicationSubmissionNumber}",
+      viewOriginalApplication: "View original application",
+    },
+    editRecommendations: {
+      pageTitle: "Edit recommendations",
+      metaDescription: "Edit award recommendations for multiple applications",
+      heading: "Edit recommendations",
+      pageHeading: "Recommend awards",
+      pageDescription:
+        "Select one or more applications to edit recommendations. Search by App #, program title, org name of UEI",
+      selectAll: "Select all",
+      selectRow: "Select row for {appNumber}",
+      selectedCount:
+        "{count, plural, =1 {1 submission selected} other {# submissions selected}}",
+      showingRange: "Showing {start}-{end} of {total}",
+      loading: "Loading...",
+      errorLoading: "Error loading submissions. Please try again.",
+      editButton: "Edit",
+      bulkEditPageTitle: "Bulk Edit Recommendations",
+      bulkEditMetaDescription:
+        "Bulk edit award recommendations for selected applications",
+      bulkEditTitle: "Bulk Edit Recommendations",
+      selectedApplications: "Selected Applications",
+      submissionsSelected: "submissions selected",
+      bulkEditHeading: "Update Recommendation",
+      bulkEditDescription:
+        "Select a recommendation type to apply to all selected applications.",
+      recommendationType: "Recommendation Type",
+      noSelectionsMessage:
+        "No submissions selected. Please select submissions to edit.",
+      saveButton: "Save",
+      saving: "Saving...",
+      cancelButton: "Cancel",
+      columns: {
+        appNumber: "App #",
+        projectTitle: "Project Title",
+        orgName: "Org Name",
+        uei: "UEI",
+        score: "Score",
+        recommendation: "Recommendation",
+        requested: "Requested",
+        recommended: "Recommended",
+      },
+    },
+    pageTitle: "Review your Recommendation",
+    pageTitleEdit: "Edit your recommendation",
+    description: "Award Recommendation flow coming soon.",
+    opportunitySummary: "Opportunity summary",
+    selectionMethod: "Selection method",
+    meritReview: "Merit Review",
+    fundingOpportunityFallback: "Funding Opportunity",
+    noDataFallback: "--",
+    fundingOppName: "Funding opportunity name",
+    fundingOppNumber: "Funding opportunity number",
+    noSummaryAvailable: "No summary available",
+    otherOpportunityInfo: {
+      label: "Other opportunity information",
+      description:
+        "Any any additional context or information specific to the opportunity that the decision maker may need to know, or leave blank.",
+      characterLimit: "1000 characters allowed",
+    },
+    viewFullDetails: "View Full Details",
+    opportunityStatus: "Status",
+    agency: "Agency",
+    closeDate: "Closing Date",
+    readMore: "Read more",
+    showLess: "Show less",
+    opportunity: "Opportunity",
+    editOpportunityDetails: "Edit opportunity details",
+    recommendationMethod: {
+      label: "Recommendation method",
+      description: "Choose the method you'll use to rate",
+      meritReviewOnly: "Merit review ranking only",
+      meritReviewOther: "Merit review ranking with other factors",
+    },
+    recommendationMethodDetails: {
+      label: "Recommendation method details",
+      description:
+        "Add any additional information - including the selection factors used in the NOFO",
+    },
+    otherKeyInformation: {
+      label: "Other key information",
+      description:
+        "Add any relevant information related to this reviewer and decision-maker for this opportunity",
+    },
+    attachments: {
+      heading: "Attachments",
+      attachedDocument: "Attached document",
+      uploadedBy: "Uploaded by",
+      uploadDate: "Upload date",
+      standardTermsHeading: "Standard and program terms & conditions",
+      enterTermsConditions: "Enter terms & conditions",
+      editTermsConditions: "Edit terms & conditions",
+      risksHeading: "Specific risks & recommended conditions",
+      enterRisks: "Enter risks & recommended conditions",
+      editRisks: "Edit risks & recommended conditions",
+      riskNumber: "Risk #",
+      appNumber: "App #",
+      condition: "Condition",
+      action: "Action",
+      delete: "Delete",
+      applications: "applications",
+      errorMessage: "Unable to load or update risks. Please try again.",
+      otherDocumentsHeading: "Other supporting documents",
+      enterSupportingDocuments: "Enter supporting documents",
+      editSupportingDocuments: "Edit supporting documents",
+    },
+    recommendationDetails: {
+      heading: "Recommendation details",
+      recommendationLabel: "Recommendation",
+      recommendationOptions: {
+        recommended: "Recommended",
+        recommendedWithoutFunding: "Recommended but not funded",
+        notRecommended: "Not recommended",
+      },
+      hasExceptionLabel: "Contains exceptions to selection method",
+      commentsLabel: "Recommendation comments",
+      commentsDescription:
+        "Add any needed context for your recommendations for any selected group or single application.",
+      exceptionDetailLabel: "Exceptions to selection method",
+      exceptionDetailDescription:
+        "Select one or more applications and explain any exceptions to the general selection method. For example, the reasons for any applications skipped on the merit review ranking or other similar exceptions.",
+      fundingHeading: "Funding recommendations",
+      fundingDescription:
+        "Review and provide the updates to recommended funding as needed.",
+      applicationIdLabel: "Application ID",
+      amountRequestedLabel: "Amount Requested",
+      amountRecommendedLabel: "Amount Recommended",
+      totalLabel: "Total",
+    },
+    errorHeadingAwardRecommendation:
+      "Error fetching award recommendation details",
+    errorHeadingAuthentication: "Authentication Error",
+    authenticationError:
+      "You are not authenticated. Please sign in to view award recommendations.",
+    awardRecommendationFetchError:
+      "Error fetching award recommendation data. Please try refreshing the page.",
+    awardRecommendationNotFound:
+      "Award recommendation not found. Please check the ID and try again.",
+    errorHeadingAwardRecommendationSubmission:
+      "Error fetching application submission details",
+    awardRecommendationSubmissionFetchError:
+      "Error fetching application submission data. Please try refreshing the page.",
+    errorHeadingAwardRecommendationRisk: "Error fetching risk details",
+    awardRecommendationRiskFetchError:
+      "Error fetching risk data. Please try refreshing the page.",
+    recommendations: {
+      heading: "Recommendations",
+      editPageDescription:
+        "Document your award recommendations and the funding strategy used for the period of performance.",
+      description:
+        "Award recommendations and the funding strategy used for the period of performance.",
+      summary: {
+        heading: "Summary",
+        appsReceived: "Apps received",
+        appsRecommended: "Apps recommended",
+        totalFundingRecommended: "Total funding recommended",
+        totalAvailable: "Total available",
+        recommendedWithoutFunding: "Recommended without funding",
+        notRecommendedForFunding: "Not recommended for funding",
+        applications: "applications",
+      },
+      fundingStrategy: {
+        heading: "Funding strategy",
+        description:
+          "Explain how you plan to provide funding over time. For example, will the agency award all funding in a single award or in multiple budget periods across a longer period of performance.",
+        noFundingStrategyProvided: "No funding strategy provided.",
+        showDescription: "Show full description",
+        hideSummaryDescription: "Hide full description",
+      },
+      submissions: {
+        errorMessage:
+          "Unable to load application submissions. Please try again.",
+        columns: {
+          appNumber: "App #",
+          projectTitle: "Project title",
+          orgName: "Org name",
+          uei: "UEI",
+          score: "Score",
+          recommendation: "Recommendation",
+          requested: "Requested",
+          recommended: "Recommended",
+        },
+        recommendationOptions: {
+          none: "None",
+          recommended: "Recommended",
+          recommendedWithoutFunding: "Recommended but not funded",
+          notRecommended: "Not recommended",
+        },
+        recommendedAwards: {
+          heading: "Recommended awards",
+          editDescription:
+            "Select applications and use the drop-down box to apply your recommendation for the selected group.",
+          editLink: "Edit recommended awards",
+        },
+        exceptions: {
+          heading: "Exceptions to selection method",
+        },
+      },
+    },
+    risks: {
+      pageTitle: "Risks and Conditions",
+      metaDescription: "Manage risks and conditions for award recommendations",
+      heading: "Risks and Conditions",
+      description:
+        "Review and manage risks and conditions for application submissions",
+      pageHeading: "Recommend submissions",
+      pageDescription: "Select one or more applications to add conditions.",
+      editTitle: "Edit risks and conditions",
+      editPageTitle: "Edit Risk or Condition",
+      editMetaDescription: "Edit risk or condition for selected applications",
+      editRiskTitle: "Edit {riskNumber}",
+      addPageTitle: "Add Risk or Condition",
+      addMetaDescription: "Add risk or condition to selected applications",
+      addTitle: "Add risk or condition",
+      addHeading: "Add risk or condition",
+      addDescription:
+        "Add risk details and recommended terms or conditions for the selected applications",
+      selectAll: "Select all",
+      selectRow: "Select row for {appNumber}",
+      selectedCount:
+        "{count, plural, =1 {1 submission selected} other {# submissions selected}}",
+      selectedApplications: "Selected applications",
+      columns: {
+        appNumber: "App #",
+        projectTitle: "Project Title",
+        orgName: "Org Name",
+        uei: "UEI",
+        score: "Score",
+        recommendation: "Recommendation",
+        requested: "Requested",
+        recommended: "Recommended",
+        risk: "Risk",
+        condition: "Condition",
+      },
+      recommendationType: {
+        recommended_for_funding: "Recommended",
+      },
+      riskDetailsHeading: "Risk details",
+      riskSummaryLabel: "Risk summary",
+      riskSummaryHint:
+        "Any program or organization risks already identified at this time",
+      riskSummaryRequired: "Risk summary is required.",
+      recommendedConditionLabel: "Recommended term or condition",
+      recommendedConditionHint:
+        "Add any recommended conditions based on the risks identified",
+      selectConditionPlaceholder: "Select a condition",
+      condition1: "Condition 1",
+      condition2: "Condition 2",
+      condition3: "Condition 3",
+      cancelButton: "Cancel",
+      saveButton: "Save",
+      savingButton: "Saving...",
+      validationError: "Please fill in all required fields before saving.",
+      saveError: "Failed to save risk. Please try again.",
+      errorMessage: "Unable to load application submissions. Please try again.",
+      noSelectionsMessage:
+        "No applications selected. Please select applications from the Risks and Conditions page first.",
+      defaultNone: "None",
+      loading: "Loading submissions...",
+      errorLoading: "Error loading submissions. Please try again.",
+      showingRange: "Showing {start}-{end} of {total}",
+      editButton: "Edit",
+    },
+  },
+  CreateAwardRecommendation: {
+    pageTitle: "Create recommendation",
+    metaDescription: "Create a new award recommendation",
+    beforeYouGetStarted: "Before you get started",
+    steps: {
+      identifyOpportunity: {
+        title: "Identify the opportunity",
+        description:
+          "Identify which funding opportunity is this recommendation is for and provide any additional context including an overview of the program and any legislative requirements the decision maker may need to know.",
+      },
+      applyRecommendations: {
+        title: "Apply your recommendations",
+        description:
+          "Apply your recommendations to all applications submitted for this opportunity.",
+        bullet1: "Explain how you plan to provide funding over time.",
+        bullet2:
+          "Add any needed context for your recommendations for any selected group or single applications.",
+        bullet3:
+          "Identify and document any exceptions to you recommendation method.",
+      },
+      provideAttachments: {
+        title: "Provide any attachments",
+        description:
+          "Include any supplemental documentation to support and inform your recommendations.",
+        bullet1: "Standard and Program terms & conditions",
+        bullet2: "Specific risks & recommended conditions",
+        bullet3: "Other supporting documents",
+      },
+    },
+    buttons: {
+      cancel: "Cancel",
+      next: "Next",
+    },
+  },
+  InviteLegacyUsers: {
+    dataLoadingError:
+      "We're having trouble loading your team from Grants.gov. Please try again later.",
+    emptyLegacyUsers:
+      "It looks like there are no team members to import. Your organization does not have a legacy roster in Grants.gov, so there are no contacts available to add here. You can still invite people directly on your <manageUsersLink>Manage users page</manageUsersLink>.",
+    inviteYourTeam: "Invite your team from Grants.gov",
+    inviteYourTeamDetails:
+      "Add your team from Grants.gov to your organization in Simpler or remove anyone who's no longer actively working with your team. Select the people to invite, and they'll get an invitation to join you here in Simpler.",
+    keyInformation: "Key information",
+    keyInformationDetails:
+      "At this time, anyone you invite from Grants.gov will join Simpler as a member. You can adjust their permissions after they've been added.",
+    metaDescription: "Manage users from legacy integrations",
+    pageHeading: "Legacy invite",
+    pageTitle: "Legacy invite | Simpler.Grants.gov",
+    tableHeadings: {
+      email: "Email",
+      name: "Name",
+    },
+  },
+  ResearchParticipantGuide: {
+    pageTitle: "Design Research Participant Guide | Simpler.Grants.gov",
+    pageDescription:
+      "In this guide, research participants can learn more about partcipating in studies.",
+    h1: "Design Research Participant Guide",
+    intro:
+      "This guide is for participants in Simpler Grants design research studies. If you have been contacted by the Simpler Grants team to participate in a study, read through these steps to learn more about the process and let us know if you have any questions.",
+    beforeHeader: "Before the interview",
+    beforeItems: [
+      "You will or already have received an email asking for your participation in a user interview.",
+      "Taking part in a research study is voluntary. If you opt-in to participate, you'll receive an emailed invitation with your scheduled time.",
+      "For remote studies, you will receive a Zoom link to participate.",
+      "For in person studies, we will coordinate logistics with you.",
+      "If you require an accommodation, let us know at least 2 days prior to the interview.",
+      "The interview will be conducted via Zoom by a member of our team. One person will be conducting the interview, and one or more team members will be taking notes.",
+    ],
+    duringHeader: "During the interview",
+    duringItems: [
+      "The researcher will walk you through what the process looks like at the beginning of the study and ask for your verbal permission to record the session.",
+      "The goal of design research is to understand how people use the products we make in the real world so that we can make them better for everyone who uses them.",
+      "The study will be focused on understanding your work and how you use our products in your work. We will ask you questions and/or have you use working software or prototypes of improvements we're working on.",
+      "At the end of the session, we will ask you for your verbal permission to use what we learn to make the product better.",
+      "If you opt in to using what we learn, your feedback will be anonymized and included in our research findings as part of trends we see across many participants.",
+    ],
+  },
+  OpportunityOverview: {
+    pageTitle: "Opportunity Overview",
+    pageApplication: "Smarter Grants Management",
+    metaDescription: "Opportunity publishing progress overview",
+    labels: {
+      editOpportunityLink: "Opportunity Summary",
+      competitionLink: "Application Package",
+      previewButton: "Preview",
+      publishButton: "Publish",
+    },
+  },
+  CreateOpportunity: {
+    pageTitle: "Create Opportunity",
+    pageApplication: "Smarter Grants Management",
+    metaDescription: "Create a new funding opportunity",
+    errorMessage:
+      "We have encountered an error loading this page, please try again later.",
+    keyInfo: "Key information",
+    basicInstructions:
+      "Fill out the basic details below to begin. Once you save this information, a draft will be created, allowing you to return at any time to add more details, upload documents, and finalize your opportunity.",
+    cancel: "Cancel",
+    saveAndContinue: "Save and continue",
+    pending: "Pending...",
+    errorHeading: "Error",
+    successHeading: "Success",
+    CreateOpportunityForm: {
+      opportunityNumber: "Opportunity number",
+      opportunityNumberDesc:
+        "Enter the unique ID assigned to this funding opportunity.",
+      opportunityTitle: "Opportunity title",
+      opportunityTitleDesc:
+        "Provide a concise, descriptive name that helps applicants identify the grant's purpose.",
+      agency: "Agency",
+      category: "Grant selection method",
+      categoryDesc: "Choose the evaluation process used to award these funds.",
+      categoryExplanation: "Grant selection method explanation",
+      categoryExplanationDesc:
+        'If "Other" was selected, please describe the specific process used to evaluate and award these funds.',
+      assistanceListingNumber: "Assistance listing number",
+      assistanceListingNumberDesc:
+        "Enter the 5-digit code from SAM.gov that identifies the specific federal assistance program (e.g., 10.500)",
+      successMessage: "Opportunity started. Continuing shortly...",
+    },
+  },
+  Notifications: {
+    pageTitle: "Notifications | Simpler.Grants.gov",
+    pageHeading: "Notifications",
+    metaDescription:
+      "Manage which email notifications you receive about saved opportunities and your organizations.",
+    managePreferencesTitle: "Manage your preferences",
+    managePreferencesDescription:
+      "Choose which notifications you'd like to receive about your activity.",
+    organizationPreferencesTitle: "Organization preferences",
+    organizationPreferencesDescription:
+      "Choose which notifications you'd like to receive for organizations you're part of.",
+    savedOpportunitiesLabel: "Subscribe to saved opportunities",
+    savedOpportunitiesDescription:
+      "Get email updates about opportunities you have saved.",
+    organizationSavedOpportunitiesDescription:
+      "Get email updates for opportunities saved by you or your organization.",
+    fetchError:
+      "Your notification preferences could not be loaded. Refresh the page to try again.",
+    organizationPreferencesSuffix: "Preferences",
+    expiredSession: "Session has expired",
+    preferencesNotSavedError:
+      "Your notification preference was not saved. Refresh the page to try again.",
+    srPendingSave: "Saving notification preference...",
+  },
+  OpportunityCompetition: {
+    pageTitle: "Competition",
+    metaDescription: "Set up competition details for this opportunity.",
+    leftNavTitle: "On this page",
+    applicationRequirements: "Application requirements",
+    applicationRequirementsSubheader:
+      "What applicants must submit, how they'll be scored, and the format rules.",
+    button: {
+      processing: "Processing...",
+      back: "Save and go back",
+      saveAndExit: "Save and exit",
+      saveAndContinue: "Save and continue",
+    },
+    alerts: {
+      success: "Saved successfully",
+      successBody: "Your changes have been saved.",
+      genericError: "Unable to save competition updates.",
+      unauthenticated: "You must be signed in to update this competition.",
+      forbidden: "You do not have permission to update this competition.",
+      notFound: "This competition could not be found.",
+      networkError: "A network error occurred.",
+      validationErrors: "Errors Found",
+      validationErrorBody: "Please correct the following errors:",
+    },
+    sectionSubmissionSetUp: {
+      header: "Submission set-up",
+      subHeader:
+        "A competition is one apply-window inside an opportunity. Most opportunities have only one.",
+      competitionId: "Competition ID",
+      competitionIdHint: "An ID if this opportunity has multiple competitions.",
+      competitionTitle: "Competition title",
+      competitionTitleHint: "Shown to applicants. Plain language is best.",
+      whoCanApply: "Who can apply?",
+      whoCanApplyHint:
+        "Applicants who don't match this type won't see the competition in search.",
+      whoCanApplyOrganizationsOnly: "Organizations only",
+      whoCanApplyIndividualsOnly: "Individuals only",
+      whoCanApplyBoth: "Both organizations and individuals",
+    },
+    sectionSubmissionWindow: {
+      header: "Submission window",
+      subHeader: "When applicants can submit through this package.",
+      submissionsOpen: "Submissions open",
+      submissionsOpenHint:
+        "First day applicants can submit. Defaults to publish date.",
+      submissionsClose: "Submissions close",
+      submissionsCloseHint:
+        "Final deadline for all applications. Defaults to the close date.",
+      howManyApplications: "How many applications do you expect?",
+      howManyApplicationsHint:
+        "We use it to plan capacity for your competition. You can change it later.",
+      expectedNumberOfApplicants: "Expected number of applicants",
+      expectedNumberOfApplicantsHint: "A best estimate is fine.",
+    },
+    sectionApplicationChecklist: {
+      header: "Application checklist",
+    },
+    sectionNarrativeFormatInstructions: {
+      header: "Narrative format instructions",
+    },
+    sectionAgencyContact: {
+      header: "Agency contact",
+      subHeader:
+        "Grantor contact details. Provide the name, email, and phone number for the agency contact.",
+      fullName: "Full name",
+      personTitle: "Title",
+      emailAddress: "Email address",
+      emailAddressHint: "For example: example@mail.com",
+      phoneNumber: "Phone number",
+      phoneNumberHint: "10-digit, for example: (999) 999-9999",
+      error: {
+        requiredFullName: "Full name is required.",
+        requiredPhoneNumber: "Phone number is required.",
+        requiredEmail: "Email address is required.",
+        invalidEmail:
+          "Incorrect text format. Please ensure there are no spaces or missing characters.",
+      },
+    },
+  },
+  FeatureFlagsAdmin: {
+    heading: "Refresh your page",
+    alertMessage:
+      "Hard refresh your page when done changing Flags for the changes to fully apply.",
+  },
+  OpportunityDetailsHeader: {
+    opportunityNumber: "Opportunity #: {number}",
+    title: "Title:",
+    agency: "Agency:",
+    subAgency: "Sub-agency:",
+    draft: "Draft",
+    lastUpdated: "Last updated:",
+    backToOverview: "Back to overview page",
+    alerts: {
+      newOpportunityHeading: "Opportunity draft started",
+      newOpportunityBody:
+        "Your initial information has been saved. Complete the sections below to finish your opportunity details",
+    },
+  },
+  AwardRecommendationSelectFundingOpportunity: {
+    pageTitle: "Select funding opportunity | Simpler.Grants.gov",
+    pageHeading: "Award Recommendations",
+    metaDescription:
+      "Select a funding opportunity for your award recommendation",
+    whichFundingOpportunity: "Which funding opportunity is this for?",
+    cancelButtonText: "Cancel",
+    startButtonText: "Start",
+    columns: {
+      fundingOpportunityNumber: "Funding opp #",
+      fundingOpportunityName: "Funding opp name",
+      submittedApplications: "Submitted applications",
+      action: "Action",
+    },
+  },
+  FileInput: {
+    existingFiles: {
+      savedOn: "Saved on",
+      delete: "Delete",
+      deleteError: "File could not be deleted. Please try again.",
+    },
+    statusDisplay: {
+      cancel: "Cancel",
+      dismiss: "Dismiss",
+      queued: "Queued",
+      uploading: "Uploading...",
+      startingScan: "Upload complete. Starting security scan",
+      scanning: "Upload complete. Running security scan...",
+      scanComplete: "Scan complete",
+      success: "Success. File uploaded and scanned",
+      error: "Error",
+      uploadError: "Upload failed",
+      scanError: "Error running security scan",
+      postUploadError: "Error processing file",
+      missingFileId: "Error: missing file id",
+      preUploadError: "Pre upload error",
+      infected: "Security scan failed. File removed",
+    },
+    deleteModal: {
+      titleText: "Delete",
+      cancelDeleteCta: "Cancel",
+      cautionDeletingAttachment: "Caution, deleting attachment",
+      descriptionText:
+        "You may have uploaded this attachment in response to a form question. Check to ensure you no longer need it.",
+      deleteFileCta: "Delete file",
+      deleteFilesCta: "Delete files",
+      deleting: "Deleting...",
+    },
+  },
+  PrintViewErrorDiagnostics: {
+    heading: "PDF rendering failed",
+    description:
+      "This document is an error diagnostic page. The application form PDF could not be generated because the print page could not load or prepare the form data.",
+    supportInstructions:
+      "Please contact the support team and include the diagnostic details below.",
+    supportCenterHeading: "Grants.gov Support Center",
+    supportAvailability:
+      "We are available 24 hours a day 7 days a week excluding federal holidays.",
+    supportEmail: "support@grants.gov",
+    supportUnitedStatesPhone: "1-800-518-4726 (U.S.)",
+    supportInternationalPhone: "1-606-545-5035 (International)",
+    diagnosticDetailsHeading: "Diagnostic details",
+    applicationIdLabel: "Application ID",
+    applicationFormIdLabel: "Application form ID",
+    errorCategoryLabel: "Error category",
+    internalTokenHeaderPresentLabel: "Internal token header present",
+    yes: "Yes",
+    no: "No",
+  },
+  ProgressChecker: {
+    notStarted: "Not started",
+    inProgress: "In progress",
+    complete: "Complete",
+  },
+};
