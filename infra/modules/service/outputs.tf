@@ -40,6 +40,22 @@ output "workflow_service_role_arn" {
   value       = length(aws_iam_role.workflow_service) > 0 ? aws_iam_role.workflow_service[0].arn : null
 }
 
+output "api_gateway_public_usage_plan_id" {
+  description = <<EOT
+    ID of the public API Gateway usage plan. The application reads this as the
+    API_GATEWAY_DEFAULT_USAGE_PLAN_ID env var, sourced from a manually managed SSM
+    parameter — but the plan is created here, so the parameter cannot hold the real
+    value until after the first apply. Exposed so the value can be read back without
+    going to the console.
+  EOT
+  value       = length(aws_api_gateway_usage_plan.api_public_usage_plan) > 0 ? aws_api_gateway_usage_plan.api_public_usage_plan[0].id : null
+}
+
+output "api_gateway_internal_usage_plan_id" {
+  description = "ID of the internal API Gateway usage plan (used by the frontend API key)"
+  value       = length(aws_api_gateway_usage_plan.api_internal_usage_plan) > 0 ? aws_api_gateway_usage_plan.api_internal_usage_plan[0].id : null
+}
+
 output "cluster_arn" {
   value = aws_ecs_cluster.cluster.arn
 }

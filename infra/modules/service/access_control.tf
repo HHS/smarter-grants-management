@@ -28,9 +28,13 @@ resource "aws_iam_role" "opensearch_write" {
   assume_role_policy = data.aws_iam_policy_document.ecs_tasks_assume_role_policy.json
 }
 
-# Dedicated role for the workflow service
+# Dedicated task role for the workflow service.
+# This role exists whenever the workflow service is enabled, independent of OpenSearch:
+# the workflow container needs its own DB, logging, and email permissions regardless of
+# whether search is part of the app. OpenSearch-specific grants are layered on separately
+# in opensearch_access.tf when var.opensearch_ingest_policy_arn is set.
 resource "aws_iam_role" "workflow_service" {
-  count = var.opensearch_ingest_policy_arn != null ? 1 : 0
+  count = var.enable_workflow_service ? 1 : 0
 
   name               = "${var.service_name}-workflow"
   assume_role_policy = data.aws_iam_policy_document.ecs_tasks_assume_role_policy.json

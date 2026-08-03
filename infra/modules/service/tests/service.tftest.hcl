@@ -137,6 +137,55 @@ run "second_mtls_alb_added_when_mtls_enabled" {
   }
 }
 
+run "api_gateway_plans_with_no_domain_and_two_albs" {
+  command = plan
+
+  # The gateway falls back to the primary ALB's DNS name when no domain exists. That
+  # name is only known after apply, so this run asserts the plan succeeds rather than
+  # asserting on the URI: the regressions it guards are both plan-time failures —
+  # a null interpolation when the origin local isn't total, and an index error when
+  # the mTLS second ALB is present.
+  variables {
+    enable_api_gateway        = true
+    domain_name               = null
+    enable_mtls_load_balancer = true
+    certificate_arn           = "arn:aws:acm:us-east-1:123456789012:certificate/abc"
+    mtls_certificate_arn      = "arn:aws:acm:us-east-1:123456789012:certificate/def"
+  }
+
+  assert {
+    condition     = length(aws_api_gateway_rest_api.api) == 1 && length(aws_lb.alb) == 2
+    error_message = "The gateway must plan against the primary ALB even with no domain and an mTLS ALB in slot 1"
+  }
+}
+
+run "api_gateway_proxies_to_domain_over_https_when_domain_set" {
+  command = plan
+
+  variables {
+    enable_api_gateway = true
+    domain_name        = "api.example.gov"
+    certificate_arn    = "arn:aws:acm:us-east-1:123456789012:certificate/abc"
+  }
+
+  assert {
+    condition     = aws_api_gateway_integration.root[0].uri == "https://api.example.gov/"
+    error_message = "Once a domain name exists the gateway must proxy to it over HTTPS"
+  }
+}
+
+run "api_gateway_rejected_when_no_domain_and_no_alb" {
+  command = plan
+
+  variables {
+    enable_api_gateway   = true
+    enable_load_balancer = false
+    domain_name          = null
+  }
+
+  expect_failures = [aws_api_gateway_rest_api.api]
+}
+
 run "ecs_cluster_name_matches_service_name" {
   command = plan
 

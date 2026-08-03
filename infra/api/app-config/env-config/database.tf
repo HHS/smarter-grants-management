@@ -4,8 +4,7 @@ locals {
     cluster_name                = "${var.app_name}-${var.environment}"
     app_username                = "app"
     migrator_username           = "migrator"
-    schema_name                 = "app"
-    additional_schema_names     = ["legacy", "staging"]
+    schema_name                 = "grantor"
     instance_count              = var.database_instance_count
     max_capacity                = var.database_max_capacity
     enable_http_endpoint        = var.database_enable_http_endpoint

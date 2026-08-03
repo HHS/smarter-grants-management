@@ -45,6 +45,12 @@ variable "enable_drafts_bucket" {
   default     = false
 }
 
+variable "enable_workflow_service" {
+  description = "Whether the service runs a separate long-lived workflow ECS service, which needs its own task role"
+  type        = bool
+  default     = false
+}
+
 variable "db_vars" {
   description = "Variables for integrating the app service with a database"
   type = object({

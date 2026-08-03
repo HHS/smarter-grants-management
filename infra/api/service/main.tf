@@ -70,11 +70,6 @@ locals {
     }],
     module.app_config.enable_identity_provider ? [{
 
-    }] : [],
-    # OpenSearch endpoint
-    local.search_config != null ? [{
-      name      = "SEARCH_ENDPOINT"
-      valueFrom = data.aws_ssm_parameter.search_endpoint_arn[0].arn
     }] : []
   )
 }
@@ -245,12 +240,15 @@ module "service" {
 
   aws_services_security_group_id = data.aws_security_groups.aws_services.ids[0]
 
-  file_upload_jobs     = local.service_config.file_upload_jobs
-  enable_s3_cdn        = true
-  s3_cdn_bucket_name   = "public-files"
-  scheduled_jobs       = local.environment_config.scheduled_jobs
-  s3_buckets           = local.environment_config.s3_buckets
-  enable_drafts_bucket = true
+  file_upload_jobs = local.service_config.file_upload_jobs
+  # S3 CDN is disabled: the public files bucket it fronted was dropped, and no
+  # CDN domain name or ACM certificate exists for this app yet.
+  enable_s3_cdn           = false
+  s3_cdn_bucket_name      = null
+  scheduled_jobs          = local.environment_config.scheduled_jobs
+  s3_buckets              = local.environment_config.s3_buckets
+  enable_drafts_bucket    = true
+  enable_workflow_service = local.enable_workflow_service
 
   enable_newrelic = module.project_config.enable_newrelic
 
@@ -298,15 +296,8 @@ module "service" {
     },
     module.app_config.enable_identity_provider ? {
       # identity_provider_access = module.identity_provider_client[0].access_policy_arn,
-    } : {},
-    # OpenSearch IAM policy for query operations
-    local.search_config != null ? {
-      opensearch_query = data.aws_iam_policy.opensearch_query[0].arn,
     } : {}
   )
-
-  # OpenSearch ingest policy for migrator role (scheduled data loading jobs)
-  opensearch_ingest_policy_arn = local.search_config != null ? data.aws_iam_policy.opensearch_ingest[0].arn : null
 
   newrelic_entity_guid      = local.service_config.newrelic_entity_guid
   newrelic_mtls_entity_guid = local.service_config.newrelic_mtls_entity_guid

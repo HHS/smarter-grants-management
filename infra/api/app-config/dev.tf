@@ -39,14 +39,6 @@ module "dev_config" {
   database_max_capacity   = 4
   database_instance_count = 2
 
-  has_search            = true
-  search_engine_version = "OpenSearch_2.15"
-  # The reserved-SSO role suffix (AWSReservedSSO_<PermissionSet>_<suffix>) is
-  # generated per AWS account. null falls back to the account root principal;
-  # replace with account 135002447353's own reserved-SSO admin role to grant a
-  # dedicated SSO-admin principal on the OpenSearch domain and its KMS key.
-  search_sso_admin_role_name = null
-
   service_override_extra_environment_variables = {
     ENABLE_WORKFLOW_ENDPOINTS             = 1
     ENABLE_AWARD_RECOMMENDATION_ENDPOINTS = 1

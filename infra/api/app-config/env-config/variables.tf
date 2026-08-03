@@ -13,11 +13,6 @@ variable "default_region" {
   type        = string
 }
 
-variable "has_search" {
-  type    = bool
-  default = false
-}
-
 variable "domain_name" {
   type        = string
   description = "The fully qualified domain name for the application"
@@ -81,39 +76,6 @@ variable "has_database" {
   type = bool
 }
 
-variable "search_data_instance_type" {
-  type    = string
-  default = "or1.medium.search"
-}
-
-variable "search_master_instance_type" {
-  type    = string
-  default = "m6g.large.search"
-}
-
-variable "search_engine_version" {
-  type = string
-}
-
-variable "search_sso_admin_role_name" {
-  type        = string
-  description = <<EOT
-    Name of the AWS IAM Identity Center (SSO) reserved role granted admin access to
-    the OpenSearch domain and its KMS key. The reserved-SSO role suffix
-    (AWSReservedSSO_<PermissionSet>_<suffix>) is generated per AWS account, so
-    environments in different accounts must override this with their account's own role.
-    The account id itself is applied dynamically in the database layer. Set to null to
-    fall back to the account root principal (no dedicated SSO-admin grant).
-  EOT
-  # Default matches the shared account (315341936575) that hosts dev/staging/prod/etc.
-  default = "AWSReservedSSO_AWSAdministratorAccess_7531ec3bb3ba9352"
-}
-
-variable "search_data_instance_count" {
-  type    = number
-  default = 3
-}
-
 variable "network_name" {
   description = "Human readable identifier of the network / VPC"
   type        = string
@@ -124,16 +86,6 @@ variable "project_name" {
 }
 
 variable "service_cpu" {
-  type    = number
-  default = 3
-}
-
-variable "search_data_volume_size" {
-  type    = number
-  default = 20
-}
-
-variable "search_availability_zone_count" {
   type    = number
   default = 3
 }

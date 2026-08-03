@@ -239,6 +239,31 @@ locals {
   second_level_endpoint_methods = { for config in local.flattened_second_level_endpoints : config.id => config }
   third_level_endpoint_methods  = { for config in local.flattened_third_level_endpoints : config.id => config }
   fourth_level_endpoint_methods = { for config in local.flattened_fourth_level_endpoints : config.id => config }
+
+  # Origin that every HTTP_PROXY integration below forwards to. Prefer a custom
+  # domain, which implies an ACM certificate and therefore the HTTPS listener that
+  # load_balancer.tf gates on var.certificate_arn.
+  #
+  # Before DNS and ACM exist — the initial standup of a new environment — there is
+  # no domain and no HTTPS listener, so fall back to the ALB's own DNS name over
+  # plain HTTP. The ALB is internet-facing (internal = false, public subnets), so a
+  # REGIONAL gateway can reach it. This is a bring-up-only path: the gateway-to-ALB
+  # hop is unencrypted, so set domain_name as soon as a certificate is available.
+  #
+  # This local is evaluated whether or not the gateway is enabled, so it must stay
+  # total: the placeholder host covers "no domain and no ALB", which is caught with a
+  # readable message by the precondition on aws_api_gateway_rest_api below rather than
+  # by a null interpolation here.
+  api_gateway_origin_domain = length(var.optional_extra_alb_domains) > 0 ? var.optional_extra_alb_domains[0] : var.domain_name
+  api_gateway_origin_scheme = local.api_gateway_origin_domain != null ? "https" : "http"
+  # Slot 0 is the primary ALB; slot 1, when present, is the mTLS one (see load_balancer.tf),
+  # which is not the gateway's origin. try() covers enable_load_balancer = false.
+  api_gateway_origin_host = coalesce(
+    local.api_gateway_origin_domain,
+    try(aws_lb.alb[0].dns_name, null),
+    "api-gateway-origin-unset.invalid",
+  )
+  api_gateway_origin = "${local.api_gateway_origin_scheme}://${local.api_gateway_origin_host}"
 }
 
 resource "aws_api_gateway_rest_api" "api" {
@@ -253,6 +278,16 @@ resource "aws_api_gateway_rest_api" "api" {
   binary_media_types = [
     "multipart/form-data",
   ]
+
+  lifecycle {
+    # local.api_gateway_origin needs something to proxy to. With no domain and no
+    # ALB there is no origin at all, which would otherwise surface as an opaque
+    # "cannot include a null value in a string template" error on each integration.
+    precondition {
+      condition     = local.api_gateway_origin_domain != null || var.enable_load_balancer
+      error_message = "enable_api_gateway requires either domain_name / optional_extra_alb_domains, or enable_load_balancer so the gateway has an ALB origin to proxy to."
+    }
+  }
 }
 
 resource "aws_api_gateway_model" "alpha_applications_model" {
@@ -301,7 +336,7 @@ resource "aws_api_gateway_integration" "root" {
   passthrough_behavior = "WHEN_NO_MATCH"
   timeout_milliseconds = 29000
 
-  uri = "https://${length(var.optional_extra_alb_domains) > 0 ? var.optional_extra_alb_domains[0] : var.domain_name}/"
+  uri = "${local.api_gateway_origin}/"
 }
 
 resource "aws_api_gateway_resource" "root_endpoints" {
@@ -341,7 +376,7 @@ resource "aws_api_gateway_integration" "root_endpoints" {
   passthrough_behavior = "WHEN_NO_MATCH"
   timeout_milliseconds = 29000
 
-  uri                = "https://${length(var.optional_extra_alb_domains) > 0 ? var.optional_extra_alb_domains[0] : var.domain_name}/${replace(each.value.endpoint, "+", "")}"
+  uri                = "${local.api_gateway_origin}/${replace(each.value.endpoint, "+", "")}"
   request_parameters = each.value.request_parameters
 }
 
@@ -382,7 +417,7 @@ resource "aws_api_gateway_integration" "first_level_endpoints" {
   passthrough_behavior = "WHEN_NO_MATCH"
   timeout_milliseconds = 29000
 
-  uri                = "https://${length(var.optional_extra_alb_domains) > 0 ? var.optional_extra_alb_domains[0] : var.domain_name}/${replace(each.value.endpoint, "+", "")}"
+  uri                = "${local.api_gateway_origin}/${replace(each.value.endpoint, "+", "")}"
   request_parameters = each.value.request_parameters
 }
 
@@ -423,7 +458,7 @@ resource "aws_api_gateway_integration" "second_level_endpoints" {
   passthrough_behavior = "WHEN_NO_MATCH"
   timeout_milliseconds = 29000
 
-  uri                = "https://${length(var.optional_extra_alb_domains) > 0 ? var.optional_extra_alb_domains[0] : var.domain_name}/${replace(each.value.endpoint, "+", "")}"
+  uri                = "${local.api_gateway_origin}/${replace(each.value.endpoint, "+", "")}"
   request_parameters = each.value.request_parameters
 }
 
@@ -467,7 +502,7 @@ resource "aws_api_gateway_integration" "third_level_endpoints" {
   # Enable streaming mode for endpoints that support it
   response_transfer_mode = each.value.enable_streaming ? "STREAM" : null
 
-  uri                = "https://${length(var.optional_extra_alb_domains) > 0 ? var.optional_extra_alb_domains[0] : var.domain_name}/${replace(each.value.endpoint, "+", "")}"
+  uri                = "${local.api_gateway_origin}/${replace(each.value.endpoint, "+", "")}"
   request_parameters = each.value.request_parameters
 }
 
@@ -508,7 +543,7 @@ resource "aws_api_gateway_integration" "fourth_level_endpoints" {
   passthrough_behavior = "WHEN_NO_MATCH"
   timeout_milliseconds = 29000
 
-  uri                = "https://${length(var.optional_extra_alb_domains) > 0 ? var.optional_extra_alb_domains[0] : var.domain_name}/${replace(each.value.endpoint, "+", "")}"
+  uri                = "${local.api_gateway_origin}/${replace(each.value.endpoint, "+", "")}"
   request_parameters = each.value.request_parameters
 }
 
@@ -584,7 +619,10 @@ resource "aws_api_gateway_method_settings" "api_v1_stage_settings" {
 
 # trivy:ignore:AVD-AWS-0005
 resource "aws_api_gateway_domain_name" "api" {
-  count = var.enable_api_gateway && var.certificate_arn != null ? 1 : 0
+  # Needs BOTH the domain name and the certificate: domain_name below is a required
+  # argument, so gating on the certificate alone fails with "Missing required
+  # argument" whenever a cert is configured before DNS is.
+  count = var.enable_api_gateway && var.domain_name != null && var.certificate_arn != null ? 1 : 0
   # This will become a different variable since it will be the current API domain and cert
   domain_name              = var.domain_name
   regional_certificate_arn = var.certificate_arn
@@ -597,7 +635,8 @@ resource "aws_api_gateway_domain_name" "api" {
 }
 
 resource "aws_api_gateway_base_path_mapping" "api_domain_name_mapping_v1" {
-  count       = var.enable_api_gateway && var.certificate_arn != null ? 1 : 0
+  # Same gate as the domain name it maps — see above.
+  count       = var.enable_api_gateway && var.domain_name != null && var.certificate_arn != null ? 1 : 0
   api_id      = aws_api_gateway_rest_api.api[0].id
   domain_name = aws_api_gateway_domain_name.api[0].domain_name
   stage_name  = aws_api_gateway_stage.api_v1_stage[0].stage_name

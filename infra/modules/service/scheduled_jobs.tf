@@ -31,10 +31,14 @@ locals {
   # null or unspecified = app_service role (default)
   # "opensearch-write" = opensearch_write role (for OpenSearch sync jobs)
   # "migrator" = migrator_task role (for database migration jobs during CI/CD)
+  #
+  # The overridable roles are both count-gated, so they may not exist. Index them with
+  # splat + one(): one() yields null when the role wasn't created, whereas a bare [0]
+  # raises a plan-time index error even on the branches the conditional doesn't take.
   scheduled_job_role_arns = {
     for job_name, job_config in var.scheduled_jobs : job_name => (
-      job_config.role_override == "opensearch-write" ? aws_iam_role.opensearch_write[0].arn :
-      job_config.role_override == "migrator" ? aws_iam_role.migrator_task[0].arn :
+      job_config.role_override == "opensearch-write" ? one(aws_iam_role.opensearch_write[*].arn) :
+      job_config.role_override == "migrator" ? one(aws_iam_role.migrator_task[*].arn) :
       aws_iam_role.app_service.arn
     )
   }

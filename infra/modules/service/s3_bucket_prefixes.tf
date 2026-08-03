@@ -1,9 +1,11 @@
 # aws_s3_bucket.bucket_prefix is capped at 37 characters: S3 bucket names max out at 63 and
 # Terraform appends a 26-character suffix. "<service_name>-<suffix>" overflows that cap for
 # the longer service names — frontend-infra-staging and metabase-infra-staging need 38 for
-# "-cdn-access-logs" and "-general-purpose", analytics-infra-staging needs 39, and
-# api-infra-staging needs 41 for the "api-analytics-transfer" bucket key. Note that
-# api-infra-dev lands on exactly 37, so any environment name a character longer than
+# "-cdn-access-logs" and "-general-purpose", and analytics-infra-staging needs 39. The
+# historical worst case was api-infra-staging needing 41 for the "api-analytics-transfer"
+# bucket key; that key no longer exists in this repo, but the cap is kept because the
+# remaining cases still exceed 37 and new bucket keys can reintroduce a longer one. Note
+# that api-infra-dev lands on exactly 37, so any environment name a character longer than
 # "infra-dev" trips this.
 #
 # Cap the prefixes rather than renaming any bucket: a prefix already within the limit is left

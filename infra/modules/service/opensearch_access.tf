@@ -27,34 +27,17 @@ resource "aws_iam_role_policy_attachment" "opensearch_write_db_access" {
   policy_arn = var.db_vars.app_access_policy_arn
 }
 
-#--------------------
-# Workflow Service Role Attachments
-#--------------------
+#-----------------------------------------
+# OpenSearch Access for the Workflow Role
+#-----------------------------------------
 
+# The workflow service's OpenSearch grant. Requires BOTH an ingest policy and the
+# workflow service itself to be enabled — without the enable_workflow_service check
+# this would index a workflow role that was never created.
+# The workflow role's non-search attachments live in workflow_service_access.tf.
 resource "aws_iam_role_policy_attachment" "workflow_service_ingest" {
-  count = var.opensearch_ingest_policy_arn != null ? 1 : 0
+  count = var.opensearch_ingest_policy_arn != null && var.enable_workflow_service ? 1 : 0
 
   role       = aws_iam_role.workflow_service[0].name
   policy_arn = var.opensearch_ingest_policy_arn
-}
-
-resource "aws_iam_role_policy_attachment" "workflow_service_runtime_logs" {
-  count = var.opensearch_ingest_policy_arn != null ? 1 : 0
-
-  role       = aws_iam_role.workflow_service[0].name
-  policy_arn = aws_iam_policy.runtime_logs.arn
-}
-
-resource "aws_iam_role_policy_attachment" "workflow_service_db_access" {
-  count = var.opensearch_ingest_policy_arn != null && var.db_vars != null ? 1 : 0
-
-  role       = aws_iam_role.workflow_service[0].name
-  policy_arn = var.db_vars.app_access_policy_arn
-}
-
-resource "aws_iam_role_policy_attachment" "workflow_service_email_access" {
-  count = var.opensearch_ingest_policy_arn != null && length(var.pinpoint_app_id) > 0 ? 1 : 0
-
-  role       = aws_iam_role.workflow_service[0].name
-  policy_arn = aws_iam_policy.email_access[0].arn
 }
