@@ -1,0 +1,130 @@
+name: CI Infra Checks
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - bin/**
+      - infra/**
+      - .github/workflows/**
+  pull_request:
+    paths:
+      - bin/**
+      - infra/**
+      - .github/workflows/**
+
+jobs:
+  lint-github-actions:
+    # Lint github actions files using https://github.com/rhysd/actionlint
+    # This job configuration is largely copied from https://github.com/rhysd/actionlint/blob/main/docs/usage.md#use-actionlint-on-github-actions
+    name: Lint GitHub Actions workflows
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download actionlint
+        id: get_actionlint
+        run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+        shell: bash
+      - name: Check workflow files
+        run: ${{ steps.get_actionlint.outputs.executable }} -color
+        shell: bash
+
+  lint-scripts:
+    name: Lint scripts
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Shellcheck
+        run: make infra-lint-scripts
+
+  check-terraform-format:
+    name: Check Terraform format
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.14.3
+          terraform_wrapper: false
+      - name: Run infra-lint-terraform
+        run: |
+          echo "If this fails, run 'make infra-format'"
+          make infra-lint-terraform
+
+  validate-terraform:
+    name: Validate Terraform modules
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.14.3
+          terraform_wrapper: false
+      - name: Validate
+        run: make infra-validate-modules
+
+  unit-test-terraform-modules:
+    name: Unit test Terraform modules
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.14.3
+          terraform_wrapper: false
+      - name: Run module unit tests
+        run: make infra-test-modules
+
+  check-compliance-with-checkov:
+    name: Check compliance with checkov
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - name: Run Checkov check
+        # Pin to specific checkov version rather than running from checkov@master
+        # since checkov frequently adds new checks that can cause CI checks to fail unpredictably.
+        # There is currently no way to specify the checkov version to pin to (See https://github.com/bridgecrewio/checkov-action/issues/41)
+        # so we need to pin the version of the checkov-action, which indirectly pins the checkov version.
+        uses: bridgecrewio/checkov-action@v12.3112.0
+        with:
+          directory: infra
+          framework: terraform
+          quiet: true # only displays failed checks
+
+  check-compliance-with-trivy:
+    name: Check IaC compliance with Trivy
+    runs-on: ubuntu-22.04
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Trivy IaC scan
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: config
+          scan-ref: infra
+          format: table
+          output: trivy-iac-results.txt
+          exit-code: "1"
+          severity: CRITICAL,HIGH
+          trivyignores: infra/.trivyignore.yaml
+      - name: Make step summary
+        if: always()
+        run: |
+          {
+            echo "## Trivy IaC scan (infra)"
+            echo ""
+            if [ -s trivy-iac-results.txt ]; then
+              echo '```'
+              cat trivy-iac-results.txt
+              echo '```'
+            else
+              echo "No CRITICAL or HIGH misconfigurations found."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

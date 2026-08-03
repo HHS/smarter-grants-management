@@ -1,0 +1,314 @@
+#!/bin/bash
+# -----------------------------------------------------------------------------
+# This script sets up the terraform backend for the AWS account that you are
+# currently authenticated into and creates the terraform backend config file.
+#
+# The script takes a human readable account name that is used to prefix the tfbackend
+# file that is created. This is to make it easier to visually identify while
+# tfbackend file corresponds to which AWS account. The account ID is still
+# needed since all AWS accounts are guaranteed to have an account ID, and the
+# account ID cannot change, whereas other things like the AWS account alias
+# can change and is not guaranteed to exist.
+#
+# Positional parameters:
+#   account_name (required) - human readable name for the AWS account that you're
+#     authenticated into. The account name will be used to prefix the created
+#     tfbackend file so that it's easier to visually identify as opposed to
+#     identifying the file using the account id.
+#     For example, you have an account per environment, the account name can be
+#     the name of the environment (e.g. "prod" or "staging"). Or if you are
+#     setting up an account for all lower environments, account name can be "lowers".
+#     If your AWS account has an account alias, you can also use that.
+# -----------------------------------------------------------------------------
+set -euo pipefail
+
+account_name="$1"
+
+account_id=$(./bin/current-account-id)
+
+# Must match local.admin_account_id in infra/accounts/main.tf. Neither of this
+# project's accounts is the delegated administrator, so the standards-subscription
+# cleanup below applies to both.
+security_hub_admin_account_id="315341936575"
+
+# Get project name and region from project config
+# This ensures consistency with how terraform computes the bucket name
+terraform -chdir="infra/project-config" apply -auto-approve > /dev/null
+project_name=$(terraform -chdir="infra/project-config" output --raw project_name)
+region=$(terraform -chdir="infra/project-config" output --raw default_region)
+
+# Must stay in sync with local.tf_state_bucket_name in infra/accounts/main.tf.
+tf_state_bucket_name="${project_name}-${account_id}-${region}-tf-state"
+tf_state_key="infra/account.tfstate"
+
+echo "=================="
+echo "Setting up account"
+echo "=================="
+echo "account_name=${account_name}"
+echo "account_id=${account_id}"
+echo "project_name=${project_name}"
+echo "tf_state_bucket_name=${tf_state_bucket_name}"
+echo "tf_state_key=${tf_state_key}"
+echo "region=${region}"
+echo
+echo "------------------------------------------------------------------------------"
+echo "Bootstrapping the account by creating an S3 backend with minimal configuration"
+echo "------------------------------------------------------------------------------"
+echo
+echo "Creating bucket: ${tf_state_bucket_name}"
+# For creating buckets outside of us-east-1, a LocationConstraint needs to be set.
+# For creating buckets in us-east-1, LocationConstraint cannot be set.
+# See https://docs.aws.amazon.com/cli/latest/reference/s3api/create-bucket.html
+#
+# Written as an explicit branch rather than by splatting an optional-args array.
+# This script runs under `set -u`, and on bash 3.2 (what macOS ships as
+# /bin/bash) expanding an *empty* array with "${arr[@]}" aborts with
+# "unbound variable".
+if [ "${region}" = "us-east-1" ]; then
+  aws s3api create-bucket \
+    --bucket "${tf_state_bucket_name}" \
+    --region "${region}" > /dev/null
+else
+  aws s3api create-bucket \
+    --bucket "${tf_state_bucket_name}" \
+    --region "${region}" \
+    --create-bucket-configuration "LocationConstraint=${region}" > /dev/null
+fi
+echo
+echo "----------------------------------"
+echo "Creating rest of account resources"
+echo "----------------------------------"
+echo
+
+cd infra/accounts
+
+# Create the OpenID Connect provider for GitHub Actions to allow GitHub Actions
+# to authenticate with AWS and manage AWS resources. We create the OIDC provider
+# via AWS CLI rather than via Terraform because we need to first check if there
+# is already an existing OpenID Connect provider for GitHub Actions. This check
+# is needed since there can only be one OpenID Connect provider per URL per AWS
+# account.
+github_arn=$(aws iam list-open-id-connect-providers | jq -r ".[] | .[] | .Arn" | grep github || echo "")
+
+if [[ -z "${github_arn}" ]]; then
+  aws iam create-open-id-connect-provider \
+    --url "https://token.actions.githubusercontent.com" \
+    --client-id-list "sts.amazonaws.com" \
+    --thumbprint-list "0000000000000000000000000000000000000000"
+fi
+
+# -----------------------------------------------------------------------------
+# Create supporting SSM parameters / secrets if they are missing
+#
+# The infra/accounts module reads a New Relic account id SSM parameter and two
+# Secrets Manager secrets (used for Security Hub alerting) via data sources. A
+# fresh account won't have these yet, which makes terraform fail with
+# "couldn't find resource" errors. Create them here (idempotently) with
+# placeholder values so the account can be bootstrapped from scratch. Replace
+# the placeholders with real values afterwards.
+# -----------------------------------------------------------------------------
+create_ssm_param_if_missing() {
+  local name="$1"
+  local value="$2"
+  if ! aws ssm get-parameter --name "${name}" --region "${region}" > /dev/null 2>&1; then
+    echo "Creating placeholder SSM parameter ${name}"
+    aws ssm put-parameter --name "${name}" --type "String" --value "${value}" --region "${region}" > /dev/null
+  else
+    echo "SSM parameter ${name} already exists, skipping"
+  fi
+}
+
+create_secret_if_missing() {
+  local name="$1"
+  local value="$2"
+  if ! aws secretsmanager describe-secret --secret-id "${name}" --region "${region}" > /dev/null 2>&1; then
+    echo "Creating placeholder secret ${name}"
+    aws secretsmanager create-secret --name "${name}" --secret-string "${value}" --region "${region}" > /dev/null
+  else
+    echo "Secret ${name} already exists, skipping"
+  fi
+}
+
+placeholder_value="placeholder"
+
+# Read by infra/accounts/security_hub_alerts.tf, which is still active.
+create_secret_if_missing "grants-alerts-email" "${placeholder_value}"
+create_secret_if_missing "security-hub-slack-webhook" "${placeholder_value}"
+
+# NEW RELIC DISABLED — see enable_newrelic in infra/project-config/main.tf and
+# the commented-out module in infra/accounts/monitoring.tf. Nothing in the
+# account layer reads /new-relic-account-id or the NEW_RELIC_* env vars while it
+# is disabled, so this no longer creates or exports them. Restore these lines
+# when re-enabling New Relic:
+#
+#   create_ssm_param_if_missing "/new-relic-account-id" "${placeholder_value}"
+#   export NEW_RELIC_ACCOUNT_ID="${NEW_RELIC_ACCOUNT_ID:-0000000}"
+#   export NEW_RELIC_API_KEY="${NEW_RELIC_API_KEY:-PLACEHOLDER}"
+
+export TF_VAR_account_name="${account_name}"
+
+# -----------------------------------------------------------------------------
+# Warn about any parameters/secrets that still hold placeholder values.
+# -----------------------------------------------------------------------------
+warn_about_placeholder_secrets() {
+  local placeholders=()
+
+  # NEW RELIC DISABLED: the /new-relic-account-id and NEW_RELIC_API_KEY checks
+  # that used to live here are gone along with the values themselves. Restore
+  # them when re-enabling New Relic.
+
+  local alerts_email
+  alerts_email=$(aws secretsmanager get-secret-value --secret-id "grants-alerts-email" --query "SecretString" --output text --region "${region}" 2>/dev/null || true)
+  if [[ "${alerts_email}" == "${placeholder_value}" ]]; then
+    placeholders+=("secret grants-alerts-email")
+  fi
+
+  local slack_webhook
+  slack_webhook=$(aws secretsmanager get-secret-value --secret-id "security-hub-slack-webhook" --query "SecretString" --output text --region "${region}" 2>/dev/null || true)
+  if [[ "${slack_webhook}" == "${placeholder_value}" ]]; then
+    placeholders+=("secret security-hub-slack-webhook")
+  fi
+
+  if [[ "${#placeholders[@]}" -eq 0 ]]; then
+    return 0
+  fi
+
+  echo
+  echo "=============================================================================="
+  echo "ACTION REQUIRED: the following still hold placeholder values and MUST be"
+  echo "updated before this account is used for monitoring / alerting:"
+  echo
+  local item
+  for item in "${placeholders[@]}"; do
+    echo "  - ${item}"
+  done
+  echo
+  echo "Update them (then re-run this script) with:"
+  echo "  aws secretsmanager put-secret-value --secret-id 'grants-alerts-email' --secret-string '<email>' --region ${region}"
+  echo "  aws secretsmanager put-secret-value --secret-id 'security-hub-slack-webhook' --secret-string '<webhook-url>' --region ${region}"
+  echo "=============================================================================="
+  echo
+
+  # Higher environments must not be stood up with placeholder alerting. During
+  # the very first bring-up of a brand new account there may be no New Relic
+  # tenant yet, so this can be waived deliberately and visibly:
+  #   ALLOW_PLACEHOLDER_MONITORING=true make infra-set-up-account ACCOUNT_NAME=staging
+  case "${account_name}" in
+    prod | production | staging)
+      if [[ "${ALLOW_PLACEHOLDER_MONITORING:-false}" == "true" ]]; then
+        echo "WARNING: bootstrapping '${account_name}' with placeholder monitoring/alerting values"
+        echo "because ALLOW_PLACEHOLDER_MONITORING=true. Replace them before this account"
+        echo "carries real traffic."
+        return 0
+      fi
+      echo "FATAL: refusing to bootstrap '${account_name}' with placeholder monitoring/alerting values."
+      echo "Set the values listed above, or re-run with ALLOW_PLACEHOLDER_MONITORING=true to"
+      echo "override during initial bring-up."
+      exit 1
+      ;;
+  esac
+}
+
+warn_about_placeholder_secrets
+
+# Create the infrastructure for the terraform backend such as the S3 bucket
+# for storing tfstate files (state locking is handled natively by S3).
+# -reconfigure is used in case this isn't the first account being set up
+# and there is already a .terraform directory
+terraform init \
+  -reconfigure \
+  -input=false \
+  -backend-config="bucket=${tf_state_bucket_name}" \
+  -backend-config="key=${tf_state_key}" \
+  -backend-config="region=${region}"
+
+# Import the bucket that we created in the previous step so we don't recreate it
+# But first check if the bucket already exists in the state file. If we are
+# re-running account setup and the bucket already exists then skip the import step
+if ! terraform state list module.backend.aws_s3_bucket.tf_state; then
+  terraform import module.backend.aws_s3_bucket.tf_state "${tf_state_bucket_name}"
+fi
+
+# Security Hub config
+import_if_exists() {
+  local tf_resource="$1"
+  local import_id="$2"
+  # Already tracked by terraform - nothing to do.
+  if terraform state list "${tf_resource}" > /dev/null 2>&1; then
+    echo "${tf_resource} already in terraform state, skipping import"
+    return 0
+  fi
+  # Adopt the existing AWS resource, or leave it for terraform apply to create
+  # if it doesn't exist yet.
+  if terraform import "${tf_resource}" "${import_id}" > /dev/null 2>&1; then
+    echo "Adopted already-existing ${tf_resource} into terraform state"
+  else
+    echo "${tf_resource} does not exist yet, will be created by terraform apply"
+  fi
+}
+
+if aws securityhub describe-hub --region "${region}" > /dev/null 2>&1; then
+  echo "Security Hub already enabled on this account; adopting existing resources into state"
+
+  import_if_exists aws_securityhub_account.main "${account_id}"
+
+  # NOTE: standards subscriptions are intentionally NOT imported here. They are
+  # governed by Security Hub central configuration and are only managed from the
+  # delegated administrator account
+  for product in guardduty inspector access-analyzer firewall-manager ssm-patch-manager health macie; do
+    case "${product}" in
+      access-analyzer)   tf_name="access_analyzer" ;;
+      firewall-manager)  tf_name="firewall_manager" ;;
+      ssm-patch-manager) tf_name="systems_manager" ;;
+      *)                 tf_name="${product}" ;;
+    esac
+    import_if_exists "aws_securityhub_product_subscription.${tf_name}" \
+      "arn:aws:securityhub:${region}::product/aws/${product},arn:aws:securityhub:${region}:${account_id}:product-subscription/aws/${product}"
+  done
+fi
+
+if [[ "${account_id}" != "${security_hub_admin_account_id}" ]]; then
+  for standard in cis_1_2 aws_foundational cis_1_4 nist_800_53; do
+    # state list returns the exact instance address(es), which may be bare or
+    # count-indexed (e.g. "...cis_1_2[0]"). Remove exactly what's there so
+    # state rm doesn't reject a bare address for a counted resource.
+    instances=$(terraform state list "aws_securityhub_standards_subscription.${standard}" 2>/dev/null || true)
+    if [[ -n "${instances}" ]]; then
+      while IFS= read -r instance; do
+        [[ -z "${instance}" ]] && continue
+        echo "Dropping centrally-managed standards subscription ${instance} from state"
+        terraform state rm "${instance}" > /dev/null
+      done <<< "${instances}"
+    fi
+  done
+fi
+
+# First apply only the terraform backend and GitHub auth resources. These have
+# no New Relic dependency.
+terraform apply \
+  -input=false \
+  -auto-approve \
+  -target=module.backend \
+  -target=module.auth_github_actions
+
+
+apply_exit_code=0
+terraform apply \
+  -input=false \
+  -auto-approve || apply_exit_code=$?
+
+cd -
+
+module_dir="infra/accounts"
+backend_config_name="${account_name}.${account_id}"
+./bin/create-tfbackend "${module_dir}" "${backend_config_name}" "${tf_state_key}"
+
+if [[ "${apply_exit_code}" -ne 0 ]]; then
+  echo
+  echo "ERROR: terraform apply failed (exit code ${apply_exit_code})."
+  echo "Check that these Security Hub alerting secrets contain real values, then"
+  echo "re-run this command:"
+  echo "  - secret grants-alerts-email"
+  echo "  - secret security-hub-slack-webhook"
+  exit "${apply_exit_code}"
+fi

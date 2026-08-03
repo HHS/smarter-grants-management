@@ -1,0 +1,4 @@
+bucket       = "smarter-grants-management-135002447353-us-east-1-tf-state"
+key          = "infra/frontend/service/dev.tfstate"
+region       = "us-east-1"
+use_lockfile = true

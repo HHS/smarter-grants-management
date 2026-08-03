@@ -1,0 +1,80 @@
+name: Deploy API
+run-name: Deploy ${{ inputs.version || 'main' }} to API ${{ inputs.environment || 'dev' }}
+
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      - "api/**"
+      - "infra/api/**"
+      - "infra/modules/**"
+  # Release deployments are handled by cd-release.yml
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Environment to deploy to
+        required: true
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - staging
+      version:
+        required: true
+        default: "main"
+        description: Tag or branch or SHA to deploy
+      skip_checks:
+        type: boolean
+        default: false
+        description: Skip unit tests, lint, etc
+      skip_vuln_scans:
+        type: boolean
+        default: false
+        description: Skip vulnerability scans
+  workflow_call:
+    inputs:
+      environment:
+        description: Environment to deploy to
+        required: false
+        default: "dev"
+        type: string
+      version:
+        required: false
+        default: ""
+        description: Tag or branch or SHA to deploy
+        type: string
+      skip_checks:
+        type: boolean
+        default: false
+        description: Skip unit tests, lint, etc while deploying
+      skip_vuln_scans:
+        type: boolean
+        default: false
+        description: Skip vulnerability scans while deploying
+
+jobs:
+  api-checks:
+    name: Run API Checks
+    uses: ./.github/workflows/ci-api.yml
+    with:
+      skip_checks: ${{ inputs.skip_checks != null && inputs.skip_checks != false }}
+
+  vulnerability-scans:
+    name: Vulnerability Scans
+    uses: ./.github/workflows/vulnerability-scans.yml
+    with:
+      app_name: api
+      # This workflow deploys to dev on every push to main, so findings are
+      # reported without blocking. Releases (cd-release.yml) gate on them.
+      fail_on_vulns: false
+      skip_vuln_scans: ${{ inputs.skip_vuln_scans != null && inputs.skip_vuln_scans != false }}
+
+  deploy:
+    name: Deploy
+    needs: [api-checks, vulnerability-scans]
+    uses: ./.github/workflows/deploy.yml
+    with:
+      app_name: "api"
+      environment: ${{ inputs.environment || 'dev' }}
+      version: ${{ inputs.version || github.ref }}

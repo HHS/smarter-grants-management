@@ -1,0 +1,7 @@
+# This file is allows you to specify a list of files that is acceptable to Dockle
+# To allow multiple files, use a list of names, example below. Make sure to remove the leading #
+# DOCKLE_ACCEPT_FILES="file1,path/to/file2,file3/path,etc"
+# https://github.com/goodwithtech/dockle#accept-suspicious-environment-variables--files--file-extensions
+# These are stub/config modules that Dockle flags on filename alone. They have
+# been reviewed and hold no sensitive data.
+DOCKLE_ACCEPT_FILES=api/.venv/lib/python3.14/site-packages/newrelic/api/settings.py,api/.venv/lib/python3.14/site-packages/apiflask/settings.py,api/.venv/lib/python3.14/site-packages/docx/oxml/settings.py,api/.venv/lib/python3.14/site-packages/docx/parts/settings.py,api/.venv/lib/python3.14/site-packages/docx/settings.py

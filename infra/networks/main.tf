@@ -1,0 +1,129 @@
+locals {
+  tags = merge(module.project_config.default_tags, {
+    network_name = var.network_name
+    description  = "VPC resources"
+  })
+  region = module.project_config.default_region
+
+  network_config = module.project_config.network_configs[var.network_name]
+  domain_config  = local.network_config.domain_config
+
+  # List of configuration for all applications, even ones that are not in the current network
+  # If project has multiple applications, add other app configs to this list
+  app_configs = [module.api_config, module.frontend_config]
+
+  # List of configuration for applications that are in the current network
+  # An application is in the current network if at least one of its environments
+  # is mapped to the network
+  apps_in_network = [
+    for app in local.app_configs :
+    app
+    if anytrue([
+      for environment_config in app.environment_configs : true if environment_config.network_name == var.network_name
+    ])
+  ]
+
+  # Whether any of the applications in the network have a database
+  has_database = anytrue([for app in local.apps_in_network : app.has_database])
+
+  # Whether any of the applications in the network have dependencies on an external non-AWS service
+  has_external_non_aws_service = anytrue([for app in local.apps_in_network : app.has_external_non_aws_service])
+
+  # Whether any of the applications in the network has an environment that needs container execution access
+  enable_command_execution = anytrue([
+    for app in local.apps_in_network :
+    anytrue([
+      for environment_config in app.environment_configs : true if environment_config.service_config.enable_command_execution == true && environment_config.network_name == var.network_name
+    ])
+  ])
+
+  # Whether any of the applications in the network has enabled notifications
+  enable_notifications = anytrue([for app in local.apps_in_network : app.enable_notifications])
+}
+
+terraform {
+  required_version = ">= 1.10.0"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 5.46.0"
+    }
+  }
+
+  backend "s3" {
+    encrypt = "true"
+  }
+}
+
+provider "aws" {
+  region = local.region
+  # Refuse to operate against the wrong account (covers plan/apply/destroy).
+  allowed_account_ids = [module.expected_account.account_id]
+  default_tags {
+    tags = local.tags
+  }
+}
+
+# The domain module's DNS query logging (Route53 query logs + their CloudWatch log
+# group and resource policy) must live in us-east-1, so it requires an aws.us-east-1
+# provider in addition to the default one. This alias satisfies that requirement even
+# when manage_dns = false and no us-east-1 resources are actually created.
+provider "aws" {
+  alias               = "us-east-1"
+  region              = "us-east-1"
+  allowed_account_ids = [module.expected_account.account_id]
+  default_tags {
+    tags = local.tags
+  }
+}
+
+module "project_config" {
+  source = "../project-config"
+}
+
+# Resolve the account this network must deploy to (used by the provider's
+# allowed_account_ids below and by the guard), then short-circuit plan/apply if
+# the active AWS credentials are for a different account.
+module "expected_account" {
+  source       = "../modules/account-id-by-name"
+  account_name = local.network_config.account_name
+  accounts_dir = "${path.module}/../accounts"
+}
+
+module "account_guard" {
+  source              = "../modules/aws-account-guard"
+  expected_account_id = module.expected_account.account_id
+  context             = "the \"${var.network_name}\" network"
+}
+
+module "api_config" {
+  source = "../api/app-config"
+}
+
+module "frontend_config" {
+  source = "../frontend/app-config"
+}
+
+module "network" {
+  source                                  = "../modules/network"
+  name                                    = var.network_name
+  has_database                            = local.has_database
+  database_subnet_group_name              = var.network_name
+  aws_services_security_group_name_prefix = module.project_config.aws_services_security_group_name_prefix
+  second_octet                            = module.project_config.network_configs[var.network_name].second_octet
+  has_external_non_aws_service            = local.has_external_non_aws_service
+  enable_command_execution                = local.enable_command_execution
+}
+
+module "domain" {
+  source              = "../modules/domain/resources"
+  name                = local.domain_config.hosted_zone
+  manage_dns          = local.domain_config.manage_dns
+  certificate_configs = local.domain_config.certificate_configs
+
+  providers = {
+    aws           = aws
+    aws.us-east-1 = aws.us-east-1
+  }
+}
