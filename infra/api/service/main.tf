@@ -122,11 +122,11 @@ module "account_guard" {
 }
 
 # Resolve the container image repository (ECR) to the AWS account that owns THIS
-# environment's network, rather than the globally-shared build-repository
-# account. For every existing environment the network account IS the shared
-# account, so this is a no-op. It lets a self-contained environment in a separate
-# AWS account (infra-dev in the "dev" account) pull from an ECR in its own
-# account instead of cross-account.
+# environment's network. Each environment applies its own
+# infra/api/build-repository (see that layer's dev/staging tfbackend files), so the
+# repository always lives in the same account as the service pulling from it and no
+# cross-account grant is involved. app-config deliberately publishes only the
+# repository name and region, leaving the account to be resolved here.
 data "external" "account_ids_by_name" {
   program = ["${path.module}/../../../bin/account-ids-by-name"]
 }

@@ -6,9 +6,14 @@ CURRENT_ACCOUNT_ALIAS = `./bin/current-account-alias`
 
 CURRENT_ACCOUNT_ID = $(./bin/current-account-id)
 
-# Backend config name for resources shared across environments (the build
-# repositories). Matches <app>/build-repository/shared.s3.tfbackend.
-BUILD_REPOSITORY_CONFIG_NAME ?= shared
+# Backend config name for an app's build repository, matching
+# <app>/build-repository/<name>.s3.tfbackend.
+#
+# api has one build repository per environment, each in that environment's own AWS
+# account, so passing ENVIRONMENT selects it (dev.s3.tfbackend, staging.s3.tfbackend).
+# frontend still has a single repository shared across environments, which is what
+# the "shared" fallback is for.
+BUILD_REPOSITORY_CONFIG_NAME ?= $(if $(ENVIRONMENT),$(ENVIRONMENT),shared)
 
 # Get the list of reusable terraform modules by getting out all the modules
 # in infra/modules and then stripping out the "infra/modules/" prefix

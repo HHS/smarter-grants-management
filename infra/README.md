@@ -46,9 +46,9 @@ This project has two AWS environments, each in its own AWS account:
 | `dev` | `135002447353` | `dev` (`10.0.0.0/20`) | `smarter-grants-management-135002447353-us-east-1-tf` |
 | `staging` | `530702498822` | `staging` (`10.1.0.0/20`) | `smarter-grants-management-530702498822-us-east-1-tf` |
 
-The environments share the same root modules but have different configurations. Backend configuration is saved as [`.tfbackend`](https://developer.hashicorp.com/terraform/language/backend#file) files named after the environment, so each environment-scoped root module (`networks`, `[app_name]/service`, `[app_name]/database`) has a `dev.s3.tfbackend` and a `staging.s3.tfbackend`.
+The environments share the same root modules but have different configurations. Backend configuration is saved as [`.tfbackend`](https://developer.hashicorp.com/terraform/language/backend#file) files named after the environment, so each environment-scoped root module (`networks`, `api/build-repository`, `[app_name]/service`, `[app_name]/database`) has a `dev.s3.tfbackend` and a `staging.s3.tfbackend`.
 
-Resources shared across environments — the build repositories — use `shared.s3.tfbackend` and live in the **dev** account, since `shared_network_name = "dev"` in each app's `app-config/main.tf`. Resources shared across an entire account (`/infra/accounts`) use `<account name>.<account id>.s3.tfbackend`:
+`api` is fully self-contained per environment: `api/build-repository` has one ECR per environment, in that environment's own account, so nothing is shared across accounts and `api/app-config` has no `shared_network_name`. `frontend/build-repository` is still shared across environments — it uses `shared.s3.tfbackend` and lives in the **dev** account, since `shared_network_name = "dev"` in `frontend/app-config/main.tf`. Resources shared across an entire account (`/infra/accounts`) use `<account name>.<account id>.s3.tfbackend`:
 
 ```text
 infra/accounts/dev.135002447353.s3.tfbackend
@@ -62,7 +62,7 @@ infra/account.tfstate                              # per account
 infra/networks/<environment>.tfstate
 infra/api/database/<environment>.tfstate
 infra/api/service/<environment>.tfstate
-infra/api/build-repository/shared.tfstate          # dev account
+infra/api/build-repository/<environment>.tfstate
 infra/frontend/service/<environment>.tfstate
 infra/frontend/build-repository/shared.tfstate     # dev account
 ```

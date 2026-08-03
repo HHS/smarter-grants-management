@@ -13,9 +13,9 @@ on:
         required: true
         type: string
       environment:
-        description: "Deploy environment whose AWS account the image is published to. Defaults to 'shared', which resolves to the build repository's account (dev)."
+        description: "Deploy environment whose AWS account the image is published to. Each environment has its own build repository in its own account."
         required: false
-        default: "shared"
+        default: "dev"
         type: string
     outputs:
       commit_hash:
@@ -34,7 +34,7 @@ on:
       environment:
         description: "Deploy environment whose AWS account the image is published to."
         required: false
-        default: "shared"
+        default: "dev"
         type: string
 
 jobs:

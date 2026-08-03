@@ -41,7 +41,3 @@ output "enable_identity_provider" {
 output "enable_notifications" {
   value = local.enable_notifications
 }
-
-output "shared_network_name" {
-  value = local.shared_network_name
-}

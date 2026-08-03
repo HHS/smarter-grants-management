@@ -49,8 +49,8 @@ locals {
   }
 
   # Map from environment name to the account name for the AWS account that
-  # contains the resources for that environment. Resources that are shared
-  # across environments use the key "shared".
+  # contains the resources for that environment. Every environment is
+  # self-contained, so there is no cross-environment "shared" key.
   # The list of configured AWS accounts can be found in /infra/account
   # by looking for the backend config files of the form:
   #   <ACCOUNT_NAME>.<ACCOUNT_ID>.s3.tfbackend
@@ -62,33 +62,17 @@ locals {
   # account_names_by_environment map will look like:
   #
   #   account_names_by_environment = {
-  #     shared  = "myaccount"
   #     dev     = "myaccount"
   #     staging = "myaccount"
   #     prod    = "myaccount"
   #   }
   #
-  # Projects/applications that have separate AWS accounts for each environment
-  # might have a map that looks more like this:
-  #
-  #   account_names_by_environment = {
-  #     shared  = "dev"
-  #     dev     = "dev"
-  #     staging = "staging"
-  #     prod    = "prod"
-  #   }
+  # This app has no "shared" entry: every environment, including its build
+  # repository, is self-contained in that environment's own AWS account.
   account_names_by_environment = {
-    shared  = "dev"     # build repository lives in the dev account
     dev     = "dev"     # AWS account 135002447353
     staging = "staging" # AWS account 530702498822
   }
-
-  # The name of the network that contains the resources shared across all
-  # application environments, such as the build repository.
-  # The list of networks can be found in /infra/networks
-  # by looking for the backend config files of the form:
-  #   <NETWORK_NAME>.s3.tfbackend
-  shared_network_name = "dev"
 }
 
 module "project_config" {
