@@ -36,6 +36,11 @@ output "enable_security_hub_slack" {
   description = "Whether to post Security Hub findings to Slack. Requires enable_security_hub_alerts and the security-hub-slack-webhook secret."
 }
 
+output "enable_security_hub_standards" {
+  value       = local.enable_security_hub_standards
+  description = "Whether to manage Security Hub standards subscriptions locally. False while these accounts are governed by an organization-level central configuration policy."
+}
+
 output "default_tags" {
   value = {
     project             = local.project_name

@@ -4,9 +4,16 @@
 
 locals {
   # Security Hub standards subscriptions are governed by the organization's
-  # Security Hub *central configuration*, which is only managed from the
-  # delegated administrator account (local.admin_account_id).
-  manage_security_hub_standards = local.is_admin_account
+  # Security Hub *central configuration*, which only the delegated administrator
+  # may change. Both of this project's accounts are members under that policy, so
+  # enabling a standard from here fails the apply with a 403
+  # AccessDeniedException from BatchEnableStandards.
+  #
+  # Gated on its own flag rather than on local.is_admin_account: that local marks
+  # the account this project uses for central CloudTrail logging, which is not the
+  # same account as the organization's Security Hub administrator. See
+  # enable_security_hub_standards in infra/project-config/main.tf.
+  manage_security_hub_standards = module.project_config.enable_security_hub_standards
 }
 
 # Enable Security Hub
@@ -16,7 +23,8 @@ resource "aws_securityhub_account" "main" {
   auto_enable_controls      = true
 }
 
-# Enable security standards (administrator account only -- see local above)
+# Enable security standards. Off by default -- see the local above. The standards
+# are still enforced on these accounts, applied by the delegated administrator.
 resource "aws_securityhub_standards_subscription" "cis_1_2" {
   count         = local.manage_security_hub_standards ? 1 : 0
   depends_on    = [aws_securityhub_account.main]

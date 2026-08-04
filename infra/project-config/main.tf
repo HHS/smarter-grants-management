@@ -72,4 +72,25 @@ locals {
   #     --secret-string '{"webhook_url":"https://hooks.slack.com/services/..."}' \
   #     --region us-east-1
   enable_security_hub_slack = false
+
+  # Whether this project manages its own Security Hub standards subscriptions
+  # (CIS 1.2/1.4, AWS Foundational, NIST 800-53) in
+  # infra/accounts/security_hub.tf.
+  #
+  # Disabled: these accounts are members of an organization whose Security Hub is
+  # governed by a *central configuration policy*, which only the delegated
+  # administrator may change. Enabling a standard locally fails the apply with:
+  #
+  #   AccessDeniedException: This account is currently associated with a central
+  #   configuration policy, so only the administrator can access this operation.
+  #                                              (BatchEnableStandards, HTTP 403)
+  #
+  # The standards are still applied to these accounts — just from the
+  # administrator account, not from here. Note this is deliberately a separate
+  # flag rather than being tied to admin_account_id in infra/accounts/main.tf: the
+  # 403 above shows the Security Hub administrator is a different account than the
+  # one this project uses as its CloudTrail logging account, so the two cannot
+  # share one switch. Only set this true if this project ever becomes the Security
+  # Hub delegated administrator or the central configuration policy is detached.
+  enable_security_hub_standards = false
 }
