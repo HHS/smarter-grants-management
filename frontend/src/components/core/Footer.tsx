@@ -1,9 +1,9 @@
-import GrantsLogo from "public/img/grants-logo.svg";
+// import GrantsLogo from "public/img/grants-logo.svg";
 import { ExternalRoutes } from "src/constants/routes";
 import { messages } from "src/i18n/messages/en";
 
 import { useTranslations } from "next-intl";
-import Image from "next/image";
+// import Image from "next/image";
 import Link from "next/link";
 import {
   Grid,
@@ -39,13 +39,13 @@ const Footer = () => {
           <Grid row gap="lg">
             <Grid desktop={{ col: 4 }}>
               <div className="footer-logo-container position-relative">
-                <Image
+                {/* <Image
                   className="height-auto position-relative"
                   alt={t("logoAlt")}
                   src={GrantsLogo as string}
                   unoptimized
                   fill
-                />
+                /> */}
               </div>
             </Grid>
             <Grid

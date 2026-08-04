@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import GrantsLogo from "public/img/grants-logo.svg";
+// import GrantsLogo from "public/img/grants-logo.svg";
 import { applicationTestUserId, LOGIN_URL } from "src/constants/auth";
 import { ExternalRoutes } from "src/constants/routes";
 import { useSnackbar } from "src/hooks/useSnackbar";
@@ -12,7 +12,7 @@ import { isCurrentPath, isExternalLink } from "src/utils/generalUtils";
 import { storeCurrentPage } from "src/utils/userUtils";
 
 import { useTranslations } from "next-intl";
-import Image from "next/image";
+// import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
@@ -392,7 +392,7 @@ const Header = ({
           <div className="usa-navbar border-bottom-0">
             <Title className="margin-y-2">
               <div className="display-flex flex-align-center">
-                <Link href="/" className="position-relative">
+                {/* <Link href="/" className="position-relative">
                   <Image
                     alt={t("title")}
                     src={GrantsLogo as string}
@@ -401,7 +401,7 @@ const Header = ({
                     priority
                     fill
                   />
-                </Link>
+                </Link> */}
               </div>
             </Title>
           </div>
