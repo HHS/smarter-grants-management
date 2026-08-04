@@ -119,8 +119,42 @@ CD lives in [`.github/workflows`](../.github/workflows). `dev` is kept current f
 | `database-migrations.yml` | called by `deploy.yml` | Builds/publishes the image, then runs `db-migrate` as a one-off ECS task |
 | `build-and-publish.yml` | called by `database-migrations.yml` | Builds the image and pushes it to ECR, skipping the build if that commit is already published |
 | `check-ci-cd-auth.yml` | manual dispatch | Verifies this repo's GitHub Actions OIDC role can be assumed |
+| `restore-db-from-snapshot.yml` | manual dispatch | Restores an environment's Aurora cluster from one of its own snapshots — see [Database restores](#-database-restores) |
 
 All of them authenticate through [`.github/actions/configure-aws-credentials`](../.github/actions/configure-aws-credentials/action.yml), which resolves app → environment → network → account → role from the terraform config itself, so there are no hardcoded account ids or role ARNs in the workflows. That is also why a deploy to `staging` automatically targets `530702498822` while `dev` targets `135002447353` — the only thing that changes is the environment name.
+
+### 💾 Database restores
+
+[`restore-db-from-snapshot.yml`](../.github/workflows/restore-db-from-snapshot.yml) restores an
+environment's Aurora cluster from a snapshot — for rolling back a bad migration or recovering
+from data loss.
+
+**Scope: same-environment snapshots only.** An environment can be restored from its own
+automated backups or from a manual/pre-restore snapshot. Seeding one environment from another
+(e.g. staging's data into `dev`) is **not** supported: each environment lives in its own AWS
+account and each cluster is encrypted with a per-cluster customer-managed KMS key that has no
+cross-account key policy. The workflow enforces this by requiring the snapshot ID to be
+prefixed with the target cluster's name.
+
+How to run it:
+
+1. Actions → **Restore DB from Snapshot** → *Run workflow*.
+2. Pick the `environment`. Leave `snapshot_id` blank for the latest automated snapshot, or pass
+   an explicit one (`api-dev-…`, or `rds:api-dev-…` for automated).
+3. Leave `dry_run` checked first. That runs `terraform plan` and changes nothing — the job
+   summary shows what would be restored.
+4. To apply for real, re-run with `dry_run` unchecked **and** `confirm` set to the environment
+   name. Both the confirmation and the GitHub Environment approval gate exist because this
+   **replaces the cluster and every row in it**.
+
+Before applying, the workflow takes a `api-<env>-pre-restore-<timestamp>` snapshot and prints
+its ID in the job summary along with rollback instructions, so a bad restore can be undone by
+running the workflow again with that ID. Migrations run automatically afterwards, since a
+restored cluster carries the snapshot's schema and may predate current migrations.
+
+> **Note:** the approval gate only takes effect once GitHub Environments named `dev` and
+> `staging` exist in this repo **with required reviewers configured**. Until then, `confirm` is
+> the only guard.
 
 ### 🔍 Scans
 

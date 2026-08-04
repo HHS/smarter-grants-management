@@ -1,0 +1,261 @@
+name: Restore DB from Snapshot
+run-name: Restore ${{ inputs.environment }} DB from ${{ inputs.snapshot_id != '' && inputs.snapshot_id || 'latest automated snapshot' }}${{ inputs.dry_run && ' (dry run)' || '' }}
+
+# Restores an SGM Aurora cluster from one of its own snapshots — rollback and
+# point-in-time recovery.
+#
+# This is the SGM-native counterpart to simpler-grants-gov's
+# restore-db-from-snapshot.yml, deliberately a NEW workflow rather than a
+# modification of SGG's: the two systems run in separate AWS accounts and are
+# expected to diverge until the SGG cutover date is agreed. Revisit whether both
+# are still needed once cutover is scheduled.
+#
+# SCOPE — same-account restores only
+#
+# Supported: restoring an environment from a snapshot of THAT SAME environment
+# (its automated backups, or a manual/pre-restore snapshot). No cross-account
+# plumbing required.
+#
+# Not supported yet: seeding one environment from another (e.g. staging's data
+# into dev), which is SGG's primary use case for its equivalent workflow. SGM
+# keeps each environment in its own AWS account (dev 135002447353, staging
+# 530702498822), and each cluster is encrypted with a per-cluster
+# customer-managed KMS key (infra/modules/database/main.tf `aws_kms_key.db`)
+# that has no cross-account key policy. Enabling it would require, in the
+# source account:
+#   1. rds:ModifyDBClusterSnapshotAttribute to share the snapshot with the
+#      target account, and
+#   2. a KMS key policy allowing the target account kms:Decrypt / kms:CreateGrant.
+# Because only same-environment snapshots are accepted, the snapshot-prefix check
+# below is what keeps a restore inside one account.
+#
+# Required IAM permissions (all in the target environment's own account):
+#   - rds:DescribeDBClusterSnapshots
+#   - rds:CreateDBClusterSnapshot
+#   - rds:RestoreDBClusterFromSnapshot
+#   - rds:ModifyDBCluster
+#   - rds:DeleteDBCluster
+#   - kms:Decrypt, kms:CreateGrant  (on the cluster's KMS key)
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Environment to restore (its cluster is REPLACED)
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+      snapshot_id:
+        description: "Snapshot to restore from — must belong to this environment's cluster. Leave blank for the latest automated snapshot."
+        required: false
+        type: string
+        default: ""
+      dry_run:
+        description: "Dry run: plan only, make no changes"
+        required: false
+        type: boolean
+        default: true
+      confirm:
+        description: 'Type the environment name to confirm a real restore (ignored on dry runs)'
+        required: false
+        type: string
+        default: ""
+
+# Prevent concurrent restores against the same environment, which would race on
+# both the RDS cluster and the Terraform state lock.
+concurrency:
+  group: restore-db-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  restore-db:
+    name: Restore DB
+    runs-on: ubuntu-24.04
+    # Aurora restore + instance creation typically takes 30-60 minutes.
+    # 120 minutes gives comfortable headroom without approaching GHA's 6h limit.
+    timeout-minutes: 120
+    permissions:
+      contents: read
+      id-token: write
+    # Gate real restores behind GitHub Environment approval.
+    # NOTE: this only gates anything once GitHub Environments named "dev" and
+    # "staging" exist in this repo WITH required reviewers. Until then the
+    # `confirm` input below is the only guard. See issue #11815.
+    environment: ${{ inputs.environment }}
+    outputs:
+      snapshot_id: ${{ steps.snapshot.outputs.snapshot_id }}
+      backup_snapshot_id: ${{ steps.create-backup.outputs.backup_snapshot_id }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Typo-guard for the destructive path. Cheap, and runs before we touch AWS.
+      - name: Confirm destructive restore
+        if: ${{ !inputs.dry_run }}
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+          CONFIRM: ${{ inputs.confirm }}
+        run: |
+          if [[ "$CONFIRM" != "$ENVIRONMENT" ]]; then
+            echo "::error::This replaces the '$ENVIRONMENT' Aurora cluster and all data in it."
+            echo "::error::Re-run with confirm='$ENVIRONMENT' to proceed, or set dry_run=true to preview."
+            exit 1
+          fi
+          echo "Confirmed destructive restore of '$ENVIRONMENT'."
+
+      - name: Set up Terraform
+        uses: ./.github/actions/setup-terraform
+
+      - name: Configure AWS credentials
+        uses: ./.github/actions/configure-aws-credentials
+        with:
+          app_name: api
+          environment: ${{ inputs.environment }}
+
+      - name: Resolve snapshot ID
+        id: snapshot
+        env:
+          SNAPSHOT_ID_INPUT: ${{ inputs.snapshot_id }}
+          ENVIRONMENT: ${{ inputs.environment }}
+        run: |
+          # Cluster naming comes from infra/api/app-config/env-config/database.tf:
+          #   cluster_name = "${app_name}-${environment}"
+          CLUSTER_ID="api-${ENVIRONMENT}"
+
+          if [[ -n "$SNAPSHOT_ID_INPUT" ]]; then
+            SNAPSHOT_ID="$SNAPSHOT_ID_INPUT"
+
+            # Require the snapshot to belong to this environment's cluster.
+            # Automated snapshots are prefixed "rds:"; manual ones are not.
+            # This is also what keeps the restore same-account (see header).
+            if [[ ! "$SNAPSHOT_ID" =~ ^(rds:)?${CLUSTER_ID}- ]]; then
+              echo "::error::Snapshot must belong to the ${CLUSTER_ID} cluster."
+              echo "::error::Provided: ${SNAPSHOT_ID}"
+              echo "::error::Cross-environment restore is not supported — see this workflow's header."
+              exit 1
+            fi
+          else
+            echo "Fetching latest automated snapshot for ${CLUSTER_ID}..."
+            SNAPSHOT_ID=$(aws rds describe-db-cluster-snapshots \
+              --db-cluster-identifier "${CLUSTER_ID}" \
+              --snapshot-type automated \
+              --query 'sort_by(DBClusterSnapshots, &SnapshotCreateTime)[-1].DBClusterSnapshotIdentifier' \
+              --output text)
+
+            if [[ -z "$SNAPSHOT_ID" || "$SNAPSHOT_ID" == "None" ]]; then
+              echo "::error::No automated snapshots found for cluster ${CLUSTER_ID}."
+              echo "::error::Confirm the cluster exists and automated backups are enabled,"
+              echo "::error::or pass an explicit snapshot_id."
+              exit 1
+            fi
+          fi
+
+          echo "snapshot_id=${SNAPSHOT_ID}" >> "$GITHUB_OUTPUT"
+          echo "Resolved snapshot: ${SNAPSHOT_ID}"
+
+      - name: Terraform init
+        run: |
+          terraform -chdir="infra/api/database" init \
+            -input=false \
+            -reconfigure \
+            -backend-config="${{ inputs.environment }}.s3.tfbackend"
+
+      # -replace forces the cluster to be recreated from the snapshot;
+      # snapshot_identifier is in the module's lifecycle.ignore_changes, so a
+      # plain apply would otherwise be a no-op.
+      - name: Plan restore
+        if: inputs.dry_run
+        run: |
+          terraform -chdir="infra/api/database" plan \
+            -var="environment_name=${{ inputs.environment }}" \
+            -var="database_snapshot_id=${{ steps.snapshot.outputs.snapshot_id }}" \
+            -replace="module.database.aws_rds_cluster.db"
+
+      - name: Summarize dry run
+        if: inputs.dry_run
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+          SNAPSHOT_ID: ${{ steps.snapshot.outputs.snapshot_id }}
+        run: |
+          {
+            echo "## Dry run — no changes made"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| **Target cluster** | \`api-${ENVIRONMENT}\` |"
+            echo "| **Would restore from** | \`${SNAPSHOT_ID}\` |"
+            echo ""
+            echo "Re-run with \`dry_run: false\` and \`confirm: ${ENVIRONMENT}\` to apply."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Create pre-restore backup
+        id: create-backup
+        if: ${{ !inputs.dry_run }}
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+          SNAPSHOT_ID: ${{ steps.snapshot.outputs.snapshot_id }}
+        run: |
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          BACKUP_SNAPSHOT_ID="api-${ENVIRONMENT}-pre-restore-${TIMESTAMP}"
+
+          echo "Creating backup snapshot: ${BACKUP_SNAPSHOT_ID}"
+          aws rds create-db-cluster-snapshot \
+            --db-cluster-identifier "api-${ENVIRONMENT}" \
+            --db-cluster-snapshot-identifier "${BACKUP_SNAPSHOT_ID}" \
+            --tags Key=Purpose,Value=PreRestoreBackup Key=RestoredFrom,Value="${SNAPSHOT_ID}"
+
+          echo "Waiting for backup snapshot to become available..."
+          aws rds wait db-cluster-snapshot-available \
+            --db-cluster-snapshot-identifier "${BACKUP_SNAPSHOT_ID}"
+
+          echo "Backup snapshot created: ${BACKUP_SNAPSHOT_ID}"
+          echo "backup_snapshot_id=${BACKUP_SNAPSHOT_ID}" >> "$GITHUB_OUTPUT"
+
+      - name: Apply restore
+        if: ${{ !inputs.dry_run }}
+        run: |
+          terraform -chdir="infra/api/database" apply \
+            -auto-approve \
+            -var="environment_name=${{ inputs.environment }}" \
+            -var="database_snapshot_id=${{ steps.snapshot.outputs.snapshot_id }}" \
+            -replace="module.database.aws_rds_cluster.db"
+
+      # always() so the rollback pointer is recorded even if the apply failed
+      # partway — that is exactly when someone needs the backup snapshot ID.
+      - name: Write job summary
+        if: ${{ !inputs.dry_run && always() && steps.create-backup.outcome == 'success' }}
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+          SNAPSHOT_ID: ${{ steps.snapshot.outputs.snapshot_id }}
+          BACKUP_SNAPSHOT_ID: ${{ steps.create-backup.outputs.backup_snapshot_id }}
+        run: |
+          {
+            echo "## DB restore"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| **Target cluster** | \`api-${ENVIRONMENT}\` |"
+            echo "| **Restored from** | \`${SNAPSHOT_ID}\` |"
+            echo "| **Pre-restore backup** | \`${BACKUP_SNAPSHOT_ID}\` |"
+            echo ""
+            echo "### Rollback"
+            echo "To undo this restore, re-run this workflow with:"
+            echo ""
+            echo "- \`snapshot_id\`: \`${BACKUP_SNAPSHOT_ID}\`"
+            echo "- \`dry_run\`: false"
+            echo "- \`confirm\`: \`${ENVIRONMENT}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  run-migrations:
+    name: Run DB migrations
+    needs: [restore-db]
+    # A restored cluster carries the snapshot's schema, which may predate current
+    # migrations. Skipped on dry runs since nothing was changed.
+    if: ${{ !inputs.dry_run }}
+    uses: ./.github/workflows/database-migrations.yml
+    with:
+      app_name: api
+      environment: ${{ inputs.environment }}
+      version: ${{ github.sha }}
