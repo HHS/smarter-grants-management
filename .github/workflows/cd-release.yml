@@ -1,0 +1,71 @@
+name: Release Deploy
+run-name: Release Deploy ${{ inputs.version || github.ref_name }} to ${{ github.event_name == 'release' && 'staging' || inputs.environment }}
+
+# Deploys a GitHub release to the project's application environments.
+#
+# On a published release the target is staging — dev is already kept current by
+# cd-api.yml on every push to main, so a release is the promotion step. Use
+# workflow_dispatch to target a specific environment.
+#
+# This project currently has one application (api). The structure is kept
+# deliberately close to simpler-grants-gov's cd-release.yml — CI checks and scans
+# run in parallel first, then deploys are serialized — so that adding the
+# frontend later is a matter of adding jobs rather than reshaping this file.
+#
+# The git ref that is built and deployed is determined as follows:
+#   - release event: the published release's tag (github.ref)
+#   - workflow_dispatch: the optional `version` input (a tag, branch, or SHA),
+#     falling back to the branch/tag the workflow was run from (github.ref).
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Environment to deploy to
+        required: true
+        default: "staging"
+        type: choice
+        options:
+          - dev
+          - staging
+      version:
+        description: "Git tag to release (defaults to the ref this workflow runs from)"
+        required: false
+        default: ""
+        type: string
+
+jobs:
+  # =====================================================
+  # PHASE 1: CI checks and vulnerability scans, in parallel
+  # =====================================================
+  api-checks:
+    name: API Checks
+    uses: ./.github/workflows/ci-api.yml
+
+  api-vulnerability-scans:
+    name: API Vulnerability Scans
+    uses: ./.github/workflows/vulnerability-scans.yml
+    with:
+      app_name: api
+      # A release is the point where findings should block. Unlike cd-api.yml
+      # (which deploys to dev and only reports), this fails the release on any
+      # fixed vulnerability at or above the configured severity — medium for
+      # Grype, per .grype.yml.
+      fail_on_vulns: true
+
+  # =====================================================
+  # PHASE 2: Deploy
+  #
+  # Deploy order matters once there is more than one app: the api goes first and
+  # everything else depends on it. Add `needs: [deploy-api]` to new app jobs.
+  # =====================================================
+  deploy-api:
+    name: Deploy API
+    needs: [api-checks, api-vulnerability-scans]
+    uses: ./.github/workflows/deploy.yml
+    with:
+      app_name: "api"
+      environment: ${{ inputs.environment || 'staging' }}
+      version: ${{ inputs.version || github.ref }}
