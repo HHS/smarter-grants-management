@@ -1,0 +1,187 @@
+import "server-only";
+
+import { ApiRequestError } from "src/errors";
+import {
+  EndpointConfig,
+  fetchAwardRecommendationEndpoint,
+  fetchCompetitionEndpoint,
+  fetchCompetitionFormsEndpoint,
+  fetchFormEndpoint,
+  fetchFormsEndpoint,
+  fetchOpportunityEndpoint,
+  getApplicationForPrintEndpoint,
+  getLocalUsersEndpoint,
+  opportunitySearchEndpoint,
+  searchAgenciesEndpoint,
+  toDynamicApplicationsEndpoint,
+  toDynamicAwardRecommendationEndpoint,
+  toDynamicFilesEndpoint,
+  toDynamicGrantorAgenciesEndpoint,
+  toDynamicGrantorOpportunityEndpoint,
+  toDynamicOrganizationsEndpoint,
+  toDynamicUsersEndpoint,
+  userLogoutEndpoint,
+  userRefreshEndpoint,
+} from "src/services/fetch/endpointConfigs";
+import {
+  createRequestBody,
+  createRequestUrl,
+  fetchErrorToNetworkError,
+  getDefaultHeaders,
+  throwError,
+} from "src/services/fetch/fetcherHelpers";
+import { APIResponse } from "src/types/apiResponseTypes";
+
+import { cache } from "react";
+
+// returns a function which can be used to make a request to an endpoint defined in the passed config
+// note that subpath is dynamic per request, any static paths at this point would need to be included in the namespace
+// returns the full api response, dealing with parsing the body will happen explicitly for each request type
+export function requesterForEndpoint({
+  method,
+  basePath,
+  version,
+  namespace,
+  requiresAuth,
+}: EndpointConfig) {
+  return async function (
+    options: {
+      subPath?: string;
+      body?: Record<string, unknown> | FormData;
+      additionalHeaders?: Record<string, string>;
+      nextOptions?: NextFetchRequestConfig;
+      allowedErrorStatuses?: number[];
+      addContentType?: boolean;
+    } = {},
+  ): Promise<Response> {
+    const {
+      additionalHeaders = {},
+      body,
+      subPath,
+      nextOptions,
+      allowedErrorStatuses = [],
+      addContentType = true,
+    } = options;
+    const url = createRequestUrl(
+      method,
+      basePath,
+      version,
+      namespace,
+      subPath,
+      body,
+    );
+    const defaultHeaders = await getDefaultHeaders({
+      addContentType,
+      requiresUserAuthToken: requiresAuth,
+      url,
+    });
+    const headers = {
+      ...defaultHeaders,
+      ...additionalHeaders,
+    };
+
+    let response;
+    try {
+      response = await fetch(url, {
+        body: method === "GET" || !body ? null : createRequestBody(body),
+        headers,
+        method,
+        next: nextOptions,
+      });
+    } catch (e) {
+      // API most likely down, but also possibly an error setting up or sending a request
+      // or parsing the response.
+      throw fetchErrorToNetworkError(e);
+    }
+
+    if (
+      !response.ok &&
+      response.headers.get("Content-Type") === "application/json" &&
+      !allowedErrorStatuses.includes(response.status)
+    ) {
+      // we can assume this is serializable json based on the response header, but we'll catch anyway
+      let jsonBody;
+      try {
+        jsonBody = (await response.json()) as APIResponse;
+      } catch (_e) {
+        throw new Error(
+          `bad Json from error response at ${url} with status code ${response.status}`,
+        );
+      }
+
+      return throwError(jsonBody, url, response);
+    } else if (
+      !response.ok &&
+      !allowedErrorStatuses.includes(response.status)
+    ) {
+      throw new ApiRequestError(
+        `unable to fetch ${url}`,
+        "APIRequestError",
+        response.status,
+      );
+    }
+
+    return response;
+  };
+}
+export const fetchOpportunity = cache(
+  requesterForEndpoint(fetchOpportunityEndpoint),
+);
+
+export const fetchForm = cache(requesterForEndpoint(fetchFormEndpoint));
+
+export const fetchForms = cache(requesterForEndpoint(fetchFormsEndpoint));
+
+export const fetchCompetition = cache(
+  requesterForEndpoint(fetchCompetitionEndpoint),
+);
+
+export const fetchCompetitionForms = cache(
+  requesterForEndpoint(fetchCompetitionFormsEndpoint),
+);
+
+export const fetchApplicationWithMethod = (
+  type: "POST" | "GET" | "PUT" | "DELETE",
+) => requesterForEndpoint(toDynamicApplicationsEndpoint(type));
+
+export const fetchOpportunitySearch = requesterForEndpoint(
+  opportunitySearchEndpoint,
+);
+
+export const fetchAwardRecommendation = cache(
+  requesterForEndpoint(fetchAwardRecommendationEndpoint),
+);
+
+export const fetchAwardRecommendationWithMethod = (
+  type: "POST" | "PUT" | "DELETE",
+) => requesterForEndpoint(toDynamicAwardRecommendationEndpoint(type));
+
+export const postUserLogout = requesterForEndpoint(userLogoutEndpoint);
+
+export const fetchUserWithMethod = (type: "POST" | "DELETE" | "PUT" | "GET") =>
+  requesterForEndpoint(toDynamicUsersEndpoint(type));
+
+export const postTokenRefresh = requesterForEndpoint(userRefreshEndpoint);
+
+export const searchAgencies = requesterForEndpoint(searchAgenciesEndpoint);
+
+export const fetchOrganizationWithMethod = (
+  type: "POST" | "DELETE" | "PUT" | "GET",
+) => requesterForEndpoint(toDynamicOrganizationsEndpoint(type));
+
+export const fetchLocalUsers = requesterForEndpoint(getLocalUsersEndpoint);
+
+export const fetchGrantorOpportunityWithMethod = (
+  type: "POST" | "DELETE" | "GET" | "PUT",
+) => requesterForEndpoint(toDynamicGrantorOpportunityEndpoint(type));
+
+export const fetchGrantorAgenciesWithMethod = (
+  type: "POST" | "GET" | "PUT" | "DELETE",
+) => requesterForEndpoint(toDynamicGrantorAgenciesEndpoint(type));
+
+export const fetchFileUploadWithMethod = (type: "POST" | "GET") =>
+  requesterForEndpoint(toDynamicFilesEndpoint(type));
+
+export const getApplicationForPrint = requesterForEndpoint(
+  getApplicationForPrintEndpoint,
+);

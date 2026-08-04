@@ -1,0 +1,116 @@
+name: Frontend Checks
+
+on:
+  workflow_call:
+    inputs:
+      skip_checks:
+        type: boolean
+        default: false
+        description: Skip the guts of this workflow, but we have to run the workflow for dependency reasons when calling from CD workflows
+  pull_request:
+    paths:
+      - frontend/**
+      - .github/workflows/ci-frontend.yml
+
+defaults:
+  run:
+    working-directory: ./frontend
+
+env:
+  NODE_VERSION: 24
+  LOCKFILE_PATH: ./frontend/package-lock.json # or yarn.lock
+  PACKAGE_MANAGER: npm # or yarn
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    if: ${{ inputs.skip_checks == null || inputs.skip_checks == false }}
+    name: FE Lint, Type Check, Format & Tests
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache-dependency-path: ${{ env.LOCKFILE_PATH }}
+          cache: ${{ env.PACKAGE_MANAGER }}
+      - run: npm ci
+
+      - name: Run lint
+        run: npm run lint
+
+      - name: Run type check
+        run: npm run ts:check
+
+      - name: Run format
+        run: npm run format-check
+
+      - name: Run unit tests
+        run: npm run test -- --testLocationInResults --coverage
+
+      # disabled while we determine next steps for coverage, see https://github.com/HHS/simpler-grants-gov/issues/10650
+      # - name: Run coverage report
+      #   uses: ArtiomTr/jest-coverage-report-action@v2
+      #   with:
+      #     skip-step: all
+      #     working-directory: ./frontend
+      #     coverage-file: ./coverage-final.json
+      #     output: ${{ github.event.pull_request.head.repo.full_name == github.event.repository.name && 'comment' || 'report-markdown' }}
+
+  # Confirms the front end still builds successfully
+  check-frontend-builds:
+    if: ${{ inputs.skip_checks == null || inputs.skip_checks == false }}
+    name: FE Build Check
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache-dependency-path: ${{ env.LOCKFILE_PATH }}
+          cache: ${{ env.PACKAGE_MANAGER }}
+
+      # https://nextjs.org/docs/advanced-features/ci-build-caching
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            ${{ github.workspace }}/frontend/.next/cache
+          # Generate a new cache whenever packages or source files change.
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
+          # If source files changed but packages didn't, rebuild from a prior cache.
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
+
+      - run: npm ci
+      - run: npm run build
+
+  # Confirms Storybook still builds successfully
+  check-storybook-builds:
+    if: ${{ inputs.skip_checks == null || inputs.skip_checks == false }}
+    name: FE Storybook Build Check
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache-dependency-path: ${{ env.LOCKFILE_PATH }}
+          cache: ${{ env.PACKAGE_MANAGER }}
+      - run: npm ci
+      - run: npm run storybook-build
+
+  skip-checks:
+    if: ${{ inputs.skip_checks != null && inputs.skip_checks == true }}
+    name: Skip Checks
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checks skipped
+        working-directory: ./
+        run: exit 0
