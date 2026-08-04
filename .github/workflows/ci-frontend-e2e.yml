@@ -26,8 +26,8 @@ on:
         type: string
   pull_request:
     paths:
-      - "api/**"
-      - "frontend/**"
+      # - "api/**"
+      # - "frontend/**"
       - ".github/workflows/ci-frontend-e2e.yml"
       - ".github/workflows/e2e-create-report.yml"
       - ".github/actions/e2e/action.yml"
