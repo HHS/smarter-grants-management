@@ -111,20 +111,19 @@ module "account_guard" {
   context             = "the ${var.environment_name} frontend service"
 }
 
-# Resolve the container image repository (ECR) to the AWS account that owns THIS
-# environment's network, rather than the globally-shared build-repository
-# account. For every existing environment the network account IS the shared
-# account, so this is a no-op. It lets a self-contained environment in a separate
-# AWS account (infra-dev in the "dev" account) pull from an ECR in its own
-# account instead of cross-account.
-data "external" "account_ids_by_name" {
-  program = ["${path.module}/../../../bin/account-ids-by-name"]
-}
-
+# The frontend has ONE build repository shared across environments, living in the
+# account named by frontend/app-config's shared_network_name (dev), which
+# frontend/build-repository grants cross-account pull to every environment account.
+# So take the ARN and URL straight from app-config rather than re-deriving them
+# from this environment's own network account — doing that resolved staging to
+# 530702498822, where no repository is ever created.
+#
+# Note this differs from infra/api, which deliberately has one build repository per
+# environment in that environment's own account and therefore does resolve the
+# account locally.
 locals {
-  image_repository_account_id = data.external.account_ids_by_name.result[local.network_config.account_name]
-  image_repository_url        = "${local.image_repository_account_id}.dkr.ecr.${local.build_repository_config.region}.amazonaws.com/${local.build_repository_config.name}"
-  image_repository_arn        = "arn:aws:ecr:${local.build_repository_config.region}:${local.image_repository_account_id}:repository/${local.build_repository_config.name}"
+  image_repository_url = local.build_repository_config.repository_url
+  image_repository_arn = local.build_repository_config.repository_arn
 }
 
 # Retrieve url for external incident management tool (e.g. Pagerduty, Splunk-On-Call)

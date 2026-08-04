@@ -3,22 +3,18 @@ data "aws_region" "current" {}
 
 locals {
   # AWS account that acts as the Security Hub delegated administrator and the
-  # central CloudTrail logging account for the organization. Only this account
-  # manages the org-wide CloudTrail trails and Security Hub standards
-  # subscriptions; every other account is a member that forwards to it. Kept in
-  # one place so the account ID isn't hardcoded across cloudtrail.tf,
-  # security_hub.tf, and monitoring.tf.
+  # central CloudTrail logging account for this project. Only this account manages
+  # the CloudTrail trails and Security Hub standards subscriptions. Kept in one
+  # place so the account ID isn't hardcoded across cloudtrail.tf, security_hub.tf,
+  # and monitoring.tf.
   #
-  # TODO: this is still the simpler-grants-gov delegated administrator. Neither
-  # of this project's accounts (dev 135002447353, staging 530702498822) matches
-  # it, so local.is_admin_account is false in both and the org-wide resources are
-  # all count = 0 — nothing breaks, but these accounts also get NO CloudTrail
-  # trail and do not manage Security Hub standards. Decide whether these accounts
-  # join the existing organization (leave this as-is and they forward to
-  # 315341936575) or need their own central logging account (set that account id
-  # here and create its CloudTrail buckets/KMS keys, which cloudtrail.tf
-  # currently references by hardcoded name).
-  admin_account_id = "315341936575"
+  # dev is the admin account for this project. It previously pointed at
+  # simpler-grants-gov's delegated administrator (315341936575), which matched
+  # neither of this project's accounts — so is_admin_account was false in both and
+  # NEITHER got a CloudTrail trail. cloudtrail.tf now creates the central log
+  # bucket and KMS key in this account rather than referencing that foreign
+  # account's buckets by hardcoded name.
+  admin_account_id = "135002447353" # dev
   is_admin_account = data.aws_caller_identity.current.account_id == local.admin_account_id
 
   # Must match tf_state_bucket_name in bin/set-up-current-account, which creates
@@ -46,6 +42,12 @@ terraform {
     aws = {
       source  = "hashicorp/aws"
       version = "~> 5.68.0"
+    }
+    # Used by security_hub_alerts.tf to build the alerting Lambda packages from
+    # their committed .py sources.
+    archive = {
+      source  = "hashicorp/archive"
+      version = "~> 2.4"
     }
     # NEW RELIC DISABLED — see monitoring.tf.
     # An empty `provider "newrelic" {}` block reads NEW_RELIC_ACCOUNT_ID and

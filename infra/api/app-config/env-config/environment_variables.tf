@@ -12,15 +12,23 @@ locals {
     # Login.gov OAuth
     # Default values point to the IDP integration environment
     # which all non-prod environments should use
-    LOGIN_GOV_CLIENT_ID              = "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs-${var.environment}-simpler-grants-gov"
-    LOGIN_GOV_ENDPOINT               = "https://idp.int.identitysandbox.gov/"
-    LOGIN_GOV_JWK_ENDPOINT           = "https://idp.int.identitysandbox.gov/api/openid_connect/certs"
-    LOGIN_GOV_AUTH_ENDPOINT          = "https://idp.int.identitysandbox.gov/openid_connect/authorize"
-    LOGIN_GOV_TOKEN_ENDPOINT         = "https://idp.int.identitysandbox.gov/api/openid_connect/token"
-    LOGIN_GOV_LOGOUT_ENDPOINT        = "https://idp.int.identitysandbox.gov/openid_connect/logout"
-    LOGIN_GOV_REDIRECT_SCHEME        = var.enable_https ? "https" : "http"
-    API_JWT_ISSUER                   = "simpler-grants-api-${var.environment}"
-    API_JWT_AUDIENCE                 = "simpler-grants-api-${var.environment}"
+    #
+    # TODO: LOGIN_GOV_CLIENT_ID is still simpler-grants-gov's registered client.
+    # It must match the client registered with login.gov exactly, so it can only be
+    # changed in lockstep with registering a client for this project — deliberately
+    # left alone until that exists. Login will not work against this value.
+    LOGIN_GOV_CLIENT_ID       = "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs-${var.environment}-simpler-grants-gov"
+    LOGIN_GOV_ENDPOINT        = "https://idp.int.identitysandbox.gov/"
+    LOGIN_GOV_JWK_ENDPOINT    = "https://idp.int.identitysandbox.gov/api/openid_connect/certs"
+    LOGIN_GOV_AUTH_ENDPOINT   = "https://idp.int.identitysandbox.gov/openid_connect/authorize"
+    LOGIN_GOV_TOKEN_ENDPOINT  = "https://idp.int.identitysandbox.gov/api/openid_connect/token"
+    LOGIN_GOV_LOGOUT_ENDPOINT = "https://idp.int.identitysandbox.gov/openid_connect/logout"
+    LOGIN_GOV_REDIRECT_SCHEME = var.enable_https ? "https" : "http"
+
+    # Set now rather than later: these are baked into every token this API issues,
+    # so changing them once tokens are in circulation invalidates them.
+    API_JWT_ISSUER                   = "smarter-grants-management-${var.environment}"
+    API_JWT_AUDIENCE                 = "smarter-grants-management-${var.environment}"
     API_JWT_TOKEN_EXPIRATION_MINUTES = 15
 
     TEST_AGENCY_PREFIXES = "GDIT,IVPDF,0001,FGLT,NGMS,NGMS-Sub1,SECSCAN"

@@ -26,6 +26,16 @@ output "enable_newrelic" {
   description = "Whether to create the New Relic log forwarders. False while this project has no New Relic tenant."
 }
 
+output "enable_security_hub_alerts" {
+  value       = local.enable_security_hub_alerts
+  description = "Whether to create the Security Hub alerting stack. False until the grants-alerts-email secret exists in each account."
+}
+
+output "enable_security_hub_slack" {
+  value       = local.enable_security_hub_slack
+  description = "Whether to post Security Hub findings to Slack. Requires enable_security_hub_alerts and the security-hub-slack-webhook secret."
+}
+
 output "default_tags" {
   value = {
     project             = local.project_name

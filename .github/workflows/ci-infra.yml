@@ -53,7 +53,7 @@ jobs:
           make infra-lint-terraform
 
   validate-terraform:
-    name: Validate Terraform modules
+    name: Validate Terraform modules and root layers
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -62,7 +62,11 @@ jobs:
           terraform_version: 1.14.3
           terraform_wrapper: false
       - name: Validate
-        run: make infra-validate-modules
+        # Covers the root deployment layers as well as infra/modules. Root layers
+        # were previously never validated, so errors that only appear in a clean
+        # checkout (e.g. a file referenced by filebase64sha256 that is gitignored)
+        # got through CI.
+        run: make infra-validate
 
   unit-test-terraform-modules:
     name: Unit test Terraform modules

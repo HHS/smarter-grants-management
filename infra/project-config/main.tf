@@ -49,4 +49,27 @@ locals {
   # The account-level AWS <-> New Relic integration is separate and is commented
   # out in infra/accounts/monitoring.tf.
   enable_newrelic = false
+
+  # Whether to create the Security Hub SNS/Lambda alerting stack in
+  # infra/accounts/security_hub_alerts.tf (findings topic, EventBridge rules,
+  # email-formatter Lambda, and the log-failure email subscription in alarms.tf).
+  #
+  # Disabled: every one of those resources needs a Secrets Manager secret named
+  # `grants-alerts-email` to already exist in the target account, resolved through
+  # a data source that fails at PLAN time when it is missing. Leaving this on
+  # would block bootstrapping either account from a clean checkout.
+  #
+  # To enable, in each account:
+  #   aws secretsmanager create-secret --name grants-alerts-email \
+  #     --secret-string '{"email":"grants-alerts@navapbc.com"}' --region us-east-1
+  # then flip this to true and re-apply the accounts layer.
+  enable_security_hub_alerts = false
+
+  # Whether to additionally post Security Hub findings to Slack. Requires
+  # enable_security_hub_alerts (the Slack Lambda subscribes to the findings topic
+  # that flag creates) plus a `security-hub-slack-webhook` secret:
+  #   aws secretsmanager create-secret --name security-hub-slack-webhook \
+  #     --secret-string '{"webhook_url":"https://hooks.slack.com/services/..."}' \
+  #     --region us-east-1
+  enable_security_hub_slack = false
 }

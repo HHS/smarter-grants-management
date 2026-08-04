@@ -17,23 +17,6 @@ resource "aws_securityhub_account" "main" {
 }
 
 # Enable security standards (administrator account only -- see local above)
-moved {
-  from = aws_securityhub_standards_subscription.cis_1_2
-  to   = aws_securityhub_standards_subscription.cis_1_2[0]
-}
-moved {
-  from = aws_securityhub_standards_subscription.aws_foundational
-  to   = aws_securityhub_standards_subscription.aws_foundational[0]
-}
-moved {
-  from = aws_securityhub_standards_subscription.cis_1_4
-  to   = aws_securityhub_standards_subscription.cis_1_4[0]
-}
-moved {
-  from = aws_securityhub_standards_subscription.nist_800_53
-  to   = aws_securityhub_standards_subscription.nist_800_53[0]
-}
-
 resource "aws_securityhub_standards_subscription" "cis_1_2" {
   count         = local.manage_security_hub_standards ? 1 : 0
   depends_on    = [aws_securityhub_account.main]

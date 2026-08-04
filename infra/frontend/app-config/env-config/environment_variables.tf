@@ -37,34 +37,81 @@ locals {
   #   }
   # }
   secrets = {
-    # Mailchimp API key to pass with requests for newsletter subscriber endpoints.
-    MAILCHIMP_API_KEY = {
-      manage_method     = "manual"
-      secret_store_name = "/${var.app_name}/${var.environment}/mailchimp-api-key"
-    },
-    # Mailchimp data center prefix (e.g. "us4") used to build the API base url.
-    MAILCHIMP_API_URL_PREFIX = {
-      manage_method     = "manual"
-      secret_store_name = "/${var.app_name}/${var.environment}/mailchimp-api-url-prefix"
-    },
-    # Mailchimp list ID for requests to manage subscribers to the Simpler Grants distribution list.
-    MAILCHIMP_LIST_ID = {
-      manage_method     = "manual"
-      secret_store_name = "/${var.app_name}/${var.environment}/mailchimp-list-id"
-    },
-    # URL that the frontend uses to make fetch requests to the Grants API.
-    API_URL = {
-      manage_method     = "manual"
-      secret_store_name = "/${var.app_name}/${var.environment}/api-url"
-    },
-    # URL for the API login route.
-    AUTH_LOGIN_URL = {
-      manage_method     = "manual"
-      secret_store_name = "/${var.app_name}/${var.environment}/auth-login-url"
-    },
+    # Every manage_method = "manual" entry resolves through a
+    # data.aws_ssm_parameter lookup, so ALL of them must already exist in SSM or the
+    # frontend service apply fails at plan time.
+    #
+    # They are all commented out because /frontend is still a placeholder — there is
+    # no frontend source in this repo yet, so none of these can be checked against
+    # code that reads them, and none of the features they configure exist. Re-add
+    # each one as the feature that needs it lands, the same way infra/api's list was
+    # pruned to only what that app actually reads.
+    #
+    # Carried over from simpler-grants-gov and pending that port:
+    #
+    # # Mailchimp API key to pass with requests for newsletter subscriber endpoints.
+    # MAILCHIMP_API_KEY = {
+    #   manage_method     = "manual"
+    #   secret_store_name = "/${var.app_name}/${var.environment}/mailchimp-api-key"
+    # },
+    # # Mailchimp data center prefix (e.g. "us4") used to build the API base url.
+    # MAILCHIMP_API_URL_PREFIX = {
+    #   manage_method     = "manual"
+    #   secret_store_name = "/${var.app_name}/${var.environment}/mailchimp-api-url-prefix"
+    # },
+    # # Mailchimp list ID for requests to manage subscribers to the distribution list.
+    # MAILCHIMP_LIST_ID = {
+    #   manage_method     = "manual"
+    #   secret_store_name = "/${var.app_name}/${var.environment}/mailchimp-list-id"
+    # },
+    # # URL that the frontend uses to make fetch requests to the Grants API.
+    # API_URL = {
+    #   manage_method     = "manual"
+    #   secret_store_name = "/${var.app_name}/${var.environment}/api-url"
+    # },
+    # # URL for the API login route.
+    # AUTH_LOGIN_URL = {
+    #   manage_method     = "manual"
+    #   secret_store_name = "/${var.app_name}/${var.environment}/auth-login-url"
+    # },
+    # FEATURE_APPLY_FORM_PROTOTYPE_OFF = {
+    #   manage_method     = "manual"
+    #   secret_store_name = "/${var.app_name}/${var.environment}/feature-apply-form-prototype-off"
+    # },
+    # FEATURE_AWARD_RECOMMENDATION_OFF = {
+    #   manage_method     = "manual"
+    #   secret_store_name = "/${var.app_name}/${var.environment}/feature-award-recommendation-off"
+    # },
+    # FEATURE_MAINTENANCE_MODE = {
+    #   manage_method     = "manual"
+    #   secret_store_name = "/${var.app_name}/${var.environment}/feature-maintenance-mode"
+    # },
+    # FEATURE_MAINTENANCE_BANNER_ENABLED = {
+    #   manage_method     = "manual"
+    #   secret_store_name = "/${var.app_name}/${var.environment}/feature-maintenance-banner-enabled"
+    # },
+    # MAINTENANCE_BANNER_MESSAGE = {
+    #   manage_method     = "manual"
+    #   secret_store_name = "/${var.app_name}/${var.environment}/maintenance-banner-message"
+    # },
+    # FEATURE_OPPORTUNITIES_LIST_OFF = {
+    #   manage_method     = "manual"
+    #   secret_store_name = "/${var.app_name}/${var.environment}/feature-opportunities-list-off"
+    # },
+    # FEATURE_FEATURE_FLAG_ADMIN_OFF = {
+    #   manage_method     = "manual"
+    #   secret_store_name = "/${var.app_name}/${var.environment}/feature-feature-flag-admin-off"
+    # },
+    # API_JWT_PUBLIC_KEY = {
+    #   manage_method     = "manual"
+    #   secret_store_name = "/api/${var.environment}/api-jwt-public-key"
+    # },
+    # API_GW_AUTH = {
+    #   manage_method     = "manual"
+    #   secret_store_name = "/${var.app_name}/${var.environment}/X-API-KEY"
+    # },
+    #
     # NEW RELIC DISABLED — see enable_newrelic in infra/project-config/main.tf.
-    # manage_method = "manual" resolves through a data.aws_ssm_parameter lookup,
-    # so leaving these in would fail the service apply until the parameters exist.
     # NEW_RELIC_APP_NAME = {
     #   manage_method     = "manual"
     #   secret_store_name = "/${var.app_name}/${var.environment}/new-relic-app-name"
@@ -73,45 +120,12 @@ locals {
     #   manage_method     = "manual"
     #   secret_store_name = "/new-relic-license-key"
     # },
+
+    # Kept: "generated" creates the SSM parameter itself rather than reading an
+    # existing one, so it needs nothing pre-provisioned.
     SESSION_SECRET = {
       manage_method     = "generated"
       secret_store_name = "/${var.app_name}/${var.environment}/session-secret"
-    },
-    FEATURE_APPLY_FORM_PROTOTYPE_OFF = {
-      manage_method     = "manual"
-      secret_store_name = "/${var.app_name}/${var.environment}/feature-apply-form-prototype-off"
-    },
-    FEATURE_AWARD_RECOMMENDATION_OFF = {
-      manage_method     = "manual"
-      secret_store_name = "/${var.app_name}/${var.environment}/feature-award-recommendation-off"
-    },
-    FEATURE_MAINTENANCE_MODE = {
-      manage_method     = "manual"
-      secret_store_name = "/${var.app_name}/${var.environment}/feature-maintenance-mode"
-    },
-    FEATURE_MAINTENANCE_BANNER_ENABLED = {
-      manage_method     = "manual"
-      secret_store_name = "/${var.app_name}/${var.environment}/feature-maintenance-banner-enabled"
-    },
-    MAINTENANCE_BANNER_MESSAGE = {
-      manage_method     = "manual"
-      secret_store_name = "/${var.app_name}/${var.environment}/maintenance-banner-message"
-    },
-    FEATURE_OPPORTUNITIES_LIST_OFF = {
-      manage_method     = "manual"
-      secret_store_name = "/${var.app_name}/${var.environment}/feature-opportunities-list-off"
-    },
-    FEATURE_FEATURE_FLAG_ADMIN_OFF = {
-      manage_method     = "manual"
-      secret_store_name = "/${var.app_name}/${var.environment}/feature-feature-flag-admin-off"
-    },
-    API_JWT_PUBLIC_KEY = {
-      manage_method     = "manual"
-      secret_store_name = "/api/${var.environment}/api-jwt-public-key"
-    },
-    API_GW_AUTH = {
-      manage_method     = "manual"
-      secret_store_name = "/${var.app_name}/${var.environment}/X-API-KEY"
     },
   }
 }

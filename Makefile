@@ -19,6 +19,14 @@ BUILD_REPOSITORY_CONFIG_NAME ?= $(if $(ENVIRONMENT),$(ENVIRONMENT),shared)
 # in infra/modules and then stripping out the "infra/modules/" prefix
 MODULES := $(notdir $(wildcard infra/modules/*))
 
+# Root deployment layers, validated separately from MODULES. Without this nothing
+# ever type-checks a root layer, which is how a missing file referenced by
+# filebase64sha256 in infra/accounts reached main-adjacent code: it only failed on a
+# clean checkout, never in CI.
+ROOT_LAYERS := accounts networks project-config \
+               api/app-config api/build-repository api/database api/service \
+               frontend/app-config frontend/build-repository frontend/service
+
 # Check that given variables are set and all have non-empty values,
 # die with an error otherwise.
 #
@@ -54,6 +62,8 @@ __check_defined = \
 	infra-lint-scripts \
 	infra-lint-terraform \
 	infra-test-modules \
+	infra-validate \
+	infra-validate-root-layers \
 	infra-update-app-build-repository \
 	infra-update-app-database \
 	infra-update-app-service \
@@ -179,6 +189,19 @@ infra-validate-module-%:
 	@echo "Validate library module: $*"
 	terraform -chdir=infra/modules/$* init -backend=false
 	terraform -chdir=infra/modules/$* validate
+
+# A shell loop rather than the per-item pattern rule used for MODULES above: make's
+# `%` pattern rules do not match targets containing a "/", so a generated target
+# like "infra-validate-root-layer-api/app-config" is never resolved.
+infra-validate-root-layers: ## Run terraform validate on the root deployment layers
+	@set -e; for layer in $(ROOT_LAYERS); do \
+		echo "Validate root layer: $$layer"; \
+		terraform -chdir=infra/$$layer init -backend=false; \
+		terraform -chdir=infra/$$layer validate; \
+	done
+
+infra-validate: ## Run terraform validate on both the child modules and the root layers
+infra-validate: infra-validate-modules infra-validate-root-layers
 
 # The prerequisite for this rule is obtained by
 # prefixing each module with the string "infra-test-module-"

@@ -2,6 +2,33 @@
 
 This configuration sets up automated alerts for AWS Security Hub findings.
 
+## Status: disabled by default
+
+The whole stack is opt-in, gated on two flags in `infra/project-config/main.tf`:
+
+| Flag | Default | Gates |
+| --- | --- | --- |
+| `enable_security_hub_alerts` | `false` | The findings SNS topic, EventBridge rules, email-formatter Lambda, email subscription, and the log-failure subscription in `alarms.tf` |
+| `enable_security_hub_slack` | `false` | The Slack Lambda and its subscription. Also requires `enable_security_hub_alerts`, since the Slack Lambda subscribes to the findings topic |
+
+They default to `false` because every resource here depends on a Secrets Manager
+secret that must already exist in the target account, resolved through a data
+source that fails at **plan** time when absent. Leaving them on made
+`infra/accounts` un-appliable from a clean checkout.
+
+To turn the email path on, in each account:
+
+```bash
+aws secretsmanager create-secret --name grants-alerts-email \
+  --secret-string '{"email":"grants-alerts@navapbc.com"}' --region us-east-1
+```
+
+then set `enable_security_hub_alerts = true` and re-apply the accounts layer.
+
+The alerting Lambdas are packaged from their committed `.py` sources by
+`data "archive_file"` blocks in `security_hub_alerts.tf` — `infra/.gitignore`
+excludes `**/lambda/*.zip`, so nothing pre-built is expected in a checkout.
+
 ## What's Configured
 
 ### 1. SNS Topic
@@ -60,16 +87,17 @@ aws secretsmanager create-secret \
 
 ### 3. Enable in Terraform
 
-Uncomment the Slack integration resources in `infra/accounts/security_hub_alerts.tf`:
+Set both flags in `infra/project-config/main.tf`:
 
-- `data.aws_secretsmanager_secret.slack_webhook`
-- `data.aws_secretsmanager_secret_version.slack_webhook`
-- `aws_iam_role.security_hub_slack_lambda`
-- `aws_iam_role_policy_attachment.lambda_basic`
-- `aws_iam_role_policy.lambda_secrets`
-- `aws_lambda_function.security_hub_slack`
-- `aws_lambda_permission.allow_sns`
-- `aws_sns_topic_subscription.security_hub_findings_slack`
+```hcl
+enable_security_hub_alerts = true
+enable_security_hub_slack  = true
+```
+
+That is the whole change — the Slack resources in
+`infra/accounts/security_hub_alerts.tf` are live code gated on
+`local.slack_count`, not commented out. (An earlier version of this doc and an
+inline comment both said to uncomment them, which had not been true for a while.)
 
 ### 4. Apply Terraform
 
