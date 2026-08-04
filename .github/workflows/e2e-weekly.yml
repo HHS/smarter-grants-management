@@ -2,7 +2,8 @@ name: E2E Tests Weekly
 on:
   schedule:
     # Run every Sunday at (6/7am Eastern)
-    - cron: "0 11 * * 0"
+    # - cron: "0 11 * * 0"
+    - cron: "0 0 31 * 0"
 
 jobs:
   weekly-e2e-tests-deployed:

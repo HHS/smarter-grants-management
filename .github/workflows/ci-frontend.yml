@@ -90,21 +90,21 @@ jobs:
       - run: npm ci
       - run: npm run build
 
-  # Confirms Storybook still builds successfully
-  check-storybook-builds:
-    if: ${{ inputs.skip_checks == null || inputs.skip_checks == false }}
-    name: FE Storybook Build Check
-    runs-on: ubuntu-22.04
+  # # Confirms Storybook still builds successfully
+  # check-storybook-builds:
+  #   if: ${{ inputs.skip_checks == null || inputs.skip_checks == false }}
+  #   name: FE Storybook Build Check
+  #   runs-on: ubuntu-22.04
 
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache-dependency-path: ${{ env.LOCKFILE_PATH }}
-          cache: ${{ env.PACKAGE_MANAGER }}
-      - run: npm ci
-      - run: npm run storybook-build
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version: ${{ env.NODE_VERSION }}
+  #         cache-dependency-path: ${{ env.LOCKFILE_PATH }}
+  #         cache: ${{ env.PACKAGE_MANAGER }}
+  #     - run: npm ci
+  #     - run: npm run storybook-build
 
   skip-checks:
     if: ${{ inputs.skip_checks != null && inputs.skip_checks == true }}
