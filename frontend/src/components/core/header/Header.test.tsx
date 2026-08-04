@@ -151,7 +151,7 @@ describe("Header", () => {
     usePathnameMock.mockReturnValue("/search");
     render(<Header />);
 
-    const homeLink = screen.getByRole("link", { name: "title" });
+    const homeLink = screen.getByRole("link", { name: "logo" });
     expect(homeLink).toBeInTheDocument();
     expect(homeLink).toHaveAttribute("href", "/");
   });

@@ -392,16 +392,17 @@ const Header = ({
           <div className="usa-navbar border-bottom-0">
             <Title className="margin-y-2">
               <div className="display-flex flex-align-center">
-                {/* <Link href="/" className="position-relative">
-                  <Image
+                <Link href="/" className="position-relative">
+                  logo
+                  {/* <Image
                     alt={t("title")}
                     src={GrantsLogo as string}
                     className="height-4 display-block position-relative desktop:height-auto"
                     unoptimized
                     priority
                     fill
-                  />
-                </Link> */}
+                  /> */}
+                </Link>
               </div>
             </Title>
           </div>
