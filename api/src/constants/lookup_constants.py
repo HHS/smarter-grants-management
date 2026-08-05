@@ -39,6 +39,9 @@ class MgmtResourceType(StrEnum):
     TEAM = "team"
     OPPORTUNITY = "opportunity"
 
+class GrantorOrganizationType(StrEnum):
+    PROGRAM_OFFICE = "program_office"
+    GRANT_OFFICE = "grant_office"
 
 # The resource types each privilege is allowed to be assigned at. A privilege may only be
 # included in a role when the role's resource types are a subset of the privilege's allowed

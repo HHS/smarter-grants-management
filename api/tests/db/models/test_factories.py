@@ -3,7 +3,7 @@ from sqlalchemy import select
 
 from src.constants.lookup_constants import MgmtUserType
 from src.db.models.user_models import MgmtUser
-from tests.db.models.factories import MgmtUserFactory
+from tests.db.models.factories import MgmtUserFactory, GrantorOrganizationFactory
 
 
 def test_user_factory_build():
@@ -48,3 +48,8 @@ def test_factory_create_uninitialized_db_session():
     # 'enable_factory_create' fixture.
     with pytest.raises(Exception, match="Factory db_session is not initialized."):
         MgmtUserFactory.create()
+
+
+def test_thing(enable_factory_create, db_session):
+    x = GrantorOrganizationFactory.create()
+    print(x.for_json())

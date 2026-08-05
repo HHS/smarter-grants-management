@@ -10,12 +10,13 @@ from grants_shared.util import datetime_util
 from sqlalchemy.orm import scoped_session
 
 import src.db.models.resource_models as resource_models
+import src.db.models.grantor_organization_models as grantor_organization_models
 import src.db.models.user_models as user_models
 from src.constants.lookup_constants import (
     ExternalUserType,
     MgmtPrivilege,
     MgmtResourceType,
-    MgmtUserType,
+    MgmtUserType, GrantorOrganizationType,
 )
 
 
@@ -111,6 +112,11 @@ class CustomProvider(BaseProvider):
         "Bureau of {{agency_word}}",
     ]
 
+    GRANT_OFFICE_NAME_FORMATS = [
+        "{{department_name}} - Grant Office"
+        "{{agency_word}} Headquarters - Grant Office",
+    ]
+
     def department_word(self) -> str:
         return self.random_element(self.DEPARTMENT_WORDS)
 
@@ -125,6 +131,9 @@ class CustomProvider(BaseProvider):
         pattern = self.random_element(self.SUBAGENCY_NAME_FORMATS)
         return self.generator.parse(pattern)
 
+    def grant_office_name(self) -> str:
+        pattern = self.random_element(self.GRANT_OFFICE_NAME_FORMATS)
+        return self.generator.parse(pattern)
 
 fake = faker.Faker()
 fake.add_provider(CustomProvider)
@@ -228,6 +237,41 @@ class MgmtInternalResourceFactory(BaseFactory):
     mgmt_internal_resource_id = Generators.UuidObj
     internal_resource_name = "My internal resource"
 
+
+class PartnerFactory(BaseFactory):
+    class Meta:
+        model = grantor_organization_models.Partner
+
+    partner_id = Generators.UuidObj
+
+    partner_name = factory.Faker("department_name")
+
+class GrantorOrganizationFactory(BaseFactory):
+    class Meta:
+        model = grantor_organization_models.GrantorOrganization
+
+    grantor_organization_id = Generators.UuidObj
+
+    # TODO - can use factory.maybe here
+    organization_name = factory.Faker("department_name")
+
+    partner = factory.SubFactory(PartnerFactory)
+    partner_id = factory.LazyAttribute(lambda o: o.partner.partner_id)
+
+    # A parent organization can be set either manually
+    # or using the trait below.
+    parent_organization = None
+    parent_organization_id = factory.LazyAttribute(lambda o: o.parent_organization.parent_organization_id if o.parent_organization else None)
+
+    grantor_organization_type = factory.fuzzy.FuzzyChoice(GrantorOrganizationType)
+
+    class Params:
+        pass
+        has_parent_organization = factory.Trait(
+            parent_organization=factory.SubFactory("tests.db.models.factories.GrantorOrganizationFactory", partner=factory.SelfAttribute("..partner")),
+            # Don't add several layers, otherwise this recurses forever
+            has_parent_organization=False
+        )
 
 class DepartmentFactory(BaseFactory):
     class Meta:
