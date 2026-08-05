@@ -21,7 +21,7 @@ resource "aws_sesv2_email_identity_policy" "sender" {
               "aws:SourceAccount" = data.aws_caller_identity.current.account_id
             },
             StringLike = {
-              "aws:SourceArn" = "arn:aws:mobiletargeting:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:apps/*"
+              "aws:SourceArn" = "arn:aws:mobiletargeting:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:apps/*"
             }
           }
         }

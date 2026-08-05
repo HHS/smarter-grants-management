@@ -85,7 +85,7 @@ resource "aws_kms_key" "nr_host_log_forwarder" {
         Sid    = "AllowCloudWatchLogs"
         Effect = "Allow"
         Principal = {
-          Service = "logs.${data.aws_region.current.name}.amazonaws.com"
+          Service = "logs.${data.aws_region.current.region}.amazonaws.com"
         }
         Action = [
           "kms:Encrypt",
@@ -97,7 +97,7 @@ resource "aws_kms_key" "nr_host_log_forwarder" {
         Resource = "*"
         Condition = {
           ArnLike = {
-            "kms:EncryptionContext:aws:logs:arn" = "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/${local.nr_host_log_forwarder_name}/logs"
+            "kms:EncryptionContext:aws:logs:arn" = "arn:aws:logs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/${local.nr_host_log_forwarder_name}/logs"
           }
         }
       },
@@ -197,7 +197,7 @@ resource "aws_cloudwatch_log_subscription_filter" "api_gateway_to_newrelic" {
 locals {
   # AWS auto-creates this log group when execution logging is enabled; construct the name from the REST API ID
   api_gateway_execution_log_group_name = var.enable_api_gateway ? "API-Gateway-Execution-Logs_${aws_api_gateway_rest_api.api[0].id}/v1" : ""
-  api_gateway_execution_log_group_arn  = var.enable_api_gateway ? "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:API-Gateway-Execution-Logs_${aws_api_gateway_rest_api.api[0].id}/v1" : ""
+  api_gateway_execution_log_group_arn  = var.enable_api_gateway ? "arn:aws:logs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:log-group:API-Gateway-Execution-Logs_${aws_api_gateway_rest_api.api[0].id}/v1" : ""
 }
 
 resource "aws_lambda_permission" "allow_cloudwatch_api_gateway_execution" {
