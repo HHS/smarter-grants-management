@@ -36,26 +36,26 @@ EXTERNAL_USER_TYPE_CONFIG: LookupConfig[ExternalUserType] = LookupConfig(
 
 MGMT_PRIVILEGE_CONFIG: LookupConfig[MgmtPrivilege] = LookupConfig(
     [
-        LookupStr(MgmtPrivilege.VIEW_DEPARTMENT, 1),
-        LookupStr(MgmtPrivilege.UPDATE_DEPARTMENT, 2),
-        LookupStr(MgmtPrivilege.MANAGE_DEPARTMENT_MEMBERS, 3),
-        LookupStr(MgmtPrivilege.VIEW_SUBAGENCY, 4),
-        LookupStr(MgmtPrivilege.UPDATE_SUBAGENCY, 5),
-        LookupStr(MgmtPrivilege.MANAGE_SUBAGENCY_MEMBERS, 6),
-        LookupStr(MgmtPrivilege.VIEW_TEAM, 7),
-        LookupStr(MgmtPrivilege.UPDATE_TEAM, 8),
-        LookupStr(MgmtPrivilege.MANAGE_TEAM_MEMBERS, 9),
-        LookupStr(MgmtPrivilege.CREATE_TEAM, 10),
-        LookupStr(MgmtPrivilege.DELETE_TEAM, 11),
+        LookupStr(MgmtPrivilege.VIEW_PARTNER, 1),
+        LookupStr(MgmtPrivilege.UPDATE_PARTNER, 2),
+        LookupStr(MgmtPrivilege.MANAGE_PARTNER_MEMBERS, 3),
+        LookupStr(MgmtPrivilege.VIEW_PROGRAM, 4),
+        LookupStr(MgmtPrivilege.UPDATE_PROGRAM, 5),
+        LookupStr(MgmtPrivilege.UNUSED_PRIVILEGE_101, 6),
+        LookupStr(MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION, 7),
+        LookupStr(MgmtPrivilege.UPDATE_GRANTOR_ORGANIZATION, 8),
+        LookupStr(MgmtPrivilege.MANAGE_GRANTOR_ORGANIZATION_MEMBERS, 9),
+        LookupStr(MgmtPrivilege.UNUSED_PRIVILEGE_102, 10),
+        LookupStr(MgmtPrivilege.UNUSED_PRIVILEGE_103, 11),
     ]
 )
 
 MGMT_RESOURCE_TYPE_CONFIG: LookupConfig[MgmtResourceType] = LookupConfig(
     [
         LookupStr(MgmtResourceType.INTERNAL, 1),
-        LookupStr(MgmtResourceType.DEPARTMENT, 2),
-        LookupStr(MgmtResourceType.SUBAGENCY, 3),
-        LookupStr(MgmtResourceType.TEAM, 4),
+        LookupStr(MgmtResourceType.PARTNER, 2),
+        LookupStr(MgmtResourceType.PROGRAM, 3),
+        LookupStr(MgmtResourceType.GRANTOR_ORGANIZATION, 4),
         LookupStr(MgmtResourceType.OPPORTUNITY, 5),
     ]
 )

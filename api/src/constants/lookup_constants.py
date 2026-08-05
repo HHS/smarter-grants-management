@@ -17,26 +17,26 @@ class ExternalUserType(StrEnum):
 
 
 class MgmtPrivilege(StrEnum):
-    VIEW_DEPARTMENT = "view_department"
-    UPDATE_DEPARTMENT = "update_department"
-    MANAGE_DEPARTMENT_MEMBERS = "manage_department_members"
+    VIEW_PARTNER = "view_partner"
+    UPDATE_PARTNER = "update_partner"
+    MANAGE_PARTNER_MEMBERS = "manage_partner_members"
 
-    VIEW_SUBAGENCY = "view_subagency"
-    UPDATE_SUBAGENCY = "update_subagency"
-    MANAGE_SUBAGENCY_MEMBERS = "manage_subagency_members"
+    VIEW_PROGRAM = "view_program"
+    UPDATE_PROGRAM = "update_program"
+    UNUSED_PRIVILEGE_101 = "unused_privilege_101"
 
-    VIEW_TEAM = "view_team"
-    UPDATE_TEAM = "update_team"
-    MANAGE_TEAM_MEMBERS = "manage_team_members"
-    CREATE_TEAM = "create_team"
-    DELETE_TEAM = "delete_team"
+    VIEW_GRANTOR_ORGANIZATION = "view_grantor_organization"
+    UPDATE_GRANTOR_ORGANIZATION = "update_grantor_organization"
+    MANAGE_GRANTOR_ORGANIZATION_MEMBERS = "manage_grantor_organization_members"
+    UNUSED_PRIVILEGE_102 = "unused_privilege_102"
+    UNUSED_PRIVILEGE_103 = "unused_privilege_103"
 
 
 class MgmtResourceType(StrEnum):
     INTERNAL = "internal"
-    DEPARTMENT = "department"
-    SUBAGENCY = "subagency"
-    TEAM = "team"
+    PARTNER = "partner"
+    PROGRAM = "program"
+    GRANTOR_ORGANIZATION = "grantor_organization"
     OPPORTUNITY = "opportunity"
 
 
@@ -45,30 +45,35 @@ class MgmtResourceType(StrEnum):
 # resource types (validated in src/util/role_util.py::build_role). This prevents assigning,
 # for example, a department-only privilege on a team-level role.
 ALLOWED_RESOURCES_FOR_PRIVILEGE: dict[MgmtPrivilege, set[MgmtResourceType]] = {
-    MgmtPrivilege.VIEW_DEPARTMENT: {MgmtResourceType.DEPARTMENT},
-    MgmtPrivilege.UPDATE_DEPARTMENT: {MgmtResourceType.DEPARTMENT},
-    MgmtPrivilege.MANAGE_DEPARTMENT_MEMBERS: {MgmtResourceType.DEPARTMENT},
-    MgmtPrivilege.VIEW_SUBAGENCY: {MgmtResourceType.DEPARTMENT, MgmtResourceType.SUBAGENCY},
-    MgmtPrivilege.UPDATE_SUBAGENCY: {MgmtResourceType.DEPARTMENT, MgmtResourceType.SUBAGENCY},
-    MgmtPrivilege.MANAGE_SUBAGENCY_MEMBERS: {
-        MgmtResourceType.DEPARTMENT,
-        MgmtResourceType.SUBAGENCY,
+    # Partner-level
+    MgmtPrivilege.VIEW_PARTNER: {MgmtResourceType.PARTNER},
+    MgmtPrivilege.UPDATE_PARTNER: {MgmtResourceType.PARTNER},
+    MgmtPrivilege.MANAGE_PARTNER_MEMBERS: {MgmtResourceType.PARTNER},
+    # Program-level
+    MgmtPrivilege.VIEW_PROGRAM: {
+        MgmtResourceType.PARTNER,
+        MgmtResourceType.GRANTOR_ORGANIZATION,
+        MgmtResourceType.PROGRAM,
     },
-    MgmtPrivilege.VIEW_TEAM: {
-        MgmtResourceType.DEPARTMENT,
-        MgmtResourceType.SUBAGENCY,
-        MgmtResourceType.TEAM,
+    MgmtPrivilege.UPDATE_PROGRAM: {
+        MgmtResourceType.PARTNER,
+        MgmtResourceType.GRANTOR_ORGANIZATION,
+        MgmtResourceType.PROGRAM,
     },
-    MgmtPrivilege.MANAGE_TEAM_MEMBERS: {
-        MgmtResourceType.DEPARTMENT,
-        MgmtResourceType.SUBAGENCY,
-        MgmtResourceType.TEAM,
+    # Grantor organization level
+    MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION: {
+        MgmtResourceType.PARTNER,
+        MgmtResourceType.GRANTOR_ORGANIZATION,
     },
-    MgmtPrivilege.UPDATE_TEAM: {
-        MgmtResourceType.DEPARTMENT,
-        MgmtResourceType.SUBAGENCY,
-        MgmtResourceType.TEAM,
+    MgmtPrivilege.UPDATE_GRANTOR_ORGANIZATION: {
+        MgmtResourceType.PARTNER,
+        MgmtResourceType.GRANTOR_ORGANIZATION,
     },
-    MgmtPrivilege.CREATE_TEAM: {MgmtResourceType.DEPARTMENT, MgmtResourceType.SUBAGENCY},
-    MgmtPrivilege.DELETE_TEAM: {MgmtResourceType.DEPARTMENT, MgmtResourceType.SUBAGENCY},
+    MgmtPrivilege.MANAGE_GRANTOR_ORGANIZATION_MEMBERS: {
+        MgmtResourceType.PARTNER,
+        MgmtResourceType.GRANTOR_ORGANIZATION,
+    },
+    MgmtPrivilege.UNUSED_PRIVILEGE_101: set(),
+    MgmtPrivilege.UNUSED_PRIVILEGE_102: set(),
+    MgmtPrivilege.UNUSED_PRIVILEGE_103: set(),
 }

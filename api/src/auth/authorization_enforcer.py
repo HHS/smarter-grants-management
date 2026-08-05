@@ -9,12 +9,9 @@ from sqlalchemy import select
 from src.constants.lookup_constants import MgmtPrivilege, MgmtResourceType
 from src.db.models.resource_models import (
     AbstractResourceTableMixin,
-    Department,
     MgmtInternalResource,
     MgmtResourceUser,
     MgmtRole,
-    Subagency,
-    Team,
 )
 from src.db.models.user_models import MgmtUser
 
@@ -176,49 +173,16 @@ class AuthorizationEnforcer:
         This factors in any inheritance that a particular type may need to consider.
 
         For each resource type, the following resources are relevant:
-        * Department -> Just the department itself
-        * Subagency -> The subagency itself and its parent department
-        * Team -> The team itself, its parent subagency, and the subagencies parent department
+        * TODO - fill in once we rebuild this out
 
         * Internal resource -> The internal resource itself - no inheritance exists for this type
         """
-
-        if isinstance(resource, Department):
-            return self._get_resources_for_department(resource)
-
-        if isinstance(resource, Subagency):
-            return self._get_resources_for_subagency(resource)
-
-        if isinstance(resource, Team):
-            return self._get_resources_for_team(resource)
 
         if isinstance(resource, MgmtInternalResource):
             return self._get_resources_for_internal_resource(resource)
 
         error_message = f"No configuration found for determining relevant resources for type {resource.__class__.__name__}"
         raise NotImplementedError(error_message)
-
-    def _get_resources_for_department(
-        self, department: Department
-    ) -> list[AbstractResourceTableMixin]:
-        """
-        Get all relevant resources for a department - which is just the department itself
-        """
-        return [department]
-
-    def _get_resources_for_subagency(
-        self, subagency: Subagency
-    ) -> list[AbstractResourceTableMixin]:
-        """
-        Get all relevant resources for a subagency - which is the subagency itself + its parent department
-        """
-        return [subagency] + self._get_resources_for_department(subagency.department)
-
-    def _get_resources_for_team(self, team: Team) -> list[AbstractResourceTableMixin]:
-        """
-        Get all relevant resources for a team - which is the team itself, the parent subagency, and the subagencies parent department
-        """
-        return [team] + self._get_resources_for_subagency(team.subagency)
 
     def _get_resources_for_internal_resource(
         self, internal_resource: MgmtInternalResource

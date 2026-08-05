@@ -32,8 +32,6 @@ def seed_local_db() -> None:
 def run_seed_logic(db_session: db.Session) -> None:
     create_users(db_session)
 
-    create_teams()
-
     # Commit anything remaining that wasn't made with factories
     db_session.commit()
 
@@ -66,20 +64,3 @@ def create_users(db_session: db.Session) -> None:
         db_session=db_session,
         scenario_name="Another API Key User",
     ).with_oauth_login("another_api_key_user").with_api_key("local-dev-api-key-2").build()
-
-
-def create_teams() -> None:
-    teams = f.TeamFactory.create_batch(size=10)
-
-    for team in teams:
-        logger.info(
-            "Created team",
-            extra={
-                "team_id": team.team_id,
-                "team_name": team.team_name,
-                "subagency_id": team.subagency_id,
-                "subagency_name": team.subagency.subagency_name,
-                "department_id": team.subagency.department_id,
-                "department_name": team.subagency.department.department_name,
-            },
-        )

@@ -79,69 +79,6 @@ class MgmtInternalResource(GrantorSchemaTable, TimestampMixin, AbstractResourceT
         return MgmtResourceType.INTERNAL
 
 
-class Department(GrantorSchemaTable, TimestampMixin, AbstractResourceTableMixin):
-    __tablename__ = "department"
-
-    department_id: Mapped[uuid.UUID] = mapped_column(
-        UUID, ForeignKey(MgmtResource.mgmt_resource_id), primary_key=True, default=uuid.uuid4
-    )
-    resource: Mapped[MgmtResource] = relationship(
-        MgmtResource, single_parent=True, cascade="all, delete-orphan"
-    )
-
-    department_name: Mapped[str]
-
-    def get_resource_id(self) -> uuid.UUID:
-        return self.department_id
-
-    def get_resource_type(self) -> MgmtResourceType:
-        return MgmtResourceType.DEPARTMENT
-
-
-class Subagency(GrantorSchemaTable, TimestampMixin, AbstractResourceTableMixin):
-    __tablename__ = "subagency"
-
-    subagency_id: Mapped[uuid.UUID] = mapped_column(
-        UUID, ForeignKey(MgmtResource.mgmt_resource_id), primary_key=True, default=uuid.uuid4
-    )
-    resource: Mapped[MgmtResource] = relationship(
-        MgmtResource, single_parent=True, cascade="all, delete-orphan"
-    )
-
-    subagency_name: Mapped[str]
-
-    department_id: Mapped[uuid.UUID] = mapped_column(UUID, ForeignKey(Department.department_id))
-    department: Mapped[Department] = relationship(Department)
-
-    def get_resource_id(self) -> uuid.UUID:
-        return self.subagency_id
-
-    def get_resource_type(self) -> MgmtResourceType:
-        return MgmtResourceType.SUBAGENCY
-
-
-class Team(GrantorSchemaTable, TimestampMixin, AbstractResourceTableMixin):
-    __tablename__ = "team"
-
-    team_id: Mapped[uuid.UUID] = mapped_column(
-        UUID, ForeignKey(MgmtResource.mgmt_resource_id), primary_key=True, default=uuid.uuid4
-    )
-    resource: Mapped[MgmtResource] = relationship(
-        MgmtResource, single_parent=True, cascade="all, delete-orphan"
-    )
-
-    team_name: Mapped[str]
-
-    subagency_id: Mapped[uuid.UUID] = mapped_column(UUID, ForeignKey(Subagency.subagency_id))
-    subagency: Mapped[Subagency] = relationship(Subagency)
-
-    def get_resource_id(self) -> uuid.UUID:
-        return self.team_id
-
-    def get_resource_type(self) -> MgmtResourceType:
-        return MgmtResourceType.TEAM
-
-
 ########################
 # Role / authZ related tables
 ########################
