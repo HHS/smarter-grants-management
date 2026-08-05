@@ -119,8 +119,61 @@ CD lives in [`.github/workflows`](../.github/workflows). `dev` is kept current f
 | `database-migrations.yml` | called by `deploy.yml` | Builds/publishes the image, then runs `db-migrate` as a one-off ECS task |
 | `build-and-publish.yml` | called by `database-migrations.yml` | Builds the image and pushes it to ECR, skipping the build if that commit is already published |
 | `check-ci-cd-auth.yml` | manual dispatch | Verifies this repo's GitHub Actions OIDC role can be assumed |
+| `restore-db-cross-env.yml` | manual dispatch | Seeds one environment's database from another environment's snapshot — see [Seeding a database from another environment](#-seeding-a-database-from-another-environment) |
 
 All of them authenticate through [`.github/actions/configure-aws-credentials`](../.github/actions/configure-aws-credentials/action.yml), which resolves app → environment → network → account → role from the terraform config itself, so there are no hardcoded account ids or role ARNs in the workflows. That is also why a deploy to `staging` automatically targets `530702498822` while `dev` targets `135002447353` — the only thing that changes is the environment name.
+
+### 💾 Seeding a database from another environment
+
+[`restore-db-cross-env.yml`](../.github/workflows/restore-db-cross-env.yml) copies one
+environment's data into another — the SGM counterpart to simpler-grants-gov's
+`restore-db-from-snapshot.yml`, which seeds its grantee/grantor environments from staging.
+
+**Why this is more involved here than in SGG.** SGG's version authenticates once, because its
+source and targets share a single AWS account. In SGM every environment has its own account, so
+seeding across environments is inherently cross-account and needs four things:
+
+1. **Two sets of credentials** — one for the source account, one for the target.
+2. **A manual snapshot.** Automated snapshots (`rds:api-staging-…`) cannot be shared
+   cross-account at all — AWS rejects it with `InvalidDBClusterSnapshotStateFault`. The workflow
+   therefore copies the automated snapshot to a manual one first.
+3. **Snapshot sharing** with the target account (`rds:ModifyDBClusterSnapshotAttribute`).
+4. **A KMS key policy** letting the target account decrypt the snapshot. Sharing alone is *not*
+   enough: without key access, the restore fails in the target account.
+
+Step 4 is Terraform, not workflow. `snapshot_share_account_ids` on
+[`modules/database`](./modules/database) attaches a key policy granting the listed accounts
+`kms:Decrypt` / `kms:DescribeKey` / `kms:CreateGrant`. Which environments may seed which is
+pinned by `snapshot_restore_targets` in [`api/database/main.tf`](./api/database/main.tf):
+
+```hcl
+snapshot_restore_targets = {
+  staging = ["dev"]   # staging's snapshots may be restored into dev
+  dev     = []        # dev's are not shared with anyone
+}
+```
+
+Restores flow "down" from more-production-like environments, so **staging → dev** is the only
+direction enabled. A direction that isn't listed there simply won't work, regardless of what is
+selected in the workflow — the target won't be able to decrypt the snapshot.
+
+> **Note:** when an environment shares with nobody, no key policy is created at all, leaving the
+> AWS default in place. Attaching *any* policy replaces that default, which is why the module's
+> policy re-grants `kms:*` to the account root — omitting that would make the key unmanageable.
+
+How to run it:
+
+1. Actions → **Restore DB from another environment** → *Run workflow*.
+2. Set `source_environment` (data comes from) and `target_environment` (**gets replaced**).
+3. Leave `dry_run` checked first — it resolves the snapshot and reports what would happen
+   without changing anything.
+4. To apply, re-run with `dry_run` unchecked **and** `confirm` set to the target environment name.
+
+The target's existing contents are snapshotted to `api-<target>-pre-restore-<timestamp>` before
+anything is overwritten, in the target's own account — so rolling back needs no cross-account
+sharing. The shared manual copy is deleted afterwards even if the restore fails, since snapshots
+are billed and would otherwise stay shared. Migrations run last, because the seeded cluster
+carries the *source* environment's schema.
 
 ### 🔍 Scans
 

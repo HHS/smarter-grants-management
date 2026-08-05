@@ -105,6 +105,69 @@ resource "aws_kms_key" "db" {
   # checkov:skip=CKV2_AWS_64:TODO: https://github.com/HHS/simpler-grants-gov/issues/2366
 }
 
+# Cross-account access for snapshot sharing.
+#
+# Only created when var.snapshot_share_account_ids is non-empty. Attaching any
+# policy REPLACES the AWS default key policy, so the first statement below
+# re-grants full control to this account's root — without it the key would
+# become unmanageable (and AWS rejects policies that lock out the owner).
+# When the list is empty we create no policy at all, leaving the AWS default
+# in place rather than reimplementing it.
+resource "aws_kms_key_policy" "db" {
+  count  = length(var.snapshot_share_account_ids) > 0 ? 1 : 0
+  key_id = aws_kms_key.db.id
+  policy = data.aws_iam_policy_document.db_kms[0].json
+}
+
+data "aws_iam_policy_document" "db_kms" {
+  count = length(var.snapshot_share_account_ids) > 0 ? 1 : 0
+
+  # Equivalent of the AWS default key policy. Required — see note above.
+  statement {
+    sid    = "EnableIAMUserPermissions"
+    effect = "Allow"
+    principals {
+      type        = "AWS"
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"]
+    }
+    actions   = ["kms:*"]
+    resources = ["*"]
+  }
+
+  # Let the target accounts decrypt a shared snapshot. CreateGrant is what RDS
+  # itself needs in the target account to restore from the encrypted snapshot;
+  # it is scoped to grants made on behalf of an AWS service.
+  statement {
+    sid    = "AllowSnapshotShareTargetsToDecrypt"
+    effect = "Allow"
+    principals {
+      type        = "AWS"
+      identifiers = [for id in var.snapshot_share_account_ids : "arn:aws:iam::${id}:root"]
+    }
+    actions = [
+      "kms:Decrypt",
+      "kms:DescribeKey",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "AllowSnapshotShareTargetsToCreateGrants"
+    effect = "Allow"
+    principals {
+      type        = "AWS"
+      identifiers = [for id in var.snapshot_share_account_ids : "arn:aws:iam::${id}:root"]
+    }
+    actions   = ["kms:CreateGrant"]
+    resources = ["*"]
+    condition {
+      test     = "Bool"
+      variable = "kms:GrantIsForAWSResource"
+      values   = ["true"]
+    }
+  }
+}
+
 # Query Logging
 # -------------
 

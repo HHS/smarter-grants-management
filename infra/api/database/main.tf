@@ -35,6 +35,39 @@ locals {
   environment_config = module.app_config.environment_configs[var.environment_name]
   database_config    = local.environment_config.database_config
   network_config     = module.project_config.network_configs[local.environment_config.network_name]
+
+  # Accounts allowed to decrypt this cluster's KMS key, so its snapshots can be
+  # restored into another environment's account by the cross-environment DB
+  # restore workflow (.github/workflows/restore-db-cross-env.yml).
+  #
+  # Every environment lives in its own AWS account, so seeding one environment
+  # from another is inherently cross-account: sharing the snapshot is not enough,
+  # the target also needs access to the key it was encrypted with.
+  #
+  # Only environments listed as restore targets for THIS environment get access,
+  # so dev's key is not readable by staging just because staging's is readable by
+  # dev. Restores flow "down" from more-production-like environments, which is
+  # why staging grants dev and dev grants nobody.
+  snapshot_restore_targets = {
+    staging = ["dev"]
+    dev     = []
+  }
+
+  snapshot_share_account_ids = [
+    for env in lookup(local.snapshot_restore_targets, var.environment_name, []) :
+    local.account_ids_by_name[module.project_config.network_configs[env].account_name]
+    # Skip targets whose account has no tfbackend file yet, so a partially
+    # bootstrapped project still plans.
+    if contains(keys(local.account_ids_by_name), module.project_config.network_configs[env].account_name)
+  ]
+
+  account_ids_by_name = data.external.account_ids_by_name.result
+}
+
+# Resolves account name -> account id from the infra/accounts/*.s3.tfbackend
+# filenames, the same source of truth the account guards use.
+data "external" "account_ids_by_name" {
+  program = ["${path.module}/../../../bin/account-ids-by-name"]
 }
 
 terraform {
@@ -124,4 +157,5 @@ module "database" {
   newrelic_entity_guid         = local.database_config.newrelic_entity_guid
   deletion_protection          = local.database_config.deletion_protection
   snapshot_identifier          = var.database_snapshot_id
+  snapshot_share_account_ids   = local.snapshot_share_account_ids
 }

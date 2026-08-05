@@ -127,6 +127,24 @@ variable "deletion_protection" {
   default     = true
 }
 
+variable "snapshot_share_account_ids" {
+  type        = list(string)
+  description = <<-EOT
+    AWS account ids allowed to decrypt this cluster's storage KMS key, so that
+    snapshots of this cluster can be shared with — and restored into — those
+    accounts. Used by the cross-environment DB restore workflow to seed one
+    environment from another.
+
+    Grants kms:Decrypt / kms:DescribeKey / kms:CreateGrant to the listed
+    accounts. Sharing an encrypted snapshot is not enough on its own: without
+    access to the key, RestoreDBClusterFromSnapshot in the target account fails.
+
+    Leave empty (the default) to keep the key private to this account, which
+    also preserves the AWS default key policy.
+  EOT
+  default     = []
+}
+
 variable "enable_newrelic" {
   type        = bool
   description = "Whether to create the New Relic log forwarder for this cluster's RDS CloudWatch logs. When false, the /new-relic-license-key SSM parameter is not required."
