@@ -903,7 +903,7 @@ export const messages = {
     returnToTop: "Return to top",
     logoAlt: "Grants.gov logo",
     explore: "Explore",
-    simpler: "Simpler.Grants.gov",
+    siteName: "Smarter Grants Management",
     links: {
       home: "Home",
       search: "Search",

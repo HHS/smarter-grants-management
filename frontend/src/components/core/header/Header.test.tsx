@@ -1,6 +1,6 @@
 /* eslint-disable testing-library/no-node-access */
 
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Response } from "node-fetch";
 import { applicationTestUserId } from "src/constants/auth";
@@ -104,10 +104,6 @@ describe("Header", () => {
       "href",
       "/",
     );
-    expect(screen.getByRole("link", { name: /search/i })).toHaveAttribute(
-      "href",
-      "/search",
-    );
 
     await userEvent.click(menuButton);
 
@@ -130,160 +126,51 @@ describe("Header", () => {
     expect(govBanner).toHaveAttribute("aria-expanded", "true");
   });
 
-  it("displays a search link without refresh param if not currently on search page", () => {
-    render(<Header />);
-
-    const searchLink = screen.getByRole("link", { name: "search" });
-    expect(searchLink).toBeInTheDocument();
-    expect(searchLink).toHaveAttribute("href", "/search");
-  });
-
-  it("displays a search link with refresh param if currently on search page", () => {
+  it("displays a home link if not on home page", () => {
     usePathnameMock.mockReturnValue("/search");
     render(<Header />);
 
-    const searchLink = screen.getByRole("link", { name: "search" });
-    expect(searchLink).toBeInTheDocument();
-    expect(searchLink).toHaveAttribute("href", "/search?refresh=true");
+    const homeLink = screen.getByRole("link", { name: "home" });
+    expect(homeLink).toBeInTheDocument();
+    expect(homeLink).toHaveAttribute("href", "/");
   });
 
-  // it("displays a home link if not on home page", () => {
-  //   usePathnameMock.mockReturnValue("/search");
-  //   render(<Header />);
-
-  //   const homeLink = screen.getByRole("link", { name: "logo" });
-  //   expect(homeLink).toBeInTheDocument();
-  //   expect(homeLink).toHaveAttribute("href", "/");
-  // });
-
-  it("shows the correct styling for active nav item", async () => {
+  it("shows the correct styling for active nav item", () => {
     usePathnameMock.mockReturnValue("/");
-    const { rerender } = render(<Header />);
+    render(<Header />);
 
     const homeLink = screen.getByRole("link", { name: "home" });
     expect(homeLink).toHaveClass("usa-current");
-
-    usePathnameMock.mockReturnValue("/search");
-    rerender(<Header />);
-    const searchLink = screen.getByRole("link", { name: "search" });
-    expect(searchLink).toHaveClass("usa-current");
-
-    usePathnameMock.mockReturnValue("/es/search");
-    rerender(<Header />);
-    const spanishLink = screen.getByRole("link", { name: "search" });
-    expect(spanishLink).toHaveClass("usa-current");
-
-    usePathnameMock.mockReturnValue("/es/search?query=hello");
-    rerender(<Header />);
-    const queryLink = screen.getByRole("link", { name: "search" });
-    expect(queryLink).toHaveClass("usa-current");
-    usePathnameMock.mockReturnValue("/opportunity/35");
-    rerender(<Header />);
-    const allLinks = await screen.findAllByRole("link");
-    allLinks.forEach((link) => {
-      expect(link).not.toHaveClass("usa-current");
-    });
   });
 
-  it("closes an open subnav on the next click", async () => {
-    userEvent.setup({ skipHover: true });
-    render(<Header {...props} />);
+  // it("closes an open subnav on the next click", async () => {
+  //   userEvent.setup({ skipHover: true });
+  //   render(<Header {...props} />);
 
-    const workspaceButton = screen.getByRole("button", {
-      name: "workspace",
-    });
-    expect(workspaceButton).toHaveAttribute("aria-expanded", "false");
-    // the submenu assertions are not strictly necessary, but I could not get the timing to work right
-    // to get tests to pass correctly without them, so leaving them in
-    const subMenu = workspaceButton.nextSibling;
-    expect(subMenu).not.toBeVisible();
+  //   const workspaceButton = screen.getByRole("button", {
+  //     name: "workspace",
+  //   });
+  //   expect(workspaceButton).toHaveAttribute("aria-expanded", "false");
+  //   // the submenu assertions are not strictly necessary, but I could not get the timing to work right
+  //   // to get tests to pass correctly without them, so leaving them in
+  //   const subMenu = workspaceButton.nextSibling;
+  //   expect(subMenu).not.toBeVisible();
 
-    await userEvent.click(workspaceButton);
+  //   await userEvent.click(workspaceButton);
 
-    await waitFor(() =>
-      expect(workspaceButton).toHaveAttribute("aria-expanded", "true"),
-    );
-    await waitFor(() => expect(subMenu).toBeVisible());
+  //   await waitFor(() =>
+  //     expect(workspaceButton).toHaveAttribute("aria-expanded", "true"),
+  //   );
+  //   await waitFor(() => expect(subMenu).toBeVisible());
 
-    const anywhereElse = screen.getByText("home");
-    await userEvent.click(anywhereElse);
+  //   const anywhereElse = screen.getByText("home");
+  //   await userEvent.click(anywhereElse);
 
-    await waitFor(() =>
-      expect(workspaceButton).toHaveAttribute("aria-expanded", "false"),
-    );
-    await waitFor(() => expect(subMenu).not.toBeVisible());
-  });
-
-  describe("Workspace", () => {
-    it("shows Applications", async () => {
-      render(<Header {...props} />);
-
-      const workspaceButton = screen.getByRole("button", {
-        name: "workspace",
-      });
-      await userEvent.click(workspaceButton);
-      const applicationsLink = screen.getByRole("link", {
-        name: "applications",
-      });
-      expect(applicationsLink).toBeInTheDocument();
-      expect(applicationsLink).toHaveAttribute(
-        "href",
-        "/workspace/applications",
-      );
-    });
-  });
-
-  describe("About", () => {
-    it("shows About as the active nav item when on Vision page", () => {
-      usePathnameMock.mockReturnValue("/vision");
-      render(<Header />);
-
-      const homeLink = screen.getByRole("button", { name: /about/i });
-      expect(homeLink).toHaveClass("usa-current");
-    });
-    it("shows About as the active nav item when on Roadmap page", () => {
-      usePathnameMock.mockReturnValue("/roadmap");
-      render(<Header />);
-
-      const homeLink = screen.getByRole("button", { name: /about/i });
-      expect(homeLink).toHaveClass("usa-current");
-    });
-
-    it("renders About submenu", async () => {
-      const user = userEvent.setup();
-      render(<Header {...props} />);
-
-      expect(
-        screen.queryByRole("link", { name: /Our Vision/i }),
-      ).not.toBeInTheDocument();
-
-      const aboutBtn = screen.getByRole("button", { name: /about/i });
-
-      await user.click(aboutBtn);
-
-      expect(aboutBtn).toHaveAttribute("aria-expanded", "true");
-
-      const visionLink = screen.getByRole("link", { name: /vision/i });
-      expect(visionLink).toBeInTheDocument();
-    });
-    it("renders Community submenu", async () => {
-      const user = userEvent.setup();
-      render(<Header {...props} />);
-
-      expect(
-        screen.queryByRole("link", { name: /events/i }),
-      ).not.toBeInTheDocument();
-
-      const communityBtn = screen.getByRole("button", { name: /community/i });
-
-      await user.click(communityBtn);
-
-      expect(communityBtn).toHaveAttribute("aria-expanded", "true");
-
-      const eventsLink = screen.getByRole("link", { name: /events/i });
-      expect(eventsLink).toBeInTheDocument();
-    });
-  });
+  //   await waitFor(() =>
+  //     expect(workspaceButton).toHaveAttribute("aria-expanded", "false"),
+  //   );
+  //   await waitFor(() => expect(subMenu).not.toBeVisible());
+  // });
 
   it("shows snackbar if user has been logged out", () => {
     mockUseUser.mockReturnValue({

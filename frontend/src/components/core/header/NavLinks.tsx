@@ -1,6 +1,5 @@
 import clsx from "clsx";
 import { LOGIN_URL } from "src/constants/auth";
-import { ExternalRoutes } from "src/constants/routes";
 import { useUser } from "src/services/auth/useUser";
 import { IndexType } from "src/types/generalTypes";
 import { isCurrentPath, isExternalLink } from "src/utils/generalUtils";
@@ -161,14 +160,16 @@ export const NavLinks = ({
 
   // this piece should be passed in to make the header flexible for both sides
   const navLinkList = useMemo(() => {
-    return [
-      { text: t("home"), href: "/" },
-      {
-        text: t("opportunities"),
-        href: "/opportunities",
-      },
-    ];
-  }, [t]);
+    const anonymousNavLinks: PrimaryLink[] = [{ text: t("home"), href: "/" }];
+    if (!user?.token) {
+      return anonymousNavLinks;
+    }
+
+    return anonymousNavLinks.toSpliced(anonymousNavLinks.length, 0, {
+      text: t("opportunities"),
+      href: "/opportunities",
+    });
+  }, [t, user?.token]);
 
   const getCurrentNavItemIndex = useCallback(
     (currentPath: string): number => {
