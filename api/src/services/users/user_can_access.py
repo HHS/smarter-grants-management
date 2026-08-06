@@ -7,16 +7,17 @@ from sqlalchemy.orm import InstrumentedAttribute
 
 from src.auth.authorization_enforcer import AuthorizationEnforcer
 from src.constants.lookup_constants import MgmtPrivilege, MgmtResourceType
-from src.db.models.resource_models import AbstractResourceTableMixin, Department, Subagency, Team
+from src.db.models.resource_models import AbstractResourceTableMixin, MgmtInternalResource
 from src.db.models.user_models import MgmtUser
 
 # Each resource type we support needs its own getter that fetches the resource by its ID.
 RESOURCE_MAP: dict[
     MgmtResourceType, tuple[type[AbstractResourceTableMixin], InstrumentedAttribute]
 ] = {
-    MgmtResourceType.DEPARTMENT: (Department, Department.department_id),
-    MgmtResourceType.SUBAGENCY: (Subagency, Subagency.subagency_id),
-    MgmtResourceType.TEAM: (Team, Team.team_id),
+    MgmtResourceType.INTERNAL: (
+        MgmtInternalResource,
+        MgmtInternalResource.mgmt_internal_resource_id,
+    )
 }
 
 

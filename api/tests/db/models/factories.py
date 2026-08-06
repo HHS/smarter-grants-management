@@ -11,12 +11,7 @@ from sqlalchemy.orm import scoped_session
 
 import src.db.models.resource_models as resource_models
 import src.db.models.user_models as user_models
-from src.constants.lookup_constants import (
-    ExternalUserType,
-    MgmtPrivilege,
-    MgmtResourceType,
-    MgmtUserType,
-)
+from src.constants.lookup_constants import ExternalUserType, MgmtResourceType, MgmtUserType
 
 
 def sometimes_none(factory_value, none_chance: float = 0.5):
@@ -229,36 +224,6 @@ class MgmtInternalResourceFactory(BaseFactory):
     internal_resource_name = "My internal resource"
 
 
-class DepartmentFactory(BaseFactory):
-    class Meta:
-        model = resource_models.Department
-
-    department_id = Generators.UuidObj
-    department_name = factory.Faker("department_name")
-
-
-class SubagencyFactory(BaseFactory):
-    class Meta:
-        model = resource_models.Subagency
-
-    subagency_id = Generators.UuidObj
-    subagency_name = factory.Faker("subagency_name")
-
-    department = factory.SubFactory(DepartmentFactory)
-    department_id = factory.LazyAttribute(lambda s: s.department.department_id)
-
-
-class TeamFactory(BaseFactory):
-    class Meta:
-        model = resource_models.Team
-
-    team_id = Generators.UuidObj
-    team_name = factory.Faker("subagency_name")
-
-    subagency = factory.SubFactory(SubagencyFactory)
-    subagency_id = factory.LazyAttribute(lambda t: t.subagency.subagency_id)
-
-
 class MgmtRoleFactory(BaseFactory):
     class Meta:
         model = resource_models.MgmtRole
@@ -267,24 +232,8 @@ class MgmtRoleFactory(BaseFactory):
     role_name = factory.Faker("sentence", nb_words=3)
     is_core = False
 
-    resource_types = [MgmtResourceType.TEAM]
-    privileges = [MgmtPrivilege.VIEW_TEAM]
-
-    class Params:
-        is_department_role = factory.Trait(
-            resource_types=[MgmtResourceType.DEPARTMENT],
-            privileges=[MgmtPrivilege.VIEW_DEPARTMENT],
-        )
-
-        is_subagency_role = factory.Trait(
-            resource_types=[MgmtResourceType.SUBAGENCY],
-            privileges=[MgmtPrivilege.VIEW_SUBAGENCY],
-        )
-
-        is_team_role = factory.Trait(
-            resource_types=[MgmtResourceType.TEAM],
-            privileges=[MgmtPrivilege.VIEW_TEAM],
-        )
+    resource_types = [MgmtResourceType.INTERNAL]
+    privileges = []
 
 
 class MgmtResourceFactory(BaseFactory):
