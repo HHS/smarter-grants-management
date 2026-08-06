@@ -51,5 +51,7 @@ def test_factory_create_uninitialized_db_session():
 
 
 def test_thing(enable_factory_create, db_session):
-    x = GrantorOrganizationFactory.create()
-    print(x.for_json())
+    x = GrantorOrganizationFactory.create(has_parent_organization=True)
+
+    print(x.partner)
+    print(x.parent_organization.partner)

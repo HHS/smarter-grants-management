@@ -252,8 +252,11 @@ class GrantorOrganizationFactory(BaseFactory):
 
     grantor_organization_id = Generators.UuidObj
 
-    # TODO - can use factory.maybe here
-    organization_name = factory.Faker("department_name")
+    organization_name = factory.Maybe(
+        decider=factory.LazyAttribute(lambda o: o.grantor_organization_type == GrantorOrganizationType.GRANT_OFFICE),
+        yes_declaration=factory.Faker("grant_office_name"),
+        no_declaration=factory.Faker("subagency_name"),
+    )
 
     partner = factory.SubFactory(PartnerFactory)
     partner_id = factory.LazyAttribute(lambda o: o.partner.partner_id)
@@ -268,9 +271,33 @@ class GrantorOrganizationFactory(BaseFactory):
     class Params:
         pass
         has_parent_organization = factory.Trait(
-            parent_organization=factory.SubFactory("tests.db.models.factories.GrantorOrganizationFactory", partner=factory.SelfAttribute("..partner")),
-            # Don't add several layers, otherwise this recurses forever
-            has_parent_organization=False
+            parent_organization=factory.SubFactory(
+                "tests.db.models.factories.GrantorOrganizationFactory",
+                # Make sure it has the same partner
+                partner=factory.SelfAttribute("..partner"),
+            ),
+        )
+
+class ProgramFactory(BaseFactory):
+    class Meta:
+        model = grantor_organization_models.Program
+
+    program_id = Generators.UuidObj
+
+    program_name = "TODO"
+
+    partner = factory.SubFactory(PartnerFactory)
+    partner_id = factory.LazyAttribute(lambda p: p.partner.partner_id)
+
+    program_office = factory.SubFactory(GrantorOrganizationFactory, grantor_organization_type=GrantorOrganizationType.PROGRAM_OFFICE, partner=factory.SelfAttribute("..partner"))
+    program_office_id = factory.LazyAttribute(lambda p: p.program_office.grantor_organization_id)
+
+    grant_office = factory.SubFactory(GrantorOrganizationFactory, grantor_organization_type=GrantorOrganizationType.GRANT_OFFICE, partner=factory.SelfAttribute("..partner"))
+    grant_office_id = factory.LazyAttribute(lambda p: p.grant_office.grantor_organization_id)
+
+    class Params:
+        has_secondary_partner = factory.Trait(
+            # TODO
         )
 
 class DepartmentFactory(BaseFactory):

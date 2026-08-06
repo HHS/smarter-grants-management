@@ -80,6 +80,9 @@ class Program(GrantorSchemaTable, TimestampMixin, AbstractResourceTableMixin):
     grant_office_id: Mapped[uuid.UUID] = mapped_column(UUID, ForeignKey(GrantorOrganization.grantor_organization_id), index=True)
     grant_office: Mapped[GrantorOrganization] = relationship(GrantorOrganization, foreign_keys=[grant_office_id])
 
+    # TODO - fill in
+    secondary_partners: Mapped[list[Partner]] = relationship()
+
     def get_resource_id(self) -> uuid.UUID:
         return self.program_id
 
