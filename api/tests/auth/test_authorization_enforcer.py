@@ -28,6 +28,8 @@ def internal_resource2(enable_factory_create):
 
 def test_user_with_no_roles_cannot_access_anything(
     db_session,
+    # TODO - https://github.com/HHS/simpler-grants-gov/issues/11826
+    #        add back all of the resource types
     internal_resource1,
     internal_resource2,
 ):

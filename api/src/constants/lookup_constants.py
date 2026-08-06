@@ -23,11 +23,16 @@ class MgmtPrivilege(StrEnum):
 
     VIEW_PROGRAM = "view_program"
     UPDATE_PROGRAM = "update_program"
-    UNUSED_PRIVILEGE_101 = "unused_privilege_101"
 
     VIEW_GRANTOR_ORGANIZATION = "view_grantor_organization"
     UPDATE_GRANTOR_ORGANIZATION = "update_grantor_organization"
     MANAGE_GRANTOR_ORGANIZATION_MEMBERS = "manage_grantor_organization_members"
+
+    # NOTE - if you need to add any new privileges, you can
+    # rename these ones first. Our lookup logic doesn't allow
+    # for deleting lookup values, but does let you rename.
+    # These haven't ever been used, so are safe to rename and reuse.
+    UNUSED_PRIVILEGE_101 = "unused_privilege_101"
     UNUSED_PRIVILEGE_102 = "unused_privilege_102"
     UNUSED_PRIVILEGE_103 = "unused_privilege_103"
 

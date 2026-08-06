@@ -6,6 +6,9 @@ from src.constants.lookup_constants import MgmtResourceType
 from src.db.models.resource_models import MgmtInternalResource, MgmtResource
 from tests.db.models.factories import MgmtInternalResourceFactory
 
+# TODO https://github.com/HHS/simpler-grants-gov/issues/11825
+#      will add back tables and readd tests here.
+
 
 def test_resource_automation_with_defaults(db_session):
     internal_resource = MgmtInternalResource(internal_resource_name="My example internal resource")

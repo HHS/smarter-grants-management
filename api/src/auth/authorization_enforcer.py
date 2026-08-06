@@ -173,10 +173,12 @@ class AuthorizationEnforcer:
         This factors in any inheritance that a particular type may need to consider.
 
         For each resource type, the following resources are relevant:
-        * TODO - fill in once we rebuild this out
+        * TODO - fill in once we rebuild this out in https://github.com/HHS/simpler-grants-gov/issues/11826
 
         * Internal resource -> The internal resource itself - no inheritance exists for this type
         """
+
+        # TODO https://github.com/HHS/simpler-grants-gov/issues/11826 will readd back some of these
 
         if isinstance(resource, MgmtInternalResource):
             return self._get_resources_for_internal_resource(resource)
