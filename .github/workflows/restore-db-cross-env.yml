@@ -175,10 +175,25 @@ jobs:
           SOURCE_KMS_KEY_ID=$(aws rds describe-db-clusters \
             --db-cluster-identifier "api-${SOURCE_ENV}" \
             --query 'DBClusters[0].KmsKeyId' --output text)
+          if [[ -z "$SOURCE_KMS_KEY_ID" || "$SOURCE_KMS_KEY_ID" == "None" ]]; then
+            echo "::error::Could not read the KMS key for cluster api-${SOURCE_ENV}."
+            exit 1
+          fi
           echo "Source cluster KMS key: ${SOURCE_KMS_KEY_ID}"
 
+          # Checked explicitly rather than relying on `set -e`: a failure inside
+          # command substitution during an assignment does NOT abort the script,
+          # so without this an unknown environment name would silently yield an
+          # empty account id and we would call modify-...-attribute with
+          # --values-to-add "".
           TARGET_ACCOUNT_ID=$(./bin/account-ids-by-name \
-            | python3 -c "import json,sys; print(json.load(sys.stdin)['${TARGET_ENV}'])")
+            | python3 -c "import json,sys; print(json.load(sys.stdin)['${TARGET_ENV}'])") || true
+          if [[ ! "$TARGET_ACCOUNT_ID" =~ ^[0-9]{12}$ ]]; then
+            echo "::error::Could not resolve an AWS account id for environment '${TARGET_ENV}'."
+            echo "::error::Got: '${TARGET_ACCOUNT_ID}'"
+            echo "::error::Expected a 12-digit id from an infra/accounts/<name>.<id>.s3.tfbackend file."
+            exit 1
+          fi
           echo "Target account: ${TARGET_ACCOUNT_ID}"
 
           echo "Copying ${SOURCE_SNAPSHOT_ID} -> ${MANUAL_COPY_ID}"
