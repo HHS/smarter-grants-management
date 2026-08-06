@@ -7,7 +7,7 @@ from sqlalchemy import func, select
 
 import src.db.models as db_models
 from src.constants.lookup_constants import MgmtPrivilege, MgmtResourceType
-from src.constants.static_role_values import CORE_ROLES, TEAM_VIEWER
+from src.constants.static_role_values import CORE_ROLES
 from src.db.models.lookup.sync_lookup_values import sync_lookup_values
 from src.db.models.resource_models import MgmtRole
 from src.util.role_util import build_role
@@ -45,12 +45,6 @@ def test_sync_roles(schema_no_lookup, caplog: pytest.LogCaptureFixture):
         db_roles = db_session.scalars(select(MgmtRole)).all()
         assert len(db_roles) == len(CORE_ROLES)
 
-        team_viewer = db_session.get(MgmtRole, TEAM_VIEWER.mgmt_role_id)
-        assert team_viewer is not None
-        assert team_viewer.role_name == "Team Viewer"
-        assert team_viewer.is_core is True
-        assert set(team_viewer.privileges) == {MgmtPrivilege.VIEW_TEAM}
-
     # Running the sync again should not modify any role.
     caplog.clear()
     sync_lookup_values(schema_no_lookup)
@@ -71,14 +65,14 @@ def test_sync_roles_applies_updates(
     role = build_role(
         role_id=uuid.uuid4(),
         role_name="Test Sync Role",
-        privileges={MgmtPrivilege.VIEW_TEAM},
-        resource_types={MgmtResourceType.TEAM},
+        privileges={MgmtPrivilege.VIEW_PARTNER},
+        resource_types={MgmtResourceType.PARTNER},
     )
     monkeypatch.setattr("src.db.models.lookup.sync_lookup_values.CORE_ROLES", [role])
     sync_lookup_values(schema_no_lookup)
 
     # Change the role and confirm the update is detected and persisted.
-    role.privileges = {MgmtPrivilege.VIEW_TEAM, MgmtPrivilege.UPDATE_TEAM}
+    role.privileges = {MgmtPrivilege.VIEW_PARTNER, MgmtPrivilege.UPDATE_PARTNER}
 
     caplog.clear()
     sync_lookup_values(schema_no_lookup)
@@ -89,6 +83,6 @@ def test_sync_roles_applies_updates(
     with schema_no_lookup.get_session() as db_session:
         db_role = db_session.get(MgmtRole, role.mgmt_role_id)
         assert set(db_role.privileges) == {
-            MgmtPrivilege.VIEW_TEAM,
-            MgmtPrivilege.UPDATE_TEAM,
+            MgmtPrivilege.VIEW_PARTNER,
+            MgmtPrivilege.UPDATE_PARTNER,
         }

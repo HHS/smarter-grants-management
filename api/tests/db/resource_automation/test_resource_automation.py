@@ -2,49 +2,64 @@ import uuid
 
 from sqlalchemy import select
 
-from src.constants.lookup_constants import MgmtResourceType
-from src.db.models.resource_models import (
-    Department,
-    MgmtInternalResource,
-    MgmtResource,
-    Subagency,
-    Team,
-)
+from src.constants.lookup_constants import GrantorOrganizationType, MgmtResourceType
+from src.db.models.grantor_organization_models import GrantorOrganization, Partner, Program
+from src.db.models.resource_models import MgmtInternalResource, MgmtResource
 from tests.db.models.factories import (
-    DepartmentFactory,
+    GrantorOrganizationFactory,
     MgmtInternalResourceFactory,
-    SubagencyFactory,
-    TeamFactory,
+    PartnerFactory,
+    ProgramFactory,
 )
 
 
 def test_resource_automation_with_defaults(db_session):
 
-    department = Department(department_name="My example department")
-    db_session.add(department)
+    partner = Partner(partner_name="My example partner")
+    db_session.add(partner)
 
-    subagency = Subagency(subagency_name="My example subagency", department=department)
-    db_session.add(subagency)
+    organization_1 = GrantorOrganization(
+        organization_name="organization1",
+        partner=partner,
+        grantor_organization_type=GrantorOrganizationType.PROGRAM_OFFICE,
+    )
+    db_session.add(organization_1)
 
-    team = Team(team_name="My example team", subagency=subagency)
-    db_session.add(team)
+    organization_2 = GrantorOrganization(
+        organization_name="organization2",
+        partner=partner,
+        grantor_organization_type=GrantorOrganizationType.GRANT_OFFICE,
+    )
+    db_session.add(organization_2)
+
+    program = Program(
+        program_name="my example program",
+        partner=partner,
+        program_office=organization_1,
+        grant_office=organization_2,
+    )
+    db_session.add(program)
 
     internal_resource = MgmtInternalResource(internal_resource_name="My example internal resource")
     db_session.add(internal_resource)
 
     db_session.commit()
 
-    assert department.department_id is not None
-    assert department.resource.mgmt_resource_id == department.department_id
-    assert department.resource.mgmt_resource_type == MgmtResourceType.DEPARTMENT
+    assert partner.partner_id is not None
+    assert partner.resource.mgmt_resource_id == partner.partner_id
+    assert partner.resource.mgmt_resource_type == MgmtResourceType.PARTNER
 
-    assert subagency.subagency_id is not None
-    assert subagency.resource.mgmt_resource_id == subagency.subagency_id
-    assert subagency.resource.mgmt_resource_type == MgmtResourceType.SUBAGENCY
+    assert organization_1.grantor_organization_id is not None
+    assert organization_1.resource.mgmt_resource_id == organization_1.grantor_organization_id
+    assert organization_1.resource.mgmt_resource_type == MgmtResourceType.GRANTOR_ORGANIZATION
 
-    assert team.team_id is not None
-    assert team.resource.mgmt_resource_id == team.team_id
-    assert team.resource.mgmt_resource_type == MgmtResourceType.TEAM
+    assert organization_2.grantor_organization_id is not None
+    assert organization_2.resource.mgmt_resource_id == organization_2.grantor_organization_id
+    assert organization_2.resource.mgmt_resource_type == MgmtResourceType.GRANTOR_ORGANIZATION
+
+    assert program.program_id is not None
+    assert program.resource.mgmt_resource_id == program.program_id
+    assert program.resource.mgmt_resource_type == MgmtResourceType.PROGRAM
 
     assert internal_resource.mgmt_internal_resource_id is not None
     assert (
@@ -54,16 +69,34 @@ def test_resource_automation_with_defaults(db_session):
 
 
 def test_resource_automation_with_set_ids(db_session):
-    department = Department(department_id=uuid.uuid4(), department_name="My example department")
-    db_session.add(department)
 
-    subagency = Subagency(
-        subagency_id=uuid.uuid4(), subagency_name="My example subagency", department=department
+    partner = Partner(partner_id=uuid.uuid4(), partner_name="My example partner")
+    db_session.add(partner)
+
+    organization_1 = GrantorOrganization(
+        grantor_organization_id=uuid.uuid4(),
+        organization_name="organization1",
+        partner=partner,
+        grantor_organization_type=GrantorOrganizationType.PROGRAM_OFFICE,
     )
-    db_session.add(subagency)
+    db_session.add(organization_1)
 
-    team = Team(team_id=uuid.uuid4(), team_name="My example team", subagency=subagency)
-    db_session.add(team)
+    organization_2 = GrantorOrganization(
+        grantor_organization_id=uuid.uuid4(),
+        organization_name="organization2",
+        partner=partner,
+        grantor_organization_type=GrantorOrganizationType.GRANT_OFFICE,
+    )
+    db_session.add(organization_2)
+
+    program = Program(
+        program_id=uuid.uuid4(),
+        program_name="my example program",
+        partner=partner,
+        program_office=organization_1,
+        grant_office=organization_2,
+    )
+    db_session.add(program)
 
     internal_resource = MgmtInternalResource(
         mgmt_internal_resource_id=uuid.uuid4(),
@@ -73,17 +106,21 @@ def test_resource_automation_with_set_ids(db_session):
 
     db_session.commit()
 
-    assert department.department_id is not None
-    assert department.resource.mgmt_resource_id == department.department_id
-    assert department.resource.mgmt_resource_type == MgmtResourceType.DEPARTMENT
+    assert partner.partner_id is not None
+    assert partner.resource.mgmt_resource_id == partner.partner_id
+    assert partner.resource.mgmt_resource_type == MgmtResourceType.PARTNER
 
-    assert subagency.subagency_id is not None
-    assert subagency.resource.mgmt_resource_id == subagency.subagency_id
-    assert subagency.resource.mgmt_resource_type == MgmtResourceType.SUBAGENCY
+    assert organization_1.grantor_organization_id is not None
+    assert organization_1.resource.mgmt_resource_id == organization_1.grantor_organization_id
+    assert organization_1.resource.mgmt_resource_type == MgmtResourceType.GRANTOR_ORGANIZATION
 
-    assert team.team_id is not None
-    assert team.resource.mgmt_resource_id == team.team_id
-    assert team.resource.mgmt_resource_type == MgmtResourceType.TEAM
+    assert organization_2.grantor_organization_id is not None
+    assert organization_2.resource.mgmt_resource_id == organization_2.grantor_organization_id
+    assert organization_2.resource.mgmt_resource_type == MgmtResourceType.GRANTOR_ORGANIZATION
+
+    assert program.program_id is not None
+    assert program.resource.mgmt_resource_id == program.program_id
+    assert program.resource.mgmt_resource_type == MgmtResourceType.PROGRAM
 
     assert internal_resource.mgmt_internal_resource_id is not None
     assert (
@@ -93,17 +130,15 @@ def test_resource_automation_with_set_ids(db_session):
 
 
 def test_resource_automation_does_not_change_resource_on_change(db_session, enable_factory_create):
-    department_id = uuid.uuid4()
-    department = DepartmentFactory.create(department_id=department_id)
-    department.department_name = "New department name"
 
-    subagency_id = uuid.uuid4()
-    subagency = SubagencyFactory.create(subagency_id=subagency_id)
-    subagency.subagency_name = "New subagency name"
+    partner = PartnerFactory.create()
+    partner.partner_name = "my new partner name"
 
-    team_id = uuid.uuid4()
-    team = TeamFactory.create(team_id=team_id)
-    team.team_name = "New team name"
+    organization = GrantorOrganizationFactory.create()
+    organization.organization_name = "my new organization name"
+
+    program = ProgramFactory.create()
+    program.program_name = "my new program name"
 
     internal_resource_id = uuid.uuid4()
     internal_resource = MgmtInternalResourceFactory.create(
@@ -113,20 +148,14 @@ def test_resource_automation_does_not_change_resource_on_change(db_session, enab
 
     db_session.commit()
 
-    db_session.refresh(department)
-    assert department.department_id == department_id
-    assert department.resource.mgmt_resource_id == department_id
-    assert department.department_name == "New department name"
+    db_session.refresh(partner)
+    assert partner.partner_name == "my new partner name"
 
-    db_session.refresh(subagency)
-    assert subagency.subagency_id == subagency_id
-    assert subagency.resource.mgmt_resource_id == subagency_id
-    assert subagency.subagency_name == "New subagency name"
+    db_session.refresh(organization)
+    assert organization.organization_name == "my new organization name"
 
-    db_session.refresh(team)
-    assert team.team_id == team_id
-    assert team.resource.mgmt_resource_id == team_id
-    assert team.team_id == team_id
+    db_session.refresh(program)
+    assert program.program_name == "my new program name"
 
     db_session.refresh(internal_resource)
     assert internal_resource.mgmt_internal_resource_id == internal_resource_id
@@ -135,14 +164,14 @@ def test_resource_automation_does_not_change_resource_on_change(db_session, enab
 
 
 def test_resource_automation_when_deleting_resource(db_session, enable_factory_create):
-    department = DepartmentFactory.create()
-    subagency = SubagencyFactory.create()
-    team = TeamFactory.create()
+    partner = PartnerFactory.create()
+    organization = GrantorOrganizationFactory.create()
+    program = ProgramFactory.create()
     internal_resource = MgmtInternalResourceFactory.create()
 
-    db_session.delete(department)
-    db_session.delete(subagency)
-    db_session.delete(team)
+    db_session.delete(partner)
+    db_session.delete(organization)
+    db_session.delete(program)
     db_session.delete(internal_resource)
     db_session.commit()
 
@@ -150,9 +179,9 @@ def test_resource_automation_when_deleting_resource(db_session, enable_factory_c
         select(MgmtResource).where(
             MgmtResource.mgmt_resource_id.in_(
                 [
-                    department.department_id,
-                    subagency.subagency_id,
-                    team.team_id,
+                    partner.partner_id,
+                    organization.grantor_organization_id,
+                    program.program_id,
                     internal_resource.mgmt_internal_resource_id,
                 ]
             )

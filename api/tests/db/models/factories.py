@@ -9,14 +9,14 @@ from faker.providers import BaseProvider
 from grants_shared.util import datetime_util
 from sqlalchemy.orm import scoped_session
 
-import src.db.models.resource_models as resource_models
 import src.db.models.grantor_organization_models as grantor_organization_models
+import src.db.models.resource_models as resource_models
 import src.db.models.user_models as user_models
 from src.constants.lookup_constants import (
     ExternalUserType,
-    MgmtPrivilege,
+    GrantorOrganizationType,
     MgmtResourceType,
-    MgmtUserType, GrantorOrganizationType,
+    MgmtUserType,
 )
 
 
@@ -97,6 +97,16 @@ class CustomProvider(BaseProvider):
         "Antitrust",
         "Attorney General",
         "Housing",
+        "American",
+        "Chemistry",
+        "Physics",
+        "Biology",
+        "Commerce",
+        "Science",
+        "Social Services",
+        "Development Fund",
+        "Regional Operations",
+        "Ocean",
     ]
 
     SUBAGENCY_NAME_FORMATS = [
@@ -113,8 +123,18 @@ class CustomProvider(BaseProvider):
     ]
 
     GRANT_OFFICE_NAME_FORMATS = [
-        "{{department_name}} - Grant Office"
-        "{{agency_word}} Headquarters - Grant Office",
+        "{{department_name}} - Grant Office" "{{agency_word}} Headquarters - Grant Office",
+    ]
+
+    PROGRAM_NAME_FORMATS = [
+        "{{agency_word}} Program",
+        "{{agency_word}} Research",
+        "{{agency_word}}'s Bureau",
+        "{{agency_word}}",
+        "Office of {{agency_word}}",
+        "{{agency_word}} Safety",
+        "Statewide {{agency_word}} & {{agency_word}}",
+        "{{agency_word}} Title {{random_int}}" "{{agency_word}} Act",
     ]
 
     def department_word(self) -> str:
@@ -134,6 +154,11 @@ class CustomProvider(BaseProvider):
     def grant_office_name(self) -> str:
         pattern = self.random_element(self.GRANT_OFFICE_NAME_FORMATS)
         return self.generator.parse(pattern)
+
+    def program_name(self) -> str:
+        pattern = self.random_element(self.PROGRAM_NAME_FORMATS)
+        return self.generator.parse(pattern)
+
 
 fake = faker.Faker()
 fake.add_provider(CustomProvider)
@@ -246,6 +271,7 @@ class PartnerFactory(BaseFactory):
 
     partner_name = factory.Faker("department_name")
 
+
 class GrantorOrganizationFactory(BaseFactory):
     class Meta:
         model = grantor_organization_models.GrantorOrganization
@@ -253,7 +279,9 @@ class GrantorOrganizationFactory(BaseFactory):
     grantor_organization_id = Generators.UuidObj
 
     organization_name = factory.Maybe(
-        decider=factory.LazyAttribute(lambda o: o.grantor_organization_type == GrantorOrganizationType.GRANT_OFFICE),
+        decider=factory.LazyAttribute(
+            lambda o: o.grantor_organization_type == GrantorOrganizationType.GRANT_OFFICE
+        ),
         yes_declaration=factory.Faker("grant_office_name"),
         no_declaration=factory.Faker("subagency_name"),
     )
@@ -264,7 +292,9 @@ class GrantorOrganizationFactory(BaseFactory):
     # A parent organization can be set either manually
     # or using the trait below.
     parent_organization = None
-    parent_organization_id = factory.LazyAttribute(lambda o: o.parent_organization.parent_organization_id if o.parent_organization else None)
+    parent_organization_id = factory.LazyAttribute(
+        lambda o: o.parent_organization.parent_organization_id if o.parent_organization else None
+    )
 
     grantor_organization_type = factory.fuzzy.FuzzyChoice(GrantorOrganizationType)
 
@@ -278,56 +308,51 @@ class GrantorOrganizationFactory(BaseFactory):
             ),
         )
 
+
 class ProgramFactory(BaseFactory):
     class Meta:
         model = grantor_organization_models.Program
 
     program_id = Generators.UuidObj
 
-    program_name = "TODO"
+    program_name = factory.Faker("program_name")
 
     partner = factory.SubFactory(PartnerFactory)
     partner_id = factory.LazyAttribute(lambda p: p.partner.partner_id)
 
-    program_office = factory.SubFactory(GrantorOrganizationFactory, grantor_organization_type=GrantorOrganizationType.PROGRAM_OFFICE, partner=factory.SelfAttribute("..partner"))
+    program_office = factory.SubFactory(
+        GrantorOrganizationFactory,
+        grantor_organization_type=GrantorOrganizationType.PROGRAM_OFFICE,
+        partner=factory.SelfAttribute("..partner"),
+    )
     program_office_id = factory.LazyAttribute(lambda p: p.program_office.grantor_organization_id)
 
-    grant_office = factory.SubFactory(GrantorOrganizationFactory, grantor_organization_type=GrantorOrganizationType.GRANT_OFFICE, partner=factory.SelfAttribute("..partner"))
+    grant_office = factory.SubFactory(
+        GrantorOrganizationFactory,
+        grantor_organization_type=GrantorOrganizationType.GRANT_OFFICE,
+        partner=factory.SelfAttribute("..partner"),
+    )
     grant_office_id = factory.LazyAttribute(lambda p: p.grant_office.grantor_organization_id)
 
     class Params:
-        has_secondary_partner = factory.Trait(
-            # TODO
+        has_secondary_partners = factory.Trait(
+            link_secondary_program_partners=factory.RelatedFactoryList(
+                "tests.db.models.factories.SecondaryProgramPartnerFactory",
+                factory_related_name="program",
+                size=lambda: random.randint(1, 3),
+            )
         )
 
-class DepartmentFactory(BaseFactory):
+
+class SecondaryProgramPartnerFactory(BaseFactory):
     class Meta:
-        model = resource_models.Department
+        model = grantor_organization_models.SecondaryProgramPartner
 
-    department_id = Generators.UuidObj
-    department_name = factory.Faker("department_name")
+    partner = factory.SubFactory(PartnerFactory)
+    partner_id = factory.LazyAttribute(lambda s: s.partner.partner_id)
 
-
-class SubagencyFactory(BaseFactory):
-    class Meta:
-        model = resource_models.Subagency
-
-    subagency_id = Generators.UuidObj
-    subagency_name = factory.Faker("subagency_name")
-
-    department = factory.SubFactory(DepartmentFactory)
-    department_id = factory.LazyAttribute(lambda s: s.department.department_id)
-
-
-class TeamFactory(BaseFactory):
-    class Meta:
-        model = resource_models.Team
-
-    team_id = Generators.UuidObj
-    team_name = factory.Faker("subagency_name")
-
-    subagency = factory.SubFactory(SubagencyFactory)
-    subagency_id = factory.LazyAttribute(lambda t: t.subagency.subagency_id)
+    program = factory.SubFactory(ProgramFactory)
+    program_id = factory.LazyAttribute(lambda s: s.program.program_id)
 
 
 class MgmtRoleFactory(BaseFactory):
@@ -338,24 +363,8 @@ class MgmtRoleFactory(BaseFactory):
     role_name = factory.Faker("sentence", nb_words=3)
     is_core = False
 
-    resource_types = [MgmtResourceType.TEAM]
-    privileges = [MgmtPrivilege.VIEW_TEAM]
-
-    class Params:
-        is_department_role = factory.Trait(
-            resource_types=[MgmtResourceType.DEPARTMENT],
-            privileges=[MgmtPrivilege.VIEW_DEPARTMENT],
-        )
-
-        is_subagency_role = factory.Trait(
-            resource_types=[MgmtResourceType.SUBAGENCY],
-            privileges=[MgmtPrivilege.VIEW_SUBAGENCY],
-        )
-
-        is_team_role = factory.Trait(
-            resource_types=[MgmtResourceType.TEAM],
-            privileges=[MgmtPrivilege.VIEW_TEAM],
-        )
+    resource_types = [MgmtResourceType.INTERNAL]
+    privileges = []
 
 
 class MgmtResourceFactory(BaseFactory):

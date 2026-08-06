@@ -28,15 +28,15 @@ def setup_resource_automation() -> None:
 
     This effectively lets us turn:
 
-        department = Department(department_id="...")
-        resource = Resource(mgmt_resource_id=department.department_id)
-        db_session.add(department)
+        partner = Partner(partner_id="...")
+        resource = Resource(mgmt_resource_id=partner.partner_id)
+        db_session.add(partner)
         db_session.add(resource)
         db_session.commit()
 
     Into just:
-        department = Department(department_id="...")
-        db_session.add(department)
+        partner = Partner(partner_id="...")
+        db_session.add(partner)
         db_session.commit()
 
     Which when these models become increasing complex will be very convenient.
