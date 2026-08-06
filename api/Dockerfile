@@ -171,4 +171,4 @@ ENV PATH="/grants_management_api/.venv/bin:/usr/local/bin:/usr/bin:/usr/sbin:/bi
 # Run as the non-root user
 USER ${RUN_USER}
 
-CMD ["gunicorn", "-c", "gunicorn.conf.py", "--worker-tmp-dir=/dev/shm", "src.app:create_app()", "--limit-request-field_size", "16384", "--limit-request-fields", "50"]
+CMD ["gunicorn", "-c", "gunicorn.conf.py", "--worker-tmp-dir=/dev/shm", "src.app:create_app()"]
