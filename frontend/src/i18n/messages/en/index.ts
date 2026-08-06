@@ -1,5 +1,8 @@
 export const messages = {
   Homepage: {
+    title: "Smarter Grants Management",
+    metaDescription:
+      "Grant Smarter with Smarter Grants Management - Replace This Content TKTKTKTKTKTKTK",
     pageTitle: "Let's build a simpler Grants.gov together",
     pageDescription:
       "Simpler.Grants.gov is where we are building new features for the next generation of Grants.gov. With your help, we're setting a new standard for transparency and usability in government services. ",
@@ -604,11 +607,6 @@ export const messages = {
       contactSupport:
         "If the problem continues, contact product support, <tel>1-800-518-4726</tel> or <link>simpler@grants.gov</link>.",
     },
-  },
-  Index: {
-    pageTitle: "Simpler.Grants.gov",
-    metaDescription:
-      "Simpler.Grants.gov is improving how you discover, post, and apply for federal discretionary funding on Grants.gov.",
   },
   Vision: {
     pageTitle: "Vision | Simpler.Grants.gov",

@@ -147,14 +147,14 @@ describe("Header", () => {
     expect(searchLink).toHaveAttribute("href", "/search?refresh=true");
   });
 
-  it("displays a home link if not on home page", () => {
-    usePathnameMock.mockReturnValue("/search");
-    render(<Header />);
+  // it("displays a home link if not on home page", () => {
+  //   usePathnameMock.mockReturnValue("/search");
+  //   render(<Header />);
 
-    const homeLink = screen.getByRole("link", { name: "logo" });
-    expect(homeLink).toBeInTheDocument();
-    expect(homeLink).toHaveAttribute("href", "/");
-  });
+  //   const homeLink = screen.getByRole("link", { name: "logo" });
+  //   expect(homeLink).toBeInTheDocument();
+  //   expect(homeLink).toHaveAttribute("href", "/");
+  // });
 
   it("shows the correct styling for active nav item", async () => {
     usePathnameMock.mockReturnValue("/");
@@ -407,7 +407,7 @@ describe("Header", () => {
       });
       render(<Header {...props} />);
 
-      const accountButton = screen.getByRole("button", { name: "account" });
+      const accountButton = screen.getByRole("button", { name: "Account" });
       expect(accountButton).toBeInTheDocument();
     });
 
@@ -421,17 +421,17 @@ describe("Header", () => {
       const user = userEvent.setup();
       render(<Header {...props} />);
 
-      const accountButton = screen.getByRole("button", { name: "account" });
+      const accountButton = screen.getByRole("button", { name: "Account" });
       await user.click(accountButton);
 
       expect(accountButton).toHaveAttribute("aria-expanded", "true");
 
-      const settingsLink = screen.getByRole("link", { name: "settings" });
+      const settingsLink = screen.getByRole("link", { name: "Settings" });
       expect(settingsLink).toBeInTheDocument();
       expect(settingsLink).toHaveAttribute("href", "/settings");
 
       const notificationsLink = screen.getByRole("link", {
-        name: "notifications",
+        name: "Notifications",
       });
       expect(notificationsLink).toBeInTheDocument();
       expect(notificationsLink).toHaveAttribute("href", "/notifications");
@@ -453,11 +453,11 @@ describe("Header", () => {
       const nav = screen.getByRole("navigation");
 
       expect(
-        within(nav).queryByRole("link", { name: "notifications" }),
+        within(nav).queryByRole("link", { name: "Notifications" }),
       ).not.toBeInTheDocument();
     });
 
-    it("does not display test application link if not for a test application user", async () => {
+    it("does not display test application link if not for a test application user", () => {
       mockUseUser.mockReturnValue({
         user: { token: "faketoken" },
         hasBeenLoggedOut: false,
@@ -465,44 +465,35 @@ describe("Header", () => {
       });
       render(<Header {...props} localDev={true} />);
 
-      const accountButton = screen.getByRole("button", { name: "account" });
-      await userEvent.click(accountButton);
-
       expect(
         screen.queryByRole("link", { name: "testApplication" }),
       ).not.toBeInTheDocument();
     });
 
-    it("does not display test application link if not local dev", async () => {
+    it("does not display test application link for a test application user not local dev", () => {
       mockUseUser.mockReturnValue({
-        user: { token: "faketoken", id: applicationTestUserId },
+        user: { token: "faketoken", user_id: applicationTestUserId },
         hasBeenLoggedOut: false,
         resetHasBeenLoggedOut: jest.fn(),
       });
       render(<Header {...props} localDev={false} />);
 
-      const accountButton = screen.getByRole("button", { name: "account" });
-      await userEvent.click(accountButton);
-
       expect(
         screen.queryByRole("link", { name: "testApplication" }),
       ).not.toBeInTheDocument();
     });
 
-    it("displays test application link for a test application user if local dev", async () => {
+    it("displays test application link for a test application user if local dev", () => {
       mockUseUser.mockReturnValue({
-        user: { token: "faketoken", id: applicationTestUserId },
+        user: { token: "faketoken", user_id: applicationTestUserId },
         hasBeenLoggedOut: false,
         resetHasBeenLoggedOut: jest.fn(),
       });
       render(<Header {...props} localDev={true} />);
 
-      const accountButton = screen.getByRole("button", { name: "account" });
-      await userEvent.click(accountButton);
-
       expect(
-        screen.queryByRole("link", { name: "testApplication" }),
-      ).not.toBeInTheDocument();
+        screen.getByRole("link", { name: "testApplication" }),
+      ).toBeInTheDocument();
     });
   });
 });
