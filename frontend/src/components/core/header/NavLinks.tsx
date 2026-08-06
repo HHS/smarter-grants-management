@@ -143,15 +143,6 @@ export const NavLinks = ({
   const t = useTranslations("Header.navLinks");
 
   const path = usePathname();
-  const getSearchLink = useCallback(
-    (onSearch: boolean) => {
-      return {
-        text: t("search"),
-        href: onSearch ? "/search?refresh=true" : "/search",
-      };
-    },
-    [t],
-  );
   const { user } = useUser();
 
   const closeMobileNav = useCallback(() => {
@@ -170,62 +161,14 @@ export const NavLinks = ({
 
   // this piece should be passed in to make the header flexible for both sides
   const navLinkList = useMemo(() => {
-    const anonymousNavLinks: PrimaryLink[] = [
+    return [
       { text: t("home"), href: "/" },
-      getSearchLink(path.includes("/search")),
       {
-        text: t("about"),
-        children: [
-          { text: t("vision"), href: "/vision" },
-          { text: t("roadmap"), href: "/roadmap" },
-        ],
-      },
-      {
-        text: t("community"),
-        children: [
-          { text: t("newsletter"), href: "/newsletter" },
-          { text: t("events"), href: "/events" },
-          { text: t("developers"), href: "/developers" },
-          { text: t("wiki"), href: ExternalRoutes.WIKI },
-          { text: t("forum"), href: ExternalRoutes.FORUM },
-        ],
+        text: t("opportunities"),
+        href: "/opportunities",
       },
     ];
-    if (!user?.token) {
-      return anonymousNavLinks;
-    }
-
-    const workspaceSubNavs = [];
-
-    workspaceSubNavs.push({
-      text: t("workspaceDashboard"),
-      href: "/workspace",
-    });
-
-    workspaceSubNavs.push({
-      text: t("applications"),
-      href: "/workspace/applications",
-    });
-    workspaceSubNavs.push({
-      text: t("organizations"),
-      href: "/workspace/organizations",
-    });
-
-    workspaceSubNavs.push({
-      text: t("savedOpportunities"),
-      href: "/workspace/saved-opportunities",
-    });
-
-    workspaceSubNavs.push({
-      text: t("savedSearches"),
-      href: "/workspace/saved-search-queries",
-    });
-
-    return anonymousNavLinks.toSpliced(anonymousNavLinks.length, 0, {
-      text: t("workspace"),
-      children: workspaceSubNavs,
-    });
-  }, [t, path, getSearchLink, user]);
+  }, [t]);
 
   const getCurrentNavItemIndex = useCallback(
     (currentPath: string): number => {
