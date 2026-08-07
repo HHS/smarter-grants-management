@@ -27,7 +27,7 @@ However, the various libraries we use don't structure errors this way, and so
 we have several pieces of code to handle making everything fit together nicely.
 
 APIFlask supports providing your own [error processor](https://apiflask.com/error-handling/)
-which we have implemented in [restructure_error_response](../../api/src/api/response.py)
+which we have implemented in [restructure_error_response](https://github.com/HHS/grants-shared/blob/main/backend/grants_shared/src/grants_shared/api/response.py)
 
 # Error Handling
 
