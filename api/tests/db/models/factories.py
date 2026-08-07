@@ -293,7 +293,7 @@ class GrantorOrganizationFactory(BaseFactory):
     # or using the trait below.
     parent_organization = None
     parent_organization_id = factory.LazyAttribute(
-        lambda o: o.parent_organization.parent_organization_id if o.parent_organization else None
+        lambda o: o.parent_organization.grantor_organization_id if o.parent_organization else None
     )
 
     grantor_organization_type = factory.fuzzy.FuzzyChoice(GrantorOrganizationType)
