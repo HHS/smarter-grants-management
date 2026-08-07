@@ -3,12 +3,46 @@ from apiflask import HTTPError
 
 from src.auth.authorization_enforcer import AuthorizationEnforcer
 from src.constants.lookup_constants import MgmtPrivilege, MgmtResourceType
-from tests.db.models.factories import MgmtInternalResourceFactory, MgmtRoleFactory, MgmtUserFactory
+from tests.db.models.factories import MgmtInternalResourceFactory, MgmtRoleFactory, MgmtUserFactory, PartnerFactory
 from tests.test_utils.auth_test_utils import setup_user_with_roles
 
 ######################################
 # Resource Fixtures
 ######################################
+
+# This is the hierarchy of the test data used in this file (NOTE - orgs connection to program described below)
+#
+# Partner                              A                     B
+#                    ________________/  | \__________        |   \___________
+#                   /    /              |            \      |              / \
+#                  1    4               |             \     |             5    6
+#                /  \                   |              \    |
+# Organization  2    3                  |               \   |
+#                                       |                \  |
+#                                       |                 \ |
+#                                     /  \                 \|
+# Program                            X    Y                 Z
+#
+#
+
+# Additionally, each program has a set of organizations as follows:
+# Program X -> Program Office is Organization 2
+#           -> Grant Office is Organization 4
+#
+# Program Y -> Program Office is Organization 3
+#           -> Grant Office is Organization 4
+#
+# Program Z -> Program Office is Organization 5
+#           -> Grant Office is Organization 6
+
+@pytest.fixture
+def partner_a(enable_factory_create):
+    return PartnerFactory.create(partner_name="Partner A")
+
+@pytest.fixture
+def partner_b(enable_factory_create):
+    return PartnerFactory.create(partner_name="Partner B")
+
 
 
 @pytest.fixture

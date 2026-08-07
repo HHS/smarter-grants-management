@@ -220,14 +220,16 @@ class AuthorizationEnforcer:
         """
         Get all relevant resources for a program, which consists of:
 
-        * The program itself
         * The partner it belongs to
         * The grant office (recursively up the hierarchy)
         * The program office (recursively up the hierarchy)
         * Any secondary partners
+
+        Note that at this time users are not attached to the program despite it being a resource,
+        so we do not add the program to this list.
         """
 
-        resources = [program] + self._get_resources_for_partner(program.partner) + self._get_resources_for_grantor_organization(program.grant_office, fetch_partner=False) + self._get_resources_for_grantor_organization(program.grant_office, fetch_partner=False)
+        resources: list[AbstractResourceTableMixin] = self._get_resources_for_partner(program.partner) + self._get_resources_for_grantor_organization(program.grant_office, fetch_partner=False) + self._get_resources_for_grantor_organization(program.grant_office, fetch_partner=False)
 
         for secondary_partner in program.secondary_program_partners:
             resources += self._get_resources_for_partner(secondary_partner)
