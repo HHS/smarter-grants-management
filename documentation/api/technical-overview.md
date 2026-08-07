@@ -53,7 +53,7 @@ JWT auth (`X-MGMT-Token`) and API User Key auth (`X-API-Key`).
 
 ## Authorization
 
-The API has an active authorization layer implemented under [api/src/auth/](../../api/src/auth/). For details on how authentication and user logic works, see [authentication.md](./authentication.md) and [api/src/auth/README.md](../../api/src/auth/README.md).
+The API has an active authorization layer implemented under [api/src/auth/](../../api/src/auth/). For details on how authentication and user logic works, see [authentication.md](./authentication.md).
 
 ### Database diagram
 
