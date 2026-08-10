@@ -3,7 +3,9 @@ from apiflask import HTTPError
 
 from src.auth.authorization_enforcer import AuthorizationEnforcer
 from src.constants.lookup_constants import MgmtPrivilege, MgmtResourceType
-from tests.db.models.factories import MgmtInternalResourceFactory, MgmtRoleFactory, MgmtUserFactory, PartnerFactory
+from src.db.models.grantor_organization_models import GrantorOrganization
+from tests.db.models.factories import MgmtInternalResourceFactory, MgmtRoleFactory, MgmtUserFactory, PartnerFactory, \
+    GrantorOrganizationFactory, ProgramFactory, SecondaryProgramPartnerFactory
 from tests.test_utils.auth_test_utils import setup_user_with_roles
 
 ######################################
@@ -35,6 +37,8 @@ from tests.test_utils.auth_test_utils import setup_user_with_roles
 # Program Z -> Program Office is Organization 5
 #           -> Grant Office is Organization 6
 
+# TODO - make all these scoped to the module
+
 @pytest.fixture
 def partner_a(enable_factory_create):
     return PartnerFactory.create(partner_name="Partner A")
@@ -44,6 +48,43 @@ def partner_b(enable_factory_create):
     return PartnerFactory.create(partner_name="Partner B")
 
 
+@pytest.fixture
+def organization_1(partner_a):
+    return GrantorOrganizationFactory.create(organization_name="Organization 1", partner=partner_a)
+
+@pytest.fixture
+def organization_2(partner_a, organization_1):
+    return GrantorOrganizationFactory.create(organization_name="Organization 2", partner=partner_a, parent_organization=organization_1)
+
+@pytest.fixture
+def organization_3(partner_a, organization_1):
+    return GrantorOrganizationFactory.create(organization_name="Organization 3", partner=partner_a, parent_organization=organization_1)
+
+@pytest.fixture
+def organization_4(partner_a):
+    return GrantorOrganizationFactory.create(organization_name="Organization 4", partner=partner_a)
+
+@pytest.fixture
+def organization_5(partner_b):
+    return GrantorOrganizationFactory.create(organization_name="Organization 5", partner=partner_b)
+
+@pytest.fixture
+def organization_6(partner_b):
+    return GrantorOrganizationFactory.create(organization_name="Organization 6", partner=partner_b)
+
+@pytest.fixture
+def program_x(partner_a, organization_2, organization_4):
+    return ProgramFactory.create(program_name="Program X", partner=partner_a, program_office=organization_2, grant_office=organization_4)
+
+@pytest.fixture
+def program_y(partner_a, organization_3, organization_4):
+    return ProgramFactory.create(program_name="Program Y", partner=partner_a, program_office=organization_3, grant_office=organization_4)
+
+@pytest.fixture
+def program_z(partner_a, partner_b, organization_5, organization_6):
+    program = ProgramFactory.create(program_name="Program Z", partner=partner_b, program_office=organization_5, grant_office=organization_6, link_secondary_program_partners=[])
+    SecondaryProgramPartnerFactory.create(program=program, partner=partner_a)
+    return program
 
 @pytest.fixture
 def internal_resource1(enable_factory_create):
@@ -62,25 +103,46 @@ def internal_resource2(enable_factory_create):
 
 def test_user_with_no_roles_cannot_access_anything(
     db_session,
-    # TODO - https://github.com/HHS/simpler-grants-gov/issues/11826
-    #        add back all of the resource types
+    partner_a,
+    partner_b,
+    organization_1,
+    organization_2,
+    organization_3,
+    organization_4,
+    organization_5,
+    organization_6,
+    program_x,
+    program_y,
+    program_z,
     internal_resource1,
     internal_resource2,
 ):
     user = MgmtUserFactory.create()
 
-    assert (
-        AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION}, internal_resource1
+    for resource in [
+        partner_a,
+        partner_b,
+        organization_1,
+        organization_2,
+        organization_3,
+        organization_4,
+        organization_5,
+        organization_6,
+        program_x,
+        program_y,
+        program_z,
+        internal_resource1,
+        internal_resource2,
+    ]:
+        assert (
+                AuthorizationEnforcer(db_session).can_access(
+                    user, {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION}, resource
+                )
+                is False
         )
-        is False
-    )
-    assert (
-        AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION}, internal_resource2
-        )
-        is False
-    )
+
+
+
 
 
 def test_user_internal_resource(db_session, internal_resource1, internal_resource2):
@@ -303,3 +365,28 @@ def test_verify_access(db_session, internal_resource1):
         AuthorizationEnforcer(db_session).verify_access(
             user, {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION}, internal_resource1
         )
+
+
+
+
+# TODO
+
+###  Partner access
+# Only accessed by exactly the partner
+# Cannot be accessed by any program/org under it
+
+### Org access
+# Can be accessed by the org itself
+# Can be accessed by the owning partner
+# Can be accessed by the parent org
+# Cannot be accessed by another partner
+# Cannot be accessed by another org in the hierarchy
+
+
+### Program access
+# Can be accessed by the partner owning it
+# Can be accessed by the secondary partner
+# Can be accessed by the two orgs that own it
+# Can be accessed by the two orgs that own it or their parents
+# Cannot be accessed by another program
+# Cannot be accessed by a non-secondary partner
