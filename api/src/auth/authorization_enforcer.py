@@ -7,7 +7,7 @@ from grants_shared.api.route_utils import raise_flask_error
 from sqlalchemy import select
 
 from src.constants.lookup_constants import MgmtPrivilege, MgmtResourceType
-from src.db.models.grantor_organization_models import Partner, GrantorOrganization, Program
+from src.db.models.grantor_organization_models import GrantorOrganization, Partner, Program
 from src.db.models.resource_models import (
     AbstractResourceTableMixin,
     MgmtInternalResource,
@@ -195,7 +195,9 @@ class AuthorizationEnforcer:
         """Get all relevant resources for a partner - which is just the partner itself"""
         return [partner]
 
-    def _get_resources_for_grantor_organization(self, grantor_organization: GrantorOrganization, fetch_partner: bool = True) -> list[AbstractResourceTableMixin]:
+    def _get_resources_for_grantor_organization(
+        self, grantor_organization: GrantorOrganization, fetch_partner: bool = True
+    ) -> list[AbstractResourceTableMixin]:
         """
         Get all relevant resources for a grantor organization, which consists of:
 
@@ -212,7 +214,9 @@ class AuthorizationEnforcer:
             resources += self._get_resources_for_partner(grantor_organization.partner)
 
         if grantor_organization.parent_organization is not None:
-            resources += self._get_resources_for_grantor_organization(grantor_organization.parent_organization, fetch_partner=False)
+            resources += self._get_resources_for_grantor_organization(
+                grantor_organization.parent_organization, fetch_partner=False
+            )
 
         return resources
 
@@ -225,18 +229,24 @@ class AuthorizationEnforcer:
         * The program office (recursively up the hierarchy)
         * Any secondary partners
 
-        Note that at this time users are not attached to the program despite it being a resource,
+        NOTE: that at this time users are not attached to the program despite it being a resource,
         so we do not add the program to this list.
         """
 
-        resources: list[AbstractResourceTableMixin] = self._get_resources_for_partner(program.partner) + self._get_resources_for_grantor_organization(program.grant_office, fetch_partner=False) + self._get_resources_for_grantor_organization(program.grant_office, fetch_partner=False)
+        resources: list[AbstractResourceTableMixin] = (
+            self._get_resources_for_partner(program.partner)
+            + self._get_resources_for_grantor_organization(
+                program.grant_office, fetch_partner=False
+            )
+            + self._get_resources_for_grantor_organization(
+                program.program_office, fetch_partner=False
+            )
+        )
 
         for secondary_partner in program.secondary_program_partners:
             resources += self._get_resources_for_partner(secondary_partner)
 
         return resources
-
-
 
     def _get_resources_for_internal_resource(
         self, internal_resource: MgmtInternalResource
