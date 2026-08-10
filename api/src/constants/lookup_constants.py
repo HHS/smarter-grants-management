@@ -45,6 +45,42 @@ class MgmtResourceType(StrEnum):
     OPPORTUNITY = "opportunity"
 
 
+class MgmtWorkflowType(StrEnum):
+    # Because of how we use the workflow type to find
+    # the state machine and its configuration, we need
+    # to define any workflows for tests here as well.
+    # This workflow type isn't real, and is instead
+    # reserved for the prototype state machine and tests.
+    BASIC_TEST_WORKFLOW = "basic_test_workflow"
+
+    def get_human_friendly_text(self) -> str:
+        return self.value.replace("_", " ").title()
+
+
+class MgmtApprovalType(StrEnum):
+    BASIC_TEST_APPROVAL = "basic_test_approval"
+
+
+class MgmtApprovalResponseType(StrEnum):
+    APPROVED = "approved"
+    DECLINED = "declined"
+    REQUIRES_MODIFICATION = "requires_modification"
+
+
+class MgmtWorkflowEventType(StrEnum):
+    START_WORKFLOW = "start_workflow"
+    PROCESS_WORKFLOW = "process_workflow"
+
+
+class MgmtWorkflowEventProcessingResult(StrEnum):
+    """Enum representing the result of processing an SQS event."""
+
+    SUCCESS = "success"
+    NON_RETRYABLE_ERROR = "non_retryable_error"
+    RETRYABLE_ERROR = "retryable_error"
+    GENERAL_ERROR = "general_error"
+
+
 # The resource types each privilege is allowed to be assigned at. A privilege may only be
 # included in a role when the role's resource types are a subset of the privilege's allowed
 # resource types (validated in src/util/role_util.py::build_role). This prevents assigning,

@@ -10,9 +10,12 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from src.constants.lookup_constants import (
     ExternalUserType,
+    MgmtApprovalResponseType,
+    MgmtApprovalType,
     MgmtPrivilege,
     MgmtResourceType,
     MgmtUserType,
+    MgmtWorkflowType,
 )
 from src.db.models.grantor_schema_table import GrantorSchemaTable
 
@@ -57,6 +60,29 @@ MGMT_RESOURCE_TYPE_CONFIG: LookupConfig[MgmtResourceType] = LookupConfig(
         LookupStr(MgmtResourceType.PROGRAM, 3),
         LookupStr(MgmtResourceType.GRANTOR_ORGANIZATION, 4),
         LookupStr(MgmtResourceType.OPPORTUNITY, 5),
+    ]
+)
+
+# Only the values the engine itself needs are seeded here. The find/apply workflow
+# and approval types (opportunity_publish, award recommendation review, and so on)
+# are deliberately not ported - teams add values as they build real mgmt workflows.
+MGMT_WORKFLOW_TYPE_CONFIG: LookupConfig[MgmtWorkflowType] = LookupConfig(
+    [
+        LookupStr(MgmtWorkflowType.BASIC_TEST_WORKFLOW, 1),
+    ]
+)
+
+MGMT_APPROVAL_TYPE_CONFIG: LookupConfig[MgmtApprovalType] = LookupConfig(
+    [
+        LookupStr(MgmtApprovalType.BASIC_TEST_APPROVAL, 1),
+    ]
+)
+
+MGMT_APPROVAL_RESPONSE_TYPE_CONFIG: LookupConfig[MgmtApprovalResponseType] = LookupConfig(
+    [
+        LookupStr(MgmtApprovalResponseType.APPROVED, 1),
+        LookupStr(MgmtApprovalResponseType.DECLINED, 2),
+        LookupStr(MgmtApprovalResponseType.REQUIRES_MODIFICATION, 3),
     ]
 )
 
@@ -137,4 +163,46 @@ class LkMgmtResourceType(GrantorLookupTable, TimestampMixin):
     def from_lookup(cls, lookup: Lookup) -> LkMgmtResourceType:
         return LkMgmtResourceType(
             mgmt_resource_type_id=lookup.lookup_val, description=lookup.get_description()
+        )
+
+
+@LookupRegistry.register_lookup(MGMT_WORKFLOW_TYPE_CONFIG)
+class LkMgmtWorkflowType(GrantorLookupTable, TimestampMixin):
+    __tablename__ = "lk_mgmt_workflow_type"
+
+    mgmt_workflow_type_id: Mapped[int] = mapped_column(primary_key=True)
+    description: Mapped[str]
+
+    @classmethod
+    def from_lookup(cls, lookup: Lookup) -> LkMgmtWorkflowType:
+        return LkMgmtWorkflowType(
+            mgmt_workflow_type_id=lookup.lookup_val, description=lookup.get_description()
+        )
+
+
+@LookupRegistry.register_lookup(MGMT_APPROVAL_TYPE_CONFIG)
+class LkMgmtApprovalType(GrantorLookupTable, TimestampMixin):
+    __tablename__ = "lk_mgmt_approval_type"
+
+    mgmt_approval_type_id: Mapped[int] = mapped_column(primary_key=True)
+    description: Mapped[str]
+
+    @classmethod
+    def from_lookup(cls, lookup: Lookup) -> LkMgmtApprovalType:
+        return LkMgmtApprovalType(
+            mgmt_approval_type_id=lookup.lookup_val, description=lookup.get_description()
+        )
+
+
+@LookupRegistry.register_lookup(MGMT_APPROVAL_RESPONSE_TYPE_CONFIG)
+class LkMgmtApprovalResponseType(GrantorLookupTable, TimestampMixin):
+    __tablename__ = "lk_mgmt_approval_response_type"
+
+    mgmt_approval_response_type_id: Mapped[int] = mapped_column(primary_key=True)
+    description: Mapped[str]
+
+    @classmethod
+    def from_lookup(cls, lookup: Lookup) -> LkMgmtApprovalResponseType:
+        return LkMgmtApprovalResponseType(
+            mgmt_approval_response_type_id=lookup.lookup_val, description=lookup.get_description()
         )

@@ -11,7 +11,15 @@ from sqlalchemy.orm import scoped_session
 
 import src.db.models.resource_models as resource_models
 import src.db.models.user_models as user_models
-from src.constants.lookup_constants import ExternalUserType, MgmtResourceType, MgmtUserType
+import src.db.models.workflow_models as workflow_models
+from src.constants.lookup_constants import (
+    ExternalUserType,
+    MgmtApprovalResponseType,
+    MgmtApprovalType,
+    MgmtResourceType,
+    MgmtUserType,
+    MgmtWorkflowType,
+)
 
 
 def sometimes_none(factory_value, none_chance: float = 0.5):
@@ -298,3 +306,77 @@ class MgmtUserApiKeyFactory(BaseFactory):
 
         # Trait for unused keys
         never_used = factory.Trait(last_used=None)
+
+
+###################
+# Workflow Factories
+###################
+
+
+class MgmtWorkflowFactory(BaseFactory):
+    class Meta:
+        model = workflow_models.MgmtWorkflow
+
+    mgmt_workflow_id = Generators.UuidObj
+    workflow_type = MgmtWorkflowType.BASIC_TEST_WORKFLOW
+    current_workflow_state = "start"
+    is_active = True
+
+    # A workflow always points at a resource. Pass `resource=<entity>.resource`
+    # to attach the workflow to a specific resource-backed entity instead.
+    resource = factory.SubFactory(MgmtResourceFactory)
+    mgmt_resource_id = factory.LazyAttribute(lambda w: w.resource.mgmt_resource_id)
+
+
+class MgmtWorkflowEventHistoryFactory(BaseFactory):
+    class Meta:
+        model = workflow_models.MgmtWorkflowEventHistory
+
+    mgmt_workflow_event_history_id = Generators.UuidObj
+    event_data = {}
+    sent_at = Generators.UtcNow
+    is_successfully_processed = True
+
+
+class MgmtWorkflowAuditFactory(BaseFactory):
+    class Meta:
+        model = workflow_models.MgmtWorkflowAudit
+
+    mgmt_workflow_audit_id = Generators.UuidObj
+
+    workflow = factory.SubFactory(MgmtWorkflowFactory)
+    mgmt_workflow_id = factory.LazyAttribute(lambda a: a.workflow.mgmt_workflow_id)
+
+    acting_user = factory.SubFactory(MgmtUserFactory)
+    acting_mgmt_user_id = factory.LazyAttribute(lambda a: a.acting_user.mgmt_user_id)
+
+    transition_event = "process"
+    source_state = "start"
+    target_state = "end"
+
+    event = factory.SubFactory(MgmtWorkflowEventHistoryFactory)
+    mgmt_workflow_event_history_id = factory.LazyAttribute(
+        lambda a: a.event.mgmt_workflow_event_history_id
+    )
+
+
+class MgmtWorkflowApprovalFactory(BaseFactory):
+    class Meta:
+        model = workflow_models.MgmtWorkflowApproval
+
+    mgmt_workflow_approval_id = Generators.UuidObj
+
+    workflow = factory.SubFactory(MgmtWorkflowFactory)
+    mgmt_workflow_id = factory.LazyAttribute(lambda a: a.workflow.mgmt_workflow_id)
+
+    approving_user = factory.SubFactory(MgmtUserFactory)
+    approving_mgmt_user_id = factory.LazyAttribute(lambda a: a.approving_user.mgmt_user_id)
+
+    approval_type = factory.fuzzy.FuzzyChoice(MgmtApprovalType)
+    is_still_valid = True
+    approval_response_type = MgmtApprovalResponseType.APPROVED
+
+    event = factory.SubFactory(MgmtWorkflowEventHistoryFactory)
+    mgmt_workflow_event_history_id = factory.LazyAttribute(
+        lambda a: a.event.mgmt_workflow_event_history_id
+    )
