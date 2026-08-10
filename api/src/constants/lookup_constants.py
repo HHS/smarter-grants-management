@@ -45,6 +45,11 @@ class MgmtResourceType(StrEnum):
     OPPORTUNITY = "opportunity"
 
 
+class GrantorOrganizationType(StrEnum):
+    PROGRAM_OFFICE = "program_office"
+    GRANT_OFFICE = "grant_office"
+
+
 class MgmtWorkflowType(StrEnum):
     # Because of how we use the workflow type to find
     # the state machine and its configuration, we need

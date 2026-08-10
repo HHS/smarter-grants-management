@@ -1,4 +1,11 @@
-from . import grantor_schema_table, lookup_models, resource_models, user_models, workflow_models
+from . import (
+    grantor_organization_models,
+    grantor_schema_table,
+    lookup_models,
+    resource_models,
+    user_models,
+    workflow_models,
+)
 
 # Re-export metadata
 # This is used by tests to create the test database.
@@ -9,5 +16,6 @@ __all__ = [
     "lookup_models",
     "user_models",
     "resource_models",
+    "grantor_organization_models",
     "workflow_models",
 ]

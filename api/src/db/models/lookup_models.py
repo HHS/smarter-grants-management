@@ -10,6 +10,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from src.constants.lookup_constants import (
     ExternalUserType,
+    GrantorOrganizationType,
     MgmtApprovalResponseType,
     MgmtApprovalType,
     MgmtPrivilege,
@@ -60,6 +61,13 @@ MGMT_RESOURCE_TYPE_CONFIG: LookupConfig[MgmtResourceType] = LookupConfig(
         LookupStr(MgmtResourceType.PROGRAM, 3),
         LookupStr(MgmtResourceType.GRANTOR_ORGANIZATION, 4),
         LookupStr(MgmtResourceType.OPPORTUNITY, 5),
+    ]
+)
+
+GRANTOR_ORGANIZATION_TYPE_CONFIG: LookupConfig[GrantorOrganizationType] = LookupConfig(
+    [
+        LookupStr(GrantorOrganizationType.PROGRAM_OFFICE, 1),
+        LookupStr(GrantorOrganizationType.GRANT_OFFICE, 2),
     ]
 )
 
@@ -163,6 +171,20 @@ class LkMgmtResourceType(GrantorLookupTable, TimestampMixin):
     def from_lookup(cls, lookup: Lookup) -> LkMgmtResourceType:
         return LkMgmtResourceType(
             mgmt_resource_type_id=lookup.lookup_val, description=lookup.get_description()
+        )
+
+
+@LookupRegistry.register_lookup(GRANTOR_ORGANIZATION_TYPE_CONFIG)
+class LkGrantorOrganizationType(GrantorLookupTable, TimestampMixin):
+    __tablename__ = "lk_grantor_organization_type"
+
+    grantor_organization_type_id: Mapped[int] = mapped_column(primary_key=True)
+    description: Mapped[str]
+
+    @classmethod
+    def from_lookup(cls, lookup: Lookup) -> LkGrantorOrganizationType:
+        return LkGrantorOrganizationType(
+            grantor_organization_type_id=lookup.lookup_val, description=lookup.get_description()
         )
 
 
