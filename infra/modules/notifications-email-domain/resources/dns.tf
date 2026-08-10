@@ -30,5 +30,5 @@ resource "aws_route53_record" "mx_receive" {
   ttl             = "600"
   name            = local.mail_from_domain
   zone_id         = data.aws_route53_zone.zone.zone_id
-  records         = ["10 feedback-smtp.${data.aws_region.current.name}.amazonaws.com"]
+  records         = ["10 feedback-smtp.${data.aws_region.current.region}.amazonaws.com"]
 }

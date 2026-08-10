@@ -20,6 +20,7 @@ services:
     depends_on:
       - mock-oauth2-server
       - grants-mgmt-db
+      - mgmt-sqsmock
     ports:
       - 8089:8089
     volumes:
@@ -40,6 +41,21 @@ services:
       - "5439:5432"
     volumes:
       - grantsmgmtdbdata:/var/lib/postgresql/data
+    networks:
+      - default
+
+  # NOTE - the service is named differently from simpler-grants' `sqsmock` on
+  # purpose. Both repos' compose files sit in a directory named `api`, so they
+  # share a compose project, and same-named services replace each other.
+  mgmt-sqsmock:
+    image: softwaremill/elasticmq-native
+    container_name: grants-mgmt-sqsmock
+    ports:
+      # NOTE - we map the port differently as it's possible our developers
+      # will do work in the simpler-grants code as well which uses the default 9324 port
+      - "9325:9324"
+    volumes:
+      - ./mock-sqs/custom.conf:/opt/elasticmq.conf
     networks:
       - default
 

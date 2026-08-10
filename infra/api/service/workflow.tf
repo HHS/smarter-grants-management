@@ -39,7 +39,9 @@ resource "aws_ecs_task_definition" "workflow" {
       essential              = true,
       readonlyRootFilesystem = true,
 
-      command = ["flask", "workflow", "workflow-main"],
+      # A placeholder consumer that drains the queue without processing it.
+      # Swapped for the workflow manager once the engine is copied over.
+      command = ["flask", "task", "workflow-queue-listener"],
 
       healthCheck = null,
 
@@ -71,7 +73,7 @@ resource "aws_ecs_task_definition" "workflow" {
         logDriver = "awslogs",
         options = {
           "awslogs-group"         = "service/${local.workflow_service_name}",
-          "awslogs-region"        = data.aws_region.current.name,
+          "awslogs-region"        = data.aws_region.current.region,
           "awslogs-stream-prefix" = local.workflow_service_name
         }
       }
