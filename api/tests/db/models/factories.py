@@ -123,7 +123,8 @@ class CustomProvider(BaseProvider):
     ]
 
     GRANT_OFFICE_NAME_FORMATS = [
-        "{{department_name}} - Grant Office" "{{agency_word}} Headquarters - Grant Office",
+        "{{department_name}} - Grant Office",
+        "{{agency_word}} Headquarters - Grant Office",
     ]
 
     PROGRAM_NAME_FORMATS = [
@@ -134,7 +135,8 @@ class CustomProvider(BaseProvider):
         "Office of {{agency_word}}",
         "{{agency_word}} Safety",
         "Statewide {{agency_word}} & {{agency_word}}",
-        "{{agency_word}} Title {{random_int}}" "{{agency_word}} Act",
+        "{{agency_word}} Title {{random_int}}",
+        "{{agency_word}} Act",
     ]
 
     def department_word(self) -> str:
