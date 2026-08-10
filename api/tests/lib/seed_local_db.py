@@ -32,6 +32,8 @@ def seed_local_db() -> None:
 def run_seed_logic(db_session: db.Session) -> None:
     create_users(db_session)
 
+    create_programs()
+
     # Commit anything remaining that wasn't made with factories
     db_session.commit()
 
@@ -64,3 +66,10 @@ def create_users(db_session: db.Session) -> None:
         db_session=db_session,
         scenario_name="Another API Key User",
     ).with_oauth_login("another_api_key_user").with_api_key("local-dev-api-key-2").build()
+
+
+def create_programs() -> None:
+    # Create a few programs just to have something to work with.
+    # Later work will add more specific scenarios
+    logger.info("Creating programs")
+    f.ProgramFactory.create_batch(size=5)

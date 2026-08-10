@@ -45,6 +45,11 @@ class MgmtResourceType(StrEnum):
     OPPORTUNITY = "opportunity"
 
 
+class GrantorOrganizationType(StrEnum):
+    PROGRAM_OFFICE = "program_office"
+    GRANT_OFFICE = "grant_office"
+
+
 # The resource types each privilege is allowed to be assigned at. A privilege may only be
 # included in a role when the role's resource types are a subset of the privilege's allowed
 # resource types (validated in src/util/role_util.py::build_role). This prevents assigning,
