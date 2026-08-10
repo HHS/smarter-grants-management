@@ -443,18 +443,37 @@ class MgmtUserApiKeyFactory(BaseFactory):
 
 
 class MgmtWorkflowFactory(BaseFactory):
+    """
+    Base factory for workflows - abstract because every workflow points at some
+    entity's resource, and which entity that is depends on the workflow.
+
+    Add a subclass per entity a workflow can attach to (see ProgramWorkflowFactory)
+    rather than using this directly.
+    """
+
     class Meta:
-        model = workflow_models.MgmtWorkflow
+        # Deliberately no model here - subclasses set it. If the model were set on
+        # both, factory_boy would share one sequence counter between parent and
+        # child, and reset_sequence() on the child raises (see test_seed_local_db).
+        abstract = True
 
     mgmt_workflow_id = Generators.UuidObj
     workflow_type = MgmtWorkflowType.BASIC_TEST_WORKFLOW
     current_workflow_state = "start"
     is_active = True
 
-    # A workflow always points at a resource. Pass `resource=<entity>.resource`
-    # to attach the workflow to a specific resource-backed entity instead.
-    resource = factory.SubFactory(MgmtResourceFactory)
-    mgmt_resource_id = factory.LazyAttribute(lambda w: w.resource.mgmt_resource_id)
+
+class ProgramWorkflowFactory(MgmtWorkflowFactory):
+    """A workflow attached to a program. Pass `program=` to use an existing one."""
+
+    class Meta:
+        model = workflow_models.MgmtWorkflow
+        # The program is what we hang the workflow off of, but the workflow
+        # itself only stores the resource ID, so don't pass it to the model.
+        exclude = ("program",)
+
+    program = factory.SubFactory(ProgramFactory)
+    mgmt_resource_id = factory.LazyAttribute(lambda w: w.program.get_resource_id())
 
 
 class MgmtWorkflowEventHistoryFactory(BaseFactory):
@@ -473,7 +492,7 @@ class MgmtWorkflowAuditFactory(BaseFactory):
 
     mgmt_workflow_audit_id = Generators.UuidObj
 
-    workflow = factory.SubFactory(MgmtWorkflowFactory)
+    workflow = factory.SubFactory(ProgramWorkflowFactory)
     mgmt_workflow_id = factory.LazyAttribute(lambda a: a.workflow.mgmt_workflow_id)
 
     acting_user = factory.SubFactory(MgmtUserFactory)
@@ -495,7 +514,7 @@ class MgmtWorkflowApprovalFactory(BaseFactory):
 
     mgmt_workflow_approval_id = Generators.UuidObj
 
-    workflow = factory.SubFactory(MgmtWorkflowFactory)
+    workflow = factory.SubFactory(ProgramWorkflowFactory)
     mgmt_workflow_id = factory.LazyAttribute(lambda a: a.workflow.mgmt_workflow_id)
 
     approving_user = factory.SubFactory(MgmtUserFactory)
