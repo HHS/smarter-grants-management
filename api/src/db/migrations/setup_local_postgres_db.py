@@ -9,6 +9,7 @@ from grants_shared.util.local import error_if_not_local
 from src.auth.internal_resource import create_internal_resource
 from src.constants.schema import Schemas
 from src.db.resource_automation.resource_automation import setup_resource_automation
+from src.workflow.internal_workflow_user import create_internal_workflow_user
 
 logger = logging.getLogger(__name__)
 
@@ -44,3 +45,19 @@ def setup_internal_resource() -> None:
 
         with db_client.get_session() as db_session, db_session.begin():
             create_internal_resource(db_session)
+
+
+def setup_internal_workflow_user() -> None:
+    """Create the statically defined internal workflow user for local development.
+
+    Same shape as setup_internal_resource above - runs after migrations as part of
+    `make init-db` and is idempotent. Without it, any workflow that takes an automatic
+    state transition fails at commit time on the audit record's user foreign key.
+    """
+    with grants_shared.logs.init(__package__):
+        error_if_not_local()
+
+        db_client = PostgresDBClient()
+
+        with db_client.get_session() as db_session, db_session.begin():
+            create_internal_workflow_user(db_session)

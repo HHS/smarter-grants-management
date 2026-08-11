@@ -58,6 +58,10 @@ class MgmtWorkflowType(StrEnum):
     # reserved for the prototype state machine and tests.
     BASIC_TEST_WORKFLOW = "basic_test_workflow"
 
+    # Also not real - backs a test-only state machine configured to disallow
+    # concurrent workflows, since the prototype allows them.
+    NO_CONCURRENT_TEST_WORKFLOW = "no_concurrent_test_workflow"
+
     def get_human_friendly_text(self) -> str:
         return self.value.replace("_", " ").title()
 
