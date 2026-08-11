@@ -8,7 +8,7 @@ export async function generateMetadata() {
   const t = await getTranslations();
   const meta: Metadata = {
     title: t("ErrorPages.unauthenticated.pageTitle"),
-    description: t("Index.metaDescription"),
+    description: t("Homepage.metaDescription"),
   };
   return meta;
 }

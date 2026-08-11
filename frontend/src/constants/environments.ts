@@ -69,4 +69,5 @@ export const environment: { [key: string]: string } = {
   IS_CI: CI || "false",
   LOCAL_DEV:
     ENVIRONMENT === "local" && API_URL?.includes("localhost") ? "true" : "",
+  API_AUTH_HEADER_NAME: "X-MGMT-TOKEN",
 };

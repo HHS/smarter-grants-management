@@ -28,6 +28,7 @@ describe("getNextRoutes", () => {
       "/opportunity/1/competition",
       "/opportunity/1/edit",
       "/opportunity/1/overview",
+      "/",
       "/unauthenticated",
     ]);
   });
