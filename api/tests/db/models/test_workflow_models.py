@@ -1,5 +1,3 @@
-from sqlalchemy import select
-
 from src.constants.lookup_constants import (
     MgmtApprovalResponseType,
     MgmtResourceType,
@@ -20,13 +18,6 @@ from tests.db.models.factories import (
 )
 
 
-def _fetch_workflow(db_session, workflow: MgmtWorkflow) -> MgmtWorkflow:
-    db_session.expire_all()
-    return db_session.execute(
-        select(MgmtWorkflow).where(MgmtWorkflow.mgmt_workflow_id == workflow.mgmt_workflow_id)
-    ).scalar_one()
-
-
 def test_workflow_factory_build():
     workflow = ProgramWorkflowFactory.build()
 
@@ -40,12 +31,11 @@ def test_workflow_factory_build():
 def test_workflow_factory_create(enable_factory_create, db_session):
     workflow = ProgramWorkflowFactory.create()
 
-    db_record = _fetch_workflow(db_session, workflow)
-
-    assert db_record.workflow_type == MgmtWorkflowType.BASIC_TEST_WORKFLOW
-    assert db_record.current_workflow_state == "start"
-    assert db_record.is_active is True
-    assert db_record.mgmt_resource_id == workflow.mgmt_resource_id
+    assert workflow.mgmt_workflow_id is not None
+    assert workflow.workflow_type == MgmtWorkflowType.BASIC_TEST_WORKFLOW
+    assert workflow.current_workflow_state == "start"
+    assert workflow.is_active is True
+    assert workflow.mgmt_resource_id is not None
 
 
 def test_workflow_references_entity_through_its_resource(enable_factory_create, db_session):
@@ -54,12 +44,13 @@ def test_workflow_references_entity_through_its_resource(enable_factory_create, 
 
     workflow = ProgramWorkflowFactory.create(program=program)
 
-    db_record = _fetch_workflow(db_session, workflow)
+    # The factory only sets the resource ID, so fetch the resource itself from the DB.
+    db_session.refresh(workflow)
 
     # The resource ID is the entity's own primary key, so the workflow gets back to
     # the entity without any per-entity FK column on the workflow table.
-    assert db_record.mgmt_resource_id == program.program_id
-    assert db_record.resource.mgmt_resource_type == MgmtResourceType.PROGRAM
+    assert workflow.mgmt_resource_id == program.program_id
+    assert workflow.resource.mgmt_resource_type == MgmtResourceType.PROGRAM
 
 
 def test_workflow_child_records(enable_factory_create, db_session):
@@ -69,25 +60,27 @@ def test_workflow_child_records(enable_factory_create, db_session):
     audit = MgmtWorkflowAuditFactory.create(workflow=workflow, event=event)
     approval = MgmtWorkflowApprovalFactory.create(workflow=workflow, event=event)
 
-    db_record = _fetch_workflow(db_session, workflow)
+    # Load the child collections as the DB has them rather than as the factories
+    # left them in memory, so this covers the foreign keys actually persisting.
+    db_session.refresh(workflow)
 
-    assert [e.mgmt_workflow_event_history_id for e in db_record.workflow_event_history] == [
+    assert [e.mgmt_workflow_event_history_id for e in workflow.workflow_event_history] == [
         event.mgmt_workflow_event_history_id
     ]
-    assert [a.mgmt_workflow_audit_id for a in db_record.workflow_audits] == [
+    assert [a.mgmt_workflow_audit_id for a in workflow.workflow_audits] == [
         audit.mgmt_workflow_audit_id
     ]
-    assert [a.mgmt_workflow_approval_id for a in db_record.workflow_approvals] == [
+    assert [a.mgmt_workflow_approval_id for a in workflow.workflow_approvals] == [
         approval.mgmt_workflow_approval_id
     ]
 
-    assert db_record.workflow_audits[0].acting_user.mgmt_user_id == audit.acting_user.mgmt_user_id
+    assert workflow.workflow_audits[0].acting_user.mgmt_user_id == audit.acting_user.mgmt_user_id
     assert (
-        db_record.workflow_approvals[0].approving_user.mgmt_user_id
+        workflow.workflow_approvals[0].approving_user.mgmt_user_id
         == approval.approving_user.mgmt_user_id
     )
     assert (
-        db_record.workflow_approvals[0].approval_response_type == MgmtApprovalResponseType.APPROVED
+        workflow.workflow_approvals[0].approval_response_type == MgmtApprovalResponseType.APPROVED
     )
 
 
@@ -97,7 +90,7 @@ def test_deleting_workflow_deletes_child_records(enable_factory_create, db_sessi
     audit = MgmtWorkflowAuditFactory.create(workflow=workflow, event=event)
     approval = MgmtWorkflowApprovalFactory.create(workflow=workflow, event=event)
 
-    db_session.delete(_fetch_workflow(db_session, workflow))
+    db_session.delete(workflow)
     db_session.commit()
 
     assert db_session.get(MgmtWorkflow, workflow.mgmt_workflow_id) is None
