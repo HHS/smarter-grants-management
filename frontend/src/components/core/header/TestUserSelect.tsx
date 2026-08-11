@@ -7,8 +7,16 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Select } from "@trussworks/react-uswds";
 
+import { TestApplicationLink } from "./TestApplicationLink";
+
 // should only ever appear or be used in local / non-deployed environments
-export const TestUserSelect = ({ testUsers }: { testUsers: TestUser[] }) => {
+export const TestUserSelect = ({
+  testUsers,
+  isApplicationTestUser,
+}: {
+  testUsers: TestUser[];
+  isApplicationTestUser: boolean;
+}) => {
   const [loggingIn, setLoggingIn] = useState(false);
   const router = useRouter();
   const { refreshUser } = useUser();
@@ -40,18 +48,21 @@ export const TestUserSelect = ({ testUsers }: { testUsers: TestUser[] }) => {
   };
   const validTestUsers = testUsers.filter((testUser) => testUser.user_jwt);
   return (
-    <Select
-      className="maxw-card-lg margin-left-2 margin-bottom-1"
-      id="test-users-select"
-      name="test-users=select"
-      onChange={(e) => logInTestUser(e.target.value)}
-      disabled={loggingIn}
-    >
-      {validTestUsers.map((testUser) => (
-        <option key={testUser.user_id} value={testUser.user_jwt}>
-          {testUser.oauth_id}
-        </option>
-      ))}
-    </Select>
+    <>
+      <Select
+        className="maxw-card-lg margin-left-2 margin-bottom-1"
+        id="test-users-select"
+        name="test-users=select"
+        onChange={(e) => logInTestUser(e.target.value)}
+        disabled={loggingIn}
+      >
+        {validTestUsers.map((testUser) => (
+          <option key={testUser.user_id} value={testUser.user_jwt}>
+            {testUser.oauth_id}
+          </option>
+        ))}
+      </Select>
+      {isApplicationTestUser && <TestApplicationLink />}
+    </>
   );
 };

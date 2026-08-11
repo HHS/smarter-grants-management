@@ -1,28 +1,31 @@
 // import GrantsLogo from "public/img/grants-logo.svg";
 import { ExternalRoutes } from "src/constants/routes";
-import { messages } from "src/i18n/messages/en";
+
+// import { messages } from "src/i18n/messages/en";
 
 import { useTranslations } from "next-intl";
 // import Image from "next/image";
-import Link from "next/link";
+// import Link from "next/link";
+import { PropsWithChildren } from "react";
 import {
   Grid,
   GridContainer,
   Footer as USWDSFooter,
 } from "@trussworks/react-uswds";
 
-type FooterNavItems = typeof messages.Footer.links;
+// type FooterNavItems = typeof messages.Footer.links;
 
-const FooterNavLinkItem = ({ to }: { to: keyof FooterNavItems }) => {
-  const t = useTranslations("Footer");
-  return (
-    <li className="usa-footer__secondary-link margin-left-0">
-      <Link href={`/${to}`}>{t(`links.${to}`)}</Link>
-    </li>
-  );
-};
+// const FooterNavLinkItem = ({ to }: { to: keyof FooterNavItems }) => {
+//   const t = useTranslations("Footer");
+//   return (
+//     <li className="usa-footer__secondary-link margin-left-0">
+//       <Link href={`/${to}`}>{t(`links.${to}`)}</Link>
+//     </li>
+//   );
+// };
 
-const Footer = () => {
+// note that children here will populate the "explore" link list
+const Footer = ({ children }: PropsWithChildren) => {
   const t = useTranslations("Footer");
 
   return (
@@ -55,16 +58,7 @@ const Footer = () => {
               desktop={{ col: 2 }}
             >
               <h3 className="desktop:padding-top-4">{t("explore")}</h3>
-              <ul className="margin-top-3">
-                <li className="usa-footer__secondary-link margin-left-0">
-                  <Link href="/">{t("links.home")}</Link>
-                </li>
-                <FooterNavLinkItem to="search" />
-                <FooterNavLinkItem to="vision" />
-                <FooterNavLinkItem to="roadmap" />
-                <FooterNavLinkItem to="events" />
-                <FooterNavLinkItem to="subscribe" />
-              </ul>
+              <ul className="margin-top-3">{children}</ul>
             </Grid>
             <Grid
               className="margin-top-3 tablet:margin-top-0"
@@ -72,7 +66,7 @@ const Footer = () => {
               tabletLg={{ col: 5 }}
               desktop={{ col: 3 }}
             >
-              <h3 className="desktop:padding-top-4">{t("simpler")}</h3>
+              <h3 className="desktop:padding-top-4">{t("siteName")}</h3>
               <div>
                 {t.rich("feedback", {
                   email: (chunk) => (
