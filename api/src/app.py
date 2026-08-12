@@ -14,6 +14,7 @@ from grants_shared.auth.login_gov_jwt_auth import initialize_login_gov_config
 
 from src.adapters.newrelic import init_newrelic
 from src.api.healthcheck.healthcheck_blueprint import healthcheck_blueprint
+from src.api.proof_of_concept.proof_of_concept_blueprint import proof_of_concept_blueprint
 from src.api.users.user_blueprint import user_blueprint
 from src.app_config import AppConfig
 from src.auth.auth_utils import get_app_security_scheme
@@ -72,6 +73,7 @@ def register_blueprints(app: APIFlask) -> None:
 
     app.register_blueprint(task_blueprint)
     app.register_blueprint(user_blueprint)
+    app.register_blueprint(proof_of_concept_blueprint)
 
 
 def configure_app(app: APIFlask) -> None:

@@ -26,6 +26,7 @@ services:
       - .:/grants_management_api
     networks:
       - default
+      - grants_backend
 
   grants-mgmt-db:
     image: postgres:17.5-alpine
@@ -83,3 +84,7 @@ services:
 
 volumes:
     grantsmgmtdbdata:
+
+networks:
+  grants_backend:
+    external: true
