@@ -73,8 +73,6 @@ def register_blueprints(app: APIFlask) -> None:
 
     app.register_blueprint(task_blueprint)
     app.register_blueprint(user_blueprint)
-
-    # Carries no HTTP routes yet - registered so `flask workflow workflow-main` exists.
     app.register_blueprint(workflow_blueprint)
 
 

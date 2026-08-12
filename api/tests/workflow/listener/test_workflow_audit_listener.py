@@ -5,6 +5,7 @@ from src.db.models.workflow_models import MgmtWorkflowAudit
 from src.workflow.handler.event_handler import EventHandler
 from src.workflow.state_machine.prototype_state_machine import PrototypeState
 from tests.db.models.factories import MgmtUserFactory, ProgramWorkflowFactory
+from tests.workflow.state_machine.test_state_machines import BasicState
 from tests.workflow.workflow_test_util import (
     build_process_workflow_event,
     build_start_workflow_event,
@@ -43,8 +44,8 @@ def test_workflow_audit_created_on_start_workflow(db_session, enable_factory_cre
     assert audit_record.mgmt_workflow_id == state_machine.workflow.mgmt_workflow_id
     assert audit_record.acting_mgmt_user_id == user.mgmt_user_id
     assert audit_record.transition_event == "Start workflow"
-    assert audit_record.source_state == PrototypeState.START
-    assert audit_record.target_state == PrototypeState.IN_PROGRESS
+    assert audit_record.source_state == BasicState.START
+    assert audit_record.target_state == BasicState.MIDDLE
     assert (
         audit_record.mgmt_workflow_event_history_id
         == sqs_container.history_event.mgmt_workflow_event_history_id
@@ -56,7 +57,7 @@ def test_workflow_audit_created_on_process_workflow(db_session, enable_factory_c
     user = MgmtUserFactory.create()
 
     workflow = ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.NO_CONCURRENT_TEST_WORKFLOW,
+        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
         current_workflow_state="middle",
     )
 
@@ -87,7 +88,7 @@ def test_workflow_audit_captures_metadata(db_session, enable_factory_create):
     user = MgmtUserFactory.create()
 
     workflow = ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.NO_CONCURRENT_TEST_WORKFLOW,
+        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
         current_workflow_state="middle",
     )
 
@@ -115,7 +116,7 @@ def test_workflow_audit_multiple_transitions(db_session, enable_factory_create, 
     user = MgmtUserFactory.create()
 
     sqs_container = build_start_workflow_event(
-        workflow_type=MgmtWorkflowType.NO_CONCURRENT_TEST_WORKFLOW,
+        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
         user=user,
         entity=program,
     )
@@ -147,7 +148,7 @@ def test_workflow_audit_different_users(db_session, enable_factory_create, progr
     user2 = MgmtUserFactory.create()
 
     sqs_container = build_start_workflow_event(
-        workflow_type=MgmtWorkflowType.NO_CONCURRENT_TEST_WORKFLOW,
+        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
         user=user1,
         entity=program,
     )
@@ -176,7 +177,7 @@ def test_workflow_audit_automatic_transitions_use_system_user(
     regular_user = MgmtUserFactory.create()
 
     workflow = ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+        workflow_type=MgmtWorkflowType.PROTOTYPE_WORKFLOW,
         current_workflow_state=PrototypeState.IN_PROGRESS,
     )
 

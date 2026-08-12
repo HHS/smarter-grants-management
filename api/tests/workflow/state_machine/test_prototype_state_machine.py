@@ -4,13 +4,14 @@ from src.workflow.state_machine.prototype_state_machine import (
     PrototypeStateMachine,
     prototype_state_machine_config,
 )
-from src.workflow.state_persistence.base_state_persistence_model import BaseStatePersistenceModel
+from src.workflow.state_persistence.program_persistence_model import ProgramPersistenceModel
 
 
 def test_prototype_state_machine_config():
-    assert prototype_state_machine_config.workflow_type == MgmtWorkflowType.BASIC_TEST_WORKFLOW
+    assert prototype_state_machine_config.workflow_type == MgmtWorkflowType.PROTOTYPE_WORKFLOW
+    assert prototype_state_machine_config.persistence_model_cls is ProgramPersistenceModel
+    # Derived from the persistence model rather than configured separately
     assert prototype_state_machine_config.resource_type == MgmtResourceType.PROGRAM
-    assert prototype_state_machine_config.persistence_model_cls is BaseStatePersistenceModel
     # Nothing about the prototype needs a single-active-workflow guarantee
     assert prototype_state_machine_config.allow_concurrent_workflow_for_resource is True
     assert prototype_state_machine_config.approval_mapping == {}

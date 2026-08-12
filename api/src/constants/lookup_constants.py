@@ -54,13 +54,13 @@ class MgmtWorkflowType(StrEnum):
     # Because of how we use the workflow type to find
     # the state machine and its configuration, we need
     # to define any workflows for tests here as well.
-    # This workflow type isn't real, and is instead
-    # reserved for the prototype state machine and tests.
+    # This workflow type isn't real - it backs the state machine
+    # our engine tests run against.
     BASIC_TEST_WORKFLOW = "basic_test_workflow"
 
-    # Also not real - backs a test-only state machine configured to disallow
-    # concurrent workflows, since the prototype allows them.
-    NO_CONCURRENT_TEST_WORKFLOW = "no_concurrent_test_workflow"
+    # Also not real - backs the prototype state machine, which exists to prove the
+    # engine works end to end until the first real grantor workflow lands.
+    PROTOTYPE_WORKFLOW = "prototype_workflow"
 
     def get_human_friendly_text(self) -> str:
         return self.value.replace("_", " ").title()

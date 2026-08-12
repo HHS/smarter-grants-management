@@ -8,25 +8,25 @@ from src.workflow.state_machine.prototype_state_machine import (
 )
 from src.workflow.workflow_errors import InvalidWorkflowTypeError
 from tests.workflow.state_machine.test_state_machines import (
-    NoConcurrentTestStateMachine,
-    no_concurrent_test_workflow_config,
+    BasicTestStateMachine,
+    basic_test_workflow_config,
 )
 
 
 def test_get_state_machine_for_workflow():
     config, state_machine_cls = WorkflowRegistry.get_state_machine_for_workflow_type(
-        MgmtWorkflowType.BASIC_TEST_WORKFLOW
+        MgmtWorkflowType.PROTOTYPE_WORKFLOW
     )
 
     assert state_machine_cls is PrototypeStateMachine
     assert config is prototype_state_machine_config
 
     config, state_machine_cls = WorkflowRegistry.get_state_machine_for_workflow_type(
-        MgmtWorkflowType.NO_CONCURRENT_TEST_WORKFLOW
+        MgmtWorkflowType.BASIC_TEST_WORKFLOW
     )
 
-    assert state_machine_cls is NoConcurrentTestStateMachine
-    assert config is no_concurrent_test_workflow_config
+    assert state_machine_cls is BasicTestStateMachine
+    assert config is basic_test_workflow_config
 
     # Pass in a workflow that doesn't exist
     with pytest.raises(

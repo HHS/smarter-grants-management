@@ -20,14 +20,41 @@ from src.workflow.event.workflow_event import (
 )
 from src.workflow.handler.event_handler import EventHandler
 from src.workflow.state_persistence.base_state_persistence_model import BaseStatePersistenceModel
+from src.workflow.state_persistence.program_persistence_model import ProgramPersistenceModel
 from src.workflow.workflow_config import WorkflowConfig
 from tests.db.models.factories import MgmtWorkflowEventHistoryFactory
+
+####################
+# Persistence models for resource types that have no real workflow yet.
+#
+# A workflow's resource type comes off its persistence model, so testing the engine
+# against another resource type means defining a model for it.
+####################
+
+
+class PartnerTestPersistenceModel(BaseStatePersistenceModel):
+    @classmethod
+    def get_resource_type(cls) -> MgmtResourceType:
+        return MgmtResourceType.PARTNER
+
+
+class GrantorOrganizationTestPersistenceModel(BaseStatePersistenceModel):
+    @classmethod
+    def get_resource_type(cls) -> MgmtResourceType:
+        return MgmtResourceType.GRANTOR_ORGANIZATION
+
+
+class OpportunityTestPersistenceModel(BaseStatePersistenceModel):
+    """A resource type that is valid but has no table in mgmt yet."""
+
+    @classmethod
+    def get_resource_type(cls) -> MgmtResourceType:
+        return MgmtResourceType.OPPORTUNITY
 
 
 def build_workflow_config(
     workflow_type: MgmtWorkflowType = MgmtWorkflowType.BASIC_TEST_WORKFLOW,
-    persistence_model_cls: type[BaseStatePersistenceModel] = BaseStatePersistenceModel,
-    resource_type: MgmtResourceType = MgmtResourceType.PROGRAM,
+    persistence_model_cls: type[BaseStatePersistenceModel] = ProgramPersistenceModel,
     allow_concurrent_workflow_for_resource: bool = True,
 ) -> WorkflowConfig:
     """Build a workflow config"""
@@ -35,7 +62,6 @@ def build_workflow_config(
     return WorkflowConfig(
         workflow_type=workflow_type,
         persistence_model_cls=persistence_model_cls,
-        resource_type=resource_type,
         allow_concurrent_workflow_for_resource=allow_concurrent_workflow_for_resource,
         approval_mapping={},
     )

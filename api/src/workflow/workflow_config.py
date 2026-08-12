@@ -28,11 +28,6 @@ class WorkflowConfig:
 
     persistence_model_cls: type[BaseStatePersistenceModel]
 
-    # The type of resource a workflow of this type attaches to. The engine
-    # resolves the resource from the event and checks its type against this,
-    # rather than trusting a type sent by the caller.
-    resource_type: MgmtResourceType
-
     # Whether to allow multiple active workflows of this type for the same resource.
     # When False, starting a new workflow will error if one already exists and is active.
     allow_concurrent_workflow_for_resource: bool = True
@@ -46,6 +41,16 @@ class WorkflowConfig:
     state_approval_mapping: dict[str, ApprovalConfig] = dataclasses.field(
         init=False, default_factory=dict
     )
+
+    @property
+    def resource_type(self) -> MgmtResourceType:
+        """The type of resource a workflow of this type attaches to.
+
+        Comes off the persistence model rather than being configured separately, so
+        the two can't disagree. The engine resolves the resource from the event and
+        checks its type against this, rather than trusting a type sent by the caller.
+        """
+        return self.persistence_model_cls.get_resource_type()
 
     def __post_init__(self) -> None:
         self.state_approval_mapping = {}

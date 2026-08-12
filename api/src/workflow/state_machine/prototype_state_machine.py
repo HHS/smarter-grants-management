@@ -3,10 +3,10 @@ from enum import StrEnum
 from statemachine import Event
 from statemachine.states import States
 
-from src.constants.lookup_constants import MgmtResourceType, MgmtWorkflowType
+from src.constants.lookup_constants import MgmtWorkflowType
 from src.workflow.base_state_machine import BaseStateMachine
 from src.workflow.registry.workflow_registry import WorkflowRegistry
-from src.workflow.state_persistence.base_state_persistence_model import BaseStatePersistenceModel
+from src.workflow.state_persistence.program_persistence_model import ProgramPersistenceModel
 from src.workflow.workflow_config import WorkflowConfig
 
 
@@ -23,12 +23,10 @@ class PrototypeState(StrEnum):
 
 
 prototype_state_machine_config = WorkflowConfig(
-    workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
-    # Nothing about this workflow needs to touch the underlying entity, so the base
-    # persistence model (which only writes state/is_active back to mgmt_workflow) is
-    # all it needs. Real mgmt workflows will subclass it as their domains land.
-    persistence_model_cls=BaseStatePersistenceModel,
-    resource_type=MgmtResourceType.PROGRAM,
+    workflow_type=MgmtWorkflowType.PROTOTYPE_WORKFLOW,
+    # The persistence model is also what declares the resource type this workflow
+    # attaches to, so there's no separate resource_type to keep in step with it.
+    persistence_model_cls=ProgramPersistenceModel,
 )
 
 

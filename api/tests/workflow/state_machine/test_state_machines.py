@@ -1,9 +1,9 @@
 """
 This file contains state machines that only exist for our unit tests.
 
-The prototype state machine covers most of what the engine tests need, so this
-file is deliberately thin - it holds the machines that need configuration the
-prototype doesn't have (and shouldn't grow one just to be testable).
+Testing core engine logic against a state machine defined here rather than against
+the prototype (or, later, a real workflow) means these tests don't have to change
+every time a real workflow does.
 """
 
 from enum import StrEnum
@@ -12,42 +12,43 @@ from typing import Any
 from statemachine import Event
 from statemachine.states import States
 
-from src.constants.lookup_constants import MgmtResourceType, MgmtWorkflowType
+from src.constants.lookup_constants import MgmtWorkflowType
 from src.workflow.base_state_machine import BaseStateMachine
 from src.workflow.event.state_machine_event import StateMachineEvent
 from src.workflow.registry.workflow_registry import WorkflowRegistry
 from src.workflow.state_persistence.base_state_persistence_model import BaseStatePersistenceModel
+from src.workflow.state_persistence.program_persistence_model import ProgramPersistenceModel
 from src.workflow.workflow_config import WorkflowConfig
 
 #########################
-# No Concurrent State Machine
+# Basic State Machine
 #########################
-# For testing that concurrent workflows for the same
-# resource are disallowed when configured. The prototype
-# allows them, so this needs its own config.
+# A minimal start -> middle -> end workflow for exercising core engine behaviour.
 
 
-class NoConcurrentState(StrEnum):
+class BasicState(StrEnum):
     START = "start"
     MIDDLE = "middle"
     END = "end"
 
 
-no_concurrent_test_workflow_config = WorkflowConfig(
-    workflow_type=MgmtWorkflowType.NO_CONCURRENT_TEST_WORKFLOW,
-    persistence_model_cls=BaseStatePersistenceModel,
-    resource_type=MgmtResourceType.PROGRAM,
+basic_test_workflow_config = WorkflowConfig(
+    workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+    persistence_model_cls=ProgramPersistenceModel,
+    # Concurrent workflows are disallowed here so the engine's concurrency guard has a
+    # registered workflow to test against. The prototype covers the allowed case, which
+    # is the engine default.
     allow_concurrent_workflow_for_resource=False,
 )
 
 
-@WorkflowRegistry.register_workflow(no_concurrent_test_workflow_config)
-class NoConcurrentTestStateMachine(BaseStateMachine):
+@WorkflowRegistry.register_workflow(basic_test_workflow_config)
+class BasicTestStateMachine(BaseStateMachine):
 
     states = States.from_enum(
-        NoConcurrentState,
-        initial=NoConcurrentState.START,
-        final=[NoConcurrentState.END],
+        BasicState,
+        initial=BasicState.START,
+        final=[BasicState.END],
     )
 
     ### Events + transitions

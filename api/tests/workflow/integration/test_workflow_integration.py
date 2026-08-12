@@ -65,7 +65,7 @@ def test_prototype_workflow_runs_from_start_to_end(
             "acting_mgmt_user_id": user.mgmt_user_id,
             "event_type": MgmtWorkflowEventType.START_WORKFLOW,
             "start_workflow_context": {
-                "workflow_type": MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+                "workflow_type": MgmtWorkflowType.PROTOTYPE_WORKFLOW,
                 "mgmt_resource_id": program.get_resource_id(),
             },
         },
@@ -78,7 +78,7 @@ def test_prototype_workflow_runs_from_start_to_end(
         select(MgmtWorkflow).where(MgmtWorkflow.mgmt_resource_id == program.get_resource_id())
     )
     assert workflow is not None
-    assert workflow.workflow_type == MgmtWorkflowType.BASIC_TEST_WORKFLOW
+    assert workflow.workflow_type == MgmtWorkflowType.PROTOTYPE_WORKFLOW
     assert workflow.current_workflow_state == PrototypeState.IN_PROGRESS
     assert workflow.is_active is True
 
@@ -162,7 +162,7 @@ def test_prototype_workflow_rejects_an_event_the_state_does_not_allow(
             "acting_mgmt_user_id": user.mgmt_user_id,
             "event_type": MgmtWorkflowEventType.START_WORKFLOW,
             "start_workflow_context": {
-                "workflow_type": MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+                "workflow_type": MgmtWorkflowType.PROTOTYPE_WORKFLOW,
                 "mgmt_resource_id": program.get_resource_id(),
             },
         },

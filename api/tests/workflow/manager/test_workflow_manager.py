@@ -63,7 +63,7 @@ def valid_message_body(program):
         "acting_mgmt_user_id": str(user.mgmt_user_id),
         "event_type": MgmtWorkflowEventType.START_WORKFLOW,
         "start_workflow_context": {
-            "workflow_type": MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+            "workflow_type": MgmtWorkflowType.PROTOTYPE_WORKFLOW,
             "mgmt_resource_id": str(program.get_resource_id()),
         },
     }
@@ -264,7 +264,7 @@ def test_process_batch_success(workflow_sqs_queue, app, manager_config):
 
     user = MgmtUserFactory.create()
     workflow = ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+        workflow_type=MgmtWorkflowType.PROTOTYPE_WORKFLOW,
         current_workflow_state=PrototypeState.IN_PROGRESS,
     )
 
@@ -289,7 +289,7 @@ def test_process_batch_retryable_keeps_message(workflow_sqs_queue, app, manager_
     user = MgmtUserFactory.create()
     # An unrecognized state raises UnexpectedStateError, which is retryable
     workflow = ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+        workflow_type=MgmtWorkflowType.PROTOTYPE_WORKFLOW,
         current_workflow_state="not-a-valid-state",
     )
 
@@ -319,21 +319,21 @@ def test_process_batch_mixed_results(workflow_sqs_queue, app):
 
     # Success
     successful_workflow = ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+        workflow_type=MgmtWorkflowType.PROTOTYPE_WORKFLOW,
         current_workflow_state=PrototypeState.IN_PROGRESS,
     )
     sqs_client.send_message(build_process_message_body(successful_workflow, user, "complete"))
 
     # Retryable - unrecognized current state
     retryable_workflow = ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+        workflow_type=MgmtWorkflowType.PROTOTYPE_WORKFLOW,
         current_workflow_state="not-a-valid-state",
     )
     sqs_client.send_message(build_process_message_body(retryable_workflow, user, "complete"))
 
     # Non-retryable - the acting user doesn't exist
     non_retryable_workflow = ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+        workflow_type=MgmtWorkflowType.PROTOTYPE_WORKFLOW,
         current_workflow_state=PrototypeState.IN_PROGRESS,
     )
     non_retryable_body = build_process_message_body(non_retryable_workflow, user, "complete")
@@ -431,7 +431,7 @@ def test_handle_event_success(app, db_session, enable_factory_create):
     event_id = uuid.uuid4()
 
     workflow = ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+        workflow_type=MgmtWorkflowType.PROTOTYPE_WORKFLOW,
         current_workflow_state=PrototypeState.IN_PROGRESS,
     )
 
@@ -464,7 +464,7 @@ def test_handle_event_retryable_error(app, enable_factory_create):
 
     # An unrecognized state raises UnexpectedStateError, which is retryable
     workflow = ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+        workflow_type=MgmtWorkflowType.PROTOTYPE_WORKFLOW,
         current_workflow_state="not-a-valid-state",
     )
 
@@ -486,7 +486,7 @@ def test_handle_event_non_retryable_error(app, db_session, enable_factory_create
     event_id = uuid.uuid4()
 
     workflow = ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+        workflow_type=MgmtWorkflowType.PROTOTYPE_WORKFLOW,
         current_workflow_state=PrototypeState.IN_PROGRESS,
     )
 
@@ -521,7 +521,7 @@ def test_handle_event_general_error(mock_event_handler_preprocess, app, enable_f
     user = MgmtUserFactory.create()
 
     workflow = ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+        workflow_type=MgmtWorkflowType.PROTOTYPE_WORKFLOW,
         current_workflow_state=PrototypeState.IN_PROGRESS,
     )
 

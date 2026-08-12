@@ -77,7 +77,7 @@ GRANTOR_ORGANIZATION_TYPE_CONFIG: LookupConfig[GrantorOrganizationType] = Lookup
 MGMT_WORKFLOW_TYPE_CONFIG: LookupConfig[MgmtWorkflowType] = LookupConfig(
     [
         LookupStr(MgmtWorkflowType.BASIC_TEST_WORKFLOW, 1),
-        LookupStr(MgmtWorkflowType.NO_CONCURRENT_TEST_WORKFLOW, 2),
+        LookupStr(MgmtWorkflowType.PROTOTYPE_WORKFLOW, 2),
     ]
 )
 

@@ -1,10 +1,13 @@
+import abc
+
 import grants_shared.adapters.db as db
 import statemachine.state
 
+from src.constants.lookup_constants import MgmtResourceType
 from src.db.models.workflow_models import MgmtWorkflow
 
 
-class BaseStatePersistenceModel:
+class BaseStatePersistenceModel(abc.ABC):
     """Base model for handling persistence of workflow state machine
     data to the database.
 
@@ -12,11 +15,21 @@ class BaseStatePersistenceModel:
     setting up and validating a particular resource while getting
     the benefits of storing information back to the workflow table
     automatically for the state + is_active flags.
+
+    Abstract on purpose - always define a derived class per resource type rather
+    than using this directly. The resource type lives here (rather than alongside
+    it on WorkflowConfig) so a workflow's persistence model and its resource type
+    can't be configured out of sync with each other.
     """
 
     def __init__(self, db_session: db.Session, workflow: MgmtWorkflow):
         self.db_session = db_session
         self.workflow = workflow
+
+    @classmethod
+    @abc.abstractmethod
+    def get_resource_type(cls) -> MgmtResourceType:
+        """The type of resource that workflows using this model attach to."""
 
     @property
     def state(self) -> str:

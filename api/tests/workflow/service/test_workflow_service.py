@@ -24,7 +24,12 @@ from tests.db.models.factories import (
     PartnerFactory,
     ProgramWorkflowFactory,
 )
-from tests.workflow.workflow_test_util import build_workflow_config
+from tests.workflow.workflow_test_util import (
+    GrantorOrganizationTestPersistenceModel,
+    OpportunityTestPersistenceModel,
+    PartnerTestPersistenceModel,
+    build_workflow_config,
+)
 
 ####################
 # get_workflow_entity
@@ -32,7 +37,7 @@ from tests.workflow.workflow_test_util import build_workflow_config
 
 
 def test_get_workflow_entity_program(db_session, enable_factory_create, program):
-    config = build_workflow_config(resource_type=MgmtResourceType.PROGRAM)
+    config = build_workflow_config()
 
     entity = get_workflow_entity(
         db_session,
@@ -46,7 +51,7 @@ def test_get_workflow_entity_program(db_session, enable_factory_create, program)
 
 def test_get_workflow_entity_partner(db_session, enable_factory_create):
     partner = PartnerFactory.create()
-    config = build_workflow_config(resource_type=MgmtResourceType.PARTNER)
+    config = build_workflow_config(persistence_model_cls=PartnerTestPersistenceModel)
 
     entity = get_workflow_entity(
         db_session,
@@ -59,7 +64,7 @@ def test_get_workflow_entity_partner(db_session, enable_factory_create):
 
 def test_get_workflow_entity_grantor_organization(db_session, enable_factory_create):
     organization = GrantorOrganizationFactory.create()
-    config = build_workflow_config(resource_type=MgmtResourceType.GRANTOR_ORGANIZATION)
+    config = build_workflow_config(persistence_model_cls=GrantorOrganizationTestPersistenceModel)
 
     entity = get_workflow_entity(
         db_session,
@@ -71,7 +76,7 @@ def test_get_workflow_entity_grantor_organization(db_session, enable_factory_cre
 
 
 def test_get_workflow_entity_resource_missing(db_session, enable_factory_create):
-    config = build_workflow_config(resource_type=MgmtResourceType.PROGRAM)
+    config = build_workflow_config()
 
     with pytest.raises(EntityNotFound, match="Resource not found"):
         get_workflow_entity(
@@ -87,7 +92,7 @@ def test_get_workflow_entity_wrong_resource_type(db_session, enable_factory_crea
     The resource type comes off the resource row rather than the event, so a caller
     can't get a workflow attached to the wrong kind of entity by mislabeling it.
     """
-    config = build_workflow_config(resource_type=MgmtResourceType.PARTNER)
+    config = build_workflow_config(persistence_model_cls=PartnerTestPersistenceModel)
 
     with pytest.raises(
         InvalidEntityForWorkflow, match="Resource type does not match workflow configuration"
@@ -105,7 +110,7 @@ def test_get_workflow_entity_unsupported_resource_type(db_session, enable_factor
     OPPORTUNITY is a real resource type but has no mgmt table yet, so it's the case
     this covers - a workflow can't be configured against it until one exists.
     """
-    config = build_workflow_config(resource_type=MgmtResourceType.OPPORTUNITY)
+    config = build_workflow_config(persistence_model_cls=OpportunityTestPersistenceModel)
     resource = _create_bare_resource(db_session, MgmtResourceType.OPPORTUNITY)
 
     with pytest.raises(ImplementationMissingError, match="Resource type is not supported"):
@@ -122,7 +127,7 @@ def test_get_workflow_entity_resource_without_entity(db_session, enable_factory_
     Resource automation creates the two together so this shouldn't happen, but it's
     the difference between a clear error and an AttributeError further downstream.
     """
-    config = build_workflow_config(resource_type=MgmtResourceType.PROGRAM)
+    config = build_workflow_config()
     resource = _create_bare_resource(db_session, MgmtResourceType.PROGRAM)
 
     with pytest.raises(EntityNotFound, match="Resource has no corresponding entity"):
@@ -294,7 +299,7 @@ def test_validate_no_concurrent_workflow_different_workflow_type(
 
     # Create an active workflow of a DIFFERENT type
     ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.NO_CONCURRENT_TEST_WORKFLOW,
+        workflow_type=MgmtWorkflowType.PROTOTYPE_WORKFLOW,
         program=program,
         is_active=True,
     )
