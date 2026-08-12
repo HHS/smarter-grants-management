@@ -63,7 +63,7 @@ data "aws_iam_policy_document" "task_executor" {
     ]
     resources = [
       "${aws_cloudwatch_log_group.service_logs.arn}:*",
-      "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:service/${var.service_name}*"
+      "arn:aws:logs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:log-group:service/${var.service_name}*"
     ]
   }
 
@@ -106,7 +106,7 @@ data "aws_iam_policy_document" "task_executor" {
       "ssm:GetParameters"
     ]
     resources = [
-      "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter/new-relic-license-key"
+      "arn:aws:ssm:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:parameter/new-relic-license-key"
     ]
   }
 
@@ -129,7 +129,7 @@ data "aws_iam_policy_document" "runtime_logs" {
       "logs:DescribeLogStreams"
     ]
     resources = [
-      "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:service/${var.service_name}*"
+      "arn:aws:logs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:log-group:service/${var.service_name}*"
     ]
   }
 }
@@ -140,17 +140,17 @@ data "aws_iam_policy_document" "email_access" {
   statement {
     sid       = "SendViaPinpoint"
     actions   = ["mobiletargeting:SendMessages"]
-    resources = ["arn:aws:mobiletargeting:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:apps/${var.pinpoint_app_id}/messages"]
+    resources = ["arn:aws:mobiletargeting:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:apps/${var.pinpoint_app_id}/messages"]
   }
   statement {
     sid       = "SendSESEmail"
     actions   = ["ses:SendEmail"]
-    resources = ["arn:aws:ses:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:identity/${var.hosted_zone}"]
+    resources = ["arn:aws:ses:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:identity/${var.hosted_zone}"]
   }
   statement {
     sid       = "SendSESEmailConfigurationSet"
     actions   = ["ses:SendEmail"]
-    resources = ["arn:aws:ses:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:configuration-set/${var.ses_configuration_set}"]
+    resources = ["arn:aws:ses:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:configuration-set/${var.ses_configuration_set}"]
   }
   statement {
     sid       = "ListSuppressedDestinations"
@@ -169,7 +169,7 @@ data "aws_iam_policy_document" "api_gateway_access" {
     resources = [
       # Must be wildcarded for this to work. Someone using a dev key in prod would not work
       # because the dev key's usage plan doesn't allow it to access other env's gateways
-      "arn:aws:apigateway:${data.aws_region.current.name}::/apikeys/*", # GetApiKey
+      "arn:aws:apigateway:${data.aws_region.current.region}::/apikeys/*", # GetApiKey
     ]
   }
 
@@ -180,7 +180,7 @@ data "aws_iam_policy_document" "api_gateway_access" {
     resources = [
       # Must be wildcarded for this to work. Someone using a dev key in prod would not work
       # because the dev key's usage plan doesn't allow it to access other env's gateways
-      "arn:aws:apigateway:${data.aws_region.current.name}::/apikeys", # ImportApiKeys
+      "arn:aws:apigateway:${data.aws_region.current.region}::/apikeys", # ImportApiKeys
     ]
   }
 }

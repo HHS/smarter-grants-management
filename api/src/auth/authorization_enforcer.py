@@ -7,6 +7,7 @@ from grants_shared.api.route_utils import raise_flask_error
 from sqlalchemy import select
 
 from src.constants.lookup_constants import MgmtPrivilege, MgmtResourceType
+from src.db.models.grantor_organization_models import GrantorOrganization, Partner, Program
 from src.db.models.resource_models import (
     AbstractResourceTableMixin,
     MgmtInternalResource,
@@ -170,21 +171,82 @@ class AuthorizationEnforcer:
         """
         Get all relevant resources for checking whether a user can access the provided resource.
 
-        This factors in any inheritance that a particular type may need to consider.
-
-        For each resource type, the following resources are relevant:
-        * TODO - fill in once we rebuild this out in https://github.com/HHS/simpler-grants-gov/issues/11826
-
-        * Internal resource -> The internal resource itself - no inheritance exists for this type
+        This factors in any inheritance that a particular type may need to consider. See the
+        corresponding _get_resource_for_X function for further details on what resources are
+        considered relevant.
         """
 
-        # TODO https://github.com/HHS/simpler-grants-gov/issues/11826 will readd back some of these
+        if isinstance(resource, Partner):
+            return self._get_resources_for_partner(resource)
+
+        if isinstance(resource, GrantorOrganization):
+            return self._get_resources_for_grantor_organization(resource)
+
+        if isinstance(resource, Program):
+            return self._get_resources_for_program(resource)
 
         if isinstance(resource, MgmtInternalResource):
             return self._get_resources_for_internal_resource(resource)
 
         error_message = f"No configuration found for determining relevant resources for type {resource.__class__.__name__}"
         raise NotImplementedError(error_message)
+
+    def _get_resources_for_partner(self, partner: Partner) -> list[AbstractResourceTableMixin]:
+        """Get all relevant resources for a partner - which is just the partner itself"""
+        return [partner]
+
+    def _get_resources_for_grantor_organization(
+        self, grantor_organization: GrantorOrganization, fetch_partner: bool = True
+    ) -> list[AbstractResourceTableMixin]:
+        """
+        Get all relevant resources for a grantor organization, which consists of:
+
+        * The grantor organization itself
+        * Any parent organizations (recursively up the hierarchy)
+        * The partner that owns the organization
+
+        Since all organizations in a hierarchy will have the same partner, we can ignore the partner
+        attached to parent organizations.
+        """
+        resources: list[AbstractResourceTableMixin] = [grantor_organization]
+
+        if fetch_partner:
+            resources += self._get_resources_for_partner(grantor_organization.partner)
+
+        if grantor_organization.parent_organization is not None:
+            resources += self._get_resources_for_grantor_organization(
+                grantor_organization.parent_organization, fetch_partner=False
+            )
+
+        return resources
+
+    def _get_resources_for_program(self, program: Program) -> list[AbstractResourceTableMixin]:
+        """
+        Get all relevant resources for a program, which consists of:
+
+        * The partner it belongs to
+        * The grant office (recursively up the hierarchy)
+        * The program office (recursively up the hierarchy)
+        * Any secondary partners
+
+        NOTE: that at this time users are not attached to the program despite it being a resource,
+        so we do not add the program to this list.
+        """
+
+        resources: list[AbstractResourceTableMixin] = (
+            self._get_resources_for_partner(program.partner)
+            + self._get_resources_for_grantor_organization(
+                program.grant_office, fetch_partner=False
+            )
+            + self._get_resources_for_grantor_organization(
+                program.program_office, fetch_partner=False
+            )
+        )
+
+        for secondary_partner in program.secondary_program_partners:
+            resources += self._get_resources_for_partner(secondary_partner)
+
+        return resources
 
     def _get_resources_for_internal_resource(
         self, internal_resource: MgmtInternalResource

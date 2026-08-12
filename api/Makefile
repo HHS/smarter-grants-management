@@ -91,7 +91,7 @@ start: ## Start the API for CI/CD or local Dev work
 run-logs: start ## Start the API and follow the logs
 	docker compose logs --follow --no-color $(APP_NAME)
 
-init-components: init-db
+init-components: init-db init-sqsmock
 
 init: setup-env-override-file build init-components ## Run all of the init tasks (including build) to set up DB and other services. To do this "from scratch" use remake-backend instead
 
@@ -237,6 +237,15 @@ init-mock-oauth2: start-mock-oauth2
 
 start-mock-oauth2:
 	docker compose up --detach mock-oauth2-server
+
+##################################################
+# SQS Mock
+##################################################
+
+init-sqsmock: start-sqsmock
+
+start-sqsmock:
+	docker compose up --detach mgmt-sqsmock
 
 ##################################################
 # CLI Commands

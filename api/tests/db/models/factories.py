@@ -9,9 +9,19 @@ from faker.providers import BaseProvider
 from grants_shared.util import datetime_util
 from sqlalchemy.orm import scoped_session
 
+import src.db.models.grantor_organization_models as grantor_organization_models
 import src.db.models.resource_models as resource_models
 import src.db.models.user_models as user_models
-from src.constants.lookup_constants import ExternalUserType, MgmtResourceType, MgmtUserType
+import src.db.models.workflow_models as workflow_models
+from src.constants.lookup_constants import (
+    ExternalUserType,
+    GrantorOrganizationType,
+    MgmtApprovalResponseType,
+    MgmtApprovalType,
+    MgmtResourceType,
+    MgmtUserType,
+    MgmtWorkflowType,
+)
 
 
 def sometimes_none(factory_value, none_chance: float = 0.5):
@@ -91,6 +101,16 @@ class CustomProvider(BaseProvider):
         "Antitrust",
         "Attorney General",
         "Housing",
+        "American",
+        "Chemistry",
+        "Physics",
+        "Biology",
+        "Commerce",
+        "Science",
+        "Social Services",
+        "Development Fund",
+        "Regional Operations",
+        "Ocean",
     ]
 
     SUBAGENCY_NAME_FORMATS = [
@@ -106,6 +126,23 @@ class CustomProvider(BaseProvider):
         "Bureau of {{agency_word}}",
     ]
 
+    GRANT_OFFICE_NAME_FORMATS = [
+        "{{department_name}} - Grant Office",
+        "{{agency_word}} Headquarters - Grant Office",
+    ]
+
+    PROGRAM_NAME_FORMATS = [
+        "{{agency_word}} Program",
+        "{{agency_word}} Research",
+        "{{agency_word}}'s Bureau",
+        "{{agency_word}}",
+        "Office of {{agency_word}}",
+        "{{agency_word}} Safety",
+        "Statewide {{agency_word}} & {{agency_word}}",
+        "{{agency_word}} Title {{random_int}}",
+        "{{agency_word}} Act",
+    ]
+
     def department_word(self) -> str:
         return self.random_element(self.DEPARTMENT_WORDS)
 
@@ -118,6 +155,14 @@ class CustomProvider(BaseProvider):
 
     def subagency_name(self) -> str:
         pattern = self.random_element(self.SUBAGENCY_NAME_FORMATS)
+        return self.generator.parse(pattern)
+
+    def grant_office_name(self) -> str:
+        pattern = self.random_element(self.GRANT_OFFICE_NAME_FORMATS)
+        return self.generator.parse(pattern)
+
+    def program_name(self) -> str:
+        pattern = self.random_element(self.PROGRAM_NAME_FORMATS)
         return self.generator.parse(pattern)
 
 
@@ -224,6 +269,98 @@ class MgmtInternalResourceFactory(BaseFactory):
     internal_resource_name = "My internal resource"
 
 
+class PartnerFactory(BaseFactory):
+    class Meta:
+        model = grantor_organization_models.Partner
+
+    partner_id = Generators.UuidObj
+
+    partner_name = factory.Faker("department_name")
+
+
+class GrantorOrganizationFactory(BaseFactory):
+    class Meta:
+        model = grantor_organization_models.GrantorOrganization
+
+    grantor_organization_id = Generators.UuidObj
+
+    organization_name = factory.Maybe(
+        decider=factory.LazyAttribute(
+            lambda o: o.grantor_organization_type == GrantorOrganizationType.GRANT_OFFICE
+        ),
+        yes_declaration=factory.Faker("grant_office_name"),
+        no_declaration=factory.Faker("subagency_name"),
+    )
+
+    partner = factory.SubFactory(PartnerFactory)
+    partner_id = factory.LazyAttribute(lambda o: o.partner.partner_id)
+
+    # A parent organization can be set either manually
+    # or using the trait below.
+    parent_organization = None
+    parent_organization_id = factory.LazyAttribute(
+        lambda o: o.parent_organization.grantor_organization_id if o.parent_organization else None
+    )
+
+    grantor_organization_type = factory.fuzzy.FuzzyChoice(GrantorOrganizationType)
+
+    class Params:
+        pass
+        has_parent_organization = factory.Trait(
+            parent_organization=factory.SubFactory(
+                "tests.db.models.factories.GrantorOrganizationFactory",
+                # Make sure it has the same partner
+                partner=factory.SelfAttribute("..partner"),
+            ),
+        )
+
+
+class ProgramFactory(BaseFactory):
+    class Meta:
+        model = grantor_organization_models.Program
+
+    program_id = Generators.UuidObj
+
+    program_name = factory.Faker("program_name")
+
+    partner = factory.SubFactory(PartnerFactory)
+    partner_id = factory.LazyAttribute(lambda p: p.partner.partner_id)
+
+    program_office = factory.SubFactory(
+        GrantorOrganizationFactory,
+        grantor_organization_type=GrantorOrganizationType.PROGRAM_OFFICE,
+        partner=factory.SelfAttribute("..partner"),
+    )
+    program_office_id = factory.LazyAttribute(lambda p: p.program_office.grantor_organization_id)
+
+    grant_office = factory.SubFactory(
+        GrantorOrganizationFactory,
+        grantor_organization_type=GrantorOrganizationType.GRANT_OFFICE,
+        partner=factory.SelfAttribute("..partner"),
+    )
+    grant_office_id = factory.LazyAttribute(lambda p: p.grant_office.grantor_organization_id)
+
+    class Params:
+        has_secondary_partners = factory.Trait(
+            link_secondary_program_partners=factory.RelatedFactoryList(
+                "tests.db.models.factories.SecondaryProgramPartnerFactory",
+                factory_related_name="program",
+                size=lambda: random.randint(1, 3),
+            )
+        )
+
+
+class SecondaryProgramPartnerFactory(BaseFactory):
+    class Meta:
+        model = grantor_organization_models.SecondaryProgramPartner
+
+    partner = factory.SubFactory(PartnerFactory)
+    partner_id = factory.LazyAttribute(lambda s: s.partner.partner_id)
+
+    program = factory.SubFactory(ProgramFactory)
+    program_id = factory.LazyAttribute(lambda s: s.program.program_id)
+
+
 class MgmtRoleFactory(BaseFactory):
     class Meta:
         model = resource_models.MgmtRole
@@ -298,3 +435,96 @@ class MgmtUserApiKeyFactory(BaseFactory):
 
         # Trait for unused keys
         never_used = factory.Trait(last_used=None)
+
+
+###################
+# Workflow Factories
+###################
+
+
+class MgmtWorkflowFactory(BaseFactory):
+    """
+    Base factory for workflows - abstract because every workflow points at some
+    entity's resource, and which entity that is depends on the workflow.
+
+    Add a subclass per entity a workflow can attach to (see ProgramWorkflowFactory)
+    rather than using this directly.
+    """
+
+    class Meta:
+        # Deliberately no model here - subclasses set it. If the model were set on
+        # both, factory_boy would share one sequence counter between parent and
+        # child, and reset_sequence() on the child raises (see test_seed_local_db).
+        abstract = True
+
+    mgmt_workflow_id = Generators.UuidObj
+    workflow_type = MgmtWorkflowType.BASIC_TEST_WORKFLOW
+    current_workflow_state = "start"
+    is_active = True
+
+
+class ProgramWorkflowFactory(MgmtWorkflowFactory):
+    """A workflow attached to a program. Pass `program=` to use an existing one."""
+
+    class Meta:
+        model = workflow_models.MgmtWorkflow
+        # The program is what we hang the workflow off of, but the workflow
+        # itself only stores the resource ID, so don't pass it to the model.
+        exclude = ("program",)
+
+    program = factory.SubFactory(ProgramFactory)
+    mgmt_resource_id = factory.LazyAttribute(lambda w: w.program.get_resource_id())
+
+
+class MgmtWorkflowEventHistoryFactory(BaseFactory):
+    class Meta:
+        model = workflow_models.MgmtWorkflowEventHistory
+
+    mgmt_workflow_event_history_id = Generators.UuidObj
+    event_data = {}
+    sent_at = Generators.UtcNow
+    is_successfully_processed = True
+
+
+class MgmtWorkflowAuditFactory(BaseFactory):
+    class Meta:
+        model = workflow_models.MgmtWorkflowAudit
+
+    mgmt_workflow_audit_id = Generators.UuidObj
+
+    workflow = factory.SubFactory(ProgramWorkflowFactory)
+    mgmt_workflow_id = factory.LazyAttribute(lambda a: a.workflow.mgmt_workflow_id)
+
+    acting_user = factory.SubFactory(MgmtUserFactory)
+    acting_mgmt_user_id = factory.LazyAttribute(lambda a: a.acting_user.mgmt_user_id)
+
+    transition_event = "process"
+    source_state = "start"
+    target_state = "end"
+
+    event = factory.SubFactory(MgmtWorkflowEventHistoryFactory)
+    mgmt_workflow_event_history_id = factory.LazyAttribute(
+        lambda a: a.event.mgmt_workflow_event_history_id
+    )
+
+
+class MgmtWorkflowApprovalFactory(BaseFactory):
+    class Meta:
+        model = workflow_models.MgmtWorkflowApproval
+
+    mgmt_workflow_approval_id = Generators.UuidObj
+
+    workflow = factory.SubFactory(ProgramWorkflowFactory)
+    mgmt_workflow_id = factory.LazyAttribute(lambda a: a.workflow.mgmt_workflow_id)
+
+    approving_user = factory.SubFactory(MgmtUserFactory)
+    approving_mgmt_user_id = factory.LazyAttribute(lambda a: a.approving_user.mgmt_user_id)
+
+    approval_type = factory.fuzzy.FuzzyChoice(MgmtApprovalType)
+    is_still_valid = True
+    approval_response_type = MgmtApprovalResponseType.APPROVED
+
+    event = factory.SubFactory(MgmtWorkflowEventHistoryFactory)
+    mgmt_workflow_event_history_id = factory.LazyAttribute(
+        lambda a: a.event.mgmt_workflow_event_history_id
+    )

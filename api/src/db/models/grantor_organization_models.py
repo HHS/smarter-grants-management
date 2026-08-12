@@ -1,0 +1,129 @@
+import uuid
+
+from grants_shared.adapters.db.type_decorators.postgres_type_decorators import LookupColumn
+from grants_shared.db.models.base import TimestampMixin
+from sqlalchemy import UUID, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from src.constants.lookup_constants import GrantorOrganizationType, MgmtResourceType
+from src.db.models.grantor_schema_table import GrantorSchemaTable
+from src.db.models.lookup_models import LkGrantorOrganizationType
+from src.db.models.resource_models import AbstractResourceTableMixin, MgmtResource
+
+
+class Partner(GrantorSchemaTable, TimestampMixin, AbstractResourceTableMixin):
+    __tablename__ = "partner"
+
+    partner_id: Mapped[uuid.UUID] = mapped_column(
+        UUID, ForeignKey(MgmtResource.mgmt_resource_id), primary_key=True, default=uuid.uuid4
+    )
+    resource: Mapped[MgmtResource] = relationship(
+        MgmtResource, single_parent=True, cascade="all, delete-orphan"
+    )
+
+    partner_name: Mapped[str]
+
+    programs: Mapped[list[Program]] = relationship(back_populates="partner", uselist=True)
+
+    organizations: Mapped[list[GrantorOrganization]] = relationship(
+        back_populates="partner", uselist=True
+    )
+
+    def get_resource_id(self) -> uuid.UUID:
+        return self.partner_id
+
+    def get_resource_type(self) -> MgmtResourceType:
+        return MgmtResourceType.PARTNER
+
+
+class GrantorOrganization(GrantorSchemaTable, TimestampMixin, AbstractResourceTableMixin):
+    __tablename__ = "grantor_organization"
+
+    grantor_organization_id: Mapped[uuid.UUID] = mapped_column(
+        UUID, ForeignKey(MgmtResource.mgmt_resource_id), primary_key=True, default=uuid.uuid4
+    )
+    resource: Mapped[MgmtResource] = relationship(
+        MgmtResource, single_parent=True, cascade="all, delete-orphan"
+    )
+
+    organization_name: Mapped[str]
+
+    partner_id: Mapped[uuid.UUID] = mapped_column(UUID, ForeignKey(Partner.partner_id), index=True)
+    partner: Mapped[Partner] = relationship(Partner)
+
+    parent_organization_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID, ForeignKey(grantor_organization_id), index=True
+    )
+    parent_organization: Mapped[GrantorOrganization | None] = relationship(
+        lambda: GrantorOrganization, remote_side=[grantor_organization_id]
+    )
+
+    grantor_organization_type: Mapped[GrantorOrganizationType] = mapped_column(
+        "grantor_organization_type_id",
+        LookupColumn(LkGrantorOrganizationType),
+        ForeignKey(LkGrantorOrganizationType.grantor_organization_type_id),
+    )
+
+    def get_resource_id(self) -> uuid.UUID:
+        return self.grantor_organization_id
+
+    def get_resource_type(self) -> MgmtResourceType:
+        return MgmtResourceType.GRANTOR_ORGANIZATION
+
+
+class Program(GrantorSchemaTable, TimestampMixin, AbstractResourceTableMixin):
+    __tablename__ = "program"
+
+    program_id: Mapped[uuid.UUID] = mapped_column(
+        UUID, ForeignKey(MgmtResource.mgmt_resource_id), primary_key=True, default=uuid.uuid4
+    )
+    resource: Mapped[MgmtResource] = relationship(
+        MgmtResource, single_parent=True, cascade="all, delete-orphan"
+    )
+
+    program_name: Mapped[str]
+
+    partner_id: Mapped[uuid.UUID] = mapped_column(UUID, ForeignKey(Partner.partner_id), index=True)
+    partner: Mapped[Partner] = relationship(Partner)
+
+    program_office_id: Mapped[uuid.UUID] = mapped_column(
+        UUID, ForeignKey(GrantorOrganization.grantor_organization_id), index=True
+    )
+    program_office: Mapped[GrantorOrganization] = relationship(
+        GrantorOrganization, foreign_keys=[program_office_id]
+    )
+
+    grant_office_id: Mapped[uuid.UUID] = mapped_column(
+        UUID, ForeignKey(GrantorOrganization.grantor_organization_id), index=True
+    )
+    grant_office: Mapped[GrantorOrganization] = relationship(
+        GrantorOrganization, foreign_keys=[grant_office_id]
+    )
+
+    link_secondary_program_partners: Mapped[list[SecondaryProgramPartner]] = relationship(
+        back_populates="program", uselist=True
+    )
+
+    @property
+    def secondary_program_partners(self) -> list[Partner]:
+        return [spp.partner for spp in self.link_secondary_program_partners]
+
+    def get_resource_id(self) -> uuid.UUID:
+        return self.program_id
+
+    def get_resource_type(self) -> MgmtResourceType:
+        return MgmtResourceType.PROGRAM
+
+
+class SecondaryProgramPartner(GrantorSchemaTable, TimestampMixin):
+    __tablename__ = "secondary_program_partner"
+
+    program_id: Mapped[uuid.UUID] = mapped_column(
+        UUID, ForeignKey(Program.program_id), primary_key=True
+    )
+    program: Mapped[Program] = relationship(Program)
+
+    partner_id: Mapped[uuid.UUID] = mapped_column(
+        UUID, ForeignKey(Partner.partner_id), primary_key=True
+    )
+    partner: Mapped[Partner] = relationship(Partner)

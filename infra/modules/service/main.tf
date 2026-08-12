@@ -34,8 +34,8 @@ locals {
 
   base_environment_variables = concat([
     { name : "PORT", value : tostring(var.container_port) },
-    { name : "AWS_DEFAULT_REGION", value : data.aws_region.current.name },
-    { name : "AWS_REGION", value : data.aws_region.current.name },
+    { name : "AWS_DEFAULT_REGION", value : data.aws_region.current.region },
+    { name : "AWS_REGION", value : data.aws_region.current.region },
     { name : "GENERAL_S3_BUCKET_URL", value : aws_s3_bucket.general_purpose.bucket_regional_domain_name },
     { name : "ENVIRONMENT", value : var.environment_name },
     { name : "DEPLOY_GITHUB_SHA", value : data.external.deploy_github_sha.result.value },
@@ -186,7 +186,7 @@ resource "aws_ecs_task_definition" "app" {
         logDriver = "awslogs",
         options = {
           "awslogs-group"         = aws_cloudwatch_log_group.service_logs.name,
-          "awslogs-region"        = data.aws_region.current.name,
+          "awslogs-region"        = data.aws_region.current.region,
           "awslogs-stream-prefix" = local.log_stream_prefix
         }
       }

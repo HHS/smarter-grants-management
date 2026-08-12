@@ -55,7 +55,7 @@ export async function getDefaultHeaders({
         `No user token present for call to authorized endpoint at ${url || "unknown url"}`,
       );
     }
-    headers["X-SGG-Token"] = session.token;
+    headers[environment.API_AUTH_HEADER_NAME] = session.token;
   }
 
   return headers;

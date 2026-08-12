@@ -32,6 +32,8 @@ def seed_local_db() -> None:
 def run_seed_logic(db_session: db.Session) -> None:
     create_users(db_session)
 
+    create_programs()
+
     # Commit anything remaining that wasn't made with factories
     db_session.commit()
 
@@ -70,3 +72,9 @@ def create_users(db_session: db.Session) -> None:
         db_session=db_session,
         scenario_name="Opportunity User - For Simpler Grants Communication",
     ).with_oauth_login("opportunity_user").with_api_key("local-grants-mgmt-api-key").build()
+
+def create_programs() -> None:
+    # Create a few programs just to have something to work with.
+    # Later work will add more specific scenarios
+    logger.info("Creating programs")
+    f.ProgramFactory.create_batch(size=5)

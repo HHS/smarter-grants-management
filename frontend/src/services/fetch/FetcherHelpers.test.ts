@@ -147,6 +147,7 @@ describe("getDefaultHeaders", () => {
     expect(headers["Content-Type"]).toEqual("application/json");
   });
   it("does not include user auth token when not required", async () => {
+    mockEnvironment.API_AUTH_HEADER_NAME = "X-SGG-Token";
     const { getDefaultHeaders } =
       await import("src/services/fetch/fetcherHelpers");
     const headers = await getDefaultHeaders({});
@@ -167,6 +168,7 @@ describe("getDefaultHeaders", () => {
     );
   });
   it("includes user auth token from session when present and required", async () => {
+    mockEnvironment.API_AUTH_HEADER_NAME = "X-SGG-Token";
     getSessionMock.mockResolvedValue({ token: "a token" });
     const { getDefaultHeaders } =
       await import("src/services/fetch/fetcherHelpers");

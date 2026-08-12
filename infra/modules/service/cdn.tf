@@ -128,7 +128,7 @@ resource "aws_cloudfront_distribution" "cdn" {
         for_each = local.cdn_certificate_arn == null ? [1] : []
         content {
           enabled              = true
-          origin_shield_region = data.aws_region.current.name
+          origin_shield_region = data.aws_region.current.region
         }
       }
     }
@@ -145,7 +145,7 @@ resource "aws_cloudfront_distribution" "cdn" {
         for_each = local.cdn_certificate_arn == null ? [1] : []
         content {
           enabled              = true
-          origin_shield_region = data.aws_region.current.name
+          origin_shield_region = data.aws_region.current.region
         }
       }
     }

@@ -1,5 +1,8 @@
 export const messages = {
   Homepage: {
+    title: "Smarter Grants Management",
+    metaDescription:
+      "Grant Smarter with Smarter Grants Management - Replace This Content TKTKTKTKTKTKTK",
     pageTitle: "Let's build a simpler Grants.gov together",
     pageDescription:
       "Simpler.Grants.gov is where we are building new features for the next generation of Grants.gov. With your help, we're setting a new standard for transparency and usability in government services. ",
@@ -605,11 +608,6 @@ export const messages = {
         "If the problem continues, contact product support, <tel>1-800-518-4726</tel> or <link>simpler@grants.gov</link>.",
     },
   },
-  Index: {
-    pageTitle: "Simpler.Grants.gov",
-    metaDescription:
-      "Simpler.Grants.gov is improving how you discover, post, and apply for federal discretionary funding on Grants.gov.",
-  },
   Vision: {
     pageTitle: "Vision | Simpler.Grants.gov",
     pageHeaderTitle: "Our vision",
@@ -857,29 +855,11 @@ export const messages = {
   },
   Header: {
     navLinks: {
-      about: "About",
-      account: "Account",
-      applications: "Applications",
-      community: "Community",
-      developer: "Developer Portal",
-      developers: "Developers",
-      events: "Events",
-      forum: "Discussion forum",
       home: "Home",
       login: "Sign in",
       logout: "Sign out",
       menuToggle: "Menu",
-      organizations: "Organizations",
-      research: "Research",
-      roadmap: "Product roadmap",
-      savedOpportunities: "Saved opportunities",
-      savedSearches: "Saved search queries",
-      search: "Search",
-      newsletter: "Newsletter",
-      vision: "Our vision",
-      wiki: "Public wiki",
-      workspace: "Workspace",
-      workspaceDashboard: "Workspace dashboard",
+      opportunities: "Opportunities",
       settings: "Settings",
       notifications: "Notifications",
       testApplication: "Test application",
@@ -923,7 +903,7 @@ export const messages = {
     returnToTop: "Return to top",
     logoAlt: "Grants.gov logo",
     explore: "Explore",
-    simpler: "Simpler.Grants.gov",
+    siteName: "Smarter Grants Management",
     links: {
       home: "Home",
       search: "Search",

@@ -3,7 +3,7 @@ from sqlalchemy import select
 
 from src.constants.lookup_constants import MgmtUserType
 from src.db.models.user_models import MgmtUser
-from tests.db.models.factories import MgmtUserFactory
+from tests.db.models.factories import MgmtUserFactory, ProgramFactory
 
 
 def test_user_factory_build():
@@ -48,3 +48,16 @@ def test_factory_create_uninitialized_db_session():
     # 'enable_factory_create' fixture.
     with pytest.raises(Exception, match="Factory db_session is not initialized."):
         MgmtUserFactory.create()
+
+
+def test_program_factory(enable_factory_create, db_session):
+    program = ProgramFactory.create(has_secondary_partners=True)
+
+    # Make sure when we make a program, only one partner is created
+    # and attached in all the correct places
+    assert program.partner_id == program.program_office.partner_id
+    assert program.partner_id == program.grant_office.partner_id
+
+    # Make sure the secondary partners are different
+    for secondary_partner in program.link_secondary_program_partners:
+        assert secondary_partner.partner_id != program.partner_id
