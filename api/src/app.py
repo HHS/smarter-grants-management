@@ -19,6 +19,7 @@ from src.app_config import AppConfig
 from src.auth.auth_utils import get_app_security_scheme
 from src.db.resource_automation.resource_automation import setup_resource_automation
 from src.task.task_blueprint import task_blueprint
+from src.workflow import workflow_blueprint
 
 logger = logging.getLogger(__name__)
 
@@ -72,6 +73,7 @@ def register_blueprints(app: APIFlask) -> None:
 
     app.register_blueprint(task_blueprint)
     app.register_blueprint(user_blueprint)
+    app.register_blueprint(workflow_blueprint)
 
 
 def configure_app(app: APIFlask) -> None:

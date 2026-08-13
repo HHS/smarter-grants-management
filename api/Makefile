@@ -174,7 +174,7 @@ lint-security: # https://bandit.readthedocs.io/en/latest/index.html
 
 # Docker starts the image for the DB but it's not quite
 # ready to accept connections so we add a brief wait script
-init-db: start-db setup-postgres-db db-migrate setup-internal-resource
+init-db: start-db setup-postgres-db db-migrate setup-internal-resource setup-internal-workflow-user
 
 start-db:
 	docker compose up --detach grants-mgmt-db
@@ -185,6 +185,9 @@ setup-postgres-db: ## Does any initial setup necessary for our local database to
 
 setup-internal-resource: ## Create the statically defined internal resource record (runs after migrations)
 	$(PY_RUN_CMD) setup-internal-resource
+
+setup-internal-workflow-user: ## Create the internal user that automatic workflow transitions are audited against (runs after migrations)
+	$(PY_RUN_CMD) setup-internal-workflow-user
 
 #########################
 # DB Migrations
