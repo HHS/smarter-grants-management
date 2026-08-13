@@ -1,18 +1,22 @@
 import logging
+import uuid
 from collections import defaultdict
 from typing import Any
 
 from grants_shared.adapters import db
 from grants_shared.api.route_utils import raise_flask_error
-from sqlalchemy import select
+from sqlalchemy import Select, func, select
+from sqlalchemy.orm import selectinload
 
-from src.constants.lookup_constants import MgmtPrivilege, MgmtResourceType
+from src.constants.lookup_constants import MgmtPrivilege, MgmtResourceType, ResourceInheritance
 from src.db.models.grantor_organization_models import GrantorOrganization, Partner, Program
 from src.db.models.resource_models import (
     AbstractResourceTableMixin,
     MgmtInternalResource,
+    MgmtLinkRolePrivilege,
     MgmtResourceUser,
-    MgmtRole, MgmtResourceUserRole, MgmtLinkRolePrivilege,
+    MgmtResourceUserRole,
+    MgmtRole,
 )
 from src.db.models.user_models import MgmtUser
 
@@ -256,38 +260,148 @@ class AuthorizationEnforcer:
         """
         return [internal_resource]
 
+    ####################################
+    # Looking up users for a resource
+    #
+    # The inverse of can_access: instead of asking whether one user may reach a
+    # resource, these ask which users hold a privilege on it.
+    ####################################
+
+    def get_resources_for_user_lookup(
+        self, resource: AbstractResourceTableMixin, inheritance: ResourceInheritance
+    ) -> list[AbstractResourceTableMixin]:
+        """Get the resources a user lookup against this resource should consider.
+
+        Under FULL, this is the same parent-chain walk can_access uses, so the answer
+        stays consistent with what the enforcer would actually allow.
+
+        Under DIRECT it's normally just the resource itself. A program is the exception:
+        users are never attached to program resources (see _get_resources_for_program),
+        so a literal direct lookup on one would always come back empty. For a program,
+        DIRECT means the offices immediately responsible for it - its program office and
+        grant office.
+        """
+        if inheritance == ResourceInheritance.FULL:
+            return self._get_relevant_resources(resource)
+
+        if isinstance(resource, Program):
+            return [resource.program_office, resource.grant_office]
+
+        return [resource]
+
+    def get_users_for_resource_query(
+        self,
+        resources: list[AbstractResourceTableMixin],
+        required_privileges: set[MgmtPrivilege] | None = None,
+    ) -> Select:
+        """Build the query for users holding roles on any of the given resources.
+
+        Takes resources rather than their IDs on purpose. Which resources to search is
+        a decision get_resources_for_user_lookup makes - notably, a program has to be
+        widened to its offices because no user is ever attached to a program directly.
+        Requiring the objects means a caller holding only an ID (a workflow's
+        mgmt_resource_id, say) has to go through that resolution rather than passing the
+        raw ID here and silently matching nobody.
+
+        Returns the statement rather than the rows so callers can add their own sorting,
+        pagination, and filters - the endpoint paginates, the workflow approval emails
+        want every recipient. The statement is rooted on MgmtUser and outer-joined to
+        the login.gov external user, which is what makes ``MgmtLinkExternalUser.email``
+        available to sort on or filter by. Note that users without a login.gov link are
+        included, with a null email - callers that need an address filter them out.
+
+        A user must hold EVERY required privilege, though not necessarily all from the
+        same role, matching how can_access treats a privilege set. Passing no privileges
+        matches any user with a role on one of the resources.
+        """
+        resource_ids = [resource.get_resource_id() for resource in resources]
+
+        stmt = (
+            select(MgmtUser)
+            .outerjoin(MgmtUser.linked_login_gov_external_user)
+            .options(selectinload(MgmtUser.linked_login_gov_external_user))
+        )
+
+        has_role_on_resource = (
+            select(1)
+            .select_from(MgmtResourceUser)
+            .join(
+                MgmtResourceUserRole,
+                MgmtResourceUserRole.mgmt_resource_user_id
+                == MgmtResourceUser.mgmt_resource_user_id,
+            )
+            .where(
+                MgmtResourceUser.mgmt_user_id == MgmtUser.mgmt_user_id,
+                MgmtResourceUser.mgmt_resource_id.in_(resource_ids),
+            )
+            .exists()
+        )
+        stmt = stmt.where(has_role_on_resource)
+
+        if required_privileges:
+            # Count the DISTINCT required privileges the user holds across every role
+            # they have on these resources. Distinct is what makes holding the same
+            # privilege via two roles count once rather than satisfying the check twice.
+            held_required_privilege_count = (
+                select(func.count(func.distinct(MgmtLinkRolePrivilege.mgmt_privilege)))
+                .select_from(MgmtResourceUser)
+                .join(
+                    MgmtResourceUserRole,
+                    MgmtResourceUserRole.mgmt_resource_user_id
+                    == MgmtResourceUser.mgmt_resource_user_id,
+                )
+                .join(
+                    MgmtLinkRolePrivilege,
+                    MgmtLinkRolePrivilege.mgmt_role_id == MgmtResourceUserRole.mgmt_role_id,
+                )
+                .where(
+                    MgmtResourceUser.mgmt_user_id == MgmtUser.mgmt_user_id,
+                    MgmtResourceUser.mgmt_resource_id.in_(resource_ids),
+                    MgmtLinkRolePrivilege.mgmt_privilege.in_(required_privileges),
+                )
+                .scalar_subquery()
+            )
+            stmt = stmt.where(held_required_privilege_count == len(required_privileges))
+
+        return stmt
 
     def get_users_for_resource(
-            self,
-            resource: AbstractResourceTableMixin,
-            is_direct_inheritance_only: bool = False,
-            privilege: MgmtPrivilege | None = None,
-            # TODO - pagination
-    ) -> list[MgmtUser]: # TODO - type
+        self,
+        resource: AbstractResourceTableMixin,
+        inheritance: ResourceInheritance = ResourceInheritance.DIRECT,
+        required_privileges: set[MgmtPrivilege] | None = None,
+    ) -> list[MgmtUser]:
+        """Get every user holding the required privileges on a resource.
 
-        if is_direct_inheritance_only:
-            # TODO - program should be excluded
-            relevant_resources = [resource]
-        else:
-            relevant_resources = self._get_relevant_resources(resource)
+        The convenience wrapper over get_users_for_resource_query for callers that want
+        all the rows and no pagination.
+        """
+        resources = self.get_resources_for_user_lookup(resource, inheritance)
+        stmt = self.get_users_for_resource_query(resources, required_privileges=required_privileges)
 
-        resource_ids = []
+        return list(self.db_session.execute(stmt).scalars())
 
-        relevant_resource_map: dict[MgmtResourceType, list[str]] = defaultdict(list)
-        for resource in relevant_resources:
-            resource_ids.append(resource.get_resource_id())
-            relevant_resource_map[resource.get_resource_type()].append(
-                str(resource.get_resource_id())
+    def get_roles_by_user_for_resources(
+        self, user_ids: list[uuid.UUID], resource_ids: list[uuid.UUID]
+    ) -> dict[uuid.UUID, list[tuple[uuid.UUID, MgmtRole]]]:
+        """Get each user's roles on the given resources, keyed by user ID.
+
+        Each entry pairs the resource that granted the role with the role itself, since
+        the same role can be granted on more than one resource in a hierarchy and
+        callers need to report which one it came from.
+        """
+        resource_users = self.db_session.execute(
+            select(MgmtResourceUser).where(
+                MgmtResourceUser.mgmt_user_id.in_(user_ids),
+                MgmtResourceUser.mgmt_resource_id.in_(resource_ids),
             )
+        ).scalars()
 
-        stmt = select(MgmtResourceUser).where(MgmtResourceUser.mgmt_resource_id.in_(resource_ids))
-        # TODO - selectinload
+        roles_by_user: dict[uuid.UUID, list[tuple[uuid.UUID, MgmtRole]]] = defaultdict(list)
+        for resource_user in resource_users:
+            for role in resource_user.roles:
+                roles_by_user[resource_user.mgmt_user_id].append(
+                    (resource_user.mgmt_resource_id, role)
+                )
 
-        if privilege is not None:
-            # TODO - this probably doesn't handle having two roles with the same privilege well
-            # TODO - make this a where exists
-            stmt = stmt.join(MgmtResourceUserRole).join(MgmtRole).join(MgmtLinkRolePrivilege).where(MgmtLinkRolePrivilege.mgmt_privilege == privilege)
-
-        # TODO - pagination
-
-        resource_users = self.db_session.execute(stmt)
+        return dict(roles_by_user)

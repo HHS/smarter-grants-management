@@ -51,6 +51,17 @@ class AbstractResourceTableMixin:
     def set_resource(self, resource: MgmtResource) -> None:
         self.resource = resource
 
+    @property
+    def resource_name(self) -> str | None:
+        """A human-readable name for the resource, when it has one.
+
+        Every resource table names its own column differently (partner_name,
+        organization_name, and so on), so this gives callers that only know they have
+        a resource one place to ask. Defaults to None rather than raising - a resource
+        type without a name is a fine thing to be, and callers surface it as null.
+        """
+        return None
+
 
 ########################
 # Specific Resources
@@ -77,6 +88,10 @@ class MgmtInternalResource(GrantorSchemaTable, TimestampMixin, AbstractResourceT
 
     def get_resource_type(self) -> MgmtResourceType:
         return MgmtResourceType.INTERNAL
+
+    @property
+    def resource_name(self) -> str | None:
+        return self.internal_resource_name
 
 
 ########################

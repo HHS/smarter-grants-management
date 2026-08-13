@@ -1,6 +1,4 @@
 import logging
-import re
-from enum import StrEnum
 from typing import Any
 
 import grants_shared.adapters.db as db
@@ -13,16 +11,15 @@ from grants_shared.api.response import restructure_error_response
 from grants_shared.api.schemas import response_schema
 from grants_shared.auth.api_jwt_auth import initialize_jwt_auth
 from grants_shared.auth.login_gov_jwt_auth import initialize_login_gov_config
-from werkzeug.routing import BaseConverter, ValidationError
 
 from src.adapters.newrelic import init_newrelic
 from src.api.healthcheck.healthcheck_blueprint import healthcheck_blueprint
 from src.api.resources import resource_blueprint
+from src.api.route_converters import build_enum_converter
 from src.api.users.user_blueprint import user_blueprint
 from src.app_config import AppConfig
 from src.auth.auth_utils import get_app_security_scheme
 from src.constants.lookup_constants import MgmtResourceType
-from src.db.models.resource_models import MgmtResource
 from src.db.resource_automation.resource_automation import setup_resource_automation
 from src.task.task_blueprint import task_blueprint
 from src.workflow import workflow_blueprint
@@ -47,6 +44,8 @@ def create_app() -> APIFlask:
 
     CORS(app)
     configure_app(app)
+
+    register_url_converters(app)
     register_blueprints(app)
 
     # Initialize auth
@@ -72,28 +71,13 @@ def register_db_client(app: APIFlask) -> None:
     # Setup automation for the DB to create resource rows.
     setup_resource_automation()
 
-# TODO - move this
-def enum_converter(enum_cls: type[StrEnum]):
-    class Converter(BaseConverter):
-        regex = "(?:" + "|".join(re.escape(e.value) for e in enum_cls) + ")"
 
-        def to_python(self, value):
-            try:
-                return enum_cls(value)
-            except ValueError:
-                raise ValidationError()
-
-        def to_url(self, value):
-            return value.value
-
-    return Converter
+def register_url_converters(app: APIFlask) -> None:
+    """Register custom path parameter converters used by our route rules."""
+    app.url_map.converters["resource_type"] = build_enum_converter(MgmtResourceType)
 
 
 def register_blueprints(app: APIFlask) -> None:
-
-    # TODO - probably put this somewhere else
-    app.url_map.converters["resource_type"] = enum_converter(MgmtResourceType)
-
 
     app.register_blueprint(healthcheck_blueprint)
 

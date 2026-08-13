@@ -5,14 +5,9 @@ from typing import Any
 from grants_shared.adapters import db
 from sqlalchemy import select
 
-from src.constants.lookup_constants import MgmtResourceType
-from src.db.models.grantor_organization_models import GrantorOrganization, Partner, Program
-from src.db.models.resource_models import (
-    AbstractResourceTableMixin,
-    MgmtInternalResource,
-    MgmtResource,
-)
+from src.db.models.resource_models import AbstractResourceTableMixin, MgmtResource
 from src.db.models.workflow_models import MgmtWorkflow
+from src.db.resource_lookup import get_resource_model
 from src.workflow.base_state_machine import BaseStateMachine
 from src.workflow.workflow_config import WorkflowConfig
 from src.workflow.workflow_errors import (
@@ -25,22 +20,6 @@ from src.workflow.workflow_errors import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-# The one remaining per-entity mapping in the engine: which table owns a given
-# resource type. Resource-backed tables use their resource ID as their own primary
-# key (see AbstractResourceTableMixin), so a plain primary-key get works for all
-# of them and no per-type query logic is needed.
-#
-# MgmtResourceType.OPPORTUNITY is deliberately absent - it's a valid resource type
-# but has no table in mgmt yet, so a workflow configured against it errors rather
-# than silently resolving to nothing.
-RESOURCE_TYPE_TO_ENTITY_CLS: dict[MgmtResourceType, Any] = {
-    MgmtResourceType.INTERNAL: MgmtInternalResource,
-    MgmtResourceType.PARTNER: Partner,
-    MgmtResourceType.GRANTOR_ORGANIZATION: GrantorOrganization,
-    MgmtResourceType.PROGRAM: Program,
-}
 
 
 def get_workflow_entity(
@@ -77,7 +56,9 @@ def get_workflow_entity(
         logger.warning("Resource type does not match workflow configuration", extra=log_extra)
         raise InvalidEntityForWorkflow("Resource type does not match workflow configuration")
 
-    entity_cls = RESOURCE_TYPE_TO_ENTITY_CLS.get(resource.mgmt_resource_type)
+    # A resource type with no table behind it (opportunity, today) errors rather than
+    # silently resolving to nothing.
+    entity_cls = get_resource_model(resource.mgmt_resource_type)
     if entity_cls is None:
         logger.warning("Resource type is not supported for workflow", extra=log_extra)
         raise ImplementationMissingError("Resource type is not supported for workflow")
