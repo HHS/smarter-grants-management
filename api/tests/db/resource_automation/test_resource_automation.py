@@ -2,12 +2,12 @@ import uuid
 
 from sqlalchemy import select
 
-from src.constants.lookup_constants import GrantorOrganizationType, MgmtResourceType
+from src.constants.lookup_constants import GrantorOrganizationType, ResourceType
 from src.db.models.grantor_organization_models import GrantorOrganization, Partner, Program
-from src.db.models.resource_models import MgmtInternalResource, MgmtResource
+from src.db.models.resource_models import InternalResource, Resource
 from tests.db.models.factories import (
     GrantorOrganizationFactory,
-    MgmtInternalResourceFactory,
+    InternalResourceFactory,
     PartnerFactory,
     ProgramFactory,
 )
@@ -40,32 +40,30 @@ def test_resource_automation_with_defaults(db_session):
     )
     db_session.add(program)
 
-    internal_resource = MgmtInternalResource(internal_resource_name="My example internal resource")
+    internal_resource = InternalResource(internal_resource_name="My example internal resource")
     db_session.add(internal_resource)
 
     db_session.commit()
 
     assert partner.partner_id is not None
-    assert partner.resource.mgmt_resource_id == partner.partner_id
-    assert partner.resource.mgmt_resource_type == MgmtResourceType.PARTNER
+    assert partner.resource.resource_id == partner.partner_id
+    assert partner.resource.resource_type == ResourceType.PARTNER
 
     assert organization_1.grantor_organization_id is not None
-    assert organization_1.resource.mgmt_resource_id == organization_1.grantor_organization_id
-    assert organization_1.resource.mgmt_resource_type == MgmtResourceType.GRANTOR_ORGANIZATION
+    assert organization_1.resource.resource_id == organization_1.grantor_organization_id
+    assert organization_1.resource.resource_type == ResourceType.GRANTOR_ORGANIZATION
 
     assert organization_2.grantor_organization_id is not None
-    assert organization_2.resource.mgmt_resource_id == organization_2.grantor_organization_id
-    assert organization_2.resource.mgmt_resource_type == MgmtResourceType.GRANTOR_ORGANIZATION
+    assert organization_2.resource.resource_id == organization_2.grantor_organization_id
+    assert organization_2.resource.resource_type == ResourceType.GRANTOR_ORGANIZATION
 
     assert program.program_id is not None
-    assert program.resource.mgmt_resource_id == program.program_id
-    assert program.resource.mgmt_resource_type == MgmtResourceType.PROGRAM
+    assert program.resource.resource_id == program.program_id
+    assert program.resource.resource_type == ResourceType.PROGRAM
 
-    assert internal_resource.mgmt_internal_resource_id is not None
-    assert (
-        internal_resource.resource.mgmt_resource_id == internal_resource.mgmt_internal_resource_id
-    )
-    assert internal_resource.resource.mgmt_resource_type == MgmtResourceType.INTERNAL
+    assert internal_resource.internal_resource_id is not None
+    assert internal_resource.resource.resource_id == internal_resource.internal_resource_id
+    assert internal_resource.resource.resource_type == ResourceType.INTERNAL
 
 
 def test_resource_automation_with_set_ids(db_session):
@@ -98,8 +96,8 @@ def test_resource_automation_with_set_ids(db_session):
     )
     db_session.add(program)
 
-    internal_resource = MgmtInternalResource(
-        mgmt_internal_resource_id=uuid.uuid4(),
+    internal_resource = InternalResource(
+        internal_resource_id=uuid.uuid4(),
         internal_resource_name="My example internal resource",
     )
     db_session.add(internal_resource)
@@ -107,26 +105,24 @@ def test_resource_automation_with_set_ids(db_session):
     db_session.commit()
 
     assert partner.partner_id is not None
-    assert partner.resource.mgmt_resource_id == partner.partner_id
-    assert partner.resource.mgmt_resource_type == MgmtResourceType.PARTNER
+    assert partner.resource.resource_id == partner.partner_id
+    assert partner.resource.resource_type == ResourceType.PARTNER
 
     assert organization_1.grantor_organization_id is not None
-    assert organization_1.resource.mgmt_resource_id == organization_1.grantor_organization_id
-    assert organization_1.resource.mgmt_resource_type == MgmtResourceType.GRANTOR_ORGANIZATION
+    assert organization_1.resource.resource_id == organization_1.grantor_organization_id
+    assert organization_1.resource.resource_type == ResourceType.GRANTOR_ORGANIZATION
 
     assert organization_2.grantor_organization_id is not None
-    assert organization_2.resource.mgmt_resource_id == organization_2.grantor_organization_id
-    assert organization_2.resource.mgmt_resource_type == MgmtResourceType.GRANTOR_ORGANIZATION
+    assert organization_2.resource.resource_id == organization_2.grantor_organization_id
+    assert organization_2.resource.resource_type == ResourceType.GRANTOR_ORGANIZATION
 
     assert program.program_id is not None
-    assert program.resource.mgmt_resource_id == program.program_id
-    assert program.resource.mgmt_resource_type == MgmtResourceType.PROGRAM
+    assert program.resource.resource_id == program.program_id
+    assert program.resource.resource_type == ResourceType.PROGRAM
 
-    assert internal_resource.mgmt_internal_resource_id is not None
-    assert (
-        internal_resource.resource.mgmt_resource_id == internal_resource.mgmt_internal_resource_id
-    )
-    assert internal_resource.resource.mgmt_resource_type == MgmtResourceType.INTERNAL
+    assert internal_resource.internal_resource_id is not None
+    assert internal_resource.resource.resource_id == internal_resource.internal_resource_id
+    assert internal_resource.resource.resource_type == ResourceType.INTERNAL
 
 
 def test_resource_automation_does_not_change_resource_on_change(db_session, enable_factory_create):
@@ -141,9 +137,7 @@ def test_resource_automation_does_not_change_resource_on_change(db_session, enab
     program.program_name = "my new program name"
 
     internal_resource_id = uuid.uuid4()
-    internal_resource = MgmtInternalResourceFactory.create(
-        mgmt_internal_resource_id=internal_resource_id
-    )
+    internal_resource = InternalResourceFactory.create(internal_resource_id=internal_resource_id)
     internal_resource.internal_resource_name = "New internal resource name"
 
     db_session.commit()
@@ -158,8 +152,8 @@ def test_resource_automation_does_not_change_resource_on_change(db_session, enab
     assert program.program_name == "my new program name"
 
     db_session.refresh(internal_resource)
-    assert internal_resource.mgmt_internal_resource_id == internal_resource_id
-    assert internal_resource.resource.mgmt_resource_id == internal_resource_id
+    assert internal_resource.internal_resource_id == internal_resource_id
+    assert internal_resource.resource.resource_id == internal_resource_id
     assert internal_resource.internal_resource_name == "New internal resource name"
 
 
@@ -167,7 +161,7 @@ def test_resource_automation_when_deleting_resource(db_session, enable_factory_c
     partner = PartnerFactory.create()
     organization = GrantorOrganizationFactory.create()
     program = ProgramFactory.create()
-    internal_resource = MgmtInternalResourceFactory.create()
+    internal_resource = InternalResourceFactory.create()
 
     db_session.delete(partner)
     db_session.delete(organization)
@@ -176,13 +170,13 @@ def test_resource_automation_when_deleting_resource(db_session, enable_factory_c
     db_session.commit()
 
     resources = db_session.execute(
-        select(MgmtResource).where(
-            MgmtResource.mgmt_resource_id.in_(
+        select(Resource).where(
+            Resource.resource_id.in_(
                 [
                     partner.partner_id,
                     organization.grantor_organization_id,
                     program.program_id,
-                    internal_resource.mgmt_internal_resource_id,
+                    internal_resource.internal_resource_id,
                 ]
             )
         )

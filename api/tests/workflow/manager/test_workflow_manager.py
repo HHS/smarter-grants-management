@@ -12,11 +12,11 @@ from grants_shared.api.maintenance_mode import get_maintenance_mode_config
 from sqlalchemy import select
 
 from src.constants.lookup_constants import (
-    MgmtWorkflowEventProcessingResult,
-    MgmtWorkflowEventType,
-    MgmtWorkflowType,
+    WorkflowEventProcessingResult,
+    WorkflowEventType,
+    WorkflowType,
 )
-from src.db.models.workflow_models import MgmtWorkflowEventHistory
+from src.db.models.workflow_models import WorkflowEventHistory
 from src.workflow.event.workflow_event import ProcessWorkflowEventContext, WorkflowEvent
 from src.workflow.manager.workflow_manager import (
     WorkflowManager,
@@ -26,7 +26,7 @@ from src.workflow.manager.workflow_manager import (
 )
 from src.workflow.registry.workflow_client_registry import get_workflow_client_registry
 from src.workflow.state_machine.prototype_state_machine import PrototypeState
-from tests.db.models.factories import MgmtUserFactory, ProgramWorkflowFactory
+from tests.db.models.factories import ProgramWorkflowFactory, UserFactory
 from tests.workflow.workflow_test_util import build_process_workflow_event
 
 logger = logging.getLogger(__name__)
@@ -40,10 +40,10 @@ def build_process_message_body(workflow, user, event_to_send: str, event_id=None
     """Build the SQS payload for a process-workflow event."""
     return {
         "event_id": event_id or uuid.uuid4(),
-        "acting_mgmt_user_id": user.mgmt_user_id,
-        "event_type": MgmtWorkflowEventType.PROCESS_WORKFLOW,
+        "acting_user_id": user.user_id,
+        "event_type": WorkflowEventType.PROCESS_WORKFLOW,
         "process_workflow_context": ProcessWorkflowEventContext(
-            mgmt_workflow_id=workflow.mgmt_workflow_id, event_to_send=event_to_send
+            workflow_id=workflow.workflow_id, event_to_send=event_to_send
         ).model_dump(),
     }
 
@@ -57,14 +57,14 @@ def manager_config():
 @pytest.fixture
 def valid_message_body(program):
     """A start-workflow payload for the prototype workflow."""
-    user = MgmtUserFactory.create()
+    user = UserFactory.create()
     return {
         "event_id": str(uuid.uuid4()),
-        "acting_mgmt_user_id": str(user.mgmt_user_id),
-        "event_type": MgmtWorkflowEventType.START_WORKFLOW,
+        "acting_user_id": str(user.user_id),
+        "event_type": WorkflowEventType.START_WORKFLOW,
         "start_workflow_context": {
-            "workflow_type": MgmtWorkflowType.PROTOTYPE_WORKFLOW,
-            "mgmt_resource_id": str(program.get_resource_id()),
+            "workflow_type": WorkflowType.PROTOTYPE_WORKFLOW,
+            "resource_id": str(program.get_resource_id()),
         },
     }
 
@@ -233,7 +233,7 @@ def test_fetch_messages_keys_history_on_the_event_id(
     assert len(containers) == 1
     container = containers[0]
 
-    assert container.history_event.mgmt_workflow_event_history_id == uuid.UUID(
+    assert container.history_event.workflow_event_history_id == uuid.UUID(
         valid_message_body["event_id"]
     )
     assert isinstance(container.history_event.event_data, dict)
@@ -262,9 +262,9 @@ def test_process_batch_success(workflow_sqs_queue, app, manager_config):
     boto_client = boto3.client("sqs", region_name="us-east-1")
     sqs_client = SQSClient(queue_url=workflow_sqs_queue, sqs_client=boto_client)
 
-    user = MgmtUserFactory.create()
+    user = UserFactory.create()
     workflow = ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.PROTOTYPE_WORKFLOW,
+        workflow_type=WorkflowType.PROTOTYPE_WORKFLOW,
         current_workflow_state=PrototypeState.IN_PROGRESS,
     )
 
@@ -286,10 +286,10 @@ def test_process_batch_retryable_keeps_message(workflow_sqs_queue, app, manager_
     """A retryable error leaves the message on the queue to be picked up again."""
     sqs_client = get_sqs_client(workflow_sqs_queue)
 
-    user = MgmtUserFactory.create()
+    user = UserFactory.create()
     # An unrecognized state raises UnexpectedStateError, which is retryable
     workflow = ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.PROTOTYPE_WORKFLOW,
+        workflow_type=WorkflowType.PROTOTYPE_WORKFLOW,
         current_workflow_state="not-a-valid-state",
     )
 
@@ -315,29 +315,29 @@ def test_process_batch_retryable_keeps_message(workflow_sqs_queue, app, manager_
 def test_process_batch_mixed_results(workflow_sqs_queue, app):
     """Success and non-retryable messages are deleted; retryable ones are kept."""
     sqs_client = get_sqs_client(workflow_sqs_queue)
-    user = MgmtUserFactory.create()
+    user = UserFactory.create()
 
     # Success
     successful_workflow = ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.PROTOTYPE_WORKFLOW,
+        workflow_type=WorkflowType.PROTOTYPE_WORKFLOW,
         current_workflow_state=PrototypeState.IN_PROGRESS,
     )
     sqs_client.send_message(build_process_message_body(successful_workflow, user, "complete"))
 
     # Retryable - unrecognized current state
     retryable_workflow = ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.PROTOTYPE_WORKFLOW,
+        workflow_type=WorkflowType.PROTOTYPE_WORKFLOW,
         current_workflow_state="not-a-valid-state",
     )
     sqs_client.send_message(build_process_message_body(retryable_workflow, user, "complete"))
 
     # Non-retryable - the acting user doesn't exist
     non_retryable_workflow = ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.PROTOTYPE_WORKFLOW,
+        workflow_type=WorkflowType.PROTOTYPE_WORKFLOW,
         current_workflow_state=PrototypeState.IN_PROGRESS,
     )
     non_retryable_body = build_process_message_body(non_retryable_workflow, user, "complete")
-    non_retryable_body["acting_mgmt_user_id"] = uuid.uuid4()
+    non_retryable_body["acting_user_id"] = uuid.uuid4()
     sqs_client.send_message(non_retryable_body)
 
     workflow_manager = WorkflowManager(
@@ -376,7 +376,7 @@ def test_process_batch_runs_events_concurrently(workflow_sqs_queue, app, valid_m
 
     def fake_handle_event(sqs_container):
         barrier.wait()
-        return MgmtWorkflowEventProcessingResult.SUCCESS
+        return WorkflowEventProcessingResult.SUCCESS
 
     workflow_manager = WorkflowManager(
         config=WorkflowManagerConfig(cycle_duration=0, maximum_batch_count=1)
@@ -401,7 +401,7 @@ def test_process_batch_event_timeout_keeps_message(workflow_sqs_queue, app, vali
         # is called - any brief wait suffices. ThreadPoolExecutor waits for this
         # to finish on shutdown, so keep it short so the test stays fast.
         threading.Event().wait(0.05)
-        return MgmtWorkflowEventProcessingResult.SUCCESS
+        return WorkflowEventProcessingResult.SUCCESS
 
     workflow_manager = WorkflowManager(
         config=WorkflowManagerConfig(
@@ -427,16 +427,16 @@ def test_process_batch_event_timeout_keeps_message(workflow_sqs_queue, app, vali
 
 
 def test_handle_event_success(app, db_session, enable_factory_create):
-    user = MgmtUserFactory.create()
+    user = UserFactory.create()
     event_id = uuid.uuid4()
 
     workflow = ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.PROTOTYPE_WORKFLOW,
+        workflow_type=WorkflowType.PROTOTYPE_WORKFLOW,
         current_workflow_state=PrototypeState.IN_PROGRESS,
     )
 
     sqs_container = build_process_workflow_event(
-        mgmt_workflow_id=workflow.mgmt_workflow_id,
+        workflow_id=workflow.workflow_id,
         user=user,
         event_to_send="complete",
         event_id=event_id,
@@ -446,30 +446,30 @@ def test_handle_event_success(app, db_session, enable_factory_create):
     with app.app_context():
         result = handle_event(sqs_container)
 
-    assert result == MgmtWorkflowEventProcessingResult.SUCCESS
+    assert result == WorkflowEventProcessingResult.SUCCESS
 
     saved_history_event = db_session.scalar(
-        select(MgmtWorkflowEventHistory).where(
-            MgmtWorkflowEventHistory.mgmt_workflow_event_history_id == event_id
+        select(WorkflowEventHistory).where(
+            WorkflowEventHistory.workflow_event_history_id == event_id
         )
     )
     assert saved_history_event is not None
     assert saved_history_event.is_successfully_processed is True
     # The history row is linked back to the workflow the event turned out to be for
-    assert saved_history_event.mgmt_workflow_id == workflow.mgmt_workflow_id
+    assert saved_history_event.workflow_id == workflow.workflow_id
 
 
 def test_handle_event_retryable_error(app, enable_factory_create):
-    user = MgmtUserFactory.create()
+    user = UserFactory.create()
 
     # An unrecognized state raises UnexpectedStateError, which is retryable
     workflow = ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.PROTOTYPE_WORKFLOW,
+        workflow_type=WorkflowType.PROTOTYPE_WORKFLOW,
         current_workflow_state="not-a-valid-state",
     )
 
     sqs_container = build_process_workflow_event(
-        mgmt_workflow_id=workflow.mgmt_workflow_id,
+        workflow_id=workflow.workflow_id,
         user=user,
         event_to_send="complete",
         put_history_event_in_session=False,
@@ -478,7 +478,7 @@ def test_handle_event_retryable_error(app, enable_factory_create):
     with app.app_context():
         result = handle_event(sqs_container)
 
-    assert result == MgmtWorkflowEventProcessingResult.RETRYABLE_ERROR
+    assert result == WorkflowEventProcessingResult.RETRYABLE_ERROR
 
 
 def test_handle_event_non_retryable_error(app, db_session, enable_factory_create):
@@ -486,12 +486,12 @@ def test_handle_event_non_retryable_error(app, db_session, enable_factory_create
     event_id = uuid.uuid4()
 
     workflow = ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.PROTOTYPE_WORKFLOW,
+        workflow_type=WorkflowType.PROTOTYPE_WORKFLOW,
         current_workflow_state=PrototypeState.IN_PROGRESS,
     )
 
     sqs_container = build_process_workflow_event(
-        mgmt_workflow_id=workflow.mgmt_workflow_id,
+        workflow_id=workflow.workflow_id,
         # No user means UserDoesNotExist, which is non-retryable
         user=None,
         event_to_send="complete",
@@ -502,12 +502,12 @@ def test_handle_event_non_retryable_error(app, db_session, enable_factory_create
     with app.app_context():
         result = handle_event(sqs_container)
 
-    assert result == MgmtWorkflowEventProcessingResult.NON_RETRYABLE_ERROR
+    assert result == WorkflowEventProcessingResult.NON_RETRYABLE_ERROR
 
     saved_history_event = db_session.scalar(
-        select(MgmtWorkflowEventHistory).where(
-            MgmtWorkflowEventHistory.mgmt_workflow_event_history_id == event_id,
-            MgmtWorkflowEventHistory.is_successfully_processed.is_(False),
+        select(WorkflowEventHistory).where(
+            WorkflowEventHistory.workflow_event_history_id == event_id,
+            WorkflowEventHistory.is_successfully_processed.is_(False),
         )
     )
     assert saved_history_event is not None
@@ -518,15 +518,15 @@ def test_handle_event_general_error(mock_event_handler_preprocess, app, enable_f
     """Any other error is classified as a general error."""
     mock_event_handler_preprocess.side_effect = Exception("Unexpected error")
 
-    user = MgmtUserFactory.create()
+    user = UserFactory.create()
 
     workflow = ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.PROTOTYPE_WORKFLOW,
+        workflow_type=WorkflowType.PROTOTYPE_WORKFLOW,
         current_workflow_state=PrototypeState.IN_PROGRESS,
     )
 
     sqs_container = build_process_workflow_event(
-        mgmt_workflow_id=workflow.mgmt_workflow_id,
+        workflow_id=workflow.workflow_id,
         user=user,
         event_to_send="complete",
         put_history_event_in_session=False,
@@ -535,4 +535,4 @@ def test_handle_event_general_error(mock_event_handler_preprocess, app, enable_f
     with app.app_context():
         result = handle_event(sqs_container)
 
-    assert result == MgmtWorkflowEventProcessingResult.GENERAL_ERROR
+    assert result == WorkflowEventProcessingResult.GENERAL_ERROR

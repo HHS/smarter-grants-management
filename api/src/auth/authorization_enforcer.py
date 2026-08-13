@@ -6,15 +6,15 @@ from grants_shared.adapters import db
 from grants_shared.api.route_utils import raise_flask_error
 from sqlalchemy import select
 
-from src.constants.lookup_constants import MgmtPrivilege, MgmtResourceType
+from src.constants.lookup_constants import Privilege, ResourceType
 from src.db.models.grantor_organization_models import GrantorOrganization, Partner, Program
 from src.db.models.resource_models import (
     AbstractResourceTableMixin,
-    MgmtInternalResource,
-    MgmtResourceUser,
-    MgmtRole,
+    InternalResource,
+    ResourceUser,
+    Role,
 )
-from src.db.models.user_models import MgmtUser
+from src.db.models.user_models import User
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +27,8 @@ class AuthorizationEnforcer:
 
     def can_access(
         self,
-        user: MgmtUser,
-        required_privileges: MgmtPrivilege | set[MgmtPrivilege],
+        user: User,
+        required_privileges: Privilege | set[Privilege],
         resource: AbstractResourceTableMixin,
     ) -> bool:
         """
@@ -56,16 +56,16 @@ class AuthorizationEnforcer:
 
     def _can_access(
         self,
-        user: MgmtUser,
-        required_privileges: MgmtPrivilege | set[MgmtPrivilege],
+        user: User,
+        required_privileges: Privilege | set[Privilege],
         resource: AbstractResourceTableMixin,
     ) -> bool:
         """Internal implementation of can_access, call that function directly instead."""
-        if isinstance(required_privileges, MgmtPrivilege):
+        if isinstance(required_privileges, Privilege):
             required_privileges = {required_privileges}
 
         self.log_context |= {
-            "user_id": user.mgmt_user_id,
+            "user_id": user.user_id,
             "resource_type": resource.get_resource_type(),
             "required_privileges": "|".join(required_privileges),
         }
@@ -75,7 +75,7 @@ class AuthorizationEnforcer:
         # This way we both have a convenient set of all privileges a user
         # has for the resource, but also can easily see which roles granted them
         # those privileges.
-        privilege_to_role: dict[MgmtPrivilege, list[MgmtRole]] = defaultdict(list)
+        privilege_to_role: dict[Privilege, list[Role]] = defaultdict(list)
         for role in roles:
             for privilege in role.privileges:
                 privilege_to_role[privilege].append(role)
@@ -94,7 +94,7 @@ class AuthorizationEnforcer:
             for privilege in required_privileges:
                 authorizing_roles = privilege_to_role.get(privilege, [])
                 for authorizing_role in authorizing_roles:
-                    authorizing_role_ids.add(str(authorizing_role.mgmt_role_id))
+                    authorizing_role_ids.add(str(authorizing_role.role_id))
                     authorizing_role_names.add(authorizing_role.role_name)
 
             self.log_context["authorizing_role_ids"] = "|".join(authorizing_role_ids)
@@ -107,8 +107,8 @@ class AuthorizationEnforcer:
 
     def verify_access(
         self,
-        user: MgmtUser,
-        required_privileges: MgmtPrivilege | set[MgmtPrivilege],
+        user: User,
+        required_privileges: Privilege | set[Privilege],
         resource: AbstractResourceTableMixin,
     ) -> None:
         """Wrapper function around can_access that handles raising a 403 if the user does not have access."""
@@ -118,8 +118,8 @@ class AuthorizationEnforcer:
             raise_flask_error(403, "Forbidden")
 
     def get_user_roles_for_resource(
-        self, user: MgmtUser, resource: AbstractResourceTableMixin
-    ) -> list[MgmtRole]:
+        self, user: User, resource: AbstractResourceTableMixin
+    ) -> list[Role]:
         """
         Get all roles of the given user that are relevant to the resource.
 
@@ -136,7 +136,7 @@ class AuthorizationEnforcer:
 
         resource_ids = []
 
-        relevant_resource_map: dict[MgmtResourceType, list[str]] = defaultdict(list)
+        relevant_resource_map: dict[ResourceType, list[str]] = defaultdict(list)
         for resource in resources:
             resource_ids.append(resource.get_resource_id())
             relevant_resource_map[resource.get_resource_type()].append(
@@ -151,9 +151,9 @@ class AuthorizationEnforcer:
 
         # Grab all resource user connections where either one of the above resources
         # is present AND the user is the one with that role.
-        stmt = select(MgmtResourceUser).where(
-            MgmtResourceUser.mgmt_resource_id.in_(resource_ids),
-            MgmtResourceUser.mgmt_user_id == user.mgmt_user_id,
+        stmt = select(ResourceUser).where(
+            ResourceUser.resource_id.in_(resource_ids),
+            ResourceUser.user_id == user.user_id,
         )
 
         resource_users = self.db_session.execute(stmt).scalars()
@@ -185,7 +185,7 @@ class AuthorizationEnforcer:
         if isinstance(resource, Program):
             return self._get_resources_for_program(resource)
 
-        if isinstance(resource, MgmtInternalResource):
+        if isinstance(resource, InternalResource):
             return self._get_resources_for_internal_resource(resource)
 
         error_message = f"No configuration found for determining relevant resources for type {resource.__class__.__name__}"
@@ -249,7 +249,7 @@ class AuthorizationEnforcer:
         return resources
 
     def _get_resources_for_internal_resource(
-        self, internal_resource: MgmtInternalResource
+        self, internal_resource: InternalResource
     ) -> list[AbstractResourceTableMixin]:
         """
         Get all relevant resources for an internal resource - which is just the internal resource itself

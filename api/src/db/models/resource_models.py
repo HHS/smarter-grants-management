@@ -6,25 +6,25 @@ from sqlalchemy import UUID, ForeignKey
 from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.constants.lookup_constants import MgmtPrivilege, MgmtResourceType
+from src.constants.lookup_constants import Privilege, ResourceType
 from src.db.models.grantor_schema_table import GrantorSchemaTable
-from src.db.models.lookup_models import LkMgmtPrivilege, LkMgmtResourceType
-from src.db.models.user_models import MgmtUser
+from src.db.models.lookup_models import LkPrivilege, LkResourceType
+from src.db.models.user_models import User
 
 ########################
 # Core Resource Table
 ########################
 
 
-class MgmtResource(GrantorSchemaTable, TimestampMixin):
-    __tablename__ = "mgmt_resource"
+class Resource(GrantorSchemaTable, TimestampMixin):
+    __tablename__ = "resource"
 
-    mgmt_resource_id: Mapped[uuid.UUID] = mapped_column(UUID, primary_key=True, default=uuid.uuid4)
+    resource_id: Mapped[uuid.UUID] = mapped_column(UUID, primary_key=True, default=uuid.uuid4)
 
-    mgmt_resource_type: Mapped[MgmtResourceType] = mapped_column(
-        "mgmt_resource_type_id",
-        LookupColumn(LkMgmtResourceType),
-        ForeignKey(LkMgmtResourceType.mgmt_resource_type_id),
+    resource_type: Mapped[ResourceType] = mapped_column(
+        "resource_type_id",
+        LookupColumn(LkResourceType),
+        ForeignKey(LkResourceType.resource_type_id),
     )
 
 
@@ -45,10 +45,10 @@ class AbstractResourceTableMixin:
     def get_resource_id(self) -> uuid.UUID:
         raise NotImplementedError
 
-    def get_resource_type(self) -> MgmtResourceType:
+    def get_resource_type(self) -> ResourceType:
         raise NotImplementedError
 
-    def set_resource(self, resource: MgmtResource) -> None:
+    def set_resource(self, resource: Resource) -> None:
         self.resource = resource
 
 
@@ -60,23 +60,23 @@ class AbstractResourceTableMixin:
 ########################
 
 
-class MgmtInternalResource(GrantorSchemaTable, TimestampMixin, AbstractResourceTableMixin):
-    __tablename__ = "mgmt_internal_resource"
+class InternalResource(GrantorSchemaTable, TimestampMixin, AbstractResourceTableMixin):
+    __tablename__ = "internal_resource"
 
-    mgmt_internal_resource_id: Mapped[uuid.UUID] = mapped_column(
-        UUID, ForeignKey(MgmtResource.mgmt_resource_id), primary_key=True, default=uuid.uuid4
+    internal_resource_id: Mapped[uuid.UUID] = mapped_column(
+        UUID, ForeignKey(Resource.resource_id), primary_key=True, default=uuid.uuid4
     )
-    resource: Mapped[MgmtResource] = relationship(
-        MgmtResource, single_parent=True, cascade="all, delete-orphan"
+    resource: Mapped[Resource] = relationship(
+        Resource, single_parent=True, cascade="all, delete-orphan"
     )
 
     internal_resource_name: Mapped[str]
 
     def get_resource_id(self) -> uuid.UUID:
-        return self.mgmt_internal_resource_id
+        return self.internal_resource_id
 
-    def get_resource_type(self) -> MgmtResourceType:
-        return MgmtResourceType.INTERNAL
+    def get_resource_type(self) -> ResourceType:
+        return ResourceType.INTERNAL
 
 
 ########################
@@ -84,110 +84,100 @@ class MgmtInternalResource(GrantorSchemaTable, TimestampMixin, AbstractResourceT
 ########################
 
 
-class MgmtResourceUser(GrantorSchemaTable, TimestampMixin):
-    __tablename__ = "mgmt_resource_user"
+class ResourceUser(GrantorSchemaTable, TimestampMixin):
+    __tablename__ = "resource_user"
 
-    mgmt_resource_user_id: Mapped[uuid.UUID] = mapped_column(
-        UUID, primary_key=True, default=uuid.uuid4
+    resource_user_id: Mapped[uuid.UUID] = mapped_column(UUID, primary_key=True, default=uuid.uuid4)
+
+    resource_id: Mapped[uuid.UUID] = mapped_column(
+        UUID, ForeignKey(Resource.resource_id), index=True
     )
+    resource: Mapped[Resource] = relationship(Resource)
 
-    mgmt_resource_id: Mapped[uuid.UUID] = mapped_column(
-        UUID, ForeignKey(MgmtResource.mgmt_resource_id), index=True
-    )
-    mgmt_resource: Mapped[MgmtResource] = relationship(MgmtResource)
+    user_id: Mapped[uuid.UUID] = mapped_column(UUID, ForeignKey(User.user_id), index=True)
+    user: Mapped[User] = relationship(User)
 
-    mgmt_user_id: Mapped[uuid.UUID] = mapped_column(
-        UUID, ForeignKey(MgmtUser.mgmt_user_id), index=True
-    )
-    mgmt_user: Mapped[MgmtUser] = relationship(MgmtUser)
-
-    resource_user_roles: Mapped[list[MgmtResourceUserRole]] = relationship(
-        back_populates="mgmt_resource_user",
+    resource_user_roles: Mapped[list[ResourceUserRole]] = relationship(
+        back_populates="resource_user",
         uselist=True,
         cascade="all, delete-orphan",
         lazy="selectin",  # preload roles
     )
 
     @property
-    def roles(self) -> list[MgmtRole]:
-        return [resource_user_role.mgmt_role for resource_user_role in self.resource_user_roles]
+    def roles(self) -> list[Role]:
+        return [resource_user_role.role for resource_user_role in self.resource_user_roles]
 
 
-class MgmtRole(GrantorSchemaTable, TimestampMixin):
-    __tablename__ = "mgmt_role"
+class Role(GrantorSchemaTable, TimestampMixin):
+    __tablename__ = "role"
 
-    mgmt_role_id: Mapped[uuid.UUID] = mapped_column(UUID, primary_key=True, default=uuid.uuid4)
+    role_id: Mapped[uuid.UUID] = mapped_column(UUID, primary_key=True, default=uuid.uuid4)
     role_name: Mapped[str]
     is_core: Mapped[bool] = mapped_column(default=False)
 
-    link_privileges: Mapped[list[MgmtLinkRolePrivilege]] = relationship(
-        back_populates="mgmt_role",
+    link_privileges: Mapped[list[LinkRolePrivilege]] = relationship(
+        back_populates="role",
         uselist=True,
         cascade="all, delete-orphan",
         lazy="selectin",  # always load the privileges
     )
 
-    link_role_resource_types: Mapped[list[MgmtLinkRoleResourceType]] = relationship(
-        back_populates="mgmt_role",
+    link_role_resource_types: Mapped[list[LinkRoleResourceType]] = relationship(
+        back_populates="role",
         uselist=True,
         cascade="all, delete-orphan",
         lazy="selectin",  # Preload resource types
     )
 
-    privileges: AssociationProxy[set[MgmtPrivilege]] = association_proxy(
+    privileges: AssociationProxy[set[Privilege]] = association_proxy(
         "link_privileges",
-        "mgmt_privilege",
-        creator=lambda obj: MgmtLinkRolePrivilege(mgmt_privilege=obj),
+        "privilege",
+        creator=lambda obj: LinkRolePrivilege(privilege=obj),
     )
 
-    resource_types: AssociationProxy[set[MgmtResourceType]] = association_proxy(
+    resource_types: AssociationProxy[set[ResourceType]] = association_proxy(
         "link_role_resource_types",
-        "mgmt_resource_type",
-        creator=lambda obj: MgmtLinkRoleResourceType(mgmt_resource_type=obj),
+        "resource_type",
+        creator=lambda obj: LinkRoleResourceType(resource_type=obj),
     )
 
 
-class MgmtResourceUserRole(GrantorSchemaTable, TimestampMixin):
-    __tablename__ = "mgmt_resource_user_role"
+class ResourceUserRole(GrantorSchemaTable, TimestampMixin):
+    __tablename__ = "resource_user_role"
 
-    mgmt_resource_user_id: Mapped[uuid.UUID] = mapped_column(
-        UUID, ForeignKey(MgmtResourceUser.mgmt_resource_user_id), primary_key=True
+    resource_user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID, ForeignKey(ResourceUser.resource_user_id), primary_key=True
     )
-    mgmt_resource_user: Mapped[MgmtResourceUser] = relationship(MgmtResourceUser)
+    resource_user: Mapped[ResourceUser] = relationship(ResourceUser)
 
-    mgmt_role_id: Mapped[uuid.UUID] = mapped_column(
-        UUID, ForeignKey(MgmtRole.mgmt_role_id), primary_key=True
-    )
-    mgmt_role: Mapped[MgmtRole] = relationship(MgmtRole, lazy="selectin")  # always preload role
+    role_id: Mapped[uuid.UUID] = mapped_column(UUID, ForeignKey(Role.role_id), primary_key=True)
+    role: Mapped[Role] = relationship(Role, lazy="selectin")  # always preload role
 
 
-class MgmtLinkRolePrivilege(GrantorSchemaTable, TimestampMixin):
-    __tablename__ = "mgmt_link_role_privilege"
+class LinkRolePrivilege(GrantorSchemaTable, TimestampMixin):
+    __tablename__ = "link_role_privilege"
 
-    mgmt_role_id: Mapped[uuid.UUID] = mapped_column(
-        UUID, ForeignKey(MgmtRole.mgmt_role_id), primary_key=True
-    )
-    mgmt_role: Mapped[MgmtRole] = relationship(MgmtRole)
+    role_id: Mapped[uuid.UUID] = mapped_column(UUID, ForeignKey(Role.role_id), primary_key=True)
+    role: Mapped[Role] = relationship(Role)
 
-    mgmt_privilege: Mapped[MgmtPrivilege] = mapped_column(
-        "mgmt_privilege_id",
-        LookupColumn(LkMgmtPrivilege),
-        ForeignKey(LkMgmtPrivilege.mgmt_privilege_id),
+    privilege: Mapped[Privilege] = mapped_column(
+        "privilege_id",
+        LookupColumn(LkPrivilege),
+        ForeignKey(LkPrivilege.privilege_id),
         primary_key=True,
     )
 
 
-class MgmtLinkRoleResourceType(GrantorSchemaTable, TimestampMixin):
-    __tablename__ = "mgmt_link_role_resource_type"
+class LinkRoleResourceType(GrantorSchemaTable, TimestampMixin):
+    __tablename__ = "link_role_resource_type"
 
-    mgmt_role_id: Mapped[uuid.UUID] = mapped_column(
-        UUID, ForeignKey(MgmtRole.mgmt_role_id), primary_key=True
-    )
-    mgmt_role: Mapped[MgmtRole] = relationship(MgmtRole)
+    role_id: Mapped[uuid.UUID] = mapped_column(UUID, ForeignKey(Role.role_id), primary_key=True)
+    role: Mapped[Role] = relationship(Role)
 
-    mgmt_resource_type: Mapped[MgmtResourceType] = mapped_column(
-        "mgmt_resource_type_id",
-        LookupColumn(LkMgmtResourceType),
-        ForeignKey(LkMgmtResourceType.mgmt_resource_type_id),
+    resource_type: Mapped[ResourceType] = mapped_column(
+        "resource_type_id",
+        LookupColumn(LkResourceType),
+        ForeignKey(LkResourceType.resource_type_id),
         primary_key=True,
     )

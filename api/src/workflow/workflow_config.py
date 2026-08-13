@@ -1,30 +1,30 @@
 import dataclasses
 
 from src.constants.lookup_constants import (
-    MgmtApprovalResponseType,
-    MgmtApprovalType,
-    MgmtPrivilege,
-    MgmtResourceType,
-    MgmtWorkflowType,
+    ApprovalResponseType,
+    ApprovalType,
+    Privilege,
+    ResourceType,
+    WorkflowType,
 )
 from src.workflow.state_persistence.base_state_persistence_model import BaseStatePersistenceModel
 
 
 @dataclasses.dataclass
 class ApprovalConfig:
-    approval_type: MgmtApprovalType
+    approval_type: ApprovalType
     approval_state: str
-    required_privileges: list[MgmtPrivilege]
+    required_privileges: list[Privilege]
     minimum_approvals_required: int = 1
-    allowed_approval_response_types: set[MgmtApprovalResponseType] = dataclasses.field(
-        default_factory=lambda: set(MgmtApprovalResponseType)
+    allowed_approval_response_types: set[ApprovalResponseType] = dataclasses.field(
+        default_factory=lambda: set(ApprovalResponseType)
     )
 
 
 @dataclasses.dataclass
 class WorkflowConfig:
 
-    workflow_type: MgmtWorkflowType
+    workflow_type: WorkflowType
 
     persistence_model_cls: type[BaseStatePersistenceModel]
 
@@ -43,7 +43,7 @@ class WorkflowConfig:
     )
 
     @property
-    def resource_type(self) -> MgmtResourceType:
+    def resource_type(self) -> ResourceType:
         """The type of resource a workflow of this type attaches to.
 
         Comes off the persistence model rather than being configured separately, so

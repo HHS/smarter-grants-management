@@ -2,7 +2,7 @@ import uuid
 
 import pytest
 
-from src.constants.lookup_constants import MgmtWorkflowType
+from src.constants.lookup_constants import WorkflowType
 from src.workflow.handler.event_handler import EventHandler
 from src.workflow.state_machine.prototype_state_machine import PrototypeState, PrototypeStateMachine
 from src.workflow.workflow_errors import (
@@ -16,7 +16,7 @@ from src.workflow.workflow_errors import (
     UserDoesNotExist,
     WorkflowDoesNotExistError,
 )
-from tests.db.models.factories import MgmtUserFactory, PartnerFactory, ProgramWorkflowFactory
+from tests.db.models.factories import PartnerFactory, ProgramWorkflowFactory, UserFactory
 from tests.workflow.state_machine.test_state_machines import BasicState, BasicTestStateMachine
 from tests.workflow.workflow_test_util import (
     build_process_workflow_event,
@@ -29,10 +29,10 @@ from tests.workflow.workflow_test_util import (
 
 
 def test_start_workflow_event(db_session, enable_factory_create, program):
-    user = MgmtUserFactory.create()
+    user = UserFactory.create()
 
     sqs_container = build_start_workflow_event(
-        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+        workflow_type=WorkflowType.BASIC_TEST_WORKFLOW,
         user=user,
         entity=program,
     )
@@ -42,8 +42,8 @@ def test_start_workflow_event(db_session, enable_factory_create, program):
     assert state_machine.workflow.current_workflow_state == BasicState.MIDDLE
     assert state_machine.workflow.is_active is True
     # The workflow points at the entity solely through its resource
-    assert state_machine.workflow.mgmt_resource_id == program.get_resource_id()
-    assert state_machine.workflow.workflow_type == MgmtWorkflowType.BASIC_TEST_WORKFLOW
+    assert state_machine.workflow.resource_id == program.get_resource_id()
+    assert state_machine.workflow.workflow_type == WorkflowType.BASIC_TEST_WORKFLOW
 
     # The history event is linked back to the workflow it turned out to be for
     assert sqs_container.history_event.workflow is state_machine.workflow
@@ -53,10 +53,10 @@ def test_start_workflow_event_records_transition_details(
     db_session, enable_factory_create, program
 ):
     """The state machine event carries the resolved user, workflow, and class through."""
-    user = MgmtUserFactory.create()
+    user = UserFactory.create()
 
     sqs_container = build_start_workflow_event(
-        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+        workflow_type=WorkflowType.BASIC_TEST_WORKFLOW,
         user=user,
         entity=program,
     )
@@ -67,16 +67,16 @@ def test_start_workflow_event_records_transition_details(
 
     state_machine_event = state_machine.transition_history[0]
     assert state_machine_event.event_to_send == "start_workflow"
-    assert state_machine_event.acting_user.mgmt_user_id == user.mgmt_user_id
+    assert state_machine_event.acting_user.user_id == user.user_id
     assert state_machine_event.workflow is state_machine.workflow
     assert state_machine_event.state_machine_cls is BasicTestStateMachine
 
 
 def test_start_workflow_event_missing_start_context(db_session, enable_factory_create, program):
-    user = MgmtUserFactory.create()
+    user = UserFactory.create()
 
     sqs_container = build_start_workflow_event(
-        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+        workflow_type=WorkflowType.BASIC_TEST_WORKFLOW,
         user=user,
         entity=program,
         exclude_start_workflow_context=True,
@@ -87,11 +87,11 @@ def test_start_workflow_event_missing_start_context(db_session, enable_factory_c
 
 
 def test_start_workflow_event_invalid_workflow_type(db_session, enable_factory_create, program):
-    user = MgmtUserFactory.create()
+    user = UserFactory.create()
 
     sqs_container = build_start_workflow_event(
         # We'll override this below
-        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+        workflow_type=WorkflowType.BASIC_TEST_WORKFLOW,
         user=user,
         entity=program,
     )
@@ -105,14 +105,14 @@ def test_start_workflow_event_invalid_workflow_type(db_session, enable_factory_c
 
 
 def test_start_workflow_event_resource_does_not_exist(db_session, enable_factory_create, program):
-    user = MgmtUserFactory.create()
+    user = UserFactory.create()
 
     sqs_container = build_start_workflow_event(
-        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+        workflow_type=WorkflowType.BASIC_TEST_WORKFLOW,
         user=user,
         entity=program,
     )
-    sqs_container.workflow_event.start_workflow_context.mgmt_resource_id = uuid.uuid4()
+    sqs_container.workflow_event.start_workflow_context.resource_id = uuid.uuid4()
 
     with pytest.raises(EntityNotFound, match="Resource not found"):
         EventHandler(db_session, sqs_container).process()
@@ -120,11 +120,11 @@ def test_start_workflow_event_resource_does_not_exist(db_session, enable_factory
 
 def test_start_workflow_event_wrong_resource_type(db_session, enable_factory_create):
     """The workflow's persistence model declares programs, so a partner is rejected."""
-    user = MgmtUserFactory.create()
+    user = UserFactory.create()
     partner = PartnerFactory.create()
 
     sqs_container = build_start_workflow_event(
-        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+        workflow_type=WorkflowType.BASIC_TEST_WORKFLOW,
         user=user,
         entity=partner,
     )
@@ -137,7 +137,7 @@ def test_start_workflow_event_wrong_resource_type(db_session, enable_factory_cre
 
 def test_start_workflow_event_missing_user(db_session, enable_factory_create, program):
     sqs_container = build_start_workflow_event(
-        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+        workflow_type=WorkflowType.BASIC_TEST_WORKFLOW,
         user=None,  # A random ID will be added
         entity=program,
     )
@@ -152,15 +152,15 @@ def test_start_workflow_event_missing_user(db_session, enable_factory_create, pr
 
 
 def test_process_workflow_event(db_session, enable_factory_create):
-    user = MgmtUserFactory.create()
+    user = UserFactory.create()
 
     workflow = ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+        workflow_type=WorkflowType.BASIC_TEST_WORKFLOW,
         current_workflow_state=BasicState.MIDDLE,
     )
 
     sqs_container = build_process_workflow_event(
-        workflow.mgmt_workflow_id, user=user, event_to_send="middle_to_end"
+        workflow.workflow_id, user=user, event_to_send="middle_to_end"
     )
 
     state_machine = EventHandler(db_session, sqs_container).process()
@@ -175,15 +175,15 @@ def test_process_workflow_event_resolves_state_machine_from_the_workflow(
     db_session, enable_factory_create
 ):
     """A process event doesn't carry a workflow type - it comes off the stored workflow."""
-    user = MgmtUserFactory.create()
+    user = UserFactory.create()
 
     workflow = ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.PROTOTYPE_WORKFLOW,
+        workflow_type=WorkflowType.PROTOTYPE_WORKFLOW,
         current_workflow_state=PrototypeState.IN_PROGRESS,
     )
 
     sqs_container = build_process_workflow_event(
-        workflow.mgmt_workflow_id, user=user, event_to_send="complete"
+        workflow.workflow_id, user=user, event_to_send="complete"
     )
 
     state_machine = EventHandler(db_session, sqs_container).process()
@@ -197,15 +197,15 @@ def test_process_workflow_event_resolves_state_machine_from_the_workflow(
 
 
 def test_process_workflow_event_missing_process_context(db_session, enable_factory_create):
-    user = MgmtUserFactory.create()
+    user = UserFactory.create()
 
     workflow = ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+        workflow_type=WorkflowType.BASIC_TEST_WORKFLOW,
         current_workflow_state=BasicState.MIDDLE,
     )
 
     sqs_container = build_process_workflow_event(
-        workflow.mgmt_workflow_id,
+        workflow.workflow_id,
         user=user,
         event_to_send="middle_to_end",
         exclude_process_workflow_context=True,
@@ -219,22 +219,22 @@ def test_process_workflow_event_missing_process_context(db_session, enable_facto
 
 def test_process_workflow_event_missing_user(db_session, enable_factory_create):
     workflow = ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+        workflow_type=WorkflowType.BASIC_TEST_WORKFLOW,
         current_workflow_state=BasicState.MIDDLE,
     )
 
     sqs_container = build_process_workflow_event(
-        workflow.mgmt_workflow_id, user=None, event_to_send="middle_to_end"
+        workflow.workflow_id, user=None, event_to_send="middle_to_end"
     )
     with pytest.raises(UserDoesNotExist, match="User does not exist"):
         EventHandler(db_session, sqs_container).process()
 
 
 def test_process_workflow_event_workflow_does_not_exist(db_session, enable_factory_create):
-    user = MgmtUserFactory.create()
+    user = UserFactory.create()
 
     sqs_container = build_process_workflow_event(
-        mgmt_workflow_id=uuid.uuid4(), user=user, event_to_send="middle_to_end"
+        workflow_id=uuid.uuid4(), user=user, event_to_send="middle_to_end"
     )
 
     with pytest.raises(WorkflowDoesNotExistError, match="Workflow does not exist"):
@@ -242,62 +242,62 @@ def test_process_workflow_event_workflow_does_not_exist(db_session, enable_facto
 
 
 def test_process_workflow_event_invalid_event(db_session, enable_factory_create):
-    user = MgmtUserFactory.create()
+    user = UserFactory.create()
 
     workflow = ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+        workflow_type=WorkflowType.BASIC_TEST_WORKFLOW,
         current_workflow_state=BasicState.MIDDLE,
     )
 
     sqs_container = build_process_workflow_event(
-        workflow.mgmt_workflow_id, user=user, event_to_send="not-a-real-event"
+        workflow.workflow_id, user=user, event_to_send="not-a-real-event"
     )
     with pytest.raises(InvalidEventError, match="Event is not valid for workflow"):
         EventHandler(db_session, sqs_container).process()
 
 
 def test_process_workflow_event_invalid_event_for_current_state(db_session, enable_factory_create):
-    user = MgmtUserFactory.create()
+    user = UserFactory.create()
 
     workflow = ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+        workflow_type=WorkflowType.BASIC_TEST_WORKFLOW,
         current_workflow_state=BasicState.MIDDLE,
     )
 
     # start_workflow is valid, just not for the current state
     sqs_container = build_process_workflow_event(
-        workflow.mgmt_workflow_id, user=user, event_to_send="start_workflow"
+        workflow.workflow_id, user=user, event_to_send="start_workflow"
     )
     with pytest.raises(InvalidEventError, match="Event is not valid for workflow"):
         EventHandler(db_session, sqs_container).process()
 
 
 def test_process_workflow_event_invalid_current_state(db_session, enable_factory_create):
-    user = MgmtUserFactory.create()
+    user = UserFactory.create()
 
     workflow = ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+        workflow_type=WorkflowType.BASIC_TEST_WORKFLOW,
         current_workflow_state="not-a-valid-state",
     )
 
     sqs_container = build_process_workflow_event(
-        workflow.mgmt_workflow_id, user=user, event_to_send="middle_to_end"
+        workflow.workflow_id, user=user, event_to_send="middle_to_end"
     )
     with pytest.raises(UnexpectedStateError, match="Workflow record has an unexpected state"):
         EventHandler(db_session, sqs_container).process()
 
 
 def test_process_workflow_is_already_at_end(db_session, enable_factory_create):
-    user = MgmtUserFactory.create()
+    user = UserFactory.create()
 
     workflow = ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+        workflow_type=WorkflowType.BASIC_TEST_WORKFLOW,
         current_workflow_state=BasicState.END,
         is_active=False,
     )
 
     sqs_container = build_process_workflow_event(
-        workflow.mgmt_workflow_id, user=user, event_to_send="middle_to_end"
+        workflow.workflow_id, user=user, event_to_send="middle_to_end"
     )
     with pytest.raises(
         InactiveWorkflowError, match="Workflow is not active - cannot receive events"
@@ -315,17 +315,17 @@ def test_start_workflow_event_concurrent_workflow_blocked(
 ):
     """Starting a workflow should fail if an active workflow of the same type already exists
     for the resource and the config disallows concurrent workflows."""
-    user = MgmtUserFactory.create()
+    user = UserFactory.create()
 
     # Create an existing active workflow for the same resource and workflow type
     ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+        workflow_type=WorkflowType.BASIC_TEST_WORKFLOW,
         program=program,
         is_active=True,
     )
 
     sqs_container = build_start_workflow_event(
-        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+        workflow_type=WorkflowType.BASIC_TEST_WORKFLOW,
         user=user,
         entity=program,
     )
@@ -342,17 +342,17 @@ def test_start_workflow_event_concurrent_workflow_allowed_when_inactive(
 ):
     """Starting a workflow should succeed if an existing workflow is inactive
     even when the config disallows concurrent workflows."""
-    user = MgmtUserFactory.create()
+    user = UserFactory.create()
 
     # Create an existing INACTIVE workflow for the same resource and workflow type
     ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+        workflow_type=WorkflowType.BASIC_TEST_WORKFLOW,
         program=program,
         is_active=False,
     )
 
     sqs_container = build_start_workflow_event(
-        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+        workflow_type=WorkflowType.BASIC_TEST_WORKFLOW,
         user=user,
         entity=program,
     )
@@ -366,16 +366,16 @@ def test_start_workflow_event_concurrent_workflow_allowed_by_config(
     db_session, enable_factory_create, program
 ):
     """The prototype allows concurrent workflows, so an active one doesn't block a second."""
-    user = MgmtUserFactory.create()
+    user = UserFactory.create()
 
     ProgramWorkflowFactory.create(
-        workflow_type=MgmtWorkflowType.PROTOTYPE_WORKFLOW,
+        workflow_type=WorkflowType.PROTOTYPE_WORKFLOW,
         program=program,
         is_active=True,
     )
 
     sqs_container = build_start_workflow_event(
-        workflow_type=MgmtWorkflowType.PROTOTYPE_WORKFLOW,
+        workflow_type=WorkflowType.PROTOTYPE_WORKFLOW,
         user=user,
         entity=program,
     )

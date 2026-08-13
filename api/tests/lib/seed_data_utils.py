@@ -7,7 +7,7 @@ from grants_shared.auth.api_jwt_auth import ApiJwtConfig
 
 import tests.db.models.factories as factories
 from src.auth.api_jwt_auth import create_jwt_for_user
-from src.db.models.user_models import MgmtUser
+from src.db.models.user_models import User
 
 logger = logging.getLogger(__name__)
 
@@ -16,9 +16,7 @@ class UserBuilder:
     """Builder class for setting up a user for local development"""
 
     def __init__(self, user_id: uuid.UUID, db_session: db.Session, scenario_name: str) -> None:
-        self.user: MgmtUser = db_session.merge(
-            factories.MgmtUserFactory.build(mgmt_user_id=user_id), load=True
-        )
+        self.user: User = db_session.merge(factories.UserFactory.build(user_id=user_id), load=True)
         self.db_session = db_session
         self.scenario_name = scenario_name
 
@@ -35,7 +33,7 @@ class UserBuilder:
         """
         external_user = self.user.linked_login_gov_external_user
         if external_user is None:
-            external_user = factories.MgmtLinkExternalUserFactory.build(mgmt_user=self.user)
+            external_user = factories.LinkExternalUserFactory.build(user=self.user)
 
         external_user.external_user_id = external_user_id
         self.db_session.add(external_user)
@@ -66,7 +64,7 @@ class UserBuilder:
                 break
 
         if user_api_key is None:
-            user_api_key = factories.MgmtUserApiKeyFactory.build(mgmt_user=self.user)
+            user_api_key = factories.UserApiKeyFactory.build(user=self.user)
 
         user_api_key.key_id = key_id
         user_api_key.key_name = key_name
@@ -77,7 +75,7 @@ class UserBuilder:
         self.api_key_id = key_id
         return self
 
-    def build(self) -> MgmtUser:
+    def build(self) -> User:
         log_msg = f"Updating {self.scenario_name}:"
         if self.link_external_id:
             log_msg += f" '{self.link_external_id}'"

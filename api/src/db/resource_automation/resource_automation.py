@@ -3,7 +3,7 @@ from typing import Any
 import grants_shared.adapters.db as db
 from sqlalchemy import event
 
-from src.db.models.resource_models import AbstractResourceTableMixin, MgmtResource
+from src.db.models.resource_models import AbstractResourceTableMixin, Resource
 
 
 def _handle_resource_automation(
@@ -15,8 +15,8 @@ def _handle_resource_automation(
     for obj in session.new:
         # Only do this for tables we've configured as resource tables
         if isinstance(obj, AbstractResourceTableMixin):
-            obj.resource = MgmtResource(
-                mgmt_resource_id=obj.get_resource_id(), mgmt_resource_type=obj.get_resource_type()
+            obj.resource = Resource(
+                resource_id=obj.get_resource_id(), resource_type=obj.get_resource_type()
             )
 
 
@@ -29,7 +29,7 @@ def setup_resource_automation() -> None:
     This effectively lets us turn:
 
         partner = Partner(partner_id="...")
-        resource = Resource(mgmt_resource_id=partner.partner_id)
+        resource = Resource(resource_id=partner.partner_id)
         db_session.add(partner)
         db_session.add(resource)
         db_session.commit()

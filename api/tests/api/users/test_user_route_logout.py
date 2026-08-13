@@ -6,7 +6,7 @@ from grants_shared.auth import login_gov_jwt_auth
 from grants_shared.auth.api_jwt_auth import JwtAuth
 
 from src.auth.api_jwt_auth import create_jwt_for_user
-from tests.db.models.factories import MgmtLinkExternalUserFactory
+from tests.db.models.factories import LinkExternalUserFactory
 
 
 def validate_redirects_occurred(resp):
@@ -56,8 +56,8 @@ def test_user_logout_without_token_302(client, db_session):
 
 
 def test_user_logout_with_token_302(client, db_session, enable_factory_create):
-    external_user = MgmtLinkExternalUserFactory.create()
-    token, user_token_session = create_jwt_for_user(external_user.mgmt_user, db_session)
+    external_user = LinkExternalUserFactory.create()
+    token, user_token_session = create_jwt_for_user(external_user.user, db_session)
     db_session.commit()
 
     resp = client.get("v1/users/logout", follow_redirects=True, headers={"X-MGMT-Token": token})
@@ -73,8 +73,8 @@ def test_user_logout_with_token_302(client, db_session, enable_factory_create):
 
 
 def test_user_logout_with_invalid_token_302(client, db_session, enable_factory_create):
-    external_user = MgmtLinkExternalUserFactory.create()
-    token, user_token_session = create_jwt_for_user(external_user.mgmt_user, db_session)
+    external_user = LinkExternalUserFactory.create()
+    token, user_token_session = create_jwt_for_user(external_user.user, db_session)
     user_token_session.expires_at = datetime(2020, 1, 1, 12, 0, 0)
     db_session.commit()
 
@@ -100,8 +100,8 @@ def test_user_logout_with_internal_issue_4xx(
 
     monkeypatch.setattr(JwtAuth, "parse_jwt_for_user", err_func)
 
-    external_user = MgmtLinkExternalUserFactory.create()
-    token, _ = create_jwt_for_user(external_user.mgmt_user, db_session)
+    external_user = LinkExternalUserFactory.create()
+    token, _ = create_jwt_for_user(external_user.user, db_session)
     db_session.commit()
 
     resp = client.get("v1/users/logout", follow_redirects=True, headers={"X-MGMT-Token": token})
@@ -121,8 +121,8 @@ def test_user_logout_with_internal_issue_500(
 
     monkeypatch.setattr(JwtAuth, "parse_jwt_for_user", err_func)
 
-    external_user = MgmtLinkExternalUserFactory.create()
-    token, _ = create_jwt_for_user(external_user.mgmt_user, db_session)
+    external_user = LinkExternalUserFactory.create()
+    token, _ = create_jwt_for_user(external_user.user, db_session)
     db_session.commit()
 
     resp = client.get("v1/users/logout", follow_redirects=True, headers={"X-MGMT-Token": token})

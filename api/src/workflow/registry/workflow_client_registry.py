@@ -16,7 +16,7 @@ class WorkflowClientRegistry:
     in all workflows.
 
     Deliberately empty for now - add a field here (and pass it through
-    init_workflow_client_registry) when a mgmt workflow needs a client
+    init_workflow_client_registry) when a  workflow needs a client
     that has to be built once at startup.
     """
 

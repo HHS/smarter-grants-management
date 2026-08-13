@@ -12,7 +12,7 @@ from typing import Any
 from statemachine import Event
 from statemachine.states import States
 
-from src.constants.lookup_constants import MgmtWorkflowType
+from src.constants.lookup_constants import WorkflowType
 from src.workflow.base_state_machine import BaseStateMachine
 from src.workflow.event.state_machine_event import StateMachineEvent
 from src.workflow.registry.workflow_registry import WorkflowRegistry
@@ -33,7 +33,7 @@ class BasicState(StrEnum):
 
 
 basic_test_workflow_config = WorkflowConfig(
-    workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+    workflow_type=WorkflowType.BASIC_TEST_WORKFLOW,
     persistence_model_cls=ProgramPersistenceModel,
     # Concurrent workflows are disallowed here so the engine's concurrency guard has a
     # registered workflow to test against. The prototype covers the allowed case, which

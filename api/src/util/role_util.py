@@ -1,19 +1,15 @@
 import uuid
 
-from src.constants.lookup_constants import (
-    ALLOWED_RESOURCES_FOR_PRIVILEGE,
-    MgmtPrivilege,
-    MgmtResourceType,
-)
-from src.db.models.resource_models import MgmtLinkRolePrivilege, MgmtLinkRoleResourceType, MgmtRole
+from src.constants.lookup_constants import ALLOWED_RESOURCES_FOR_PRIVILEGE, Privilege, ResourceType
+from src.db.models.resource_models import LinkRolePrivilege, LinkRoleResourceType, Role
 
 
 def build_role(
     role_id: uuid.UUID,
     role_name: str,
-    privileges: set[MgmtPrivilege],
-    resource_types: set[MgmtResourceType],
-) -> MgmtRole:
+    privileges: set[Privilege],
+    resource_types: set[ResourceType],
+) -> Role:
     """Build a role, validating that every privilege can be assigned at the role's resource types.
 
     A privilege may only be included in a role when the role's resource types are a subset of the
@@ -40,17 +36,15 @@ def build_role(
                 f"resource type(s): {','.join(sorted(extra_resource_types))}"
             )
 
-        link_privileges.append(
-            MgmtLinkRolePrivilege(mgmt_role_id=role_id, mgmt_privilege=privilege)
-        )
+        link_privileges.append(LinkRolePrivilege(role_id=role_id, privilege=privilege))
 
-    return MgmtRole(
-        mgmt_role_id=role_id,
+    return Role(
+        role_id=role_id,
         role_name=role_name,
         is_core=True,
         link_privileges=link_privileges,
         link_role_resource_types=[
-            MgmtLinkRoleResourceType(mgmt_role_id=role_id, mgmt_resource_type=resource_type)
+            LinkRoleResourceType(role_id=role_id, resource_type=resource_type)
             for resource_type in resource_types
         ],
     )

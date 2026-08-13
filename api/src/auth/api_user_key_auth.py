@@ -13,8 +13,8 @@ from grants_shared.adapters.db import flask_db
 from grants_shared.api.route_utils import raise_flask_error
 from grants_shared.logs.flask_logger import add_extra_data_to_current_request_logs
 
-from src.auth.auth_handler import MgmtAuthHandler
-from src.db.models.user_models import MgmtUser, MgmtUserApiKey
+from src.auth.auth_handler import AuthHandler
+from src.db.models.user_models import User, UserApiKey
 
 logger = logging.getLogger(__name__)
 
@@ -22,21 +22,21 @@ logger = logging.getLogger(__name__)
 class ApiUserKeyHttpTokenAuth(APIKeyHeaderAuth):
     """Custom HTTPTokenAuth that provides typed access to the current user API key and user."""
 
-    def get_user_api_key(self) -> MgmtUserApiKey:
+    def get_user_api_key(self) -> UserApiKey:
         """Wrapper method around the current_user value to handle type issues.
 
         Note that this value gets set based on whatever is returned from the method
         you configure for @<your ApiUserKeyHttpTokenAuth obj>.verify_token
         """
-        return cast(MgmtUserApiKey, self.current_user)
+        return cast(UserApiKey, self.current_user)
 
-    def get_user(self) -> MgmtUser:
+    def get_user(self) -> User:
         """Get the User associated with the current API key.
 
         This is a convenience method since we typically only care about
         the user, not the API key itself.
         """
-        return self.get_user_api_key().mgmt_user
+        return self.get_user_api_key().user
 
 
 # Initialize the authorization context for API Gateway key authentication
@@ -57,7 +57,7 @@ class ApiKeyValidationError(Exception):
 
 @api_user_key_auth.verify_token
 @flask_db.with_db_session()
-def verify_api_key(db_session: db.Session, token: str) -> MgmtUserApiKey:
+def verify_api_key(db_session: db.Session, token: str) -> UserApiKey:
     logger.info("Authenticating API Gateway key")
 
     with db_session.begin():
@@ -77,8 +77,8 @@ def verify_api_key(db_session: db.Session, token: str) -> MgmtUserApiKey:
         return api_key
 
 
-def validate_api_key_in_db(api_key: str, db_session: db.Session) -> MgmtUserApiKey:
-    user_api_key = MgmtAuthHandler(db_session).get_api_key_by_key_id(api_key)
+def validate_api_key_in_db(api_key: str, db_session: db.Session) -> UserApiKey:
+    user_api_key = AuthHandler(db_session).get_api_key_by_key_id(api_key)
 
     if user_api_key is None:
         raise ApiKeyValidationError("Invalid API key")
