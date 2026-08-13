@@ -118,7 +118,10 @@
     },
     "ws": "^8.21.0",
     "sharp": "^0.35.0",
-    "postcss": "^8.5.1"
+    "postcss": "^8.5.1",
+    "undici": "^7.29.0",
+    "nanoid": "^3.3.17",
+    "fast-uri": "^3.1.5"
   },
   "devEngines": {
     "packageManager": {
