@@ -22,14 +22,6 @@ def user_with_jwt(enable_factory_create, db_session):
     return user, token
 
 
-@pytest.fixture
-def user_with_api_key(enable_factory_create, db_session):
-    user = MgmtUserFactory.create()
-    api_key = MgmtUserApiKeyFactory.create(mgmt_user=user, key_id="test-api-key")
-    db_session.commit()
-    return user, api_key.key_id
-
-
 class TestGetOpportunity:
     def test_get_opportunity_with_jwt_auth_success(
         self, client, user_with_jwt, mock_simpler_grants_client
@@ -63,9 +55,10 @@ class TestGetOpportunity:
         assert data["summary"]["post_date"] == "2010-01-01"
 
     def test_get_opportunity_with_api_key_auth_success(
-        self, client, user_with_api_key, mock_simpler_grants_client
+        self, client, enable_factory_create, db_session, mock_simpler_grants_client
     ):
-        user, api_key = user_with_api_key
+        api_key = MgmtUserApiKeyFactory.create(key_id="test-api-key")
+        db_session.commit()
         opportunity_id = uuid.uuid4()
 
         mock_simpler_grants_client.add_opportunity_response(
@@ -83,7 +76,7 @@ class TestGetOpportunity:
 
         response = client.get(
             f"/alpha/proof_of_concept/opportunities/{opportunity_id}",
-            headers={"X-API-Key": api_key},
+            headers={"X-API-Key": api_key.key_id},
         )
 
         assert response.status_code == 200
