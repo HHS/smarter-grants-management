@@ -11,12 +11,12 @@ from src.adapters.simpler_grants.models import (
     SimplerOpportunitySummary,
 )
 from src.auth.api_jwt_auth import create_jwt_for_user
-from tests.db.models.factories import MgmtUserApiKeyFactory, MgmtUserFactory
+from tests.db.models.factories import UserApiKeyFactory, UserFactory
 
 
 @pytest.fixture
 def user_with_jwt(enable_factory_create, db_session):
-    user = MgmtUserFactory.create()
+    user = UserFactory.create()
     token, _ = create_jwt_for_user(user, db_session)
     db_session.commit()
     return user, token
@@ -57,7 +57,7 @@ class TestGetOpportunity:
     def test_get_opportunity_with_api_key_auth_success(
         self, client, enable_factory_create, db_session, mock_simpler_grants_client
     ):
-        api_key = MgmtUserApiKeyFactory.create(key_id="test-api-key")
+        api_key = UserApiKeyFactory.create(key_id="test-api-key")
         db_session.commit()
         opportunity_id = uuid.uuid4()
 
