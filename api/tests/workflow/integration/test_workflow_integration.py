@@ -4,11 +4,11 @@ import boto3
 from grants_shared.adapters.aws.sqs_adapter import SQSClient
 from sqlalchemy import select
 
-from src.constants.lookup_constants import MgmtWorkflowEventType, MgmtWorkflowType
-from src.db.models.workflow_models import MgmtWorkflow, MgmtWorkflowAudit, MgmtWorkflowEventHistory
+from src.constants.lookup_constants import WorkflowEventType, WorkflowType
+from src.db.models.workflow_models import Workflow, WorkflowAudit, WorkflowEventHistory
 from src.workflow.manager.workflow_manager import WorkflowManager, WorkflowManagerConfig
 from src.workflow.state_machine.prototype_state_machine import PrototypeState
-from tests.db.models.factories import MgmtUserFactory
+from tests.db.models.factories import UserFactory
 
 #################################
 #
@@ -36,12 +36,12 @@ def send_and_process(app, queue_url: str, payload: dict) -> None:
     assert len(messages_to_keep) == 0
 
 
-def get_audits(db_session, mgmt_workflow_id) -> list[MgmtWorkflowAudit]:
+def get_audits(db_session, workflow_id) -> list[WorkflowAudit]:
     return list(
         db_session.execute(
-            select(MgmtWorkflowAudit)
-            .where(MgmtWorkflowAudit.mgmt_workflow_id == mgmt_workflow_id)
-            .order_by(MgmtWorkflowAudit.created_at)
+            select(WorkflowAudit)
+            .where(WorkflowAudit.workflow_id == workflow_id)
+            .order_by(WorkflowAudit.created_at)
         ).scalars()
     )
 
@@ -50,7 +50,7 @@ def test_prototype_workflow_runs_from_start_to_end(
     app, db_session, enable_factory_create, program, workflow_user, workflow_sqs_queue
 ):
     """Start a prototype workflow off the queue and drive it to a final state."""
-    user = MgmtUserFactory.create()
+    user = UserFactory.create()
     db_session.commit()
 
     #####################
@@ -62,11 +62,11 @@ def test_prototype_workflow_runs_from_start_to_end(
         workflow_sqs_queue,
         {
             "event_id": start_event_id,
-            "acting_mgmt_user_id": user.mgmt_user_id,
-            "event_type": MgmtWorkflowEventType.START_WORKFLOW,
+            "acting_user_id": user.user_id,
+            "event_type": WorkflowEventType.START_WORKFLOW,
             "start_workflow_context": {
-                "workflow_type": MgmtWorkflowType.PROTOTYPE_WORKFLOW,
-                "mgmt_resource_id": program.get_resource_id(),
+                "workflow_type": WorkflowType.PROTOTYPE_WORKFLOW,
+                "resource_id": program.get_resource_id(),
             },
         },
     )
@@ -75,18 +75,18 @@ def test_prototype_workflow_runs_from_start_to_end(
     db_session.expire_all()
 
     workflow = db_session.scalar(
-        select(MgmtWorkflow).where(MgmtWorkflow.mgmt_resource_id == program.get_resource_id())
+        select(Workflow).where(Workflow.resource_id == program.get_resource_id())
     )
     assert workflow is not None
-    assert workflow.workflow_type == MgmtWorkflowType.PROTOTYPE_WORKFLOW
+    assert workflow.workflow_type == WorkflowType.PROTOTYPE_WORKFLOW
     assert workflow.current_workflow_state == PrototypeState.IN_PROGRESS
     assert workflow.is_active is True
 
-    audits = get_audits(db_session, workflow.mgmt_workflow_id)
+    audits = get_audits(db_session, workflow.workflow_id)
     assert len(audits) == 1
     assert audits[0].transition_event == "Start workflow"
-    assert audits[0].acting_mgmt_user_id == user.mgmt_user_id
-    assert audits[0].mgmt_workflow_event_history_id == start_event_id
+    assert audits[0].acting_user_id == user.user_id
+    assert audits[0].workflow_event_history_id == start_event_id
 
     #####################
     # Drive it to the end
@@ -97,10 +97,10 @@ def test_prototype_workflow_runs_from_start_to_end(
         workflow_sqs_queue,
         {
             "event_id": complete_event_id,
-            "acting_mgmt_user_id": user.mgmt_user_id,
-            "event_type": MgmtWorkflowEventType.PROCESS_WORKFLOW,
+            "acting_user_id": user.user_id,
+            "event_type": WorkflowEventType.PROCESS_WORKFLOW,
             "process_workflow_context": {
-                "mgmt_workflow_id": workflow.mgmt_workflow_id,
+                "workflow_id": workflow.workflow_id,
                 "event_to_send": "complete",
             },
         },
@@ -114,29 +114,29 @@ def test_prototype_workflow_runs_from_start_to_end(
 
     # Three transitions total: the start, the caller's `complete`, and the `finalize`
     # the state machine sent itself.
-    audits = get_audits(db_session, workflow.mgmt_workflow_id)
+    audits = get_audits(db_session, workflow.workflow_id)
     assert [audit.transition_event for audit in audits] == [
         "Start workflow",
         "Complete",
         "Finalize",
     ]
-    assert [audit.acting_mgmt_user_id for audit in audits] == [
-        user.mgmt_user_id,
-        user.mgmt_user_id,
+    assert [audit.acting_user_id for audit in audits] == [
+        user.user_id,
+        user.user_id,
         # The automatic transition is attributed to the internal workflow user
-        workflow_user.mgmt_user_id,
+        workflow_user.user_id,
     ]
 
     # Both events are recorded, keyed on the event IDs from the messages, and linked
     # to the workflow they turned out to be for.
     history_events = list(
         db_session.execute(
-            select(MgmtWorkflowEventHistory).where(
-                MgmtWorkflowEventHistory.mgmt_workflow_id == workflow.mgmt_workflow_id
+            select(WorkflowEventHistory).where(
+                WorkflowEventHistory.workflow_id == workflow.workflow_id
             )
         ).scalars()
     )
-    assert {event.mgmt_workflow_event_history_id for event in history_events} == {
+    assert {event.workflow_event_history_id for event in history_events} == {
         start_event_id,
         complete_event_id,
     }
@@ -151,7 +151,7 @@ def test_prototype_workflow_rejects_an_event_the_state_does_not_allow(
     The message comes off the queue (retrying wouldn't help) but the workflow is
     left untouched apart from the failed history row.
     """
-    user = MgmtUserFactory.create()
+    user = UserFactory.create()
     db_session.commit()
 
     send_and_process(
@@ -159,18 +159,18 @@ def test_prototype_workflow_rejects_an_event_the_state_does_not_allow(
         workflow_sqs_queue,
         {
             "event_id": uuid.uuid4(),
-            "acting_mgmt_user_id": user.mgmt_user_id,
-            "event_type": MgmtWorkflowEventType.START_WORKFLOW,
+            "acting_user_id": user.user_id,
+            "event_type": WorkflowEventType.START_WORKFLOW,
             "start_workflow_context": {
-                "workflow_type": MgmtWorkflowType.PROTOTYPE_WORKFLOW,
-                "mgmt_resource_id": program.get_resource_id(),
+                "workflow_type": WorkflowType.PROTOTYPE_WORKFLOW,
+                "resource_id": program.get_resource_id(),
             },
         },
     )
     db_session.expire_all()
 
     workflow = db_session.scalar(
-        select(MgmtWorkflow).where(MgmtWorkflow.mgmt_resource_id == program.get_resource_id())
+        select(Workflow).where(Workflow.resource_id == program.get_resource_id())
     )
 
     # `finalize` is a real event, just not from IN_PROGRESS
@@ -180,10 +180,10 @@ def test_prototype_workflow_rejects_an_event_the_state_does_not_allow(
         workflow_sqs_queue,
         {
             "event_id": bad_event_id,
-            "acting_mgmt_user_id": user.mgmt_user_id,
-            "event_type": MgmtWorkflowEventType.PROCESS_WORKFLOW,
+            "acting_user_id": user.user_id,
+            "event_type": WorkflowEventType.PROCESS_WORKFLOW,
             "process_workflow_context": {
-                "mgmt_workflow_id": workflow.mgmt_workflow_id,
+                "workflow_id": workflow.workflow_id,
                 "event_to_send": "finalize",
             },
         },
@@ -193,16 +193,16 @@ def test_prototype_workflow_rejects_an_event_the_state_does_not_allow(
     # The workflow didn't move
     assert workflow.current_workflow_state == PrototypeState.IN_PROGRESS
     assert workflow.is_active is True
-    assert len(get_audits(db_session, workflow.mgmt_workflow_id)) == 1
+    assert len(get_audits(db_session, workflow.workflow_id)) == 1
 
     # The failed event is still recorded and flagged as unprocessed. It stays linked to
     # the workflow it was aimed at - the link is made before the event is validated,
     # which is what makes a rejected event traceable to its workflow.
     failed_event = db_session.scalar(
-        select(MgmtWorkflowEventHistory).where(
-            MgmtWorkflowEventHistory.mgmt_workflow_event_history_id == bad_event_id
+        select(WorkflowEventHistory).where(
+            WorkflowEventHistory.workflow_event_history_id == bad_event_id
         )
     )
     assert failed_event is not None
     assert failed_event.is_successfully_processed is False
-    assert failed_event.mgmt_workflow_id == workflow.mgmt_workflow_id
+    assert failed_event.workflow_id == workflow.workflow_id

@@ -2,15 +2,15 @@ import pytest
 from apiflask import HTTPError
 
 from src.auth.authorization_enforcer import AuthorizationEnforcer
-from src.constants.lookup_constants import MgmtPrivilege, MgmtResourceType
+from src.constants.lookup_constants import Privilege, ResourceType
 from tests.db.models.factories import (
     GrantorOrganizationFactory,
-    MgmtInternalResourceFactory,
-    MgmtRoleFactory,
-    MgmtUserFactory,
+    InternalResourceFactory,
     PartnerFactory,
     ProgramFactory,
+    RoleFactory,
     SecondaryProgramPartnerFactory,
+    UserFactory,
 )
 from tests.test_utils.auth_test_utils import setup_user_with_roles
 
@@ -123,12 +123,12 @@ def program_z(partner_a, partner_b, organization_5, organization_6):
 
 @pytest.fixture
 def internal_resource1(enable_factory_create):
-    return MgmtInternalResourceFactory.create(internal_resource_name="Internal Resource 1")
+    return InternalResourceFactory.create(internal_resource_name="Internal Resource 1")
 
 
 @pytest.fixture
 def internal_resource2(enable_factory_create):
-    return MgmtInternalResourceFactory.create(internal_resource_name="Internal Resource 2")
+    return InternalResourceFactory.create(internal_resource_name="Internal Resource 2")
 
 
 ######################################
@@ -152,7 +152,7 @@ def test_user_with_no_roles_cannot_access_anything(
     internal_resource1,
     internal_resource2,
 ):
-    user = MgmtUserFactory.create()
+    user = UserFactory.create()
 
     for resource in [
         partner_a,
@@ -171,7 +171,7 @@ def test_user_with_no_roles_cannot_access_anything(
     ]:
         assert (
             AuthorizationEnforcer(db_session).can_access(
-                user, {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION}, resource
+                user, {Privilege.VIEW_GRANTOR_ORGANIZATION}, resource
             )
             is False
         )
@@ -182,26 +182,24 @@ def test_user_partner(
 ):
 
     user = setup_user_with_roles(
-        db_session, resources=[partner_a], privileges=[MgmtPrivilege.VIEW_PARTNER]
+        db_session, resources=[partner_a], privileges=[Privilege.VIEW_PARTNER]
     )
 
     # User can view their partner
     assert (
-        AuthorizationEnforcer(db_session).can_access(user, {MgmtPrivilege.VIEW_PARTNER}, partner_a)
+        AuthorizationEnforcer(db_session).can_access(user, {Privilege.VIEW_PARTNER}, partner_a)
         is True
     )
 
     # User does not have edit access on their partner
     assert (
-        AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.UPDATE_PARTNER}, partner_a
-        )
+        AuthorizationEnforcer(db_session).can_access(user, {Privilege.UPDATE_PARTNER}, partner_a)
         is False
     )
 
     # User cannot view another partner
     assert (
-        AuthorizationEnforcer(db_session).can_access(user, {MgmtPrivilege.VIEW_PARTNER}, partner_b)
+        AuthorizationEnforcer(db_session).can_access(user, {Privilege.VIEW_PARTNER}, partner_b)
         is False
     )
 
@@ -209,20 +207,18 @@ def test_user_partner(
     # if view_partner against an organization or program were asked,
     # a user could technically do it
     assert (
-        AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.VIEW_PARTNER}, organization_1
-        )
+        AuthorizationEnforcer(db_session).can_access(user, {Privilege.VIEW_PARTNER}, organization_1)
         is True
     )
     assert (
-        AuthorizationEnforcer(db_session).can_access(user, {MgmtPrivilege.VIEW_PARTNER}, program_x)
+        AuthorizationEnforcer(db_session).can_access(user, {Privilege.VIEW_PARTNER}, program_x)
         is True
     )
 
     # No hierarchy gets to internal resource
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.VIEW_PARTNER}, internal_resource1
+            user, {Privilege.VIEW_PARTNER}, internal_resource1
         )
         is False
     )
@@ -241,13 +237,13 @@ def test_user_organization_parent_organization(
     internal_resource1,
 ):
     user = setup_user_with_roles(
-        db_session, resources=[organization_1], privileges=[MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION]
+        db_session, resources=[organization_1], privileges=[Privilege.VIEW_GRANTOR_ORGANIZATION]
     )
 
     # User can view their organization
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION}, organization_1
+            user, {Privilege.VIEW_GRANTOR_ORGANIZATION}, organization_1
         )
         is True
     )
@@ -255,7 +251,7 @@ def test_user_organization_parent_organization(
     # User cannot edit their organization
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.UPDATE_GRANTOR_ORGANIZATION}, organization_1
+            user, {Privilege.UPDATE_GRANTOR_ORGANIZATION}, organization_1
         )
         is False
     )
@@ -263,7 +259,7 @@ def test_user_organization_parent_organization(
     # User cannot view against the partner
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION}, partner_a
+            user, {Privilege.VIEW_GRANTOR_ORGANIZATION}, partner_a
         )
         is False
     )
@@ -271,7 +267,7 @@ def test_user_organization_parent_organization(
     # User cannot view a different organization under the same partner
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION}, organization_4
+            user, {Privilege.VIEW_GRANTOR_ORGANIZATION}, organization_4
         )
         is False
     )
@@ -279,13 +275,13 @@ def test_user_organization_parent_organization(
     # User can view child organization
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION}, organization_2
+            user, {Privilege.VIEW_GRANTOR_ORGANIZATION}, organization_2
         )
         is True
     )
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION}, organization_3
+            user, {Privilege.VIEW_GRANTOR_ORGANIZATION}, organization_3
         )
         is True
     )
@@ -293,13 +289,13 @@ def test_user_organization_parent_organization(
     # User can view against program they're indirectly connected to (even if privilege doesn't make sense)
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION}, program_x
+            user, {Privilege.VIEW_GRANTOR_ORGANIZATION}, program_x
         )
         is True
     )
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION}, program_y
+            user, {Privilege.VIEW_GRANTOR_ORGANIZATION}, program_y
         )
         is True
     )
@@ -307,7 +303,7 @@ def test_user_organization_parent_organization(
     # This program is in a different hierarchy so there is no access
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION}, program_z
+            user, {Privilege.VIEW_GRANTOR_ORGANIZATION}, program_z
         )
         is False
     )
@@ -315,7 +311,7 @@ def test_user_organization_parent_organization(
     # User cannot view internal resource
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION}, internal_resource1
+            user, {Privilege.VIEW_GRANTOR_ORGANIZATION}, internal_resource1
         )
         is False
     )
@@ -333,13 +329,13 @@ def test_user_organization_with_child_organization(
     internal_resource1,
 ):
     user = setup_user_with_roles(
-        db_session, resources=[organization_2], privileges=[MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION]
+        db_session, resources=[organization_2], privileges=[Privilege.VIEW_GRANTOR_ORGANIZATION]
     )
 
     # User can view their organization
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION}, organization_2
+            user, {Privilege.VIEW_GRANTOR_ORGANIZATION}, organization_2
         )
         is True
     )
@@ -347,7 +343,7 @@ def test_user_organization_with_child_organization(
     # User cannot edit their organization
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.UPDATE_GRANTOR_ORGANIZATION}, organization_2
+            user, {Privilege.UPDATE_GRANTOR_ORGANIZATION}, organization_2
         )
         is False
     )
@@ -355,7 +351,7 @@ def test_user_organization_with_child_organization(
     # User cannot view against the partner
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION}, partner_a
+            user, {Privilege.VIEW_GRANTOR_ORGANIZATION}, partner_a
         )
         is False
     )
@@ -363,7 +359,7 @@ def test_user_organization_with_child_organization(
     # User cannot view a different organization under the same partner
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION}, organization_3
+            user, {Privilege.VIEW_GRANTOR_ORGANIZATION}, organization_3
         )
         is False
     )
@@ -371,7 +367,7 @@ def test_user_organization_with_child_organization(
     # User cannot view the parent organization
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION}, organization_1
+            user, {Privilege.VIEW_GRANTOR_ORGANIZATION}, organization_1
         )
         is False
     )
@@ -379,7 +375,7 @@ def test_user_organization_with_child_organization(
     # User can view against program they're indirectly connected to (even if privilege doesn't make sense)
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION}, program_x
+            user, {Privilege.VIEW_GRANTOR_ORGANIZATION}, program_x
         )
         is True
     )
@@ -387,7 +383,7 @@ def test_user_organization_with_child_organization(
     # User cannot view program they are not connected to
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION}, program_y
+            user, {Privilege.VIEW_GRANTOR_ORGANIZATION}, program_y
         )
         is False
     )
@@ -395,7 +391,7 @@ def test_user_organization_with_child_organization(
     # This program is in a different hierarchy so there is no access
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION}, program_z
+            user, {Privilege.VIEW_GRANTOR_ORGANIZATION}, program_z
         )
         is False
     )
@@ -403,7 +399,7 @@ def test_user_organization_with_child_organization(
     # User cannot view internal resource
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION}, internal_resource1
+            user, {Privilege.VIEW_GRANTOR_ORGANIZATION}, internal_resource1
         )
         is False
     )
@@ -421,60 +417,54 @@ def test_user_in_program_has_no_access(
 ):
     """Test that users attached to a program don't get any access as this isn't an expected scenario"""
     user = setup_user_with_roles(
-        db_session, resources=[program_x], privileges=[MgmtPrivilege.VIEW_PROGRAM]
+        db_session, resources=[program_x], privileges=[Privilege.VIEW_PROGRAM]
     )
 
     # User cannot view their program
     # We do not add the program itself as a relevant resource so nothing can be found
     assert (
-        AuthorizationEnforcer(db_session).can_access(user, {MgmtPrivilege.VIEW_PROGRAM}, program_x)
+        AuthorizationEnforcer(db_session).can_access(user, {Privilege.VIEW_PROGRAM}, program_x)
         is False
     )
 
     # User cannot edit their program
     assert (
-        AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.UPDATE_PROGRAM}, program_x
-        )
+        AuthorizationEnforcer(db_session).can_access(user, {Privilege.UPDATE_PROGRAM}, program_x)
         is False
     )
 
     # User cannot view_program against the organizations that owns it
     assert (
-        AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.VIEW_PROGRAM}, organization_2
-        )
+        AuthorizationEnforcer(db_session).can_access(user, {Privilege.VIEW_PROGRAM}, organization_2)
         is False
     )
     assert (
-        AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.VIEW_PROGRAM}, organization_4
-        )
+        AuthorizationEnforcer(db_session).can_access(user, {Privilege.VIEW_PROGRAM}, organization_4)
         is False
     )
 
     # User cannot view_program against the partner that owns it
     assert (
-        AuthorizationEnforcer(db_session).can_access(user, {MgmtPrivilege.VIEW_PROGRAM}, partner_a)
+        AuthorizationEnforcer(db_session).can_access(user, {Privilege.VIEW_PROGRAM}, partner_a)
         is False
     )
 
     # User cannot view_program against a different program under the same partner
     assert (
-        AuthorizationEnforcer(db_session).can_access(user, {MgmtPrivilege.VIEW_PROGRAM}, program_y)
+        AuthorizationEnforcer(db_session).can_access(user, {Privilege.VIEW_PROGRAM}, program_y)
         is False
     )
 
     # User cannot view_program against a program from a different partner
     assert (
-        AuthorizationEnforcer(db_session).can_access(user, {MgmtPrivilege.VIEW_PROGRAM}, partner_b)
+        AuthorizationEnforcer(db_session).can_access(user, {Privilege.VIEW_PROGRAM}, partner_b)
         is False
     )
 
     # User cannot view_program against any internal resource
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.VIEW_PROGRAM}, internal_resource1
+            user, {Privilege.VIEW_PROGRAM}, internal_resource1
         )
         is False
     )
@@ -484,20 +474,20 @@ def test_user_internal_resource(db_session, internal_resource1, internal_resourc
     user = setup_user_with_roles(
         db_session,
         resources=[internal_resource1],
-        privileges=[MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION],
+        privileges=[Privilege.VIEW_GRANTOR_ORGANIZATION],
     )
 
     # User can do VIEW_GRANTOR_ORGANIZATION against their internal resource
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION}, internal_resource1
+            user, {Privilege.VIEW_GRANTOR_ORGANIZATION}, internal_resource1
         )
         is True
     )
     # User cannot do another action against their internal resource
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.UPDATE_GRANTOR_ORGANIZATION}, internal_resource1
+            user, {Privilege.UPDATE_GRANTOR_ORGANIZATION}, internal_resource1
         )
         is False
     )
@@ -505,7 +495,7 @@ def test_user_internal_resource(db_session, internal_resource1, internal_resourc
     assert (
         AuthorizationEnforcer(db_session).can_access(
             user,
-            {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION, MgmtPrivilege.UPDATE_GRANTOR_ORGANIZATION},
+            {Privilege.VIEW_GRANTOR_ORGANIZATION, Privilege.UPDATE_GRANTOR_ORGANIZATION},
             internal_resource1,
         )
         is False
@@ -514,7 +504,7 @@ def test_user_internal_resource(db_session, internal_resource1, internal_resourc
     # User cannot view another internal resource
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION}, internal_resource2
+            user, {Privilege.VIEW_GRANTOR_ORGANIZATION}, internal_resource2
         )
         is False
     )
@@ -525,28 +515,28 @@ def test_user_with_multiple_privileges_in_role(db_session, internal_resource1, i
         db_session,
         resources=[internal_resource1],
         privileges=[
-            MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION,
-            MgmtPrivilege.UPDATE_GRANTOR_ORGANIZATION,
+            Privilege.VIEW_GRANTOR_ORGANIZATION,
+            Privilege.UPDATE_GRANTOR_ORGANIZATION,
         ],
     )
 
     # User can view/update or both at the same time against their resource
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION}, internal_resource1
+            user, {Privilege.VIEW_GRANTOR_ORGANIZATION}, internal_resource1
         )
         is True
     )
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.UPDATE_GRANTOR_ORGANIZATION}, internal_resource1
+            user, {Privilege.UPDATE_GRANTOR_ORGANIZATION}, internal_resource1
         )
         is True
     )
     assert (
         AuthorizationEnforcer(db_session).can_access(
             user,
-            {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION, MgmtPrivilege.UPDATE_GRANTOR_ORGANIZATION},
+            {Privilege.VIEW_GRANTOR_ORGANIZATION, Privilege.UPDATE_GRANTOR_ORGANIZATION},
             internal_resource1,
         )
         is True
@@ -557,8 +547,8 @@ def test_user_with_multiple_privileges_in_role(db_session, internal_resource1, i
         AuthorizationEnforcer(db_session).can_access(
             user,
             {
-                MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION,
-                MgmtPrivilege.MANAGE_GRANTOR_ORGANIZATION_MEMBERS,
+                Privilege.VIEW_GRANTOR_ORGANIZATION,
+                Privilege.MANAGE_GRANTOR_ORGANIZATION_MEMBERS,
             },
             internal_resource1,
         )
@@ -568,9 +558,9 @@ def test_user_with_multiple_privileges_in_role(db_session, internal_resource1, i
         AuthorizationEnforcer(db_session).can_access(
             user,
             {
-                MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION,
-                MgmtPrivilege.UPDATE_GRANTOR_ORGANIZATION,
-                MgmtPrivilege.MANAGE_GRANTOR_ORGANIZATION_MEMBERS,
+                Privilege.VIEW_GRANTOR_ORGANIZATION,
+                Privilege.UPDATE_GRANTOR_ORGANIZATION,
+                Privilege.MANAGE_GRANTOR_ORGANIZATION_MEMBERS,
             },
             internal_resource1,
         )
@@ -578,7 +568,7 @@ def test_user_with_multiple_privileges_in_role(db_session, internal_resource1, i
     )
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.MANAGE_GRANTOR_ORGANIZATION_MEMBERS}, internal_resource1
+            user, {Privilege.MANAGE_GRANTOR_ORGANIZATION_MEMBERS}, internal_resource1
         )
         is False
     )
@@ -586,20 +576,20 @@ def test_user_with_multiple_privileges_in_role(db_session, internal_resource1, i
     # Cannot do those against another resource
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION}, internal_resource2
+            user, {Privilege.VIEW_GRANTOR_ORGANIZATION}, internal_resource2
         )
         is False
     )
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.UPDATE_GRANTOR_ORGANIZATION}, internal_resource2
+            user, {Privilege.UPDATE_GRANTOR_ORGANIZATION}, internal_resource2
         )
         is False
     )
     assert (
         AuthorizationEnforcer(db_session).can_access(
             user,
-            {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION, MgmtPrivilege.UPDATE_GRANTOR_ORGANIZATION},
+            {Privilege.VIEW_GRANTOR_ORGANIZATION, Privilege.UPDATE_GRANTOR_ORGANIZATION},
             internal_resource2,
         )
         is False
@@ -608,33 +598,33 @@ def test_user_with_multiple_privileges_in_role(db_session, internal_resource1, i
 
 def test_user_with_privileges_across_roles(db_session, internal_resource1, internal_resource2):
     """Same as test_user_with_multiple_privileges_in_role but the privilege is split across roles"""
-    role1 = MgmtRoleFactory.create(
-        privileges=[MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION],
-        resource_types=[MgmtResourceType.INTERNAL],
+    role1 = RoleFactory.create(
+        privileges=[Privilege.VIEW_GRANTOR_ORGANIZATION],
+        resource_types=[ResourceType.INTERNAL],
     )
-    role2 = MgmtRoleFactory.create(
-        privileges=[MgmtPrivilege.UPDATE_GRANTOR_ORGANIZATION],
-        resource_types=[MgmtResourceType.INTERNAL],
+    role2 = RoleFactory.create(
+        privileges=[Privilege.UPDATE_GRANTOR_ORGANIZATION],
+        resource_types=[ResourceType.INTERNAL],
     )
     user = setup_user_with_roles(db_session, resources=[internal_resource1], roles=[role1, role2])
 
     # User can view/update or both at the same time against their resource
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION}, internal_resource1
+            user, {Privilege.VIEW_GRANTOR_ORGANIZATION}, internal_resource1
         )
         is True
     )
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.UPDATE_GRANTOR_ORGANIZATION}, internal_resource1
+            user, {Privilege.UPDATE_GRANTOR_ORGANIZATION}, internal_resource1
         )
         is True
     )
     assert (
         AuthorizationEnforcer(db_session).can_access(
             user,
-            {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION, MgmtPrivilege.UPDATE_GRANTOR_ORGANIZATION},
+            {Privilege.VIEW_GRANTOR_ORGANIZATION, Privilege.UPDATE_GRANTOR_ORGANIZATION},
             internal_resource1,
         )
         is True
@@ -645,8 +635,8 @@ def test_user_with_privileges_across_roles(db_session, internal_resource1, inter
         AuthorizationEnforcer(db_session).can_access(
             user,
             {
-                MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION,
-                MgmtPrivilege.MANAGE_GRANTOR_ORGANIZATION_MEMBERS,
+                Privilege.VIEW_GRANTOR_ORGANIZATION,
+                Privilege.MANAGE_GRANTOR_ORGANIZATION_MEMBERS,
             },
             internal_resource1,
         )
@@ -656,9 +646,9 @@ def test_user_with_privileges_across_roles(db_session, internal_resource1, inter
         AuthorizationEnforcer(db_session).can_access(
             user,
             {
-                MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION,
-                MgmtPrivilege.UPDATE_GRANTOR_ORGANIZATION,
-                MgmtPrivilege.MANAGE_GRANTOR_ORGANIZATION_MEMBERS,
+                Privilege.VIEW_GRANTOR_ORGANIZATION,
+                Privilege.UPDATE_GRANTOR_ORGANIZATION,
+                Privilege.MANAGE_GRANTOR_ORGANIZATION_MEMBERS,
             },
             internal_resource1,
         )
@@ -666,7 +656,7 @@ def test_user_with_privileges_across_roles(db_session, internal_resource1, inter
     )
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.MANAGE_PARTNER_MEMBERS}, internal_resource1
+            user, {Privilege.MANAGE_PARTNER_MEMBERS}, internal_resource1
         )
         is False
     )
@@ -674,20 +664,20 @@ def test_user_with_privileges_across_roles(db_session, internal_resource1, inter
     # Cannot do those against another resource
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION}, internal_resource2
+            user, {Privilege.VIEW_GRANTOR_ORGANIZATION}, internal_resource2
         )
         is False
     )
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user, {MgmtPrivilege.UPDATE_GRANTOR_ORGANIZATION}, internal_resource2
+            user, {Privilege.UPDATE_GRANTOR_ORGANIZATION}, internal_resource2
         )
         is False
     )
     assert (
         AuthorizationEnforcer(db_session).can_access(
             user,
-            {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION, MgmtPrivilege.UPDATE_GRANTOR_ORGANIZATION},
+            {Privilege.VIEW_GRANTOR_ORGANIZATION, Privilege.UPDATE_GRANTOR_ORGANIZATION},
             internal_resource2,
         )
         is False
@@ -695,10 +685,10 @@ def test_user_with_privileges_across_roles(db_session, internal_resource1, inter
 
 
 def test_verify_access(db_session, internal_resource1):
-    user = MgmtUserFactory.create()
+    user = UserFactory.create()
     with pytest.raises(HTTPError, match="Forbidden"):
         AuthorizationEnforcer(db_session).verify_access(
-            user, {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION}, internal_resource1
+            user, {Privilege.VIEW_GRANTOR_ORGANIZATION}, internal_resource1
         )
 
 
@@ -709,11 +699,11 @@ def test_who_can_access_partner(
 
     # A user in the partner can access it.
     user_in_partner = setup_user_with_roles(
-        db_session, resources=[partner_a], privileges=[MgmtPrivilege.VIEW_PARTNER]
+        db_session, resources=[partner_a], privileges=[Privilege.VIEW_PARTNER]
     )
     assert (
         AuthorizationEnforcer(db_session).can_access(
-            user_in_partner, {MgmtPrivilege.VIEW_PARTNER}, partner_a
+            user_in_partner, {Privilege.VIEW_PARTNER}, partner_a
         )
         is True
     )
@@ -724,11 +714,11 @@ def test_who_can_access_partner(
     # A user in an internal resource cannot access it
     for resource in [organization_1, program_x, partner_b, internal_resource1]:
         user_not_in_partner = setup_user_with_roles(
-            db_session, resources=[resource], privileges=[MgmtPrivilege.VIEW_PARTNER]
+            db_session, resources=[resource], privileges=[Privilege.VIEW_PARTNER]
         )
         assert (
             AuthorizationEnforcer(db_session).can_access(
-                user_not_in_partner, {MgmtPrivilege.VIEW_PARTNER}, partner_a
+                user_not_in_partner, {Privilege.VIEW_PARTNER}, partner_a
             )
             is False
         )
@@ -751,11 +741,11 @@ def test_who_can_access_grantor_organization(
     # A user in the partner that owns the organization can view it
     for resource in [organization_3, organization_1, partner_a]:
         user_who_can_access = setup_user_with_roles(
-            db_session, resources=[resource], privileges=[MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION]
+            db_session, resources=[resource], privileges=[Privilege.VIEW_GRANTOR_ORGANIZATION]
         )
         assert (
             AuthorizationEnforcer(db_session).can_access(
-                user_who_can_access, {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION}, organization_3
+                user_who_can_access, {Privilege.VIEW_GRANTOR_ORGANIZATION}, organization_3
             )
             is True
         )
@@ -766,11 +756,11 @@ def test_who_can_access_grantor_organization(
     # A user in an internal resource cannot access it
     for resource in [organization_2, program_y, partner_b, internal_resource1]:
         user_who_cannot_access = setup_user_with_roles(
-            db_session, resources=[resource], privileges=[MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION]
+            db_session, resources=[resource], privileges=[Privilege.VIEW_GRANTOR_ORGANIZATION]
         )
         assert (
             AuthorizationEnforcer(db_session).can_access(
-                user_who_cannot_access, {MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION}, organization_3
+                user_who_cannot_access, {Privilege.VIEW_GRANTOR_ORGANIZATION}, organization_3
             )
             is False
         )
@@ -795,11 +785,11 @@ def test_who_can_access_program(
     # A user in the parent of the organizations that own it can access it
     for resource in [partner_a, organization_3, organization_4, organization_1]:
         user_who_can_access = setup_user_with_roles(
-            db_session, resources=[resource], privileges=[MgmtPrivilege.VIEW_PROGRAM]
+            db_session, resources=[resource], privileges=[Privilege.VIEW_PROGRAM]
         )
         assert (
             AuthorizationEnforcer(db_session).can_access(
-                user_who_can_access, {MgmtPrivilege.VIEW_PROGRAM}, program_y
+                user_who_can_access, {Privilege.VIEW_PROGRAM}, program_y
             )
             is True
         )
@@ -811,11 +801,11 @@ def test_who_can_access_program(
     # A user in an internal resource cannot access it
     for resource in [program_y, organization_2, partner_b, program_x, internal_resource1]:
         user_who_cannot_access = setup_user_with_roles(
-            db_session, resources=[resource], privileges=[MgmtPrivilege.VIEW_PROGRAM]
+            db_session, resources=[resource], privileges=[Privilege.VIEW_PROGRAM]
         )
         assert (
             AuthorizationEnforcer(db_session).can_access(
-                user_who_cannot_access, {MgmtPrivilege.VIEW_PROGRAM}, program_y
+                user_who_cannot_access, {Privilege.VIEW_PROGRAM}, program_y
             )
             is False
         )
@@ -840,11 +830,11 @@ def test_who_can_access_program_with_secondary_partner(
     # A user in the organizations that own it can access it
     for resource in [partner_b, partner_a, organization_5, organization_6]:
         user_who_can_access = setup_user_with_roles(
-            db_session, resources=[resource], privileges=[MgmtPrivilege.VIEW_PROGRAM]
+            db_session, resources=[resource], privileges=[Privilege.VIEW_PROGRAM]
         )
         assert (
             AuthorizationEnforcer(db_session).can_access(
-                user_who_can_access, {MgmtPrivilege.VIEW_PROGRAM}, program_z
+                user_who_can_access, {Privilege.VIEW_PROGRAM}, program_z
             )
             is True
         )
@@ -855,11 +845,11 @@ def test_who_can_access_program_with_secondary_partner(
     # A user in an internal resource cannot access it
     for resource in [program_z, organization_2, program_x, internal_resource1]:
         user_who_cannot_access = setup_user_with_roles(
-            db_session, resources=[resource], privileges=[MgmtPrivilege.VIEW_PROGRAM]
+            db_session, resources=[resource], privileges=[Privilege.VIEW_PROGRAM]
         )
         assert (
             AuthorizationEnforcer(db_session).can_access(
-                user_who_cannot_access, {MgmtPrivilege.VIEW_PROGRAM}, program_z
+                user_who_cannot_access, {Privilege.VIEW_PROGRAM}, program_z
             )
             is False
         )

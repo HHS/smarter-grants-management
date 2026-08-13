@@ -13,36 +13,36 @@ from grants_shared.db.models.base import TimestampMixin
 from sqlalchemy import UUID, ForeignKey, and_
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.constants.lookup_constants import ExternalUserType, MgmtUserType
+from src.constants.lookup_constants import ExternalUserType, UserType
 from src.db.models.grantor_schema_table import GrantorSchemaTable
-from src.db.models.lookup_models import LkExternalUserType, LkMgmtUserType
+from src.db.models.lookup_models import LkExternalUserType, LkUserType
 
 
-class MgmtUser(BaseUser, GrantorSchemaTable, TimestampMixin):
-    __tablename__ = "mgmt_user"
+class User(BaseUser, GrantorSchemaTable, TimestampMixin):
+    __tablename__ = "user"
 
-    mgmt_user_id: Mapped[uuid.UUID] = mapped_column(UUID, primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(UUID, primary_key=True, default=uuid.uuid4)
 
-    user_type: Mapped[MgmtUserType | None] = mapped_column(
-        "mgmt_user_type_id",
-        LookupColumn(LkMgmtUserType),
-        ForeignKey(LkMgmtUserType.mgmt_user_type_id),
-        default=MgmtUserType.STANDARD,
+    user_type: Mapped[UserType | None] = mapped_column(
+        "user_type_id",
+        LookupColumn(LkUserType),
+        ForeignKey(LkUserType.user_type_id),
+        default=UserType.STANDARD,
     )
 
-    linked_login_gov_external_user: Mapped[MgmtLinkExternalUser | None] = relationship(
-        "MgmtLinkExternalUser",
+    linked_login_gov_external_user: Mapped[LinkExternalUser | None] = relationship(
+        "LinkExternalUser",
         primaryjoin=lambda: and_(
-            MgmtLinkExternalUser.mgmt_user_id == MgmtUser.mgmt_user_id,
-            MgmtLinkExternalUser.external_user_type == ExternalUserType.LOGIN_GOV,
+            LinkExternalUser.user_id == User.user_id,
+            LinkExternalUser.external_user_type == ExternalUserType.LOGIN_GOV,
         ),
         uselist=False,
         viewonly=True,
     )
 
-    api_keys: Mapped[list[MgmtUserApiKey]] = relationship(
-        "MgmtUserApiKey",
-        back_populates="mgmt_user",
+    api_keys: Mapped[list[UserApiKey]] = relationship(
+        "UserApiKey",
+        back_populates="user",
         uselist=True,
         cascade="all, delete-orphan",
     )
@@ -54,12 +54,10 @@ class MgmtUser(BaseUser, GrantorSchemaTable, TimestampMixin):
         return None
 
 
-class MgmtLinkExternalUser(BaseLinkExternalUser, GrantorSchemaTable, TimestampMixin):
-    __tablename__ = "mgmt_link_external_user"
+class LinkExternalUser(BaseLinkExternalUser, GrantorSchemaTable, TimestampMixin):
+    __tablename__ = "link_external_user"
 
-    mgmt_link_external_user_id: Mapped[uuid.UUID] = mapped_column(
-        primary_key=True, default=uuid.uuid4
-    )
+    link_external_user_id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
 
     external_user_type: Mapped[ExternalUserType] = mapped_column(
         "external_user_type_id",
@@ -68,21 +66,19 @@ class MgmtLinkExternalUser(BaseLinkExternalUser, GrantorSchemaTable, TimestampMi
         index=True,
     )
 
-    mgmt_user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey(MgmtUser.mgmt_user_id), index=True)
-    mgmt_user: Mapped[MgmtUser] = relationship(MgmtUser)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey(User.user_id), index=True)
+    user: Mapped[User] = relationship(User)
 
     # Columns defined in base table
     # external_user_id
     # email
 
 
-class MgmtUserTokenSession(BaseUserTokenSession, GrantorSchemaTable, TimestampMixin):
-    __tablename__ = "mgmt_user_token_session"
+class UserTokenSession(BaseUserTokenSession, GrantorSchemaTable, TimestampMixin):
+    __tablename__ = "user_token_session"
 
-    mgmt_user_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey(MgmtUser.mgmt_user_id), primary_key=True
-    )
-    mgmt_user: Mapped[MgmtUser] = relationship(MgmtUser)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey(User.user_id), primary_key=True)
+    user: Mapped[User] = relationship(User)
 
     token_id: Mapped[uuid.UUID] = mapped_column(primary_key=True)
 
@@ -94,30 +90,30 @@ class MgmtUserTokenSession(BaseUserTokenSession, GrantorSchemaTable, TimestampMi
         """Get logging info"""
         return {
             "auth.token_id": self.token_id,
-            "auth.user_id": self.mgmt_user_id,
+            "auth.user_id": self.user_id,
         }
 
 
-class MgmtLoginGovState(BaseLoginGovState, GrantorSchemaTable, TimestampMixin):
+class LoginGovState(BaseLoginGovState, GrantorSchemaTable, TimestampMixin):
     """Table used to store temporary state during the OAuth login flow"""
 
-    __tablename__ = "mgmt_login_gov_state"
+    __tablename__ = "login_gov_state"
 
-    mgmt_login_gov_state_id: Mapped[uuid.UUID] = mapped_column(UUID, primary_key=True)
+    login_gov_state_id: Mapped[uuid.UUID] = mapped_column(UUID, primary_key=True)
 
     # nonce in base table
 
 
-class MgmtUserApiKey(BaseUserApiKey, GrantorSchemaTable, TimestampMixin):
+class UserApiKey(BaseUserApiKey, GrantorSchemaTable, TimestampMixin):
     """API Key table for user authentication to the API"""
 
-    __tablename__ = "mgmt_user_api_key"
+    __tablename__ = "user_api_key"
 
-    mgmt_api_key_id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    api_key_id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
 
-    mgmt_user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey(MgmtUser.mgmt_user_id), index=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey(User.user_id), index=True)
 
-    mgmt_user: Mapped[MgmtUser] = relationship(MgmtUser, back_populates="api_keys", uselist=False)
+    user: Mapped[User] = relationship(User, back_populates="api_keys", uselist=False)
 
     # Defined in base table
     # key_name
@@ -128,6 +124,6 @@ class MgmtUserApiKey(BaseUserApiKey, GrantorSchemaTable, TimestampMixin):
     def get_log_extra(self) -> dict[str, Any]:
         """Get logging info"""
         return {
-            "auth.api_key_id": self.mgmt_api_key_id,
-            "auth.user_id": self.mgmt_user_id,
+            "auth.api_key_id": self.api_key_id,
+            "auth.user_id": self.user_id,
         }

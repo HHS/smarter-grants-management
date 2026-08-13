@@ -1,6 +1,6 @@
 import pytest
 
-from src.constants.lookup_constants import MgmtWorkflowType
+from src.constants.lookup_constants import WorkflowType
 from src.workflow.registry.workflow_registry import WorkflowRegistry
 from src.workflow.state_machine.prototype_state_machine import (
     PrototypeStateMachine,
@@ -15,14 +15,14 @@ from tests.workflow.state_machine.test_state_machines import (
 
 def test_get_state_machine_for_workflow():
     config, state_machine_cls = WorkflowRegistry.get_state_machine_for_workflow_type(
-        MgmtWorkflowType.PROTOTYPE_WORKFLOW
+        WorkflowType.PROTOTYPE_WORKFLOW
     )
 
     assert state_machine_cls is PrototypeStateMachine
     assert config is prototype_state_machine_config
 
     config, state_machine_cls = WorkflowRegistry.get_state_machine_for_workflow_type(
-        MgmtWorkflowType.BASIC_TEST_WORKFLOW
+        WorkflowType.BASIC_TEST_WORKFLOW
     )
 
     assert state_machine_cls is BasicTestStateMachine

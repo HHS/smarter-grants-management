@@ -4,9 +4,9 @@ import uuid
 from grants_shared.adapters import db
 from sqlalchemy import select
 
-from src.constants.lookup_constants import MgmtWorkflowEventType, MgmtWorkflowType
-from src.db.models.user_models import MgmtUser
-from src.db.models.workflow_models import MgmtWorkflow
+from src.constants.lookup_constants import WorkflowEventType, WorkflowType
+from src.db.models.user_models import User
+from src.db.models.workflow_models import Workflow
 from src.workflow.base_state_machine import BaseStateMachine
 from src.workflow.event.sqs_message_container import SqsMessageContainer
 from src.workflow.event.state_machine_event import StateMachineEvent
@@ -119,7 +119,7 @@ class EventHandler:
         easily use with the state machine. Also handles validating
         and fetching any DB models necessary for processing the event.
         """
-        if self.event.event_type == MgmtWorkflowEventType.START_WORKFLOW:
+        if self.event.event_type == WorkflowEventType.START_WORKFLOW:
             return self._pre_process_new_workflow_event()
 
         # PROCESS_WORKFLOW event type
@@ -159,20 +159,20 @@ class EventHandler:
         # resource points at a real row of the expected kind.
         get_workflow_entity(
             self.db_session,
-            mgmt_resource_id=context.mgmt_resource_id,
+            resource_id=context.resource_id,
             config=config,
         )
 
         validate_no_concurrent_workflow(
             self.db_session,
-            mgmt_resource_id=context.mgmt_resource_id,
+            resource_id=context.resource_id,
             config=config,
         )
 
-        workflow = MgmtWorkflow(
-            mgmt_workflow_id=uuid.uuid4(),
+        workflow = Workflow(
+            workflow_id=uuid.uuid4(),
             workflow_type=context.workflow_type,
-            mgmt_resource_id=context.mgmt_resource_id,
+            resource_id=context.resource_id,
             # When initializing a workflow, grab the current state from
             # the state machine class. Note the .value is needed as it
             # otherwise won't realize the StrEnum is also a string and error.
@@ -214,7 +214,7 @@ class EventHandler:
             raise InvalidEventError("Process workflow event has a null process workflow context")
 
         workflow = get_and_validate_workflow(
-            self.db_session, self.event.process_workflow_context.mgmt_workflow_id, log_extra
+            self.db_session, self.event.process_workflow_context.workflow_id, log_extra
         )
 
         config, state_machine_cls = self._get_state_machine_for_workflow_type(
@@ -233,7 +233,7 @@ class EventHandler:
         )
 
     def _get_state_machine_for_workflow_type(
-        self, workflow_type: MgmtWorkflowType
+        self, workflow_type: WorkflowType
     ) -> tuple[WorkflowConfig, type[BaseStateMachine]]:
         try:
             return WorkflowRegistry.get_state_machine_for_workflow_type(workflow_type)
@@ -243,13 +243,11 @@ class EventHandler:
             )
             raise  # reraise after logging
 
-    def _get_user(self) -> MgmtUser:
+    def _get_user(self) -> User:
         """Get the user associated with the workflow event.
         Error if the user doesn't exist.
         """
-        user = self.db_session.scalar(
-            select(MgmtUser).where(MgmtUser.mgmt_user_id == self.event.acting_mgmt_user_id)
-        )
+        user = self.db_session.scalar(select(User).where(User.user_id == self.event.acting_user_id))
 
         if user is None:
             logger.warning(

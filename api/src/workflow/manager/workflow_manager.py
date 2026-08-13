@@ -14,8 +14,8 @@ from grants_shared.util import datetime_util
 from pydantic import ValidationError
 from pydantic_settings import SettingsConfigDict
 
-from src.constants.lookup_constants import MgmtWorkflowEventProcessingResult
-from src.db.models.workflow_models import MgmtWorkflowEventHistory
+from src.constants.lookup_constants import WorkflowEventProcessingResult
+from src.db.models.workflow_models import WorkflowEventHistory
 from src.task.sqs_processor import BaseSqsProcessor, SqsProcessorConfig
 from src.workflow.event.sqs_message_container import SqsMessageContainer
 from src.workflow.event.workflow_event import WorkflowEvent
@@ -173,17 +173,17 @@ class WorkflowManager(BaseSqsProcessor):
                         "Workflow event handler exceeded timeout",
                         extra=sqs_container.get_log_extra() | {"timeout_sec": timeout},
                     )
-                    event_result = MgmtWorkflowEventProcessingResult.GENERAL_ERROR
+                    event_result = WorkflowEventProcessingResult.GENERAL_ERROR
                 except Exception:
                     logger.exception(
                         "Failed to handle current event",
                         extra=sqs_container.get_log_extra(),
                     )
-                    event_result = MgmtWorkflowEventProcessingResult.GENERAL_ERROR
+                    event_result = WorkflowEventProcessingResult.GENERAL_ERROR
 
                 if event_result in [
-                    MgmtWorkflowEventProcessingResult.SUCCESS,
-                    MgmtWorkflowEventProcessingResult.NON_RETRYABLE_ERROR,
+                    WorkflowEventProcessingResult.SUCCESS,
+                    WorkflowEventProcessingResult.NON_RETRYABLE_ERROR,
                 ]:
                     messages_to_delete.append(sqs_container.receipt_handle)
                 else:
@@ -202,10 +202,10 @@ class WorkflowManager(BaseSqsProcessor):
         for message in messages:
             try:
                 event = self.parse_event(message)
-                history_event = MgmtWorkflowEventHistory(
+                history_event = WorkflowEventHistory(
                     # The event ID the caller generated is the primary key, so the
                     # ID handed back by the event API is what finds this row later.
-                    mgmt_workflow_event_history_id=event.event_id,
+                    workflow_event_history_id=event.event_id,
                     # Round-trip through JSON so UUIDs/datetimes land in the JSONB
                     # column as primitives rather than a serialized string.
                     event_data=json.loads(event.model_dump_json()),
@@ -241,7 +241,7 @@ class WorkflowManager(BaseSqsProcessor):
 
 def _handle_event_in_thread(
     app: Flask, sqs_container: SqsMessageContainer
-) -> MgmtWorkflowEventProcessingResult:
+) -> WorkflowEventProcessingResult:
     # handle_event's @with_db_session decorator pulls the DB client off
     # current_app, which is per-thread. Push the app context here so the
     # decorator can find it from inside the worker thread.
@@ -252,7 +252,7 @@ def _handle_event_in_thread(
 @flask_db.with_db_session()
 def handle_event(
     db_session: db.Session, sqs_container: SqsMessageContainer
-) -> MgmtWorkflowEventProcessingResult:
+) -> WorkflowEventProcessingResult:
     """Handle an SQS event"""
     with workflow_transaction(sqs_container.workflow_event.event_type):
         logger.info(
@@ -265,7 +265,7 @@ def handle_event(
 
 def _handle_event(
     db_session: db.Session, sqs_container: SqsMessageContainer
-) -> MgmtWorkflowEventProcessingResult:
+) -> WorkflowEventProcessingResult:
     """
     Handle the SQS event:
 
@@ -277,7 +277,7 @@ def _handle_event(
     """
 
     log_extra = sqs_container.get_log_extra()
-    result = MgmtWorkflowEventProcessingResult.SUCCESS
+    result = WorkflowEventProcessingResult.SUCCESS
     error: Exception | None = None
 
     try:
@@ -297,7 +297,7 @@ def _handle_event(
             exc_info=True,
             extra=log_extra,
         )
-        result = MgmtWorkflowEventProcessingResult.NON_RETRYABLE_ERROR
+        result = WorkflowEventProcessingResult.NON_RETRYABLE_ERROR
         error = e
 
     except RetryableWorkflowError as e:
@@ -306,13 +306,13 @@ def _handle_event(
             exc_info=True,
             extra=log_extra,
         )
-        result = MgmtWorkflowEventProcessingResult.RETRYABLE_ERROR
+        result = WorkflowEventProcessingResult.RETRYABLE_ERROR
         error = e
 
     except Exception as e:
         # log specific error for any other exception
         logger.exception("Unexpected error processing workflow event", extra=log_extra)
-        result = MgmtWorkflowEventProcessingResult.GENERAL_ERROR
+        result = WorkflowEventProcessingResult.GENERAL_ERROR
         error = e
 
     # Add whatever to the log extra that was added to the metric context

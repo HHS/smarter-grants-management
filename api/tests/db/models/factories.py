@@ -14,13 +14,13 @@ import src.db.models.resource_models as resource_models
 import src.db.models.user_models as user_models
 import src.db.models.workflow_models as workflow_models
 from src.constants.lookup_constants import (
+    ApprovalResponseType,
+    ApprovalType,
     ExternalUserType,
     GrantorOrganizationType,
-    MgmtApprovalResponseType,
-    MgmtApprovalType,
-    MgmtResourceType,
-    MgmtUserType,
-    MgmtWorkflowType,
+    ResourceType,
+    UserType,
+    WorkflowType,
 )
 
 
@@ -216,43 +216,43 @@ class BaseFactory(factory.alchemy.SQLAlchemyModelFactory):
 ###################
 
 
-class MgmtUserFactory(BaseFactory):
+class UserFactory(BaseFactory):
     class Meta:
-        model = user_models.MgmtUser
+        model = user_models.User
 
-    mgmt_user_id = Generators.UuidObj
-    user_type = MgmtUserType.STANDARD
+    user_id = Generators.UuidObj
+    user_type = UserType.STANDARD
 
 
-class MgmtLinkExternalUserFactory(BaseFactory):
+class LinkExternalUserFactory(BaseFactory):
     class Meta:
-        model = user_models.MgmtLinkExternalUser
+        model = user_models.LinkExternalUser
 
-    mgmt_link_external_user_id = Generators.UuidObj
+    link_external_user_id = Generators.UuidObj
     external_user_id = Generators.UuidObj
 
-    mgmt_user = factory.SubFactory(MgmtUserFactory)
-    mgmt_user_id = factory.LazyAttribute(lambda s: s.mgmt_user.mgmt_user_id)
+    user = factory.SubFactory(UserFactory)
+    user_id = factory.LazyAttribute(lambda s: s.user.user_id)
 
     external_user_type = factory.fuzzy.FuzzyChoice(ExternalUserType)
 
     email = factory.Faker("email")
 
 
-class MgmtLoginGovStateFactory(BaseFactory):
+class LoginGovStateFactory(BaseFactory):
     class Meta:
-        model = user_models.MgmtLoginGovState
+        model = user_models.LoginGovState
 
-    mgmt_login_gov_state_id = Generators.UuidObj
+    login_gov_state_id = Generators.UuidObj
     nonce = Generators.UuidObj
 
 
-class MgmtUserTokenSessionFactory(BaseFactory):
+class UserTokenSessionFactory(BaseFactory):
     class Meta:
-        model = user_models.MgmtUserTokenSession
+        model = user_models.UserTokenSession
 
-    mgmt_user = factory.SubFactory(MgmtUserFactory)
-    mgmt_user_id = factory.LazyAttribute(lambda s: s.mgmt_user.mgmt_user_id)
+    user = factory.SubFactory(UserFactory)
+    user_id = factory.LazyAttribute(lambda s: s.user.user_id)
 
     token_id = Generators.UuidObj
 
@@ -261,11 +261,11 @@ class MgmtUserTokenSessionFactory(BaseFactory):
     is_valid = True
 
 
-class MgmtInternalResourceFactory(BaseFactory):
+class InternalResourceFactory(BaseFactory):
     class Meta:
-        model = resource_models.MgmtInternalResource
+        model = resource_models.InternalResource
 
-    mgmt_internal_resource_id = Generators.UuidObj
+    internal_resource_id = Generators.UuidObj
     internal_resource_name = "My internal resource"
 
 
@@ -361,60 +361,58 @@ class SecondaryProgramPartnerFactory(BaseFactory):
     program_id = factory.LazyAttribute(lambda s: s.program.program_id)
 
 
-class MgmtRoleFactory(BaseFactory):
+class RoleFactory(BaseFactory):
     class Meta:
-        model = resource_models.MgmtRole
+        model = resource_models.Role
 
-    mgmt_role_id = Generators.UuidObj
+    role_id = Generators.UuidObj
     role_name = factory.Faker("sentence", nb_words=3)
     is_core = False
 
-    resource_types = [MgmtResourceType.INTERNAL]
+    resource_types = [ResourceType.INTERNAL]
     privileges = []
 
 
-class MgmtResourceFactory(BaseFactory):
+class ResourceFactory(BaseFactory):
     class Meta:
-        model = resource_models.MgmtResource
+        model = resource_models.Resource
 
-    mgmt_resource_id = Generators.UuidObj
+    resource_id = Generators.UuidObj
 
-    mgmt_resource_type = factory.fuzzy.FuzzyChoice(MgmtResourceType)
+    resource_type = factory.fuzzy.FuzzyChoice(ResourceType)
 
 
-class MgmtResourceUserFactory(BaseFactory):
+class ResourceUserFactory(BaseFactory):
     class Meta:
-        model = resource_models.MgmtResourceUser
+        model = resource_models.ResourceUser
 
-    mgmt_resource_user_id = Generators.UuidObj
+    resource_user_id = Generators.UuidObj
 
-    mgmt_resource = factory.SubFactory(MgmtResourceFactory)
-    mgmt_resource_id = factory.LazyAttribute(lambda r: r.mgmt_resource.mgmt_resource_id)
+    resource = factory.SubFactory(ResourceFactory)
+    resource_id = factory.LazyAttribute(lambda r: r.resource.resource_id)
 
-    mgmt_user = factory.SubFactory(MgmtUserFactory)
-    mgmt_user_id = factory.LazyAttribute(lambda r: r.mgmt_user.mgmt_user_id)
+    user = factory.SubFactory(UserFactory)
+    user_id = factory.LazyAttribute(lambda r: r.user.user_id)
 
 
-class MgmtResourceUserRoleFactory(BaseFactory):
+class ResourceUserRoleFactory(BaseFactory):
     class Meta:
-        model = resource_models.MgmtResourceUserRole
+        model = resource_models.ResourceUserRole
 
-    mgmt_resource_user = factory.SubFactory(MgmtResourceUserFactory)
-    mgmt_resource_user_id = factory.LazyAttribute(
-        lambda r: r.mgmt_resource_user.mgmt_resource_user_id
-    )
+    resource_user = factory.SubFactory(ResourceUserFactory)
+    resource_user_id = factory.LazyAttribute(lambda r: r.resource_user.resource_user_id)
 
-    mgmt_role = factory.SubFactory(MgmtRoleFactory)
-    mgmt_role_id = factory.LazyAttribute(lambda r: r.mgmt_role.mgmt_role_id)
+    role = factory.SubFactory(RoleFactory)
+    role_id = factory.LazyAttribute(lambda r: r.role.role_id)
 
 
-class MgmtUserApiKeyFactory(BaseFactory):
+class UserApiKeyFactory(BaseFactory):
     class Meta:
-        model = user_models.MgmtUserApiKey
+        model = user_models.UserApiKey
 
-    mgmt_api_key_id = Generators.UuidObj
-    mgmt_user = factory.SubFactory(MgmtUserFactory)
-    mgmt_user_id = factory.LazyAttribute(lambda s: s.mgmt_user.mgmt_user_id)
+    api_key_id = Generators.UuidObj
+    user = factory.SubFactory(UserFactory)
+    user_id = factory.LazyAttribute(lambda s: s.user.user_id)
 
     key_name = factory.Faker("sentence", nb_words=3)
     key_id = factory.Sequence(lambda n: f"aws-api-gateway-key-{n:08d}")
@@ -442,7 +440,7 @@ class MgmtUserApiKeyFactory(BaseFactory):
 ###################
 
 
-class MgmtWorkflowFactory(BaseFactory):
+class WorkflowFactory(BaseFactory):
     """
     Base factory for workflows - abstract because every workflow points at some
     entity's resource, and which entity that is depends on the workflow.
@@ -457,74 +455,70 @@ class MgmtWorkflowFactory(BaseFactory):
         # child, and reset_sequence() on the child raises (see test_seed_local_db).
         abstract = True
 
-    mgmt_workflow_id = Generators.UuidObj
-    workflow_type = MgmtWorkflowType.BASIC_TEST_WORKFLOW
+    workflow_id = Generators.UuidObj
+    workflow_type = WorkflowType.BASIC_TEST_WORKFLOW
     current_workflow_state = "start"
     is_active = True
 
 
-class ProgramWorkflowFactory(MgmtWorkflowFactory):
+class ProgramWorkflowFactory(WorkflowFactory):
     """A workflow attached to a program. Pass `program=` to use an existing one."""
 
     class Meta:
-        model = workflow_models.MgmtWorkflow
+        model = workflow_models.Workflow
         # The program is what we hang the workflow off of, but the workflow
         # itself only stores the resource ID, so don't pass it to the model.
         exclude = ("program",)
 
     program = factory.SubFactory(ProgramFactory)
-    mgmt_resource_id = factory.LazyAttribute(lambda w: w.program.get_resource_id())
+    resource_id = factory.LazyAttribute(lambda w: w.program.get_resource_id())
 
 
-class MgmtWorkflowEventHistoryFactory(BaseFactory):
+class WorkflowEventHistoryFactory(BaseFactory):
     class Meta:
-        model = workflow_models.MgmtWorkflowEventHistory
+        model = workflow_models.WorkflowEventHistory
 
-    mgmt_workflow_event_history_id = Generators.UuidObj
+    workflow_event_history_id = Generators.UuidObj
     event_data = {}
     sent_at = Generators.UtcNow
     is_successfully_processed = True
 
 
-class MgmtWorkflowAuditFactory(BaseFactory):
+class WorkflowAuditFactory(BaseFactory):
     class Meta:
-        model = workflow_models.MgmtWorkflowAudit
+        model = workflow_models.WorkflowAudit
 
-    mgmt_workflow_audit_id = Generators.UuidObj
+    workflow_audit_id = Generators.UuidObj
 
     workflow = factory.SubFactory(ProgramWorkflowFactory)
-    mgmt_workflow_id = factory.LazyAttribute(lambda a: a.workflow.mgmt_workflow_id)
+    workflow_id = factory.LazyAttribute(lambda a: a.workflow.workflow_id)
 
-    acting_user = factory.SubFactory(MgmtUserFactory)
-    acting_mgmt_user_id = factory.LazyAttribute(lambda a: a.acting_user.mgmt_user_id)
+    acting_user = factory.SubFactory(UserFactory)
+    acting_user_id = factory.LazyAttribute(lambda a: a.acting_user.user_id)
 
     transition_event = "process"
     source_state = "start"
     target_state = "end"
 
-    event = factory.SubFactory(MgmtWorkflowEventHistoryFactory)
-    mgmt_workflow_event_history_id = factory.LazyAttribute(
-        lambda a: a.event.mgmt_workflow_event_history_id
-    )
+    event = factory.SubFactory(WorkflowEventHistoryFactory)
+    workflow_event_history_id = factory.LazyAttribute(lambda a: a.event.workflow_event_history_id)
 
 
-class MgmtWorkflowApprovalFactory(BaseFactory):
+class WorkflowApprovalFactory(BaseFactory):
     class Meta:
-        model = workflow_models.MgmtWorkflowApproval
+        model = workflow_models.WorkflowApproval
 
-    mgmt_workflow_approval_id = Generators.UuidObj
+    workflow_approval_id = Generators.UuidObj
 
     workflow = factory.SubFactory(ProgramWorkflowFactory)
-    mgmt_workflow_id = factory.LazyAttribute(lambda a: a.workflow.mgmt_workflow_id)
+    workflow_id = factory.LazyAttribute(lambda a: a.workflow.workflow_id)
 
-    approving_user = factory.SubFactory(MgmtUserFactory)
-    approving_mgmt_user_id = factory.LazyAttribute(lambda a: a.approving_user.mgmt_user_id)
+    approving_user = factory.SubFactory(UserFactory)
+    approving_user_id = factory.LazyAttribute(lambda a: a.approving_user.user_id)
 
-    approval_type = factory.fuzzy.FuzzyChoice(MgmtApprovalType)
+    approval_type = factory.fuzzy.FuzzyChoice(ApprovalType)
     is_still_valid = True
-    approval_response_type = MgmtApprovalResponseType.APPROVED
+    approval_response_type = ApprovalResponseType.APPROVED
 
-    event = factory.SubFactory(MgmtWorkflowEventHistoryFactory)
-    mgmt_workflow_event_history_id = factory.LazyAttribute(
-        lambda a: a.event.mgmt_workflow_event_history_id
-    )
+    event = factory.SubFactory(WorkflowEventHistoryFactory)
+    workflow_event_history_id = factory.LazyAttribute(lambda a: a.event.workflow_event_history_id)

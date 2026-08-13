@@ -10,14 +10,14 @@ from grants_shared.adapters import db
 from grants_shared.adapters.oauth.oauth_client_models import OauthTokenResponse
 from grants_shared.auth.login_gov_jwt_auth import get_config
 
-from src.constants.lookup_constants import MgmtPrivilege
-from src.db.models.resource_models import AbstractResourceTableMixin, MgmtRole
-from src.db.models.user_models import MgmtUser
+from src.constants.lookup_constants import Privilege
+from src.db.models.resource_models import AbstractResourceTableMixin, Role
+from src.db.models.user_models import User
 from tests.db.models.factories import (
-    MgmtResourceUserFactory,
-    MgmtResourceUserRoleFactory,
-    MgmtRoleFactory,
-    MgmtUserFactory,
+    ResourceUserFactory,
+    ResourceUserRoleFactory,
+    RoleFactory,
+    UserFactory,
 )
 
 
@@ -166,13 +166,13 @@ def mock_oauth_logout_endpoint(app):
 def setup_user_with_roles(
     db_session: db.Session,
     resources: list[AbstractResourceTableMixin],
-    user: MgmtUser | None = None,
+    user: User | None = None,
     *,
-    roles: list[MgmtRole] | None = None,
-    privileges: list[MgmtPrivilege] | None = None,
+    roles: list[Role] | None = None,
+    privileges: list[Privilege] | None = None,
 ):
     if user is None:
-        user = MgmtUserFactory.create()
+        user = UserFactory.create()
 
     if roles is None and privileges is None:
         raise Exception("One of roles or privileges is required for setup_user_with_roles")
@@ -183,16 +183,16 @@ def setup_user_with_roles(
 
     # If privileges were passed in, use those to make a role
     if privileges is not None:
-        roles = [MgmtRoleFactory.create(privileges=privileges, resource_types=resource_types)]
+        roles = [RoleFactory.create(privileges=privileges, resource_types=resource_types)]
 
     # Create a connection to every resource passed in
     for resource in resources:
 
-        resource_user = MgmtResourceUserFactory.create(
-            mgmt_resource=resource.resource, mgmt_user=user, resource_user_roles=[]
+        resource_user = ResourceUserFactory.create(
+            resource=resource.resource, user=user, resource_user_roles=[]
         )
         for role in roles:
-            MgmtResourceUserRoleFactory.create(mgmt_resource_user=resource_user, mgmt_role=role)
+            ResourceUserRoleFactory.create(resource_user=resource_user, role=role)
 
     # Make any subsequent calls with these objects go back to the DB.
     db_session.expire_all()
