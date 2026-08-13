@@ -175,7 +175,7 @@ class SimplerGrantsClient(BaseSimplerGrantsClient):
                 status_code=response.status_code,
                 errors=errors,
             )
-        except (ValueError, KeyError, ValidationError):
+        except ValueError, KeyError, ValidationError:
             # If we can't parse the error response, use text or reason
             # priority: text (actual response body) > reason (HTTP status) > "Unknown error" (last fall back message)
             message = response.text or response.reason or "Unknown error"
