@@ -4,10 +4,10 @@ These cover the state machine itself, so a change to its shape shows up here rat
 than as a confusing failure somewhere in the engine tests that depend on it.
 """
 
-from src.constants.lookup_constants import MgmtResourceType, MgmtWorkflowType
+from src.constants.lookup_constants import ResourceType, WorkflowType
 from src.workflow.handler.event_handler import EventHandler
 from src.workflow.state_persistence.program_persistence_model import ProgramPersistenceModel
-from tests.db.models.factories import MgmtUserFactory
+from tests.db.models.factories import UserFactory
 from tests.workflow.state_machine.test_state_machines import (
     BasicState,
     BasicTestStateMachine,
@@ -17,9 +17,9 @@ from tests.workflow.workflow_test_util import build_start_workflow_event, send_p
 
 
 def test_basic_test_workflow_config():
-    assert basic_test_workflow_config.workflow_type == MgmtWorkflowType.BASIC_TEST_WORKFLOW
+    assert basic_test_workflow_config.workflow_type == WorkflowType.BASIC_TEST_WORKFLOW
     assert basic_test_workflow_config.persistence_model_cls is ProgramPersistenceModel
-    assert basic_test_workflow_config.resource_type == MgmtResourceType.PROGRAM
+    assert basic_test_workflow_config.resource_type == ResourceType.PROGRAM
     # Disallowed here so the engine's concurrency guard has something to test against
     assert basic_test_workflow_config.allow_concurrent_workflow_for_resource is False
 
@@ -39,10 +39,10 @@ def test_basic_test_state_machine_shape():
 
 def test_basic_test_workflow_runs_start_to_finish(db_session, enable_factory_create, program):
     """The happy path: a workflow starts, advances, and deactivates on reaching the end."""
-    user = MgmtUserFactory.create()
+    user = UserFactory.create()
 
     sqs_container = build_start_workflow_event(
-        workflow_type=MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+        workflow_type=WorkflowType.BASIC_TEST_WORKFLOW,
         user=user,
         entity=program,
     )
@@ -54,7 +54,7 @@ def test_basic_test_workflow_runs_start_to_finish(db_session, enable_factory_cre
     state_machine = send_process_event(
         db_session,
         event_to_send="middle_to_end",
-        mgmt_workflow_id=state_machine.workflow.mgmt_workflow_id,
+        workflow_id=state_machine.workflow.workflow_id,
         user=user,
         expected_state=BasicState.END,
         expected_is_active=False,

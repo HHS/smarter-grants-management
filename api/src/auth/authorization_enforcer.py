@@ -8,17 +8,17 @@ from grants_shared.api.route_utils import raise_flask_error
 from sqlalchemy import Select, func, select
 from sqlalchemy.orm import selectinload
 
-from src.constants.lookup_constants import MgmtPrivilege, MgmtResourceType, ResourceInheritance
+from src.constants.lookup_constants import Privilege, ResourceInheritance, ResourceType
 from src.db.models.grantor_organization_models import GrantorOrganization, Partner, Program
 from src.db.models.resource_models import (
     AbstractResourceTableMixin,
-    MgmtInternalResource,
-    MgmtLinkRolePrivilege,
-    MgmtResourceUser,
-    MgmtResourceUserRole,
-    MgmtRole,
+    InternalResource,
+    LinkRolePrivilege,
+    ResourceUser,
+    ResourceUserRole,
+    Role,
 )
-from src.db.models.user_models import MgmtUser
+from src.db.models.user_models import User
 
 logger = logging.getLogger(__name__)
 
@@ -31,8 +31,8 @@ class AuthorizationEnforcer:
 
     def can_access(
         self,
-        user: MgmtUser,
-        required_privileges: MgmtPrivilege | set[MgmtPrivilege],
+        user: User,
+        required_privileges: Privilege | set[Privilege],
         resource: AbstractResourceTableMixin,
     ) -> bool:
         """
@@ -60,16 +60,16 @@ class AuthorizationEnforcer:
 
     def _can_access(
         self,
-        user: MgmtUser,
-        required_privileges: MgmtPrivilege | set[MgmtPrivilege],
+        user: User,
+        required_privileges: Privilege | set[Privilege],
         resource: AbstractResourceTableMixin,
     ) -> bool:
         """Internal implementation of can_access, call that function directly instead."""
-        if isinstance(required_privileges, MgmtPrivilege):
+        if isinstance(required_privileges, Privilege):
             required_privileges = {required_privileges}
 
         self.log_context |= {
-            "user_id": user.mgmt_user_id,
+            "user_id": user.user_id,
             "resource_type": resource.get_resource_type(),
             "required_privileges": "|".join(required_privileges),
         }
@@ -79,7 +79,7 @@ class AuthorizationEnforcer:
         # This way we both have a convenient set of all privileges a user
         # has for the resource, but also can easily see which roles granted them
         # those privileges.
-        privilege_to_role: dict[MgmtPrivilege, list[MgmtRole]] = defaultdict(list)
+        privilege_to_role: dict[Privilege, list[Role]] = defaultdict(list)
         for role in roles:
             for privilege in role.privileges:
                 privilege_to_role[privilege].append(role)
@@ -98,7 +98,7 @@ class AuthorizationEnforcer:
             for privilege in required_privileges:
                 authorizing_roles = privilege_to_role.get(privilege, [])
                 for authorizing_role in authorizing_roles:
-                    authorizing_role_ids.add(str(authorizing_role.mgmt_role_id))
+                    authorizing_role_ids.add(str(authorizing_role.role_id))
                     authorizing_role_names.add(authorizing_role.role_name)
 
             self.log_context["authorizing_role_ids"] = "|".join(authorizing_role_ids)
@@ -111,8 +111,8 @@ class AuthorizationEnforcer:
 
     def verify_access(
         self,
-        user: MgmtUser,
-        required_privileges: MgmtPrivilege | set[MgmtPrivilege],
+        user: User,
+        required_privileges: Privilege | set[Privilege],
         resource: AbstractResourceTableMixin,
     ) -> None:
         """Wrapper function around can_access that handles raising a 403 if the user does not have access."""
@@ -122,8 +122,8 @@ class AuthorizationEnforcer:
             raise_flask_error(403, "Forbidden")
 
     def get_user_roles_for_resource(
-        self, user: MgmtUser, resource: AbstractResourceTableMixin
-    ) -> list[MgmtRole]:
+        self, user: User, resource: AbstractResourceTableMixin
+    ) -> list[Role]:
         """
         Get all roles of the given user that are relevant to the resource.
 
@@ -140,7 +140,7 @@ class AuthorizationEnforcer:
 
         resource_ids = []
 
-        relevant_resource_map: dict[MgmtResourceType, list[str]] = defaultdict(list)
+        relevant_resource_map: dict[ResourceType, list[str]] = defaultdict(list)
         for resource in resources:
             resource_ids.append(resource.get_resource_id())
             relevant_resource_map[resource.get_resource_type()].append(
@@ -155,9 +155,9 @@ class AuthorizationEnforcer:
 
         # Grab all resource user connections where either one of the above resources
         # is present AND the user is the one with that role.
-        stmt = select(MgmtResourceUser).where(
-            MgmtResourceUser.mgmt_resource_id.in_(resource_ids),
-            MgmtResourceUser.mgmt_user_id == user.mgmt_user_id,
+        stmt = select(ResourceUser).where(
+            ResourceUser.resource_id.in_(resource_ids),
+            ResourceUser.user_id == user.user_id,
         )
 
         resource_users = self.db_session.execute(stmt).scalars()
@@ -189,7 +189,7 @@ class AuthorizationEnforcer:
         if isinstance(resource, Program):
             return self._get_resources_for_program(resource)
 
-        if isinstance(resource, MgmtInternalResource):
+        if isinstance(resource, InternalResource):
             return self._get_resources_for_internal_resource(resource)
 
         error_message = f"No configuration found for determining relevant resources for type {resource.__class__.__name__}"
@@ -253,7 +253,7 @@ class AuthorizationEnforcer:
         return resources
 
     def _get_resources_for_internal_resource(
-        self, internal_resource: MgmtInternalResource
+        self, internal_resource: InternalResource
     ) -> list[AbstractResourceTableMixin]:
         """
         Get all relevant resources for an internal resource - which is just the internal resource itself
@@ -292,7 +292,7 @@ class AuthorizationEnforcer:
     def get_users_for_resource_query(
         self,
         resources: list[AbstractResourceTableMixin],
-        required_privileges: set[MgmtPrivilege] | None = None,
+        required_privileges: set[Privilege] | None = None,
     ) -> Select:
         """Build the query for users holding roles on any of the given resources.
 
@@ -300,14 +300,14 @@ class AuthorizationEnforcer:
         a decision get_resources_for_user_lookup makes - notably, a program has to be
         widened to its offices because no user is ever attached to a program directly.
         Requiring the objects means a caller holding only an ID (a workflow's
-        mgmt_resource_id, say) has to go through that resolution rather than passing the
+        resource_id, say) has to go through that resolution rather than passing the
         raw ID here and silently matching nobody.
 
         Returns the statement rather than the rows so callers can add their own sorting,
         pagination, and filters - the endpoint paginates, the workflow approval emails
         want every recipient. A caller that needs to sort or filter on the user's email
-        has to join MgmtLinkExternalUser itself, since the email lives there rather than
-        on MgmtUser. The link is eager-loaded either way so reading ``user.email`` off
+        has to join LinkExternalUser itself, since the email lives there rather than
+        on User. The link is eager-loaded either way so reading ``user.email`` off
         the results doesn't fire a query per user.
 
         Note that users without a login.gov link are included, with a null email -
@@ -319,19 +319,18 @@ class AuthorizationEnforcer:
         """
         resource_ids = [resource.get_resource_id() for resource in resources]
 
-        stmt = select(MgmtUser).options(selectinload(MgmtUser.linked_login_gov_external_user))
+        stmt = select(User).options(selectinload(User.linked_login_gov_external_user))
 
         has_role_on_resource = (
             select(1)
-            .select_from(MgmtResourceUser)
+            .select_from(ResourceUser)
             .join(
-                MgmtResourceUserRole,
-                MgmtResourceUserRole.mgmt_resource_user_id
-                == MgmtResourceUser.mgmt_resource_user_id,
+                ResourceUserRole,
+                ResourceUserRole.resource_user_id == ResourceUser.resource_user_id,
             )
             .where(
-                MgmtResourceUser.mgmt_user_id == MgmtUser.mgmt_user_id,
-                MgmtResourceUser.mgmt_resource_id.in_(resource_ids),
+                ResourceUser.user_id == User.user_id,
+                ResourceUser.resource_id.in_(resource_ids),
             )
             .exists()
         )
@@ -342,21 +341,20 @@ class AuthorizationEnforcer:
             # they have on these resources. Distinct is what makes holding the same
             # privilege via two roles count once rather than satisfying the check twice.
             held_required_privilege_count = (
-                select(func.count(func.distinct(MgmtLinkRolePrivilege.mgmt_privilege)))
-                .select_from(MgmtResourceUser)
+                select(func.count(func.distinct(LinkRolePrivilege.privilege)))
+                .select_from(ResourceUser)
                 .join(
-                    MgmtResourceUserRole,
-                    MgmtResourceUserRole.mgmt_resource_user_id
-                    == MgmtResourceUser.mgmt_resource_user_id,
+                    ResourceUserRole,
+                    ResourceUserRole.resource_user_id == ResourceUser.resource_user_id,
                 )
                 .join(
-                    MgmtLinkRolePrivilege,
-                    MgmtLinkRolePrivilege.mgmt_role_id == MgmtResourceUserRole.mgmt_role_id,
+                    LinkRolePrivilege,
+                    LinkRolePrivilege.role_id == ResourceUserRole.role_id,
                 )
                 .where(
-                    MgmtResourceUser.mgmt_user_id == MgmtUser.mgmt_user_id,
-                    MgmtResourceUser.mgmt_resource_id.in_(resource_ids),
-                    MgmtLinkRolePrivilege.mgmt_privilege.in_(required_privileges),
+                    ResourceUser.user_id == User.user_id,
+                    ResourceUser.resource_id.in_(resource_ids),
+                    LinkRolePrivilege.privilege.in_(required_privileges),
                 )
                 .scalar_subquery()
             )
@@ -368,8 +366,8 @@ class AuthorizationEnforcer:
         self,
         resource: AbstractResourceTableMixin,
         inheritance: ResourceInheritance = ResourceInheritance.DIRECT,
-        required_privileges: set[MgmtPrivilege] | None = None,
-    ) -> list[MgmtUser]:
+        required_privileges: set[Privilege] | None = None,
+    ) -> list[User]:
         """Get every user holding the required privileges on a resource.
 
         The convenience wrapper over get_users_for_resource_query for callers that want
@@ -382,7 +380,7 @@ class AuthorizationEnforcer:
 
     def get_roles_by_user_for_resources(
         self, user_ids: list[uuid.UUID], resource_ids: list[uuid.UUID]
-    ) -> dict[uuid.UUID, list[tuple[uuid.UUID, MgmtRole]]]:
+    ) -> dict[uuid.UUID, list[tuple[uuid.UUID, Role]]]:
         """Get each user's roles on the given resources, keyed by user ID.
 
         Each entry pairs the resource that granted the role with the role itself, since
@@ -390,17 +388,15 @@ class AuthorizationEnforcer:
         callers need to report which one it came from.
         """
         resource_users = self.db_session.execute(
-            select(MgmtResourceUser).where(
-                MgmtResourceUser.mgmt_user_id.in_(user_ids),
-                MgmtResourceUser.mgmt_resource_id.in_(resource_ids),
+            select(ResourceUser).where(
+                ResourceUser.user_id.in_(user_ids),
+                ResourceUser.resource_id.in_(resource_ids),
             )
         ).scalars()
 
-        roles_by_user: dict[uuid.UUID, list[tuple[uuid.UUID, MgmtRole]]] = defaultdict(list)
+        roles_by_user: dict[uuid.UUID, list[tuple[uuid.UUID, Role]]] = defaultdict(list)
         for resource_user in resource_users:
             for role in resource_user.roles:
-                roles_by_user[resource_user.mgmt_user_id].append(
-                    (resource_user.mgmt_resource_id, role)
-                )
+                roles_by_user[resource_user.user_id].append((resource_user.resource_id, role))
 
         return dict(roles_by_user)

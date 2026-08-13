@@ -6,10 +6,10 @@ import pytest
 from sqlalchemy import func, select
 
 import src.db.models as db_models
-from src.constants.lookup_constants import MgmtPrivilege, MgmtResourceType
+from src.constants.lookup_constants import Privilege, ResourceType
 from src.constants.static_role_values import CORE_ROLES
 from src.db.models.lookup.sync_lookup_values import sync_lookup_values
-from src.db.models.resource_models import MgmtRole
+from src.db.models.resource_models import Role
 from src.util.role_util import build_role
 from tests.test_utils import db_testing
 
@@ -36,13 +36,13 @@ def test_sync_roles(schema_no_lookup, caplog: pytest.LogCaptureFixture):
     caplog.set_level(logging.INFO)
 
     with schema_no_lookup.get_session() as db_session:
-        assert db_session.scalar(select(func.count()).select_from(MgmtRole)) == 0
+        assert db_session.scalar(select(func.count()).select_from(Role)) == 0
 
     # First sync inserts all core roles.
     sync_lookup_values(schema_no_lookup)
 
     with schema_no_lookup.get_session() as db_session:
-        db_roles = db_session.scalars(select(MgmtRole)).all()
+        db_roles = db_session.scalars(select(Role)).all()
         assert len(db_roles) == len(CORE_ROLES)
 
     # Running the sync again should not modify any role.
@@ -65,14 +65,14 @@ def test_sync_roles_applies_updates(
     role = build_role(
         role_id=uuid.uuid4(),
         role_name="Test Sync Role",
-        privileges={MgmtPrivilege.VIEW_PARTNER},
-        resource_types={MgmtResourceType.PARTNER},
+        privileges={Privilege.VIEW_PARTNER},
+        resource_types={ResourceType.PARTNER},
     )
     monkeypatch.setattr("src.db.models.lookup.sync_lookup_values.CORE_ROLES", [role])
     sync_lookup_values(schema_no_lookup)
 
     # Change the role and confirm the update is detected and persisted.
-    role.privileges = {MgmtPrivilege.VIEW_PARTNER, MgmtPrivilege.UPDATE_PARTNER}
+    role.privileges = {Privilege.VIEW_PARTNER, Privilege.UPDATE_PARTNER}
 
     caplog.clear()
     sync_lookup_values(schema_no_lookup)
@@ -81,8 +81,8 @@ def test_sync_roles_applies_updates(
     assert [record.role_name for record in updated_records] == ["Test Sync Role"]
 
     with schema_no_lookup.get_session() as db_session:
-        db_role = db_session.get(MgmtRole, role.mgmt_role_id)
+        db_role = db_session.get(Role, role.role_id)
         assert set(db_role.privileges) == {
-            MgmtPrivilege.VIEW_PARTNER,
-            MgmtPrivilege.UPDATE_PARTNER,
+            Privilege.VIEW_PARTNER,
+            Privilege.UPDATE_PARTNER,
         }

@@ -7,7 +7,7 @@ class JobType(StrEnum):
     MIGRATE_DOWNALL = "migrate-downall"
 
 
-class MgmtUserType(StrEnum):
+class UserType(StrEnum):
     STANDARD = "standard"
     INTERNAL_FRONTEND = "internal_frontend"
 
@@ -16,7 +16,7 @@ class ExternalUserType(StrEnum):
     LOGIN_GOV = "login_gov"
 
 
-class MgmtPrivilege(StrEnum):
+class Privilege(StrEnum):
     VIEW_PARTNER = "view_partner"
     UPDATE_PARTNER = "update_partner"
     MANAGE_PARTNER_MEMBERS = "manage_partner_members"
@@ -37,7 +37,7 @@ class MgmtPrivilege(StrEnum):
     UNUSED_PRIVILEGE_103 = "unused_privilege_103"
 
 
-class MgmtResourceType(StrEnum):
+class ResourceType(StrEnum):
     INTERNAL = "internal"
     PARTNER = "partner"
     PROGRAM = "program"
@@ -50,7 +50,7 @@ class GrantorOrganizationType(StrEnum):
     GRANT_OFFICE = "grant_office"
 
 
-class MgmtWorkflowType(StrEnum):
+class WorkflowType(StrEnum):
     # Because of how we use the workflow type to find
     # the state machine and its configuration, we need
     # to define any workflows for tests here as well.
@@ -66,22 +66,22 @@ class MgmtWorkflowType(StrEnum):
         return self.value.replace("_", " ").title()
 
 
-class MgmtApprovalType(StrEnum):
+class ApprovalType(StrEnum):
     BASIC_TEST_APPROVAL = "basic_test_approval"
 
 
-class MgmtApprovalResponseType(StrEnum):
+class ApprovalResponseType(StrEnum):
     APPROVED = "approved"
     DECLINED = "declined"
     REQUIRES_MODIFICATION = "requires_modification"
 
 
-class MgmtWorkflowEventType(StrEnum):
+class WorkflowEventType(StrEnum):
     START_WORKFLOW = "start_workflow"
     PROCESS_WORKFLOW = "process_workflow"
 
 
-class MgmtWorkflowEventProcessingResult(StrEnum):
+class WorkflowEventProcessingResult(StrEnum):
     """Enum representing the result of processing an SQS event."""
 
     SUCCESS = "success"
@@ -109,36 +109,36 @@ class ResourceInheritance(StrEnum):
 # included in a role when the role's resource types are a subset of the privilege's allowed
 # resource types (validated in src/util/role_util.py::build_role). This prevents assigning,
 # for example, a department-only privilege on a team-level role.
-ALLOWED_RESOURCES_FOR_PRIVILEGE: dict[MgmtPrivilege, set[MgmtResourceType]] = {
+ALLOWED_RESOURCES_FOR_PRIVILEGE: dict[Privilege, set[ResourceType]] = {
     # Partner-level
-    MgmtPrivilege.VIEW_PARTNER: {MgmtResourceType.PARTNER},
-    MgmtPrivilege.UPDATE_PARTNER: {MgmtResourceType.PARTNER},
-    MgmtPrivilege.MANAGE_PARTNER_MEMBERS: {MgmtResourceType.PARTNER},
+    Privilege.VIEW_PARTNER: {ResourceType.PARTNER},
+    Privilege.UPDATE_PARTNER: {ResourceType.PARTNER},
+    Privilege.MANAGE_PARTNER_MEMBERS: {ResourceType.PARTNER},
     # Program-level
-    MgmtPrivilege.VIEW_PROGRAM: {
-        MgmtResourceType.PARTNER,
-        MgmtResourceType.GRANTOR_ORGANIZATION,
-        MgmtResourceType.PROGRAM,
+    Privilege.VIEW_PROGRAM: {
+        ResourceType.PARTNER,
+        ResourceType.GRANTOR_ORGANIZATION,
+        ResourceType.PROGRAM,
     },
-    MgmtPrivilege.UPDATE_PROGRAM: {
-        MgmtResourceType.PARTNER,
-        MgmtResourceType.GRANTOR_ORGANIZATION,
-        MgmtResourceType.PROGRAM,
+    Privilege.UPDATE_PROGRAM: {
+        ResourceType.PARTNER,
+        ResourceType.GRANTOR_ORGANIZATION,
+        ResourceType.PROGRAM,
     },
     # Grantor organization level
-    MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION: {
-        MgmtResourceType.PARTNER,
-        MgmtResourceType.GRANTOR_ORGANIZATION,
+    Privilege.VIEW_GRANTOR_ORGANIZATION: {
+        ResourceType.PARTNER,
+        ResourceType.GRANTOR_ORGANIZATION,
     },
-    MgmtPrivilege.UPDATE_GRANTOR_ORGANIZATION: {
-        MgmtResourceType.PARTNER,
-        MgmtResourceType.GRANTOR_ORGANIZATION,
+    Privilege.UPDATE_GRANTOR_ORGANIZATION: {
+        ResourceType.PARTNER,
+        ResourceType.GRANTOR_ORGANIZATION,
     },
-    MgmtPrivilege.MANAGE_GRANTOR_ORGANIZATION_MEMBERS: {
-        MgmtResourceType.PARTNER,
-        MgmtResourceType.GRANTOR_ORGANIZATION,
+    Privilege.MANAGE_GRANTOR_ORGANIZATION_MEMBERS: {
+        ResourceType.PARTNER,
+        ResourceType.GRANTOR_ORGANIZATION,
     },
-    MgmtPrivilege.UNUSED_PRIVILEGE_101: set(),
-    MgmtPrivilege.UNUSED_PRIVILEGE_102: set(),
-    MgmtPrivilege.UNUSED_PRIVILEGE_103: set(),
+    Privilege.UNUSED_PRIVILEGE_101: set(),
+    Privilege.UNUSED_PRIVILEGE_102: set(),
+    Privilege.UNUSED_PRIVILEGE_103: set(),
 }

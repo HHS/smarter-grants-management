@@ -1,6 +1,6 @@
 from collections.abc import Callable
 
-from src.constants.lookup_constants import MgmtWorkflowType
+from src.constants.lookup_constants import WorkflowType
 from src.workflow.base_state_machine import BaseStateMachine
 from src.workflow.workflow_config import WorkflowConfig
 from src.workflow.workflow_errors import InvalidWorkflowTypeError
@@ -14,7 +14,7 @@ class WorkflowRegistry:
     configuration and state machine class.
     """
 
-    _workflow_registry: dict[MgmtWorkflowType, tuple[WorkflowConfig, type[BaseStateMachine]]] = {}
+    _workflow_registry: dict[WorkflowType, tuple[WorkflowConfig, type[BaseStateMachine]]] = {}
 
     @classmethod
     def register_workflow(
@@ -45,7 +45,7 @@ class WorkflowRegistry:
 
     @classmethod
     def get_state_machine_for_workflow_type(
-        cls, workflow_type: MgmtWorkflowType
+        cls, workflow_type: WorkflowType
     ) -> tuple[WorkflowConfig, type[BaseStateMachine]]:
         """For a given workflow type, get the workflow config + state machine class"""
         result = cls._workflow_registry.get(workflow_type)

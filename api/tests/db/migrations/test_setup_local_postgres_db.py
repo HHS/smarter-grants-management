@@ -4,7 +4,7 @@ import pytest
 from sqlalchemy import select
 
 from src.db.migrations.setup_local_postgres_db import _create_internal_workflow_user
-from src.db.models.user_models import MgmtUser
+from src.db.models.user_models import User
 
 
 @pytest.fixture
@@ -19,12 +19,9 @@ def test_create_internal_workflow_user(db_session, internal_workflow_user_id):
     workflow_user = _create_internal_workflow_user(db_session)
     db_session.flush()
 
-    assert workflow_user.mgmt_user_id == internal_workflow_user_id
+    assert workflow_user.user_id == internal_workflow_user_id
     assert (
-        db_session.scalar(
-            select(MgmtUser).where(MgmtUser.mgmt_user_id == internal_workflow_user_id)
-        )
-        is not None
+        db_session.scalar(select(User).where(User.user_id == internal_workflow_user_id)) is not None
     )
 
 
@@ -35,10 +32,8 @@ def test_create_internal_workflow_user_is_idempotent(db_session, internal_workfl
     second = _create_internal_workflow_user(db_session)
     db_session.flush()
 
-    assert first.mgmt_user_id == second.mgmt_user_id
+    assert first.user_id == second.user_id
     users = list(
-        db_session.execute(
-            select(MgmtUser).where(MgmtUser.mgmt_user_id == internal_workflow_user_id)
-        ).scalars()
+        db_session.execute(select(User).where(User.user_id == internal_workflow_user_id)).scalars()
     )
     assert len(users) == 1

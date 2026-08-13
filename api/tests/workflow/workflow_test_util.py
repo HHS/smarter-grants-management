@@ -8,9 +8,9 @@ import uuid
 
 from grants_shared.adapters import db
 
-from src.constants.lookup_constants import MgmtResourceType, MgmtWorkflowEventType, MgmtWorkflowType
+from src.constants.lookup_constants import ResourceType, WorkflowEventType, WorkflowType
 from src.db.models.resource_models import AbstractResourceTableMixin
-from src.db.models.user_models import MgmtUser
+from src.db.models.user_models import User
 from src.workflow.base_state_machine import BaseStateMachine
 from src.workflow.event.sqs_message_container import SqsMessageContainer
 from src.workflow.event.workflow_event import (
@@ -22,7 +22,7 @@ from src.workflow.handler.event_handler import EventHandler
 from src.workflow.state_persistence.base_state_persistence_model import BaseStatePersistenceModel
 from src.workflow.state_persistence.program_persistence_model import ProgramPersistenceModel
 from src.workflow.workflow_config import WorkflowConfig
-from tests.db.models.factories import MgmtWorkflowEventHistoryFactory
+from tests.db.models.factories import WorkflowEventHistoryFactory
 
 ####################
 # Persistence models for resource types that have no real workflow yet.
@@ -34,26 +34,26 @@ from tests.db.models.factories import MgmtWorkflowEventHistoryFactory
 
 class PartnerTestPersistenceModel(BaseStatePersistenceModel):
     @classmethod
-    def get_resource_type(cls) -> MgmtResourceType:
-        return MgmtResourceType.PARTNER
+    def get_resource_type(cls) -> ResourceType:
+        return ResourceType.PARTNER
 
 
 class GrantorOrganizationTestPersistenceModel(BaseStatePersistenceModel):
     @classmethod
-    def get_resource_type(cls) -> MgmtResourceType:
-        return MgmtResourceType.GRANTOR_ORGANIZATION
+    def get_resource_type(cls) -> ResourceType:
+        return ResourceType.GRANTOR_ORGANIZATION
 
 
 class OpportunityTestPersistenceModel(BaseStatePersistenceModel):
     """A resource type that is valid but has no table in mgmt yet."""
 
     @classmethod
-    def get_resource_type(cls) -> MgmtResourceType:
-        return MgmtResourceType.OPPORTUNITY
+    def get_resource_type(cls) -> ResourceType:
+        return ResourceType.OPPORTUNITY
 
 
 def build_workflow_config(
-    workflow_type: MgmtWorkflowType = MgmtWorkflowType.BASIC_TEST_WORKFLOW,
+    workflow_type: WorkflowType = WorkflowType.BASIC_TEST_WORKFLOW,
     persistence_model_cls: type[BaseStatePersistenceModel] = ProgramPersistenceModel,
     allow_concurrent_workflow_for_resource: bool = True,
 ) -> WorkflowConfig:
@@ -68,8 +68,8 @@ def build_workflow_config(
 
 
 def build_start_workflow_event(
-    workflow_type: MgmtWorkflowType,
-    user: MgmtUser | None,
+    workflow_type: WorkflowType,
+    user: User | None,
     entity: AbstractResourceTableMixin,
     exclude_start_workflow_context: bool = False,
     receipt_handle: str | None = None,
@@ -79,27 +79,27 @@ def build_start_workflow_event(
     Any resource-backed entity works here without special-casing - the event only
     carries the resource ID, which every such entity can hand over.
     """
-    user_id = user.mgmt_user_id if user else uuid.uuid4()
+    user_id = user.user_id if user else uuid.uuid4()
 
     if exclude_start_workflow_context:
         start_workflow_context = None
     else:
         start_workflow_context = StartWorkflowEventContext(
             workflow_type=workflow_type,
-            mgmt_resource_id=entity.get_resource_id(),
+            resource_id=entity.get_resource_id(),
         )
 
     event = WorkflowEvent(
         event_id=uuid.uuid4(),
-        acting_mgmt_user_id=user_id,
-        event_type=MgmtWorkflowEventType.START_WORKFLOW,
+        acting_user_id=user_id,
+        event_type=WorkflowEventType.START_WORKFLOW,
         start_workflow_context=start_workflow_context,
     )
 
-    workflow_event_history = MgmtWorkflowEventHistoryFactory.create(
-        mgmt_workflow_event_history_id=event.event_id,
+    workflow_event_history = WorkflowEventHistoryFactory.create(
+        workflow_event_history_id=event.event_id,
         event_data=json.loads(event.model_dump_json()),
-        mgmt_workflow_id=None,
+        workflow_id=None,
         workflow=None,
     )
 
@@ -113,8 +113,8 @@ def build_start_workflow_event(
 
 
 def build_process_workflow_event(
-    mgmt_workflow_id: uuid.UUID,
-    user: MgmtUser | None,
+    workflow_id: uuid.UUID,
+    user: User | None,
     event_to_send: str,
     metadata: dict | None = None,
     exclude_process_workflow_context: bool = False,
@@ -122,7 +122,7 @@ def build_process_workflow_event(
     event_id: uuid.UUID | None = None,
     put_history_event_in_session: bool = True,
 ) -> SqsMessageContainer:
-    user_id = user.mgmt_user_id if user else uuid.uuid4()
+    user_id = user.user_id if user else uuid.uuid4()
 
     if event_id is None:
         event_id = uuid.uuid4()
@@ -131,13 +131,13 @@ def build_process_workflow_event(
         process_workflow_context = None
     else:
         process_workflow_context = ProcessWorkflowEventContext(
-            mgmt_workflow_id=mgmt_workflow_id, event_to_send=event_to_send
+            workflow_id=workflow_id, event_to_send=event_to_send
         )
 
     event = WorkflowEvent(
         event_id=event_id,
-        acting_mgmt_user_id=user_id,
-        event_type=MgmtWorkflowEventType.PROCESS_WORKFLOW,
+        acting_user_id=user_id,
+        event_type=WorkflowEventType.PROCESS_WORKFLOW,
         process_workflow_context=process_workflow_context,
         metadata=metadata,
     )
@@ -146,18 +146,18 @@ def build_process_workflow_event(
     # in the session, but for testing at the top-level of the workflow
     # logic, we want it detached like it would be there.
     event_history_params = dict(
-        mgmt_workflow_event_history_id=event.event_id,
+        workflow_event_history_id=event.event_id,
         event_data=json.loads(event.model_dump_json()),
         is_successfully_processed=True,
         # Despite having the workflow, we don't attach it here
         # as that wouldn't be connected until the event handler processes it.
-        mgmt_workflow_id=None,
+        workflow_id=None,
         workflow=None,
     )
     if put_history_event_in_session:
-        workflow_event_history = MgmtWorkflowEventHistoryFactory.create(**event_history_params)
+        workflow_event_history = WorkflowEventHistoryFactory.create(**event_history_params)
     else:
-        workflow_event_history = MgmtWorkflowEventHistoryFactory.build(**event_history_params)
+        workflow_event_history = WorkflowEventHistoryFactory.build(**event_history_params)
 
     if receipt_handle is None:
         # Make up a receipt handle if not passed in just so it's set
@@ -171,14 +171,14 @@ def build_process_workflow_event(
 def send_process_event(
     db_session: db.Session,
     event_to_send: str,
-    mgmt_workflow_id: uuid.UUID,
-    user: MgmtUser,
+    workflow_id: uuid.UUID,
+    user: User,
     expected_state: str,
     expected_is_active: bool = True,
     metadata: dict | None = None,
 ) -> BaseStateMachine:
     sqs_container = build_process_workflow_event(
-        mgmt_workflow_id=mgmt_workflow_id,
+        workflow_id=workflow_id,
         user=user,
         event_to_send=event_to_send,
         metadata=metadata,

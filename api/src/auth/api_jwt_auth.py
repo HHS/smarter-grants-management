@@ -11,21 +11,21 @@ from grants_shared.auth.api_jwt_auth import ApiJwtConfig, JwtAuth, get_config
 from grants_shared.auth.auth_errors import JwtValidationError
 from grants_shared.logs.flask_logger import add_extra_data_to_current_request_logs
 
-from src.auth.auth_handler import MgmtAuthHandler
-from src.db.models.user_models import MgmtUser, MgmtUserTokenSession
+from src.auth.auth_handler import AuthHandler
+from src.db.models.user_models import User, UserTokenSession
 
 logger = logging.getLogger(__name__)
 
 
 class JwtUserHttpTokenAuth(APIKeyHeaderAuth):
 
-    def get_user_token_session(self) -> MgmtUserTokenSession:
+    def get_user_token_session(self) -> UserTokenSession:
         """Wrapper method around the current_user value to handle type issues
 
         Note that this value gets set based on whatever is returned from the method
         you configure for @<your JwtUserHttpTokenAuth obj>.verify_token
         """
-        return cast(MgmtUserTokenSession, self.current_user)
+        return cast(UserTokenSession, self.current_user)
 
 
 api_jwt_auth = JwtUserHttpTokenAuth(
@@ -36,23 +36,23 @@ api_jwt_auth = JwtUserHttpTokenAuth(
 
 
 def create_jwt_for_user(
-    user: MgmtUser,
+    user: User,
     db_session: db.Session,
     config: ApiJwtConfig | None = None,
     email: str | None = None,
-) -> tuple[str, MgmtUserTokenSession]:
-    return JwtAuth(MgmtAuthHandler(db_session), config).create_jwt_for_user(user, email)
+) -> tuple[str, UserTokenSession]:
+    return JwtAuth(AuthHandler(db_session), config).create_jwt_for_user(user, email)
 
 
 def parse_jwt_for_user(
     token: str, db_session: db.Session, config: ApiJwtConfig | None = None
-) -> MgmtUserTokenSession:
-    return JwtAuth(MgmtAuthHandler(db_session), config).parse_jwt_for_user(token)
+) -> UserTokenSession:
+    return JwtAuth(AuthHandler(db_session), config).parse_jwt_for_user(token)
 
 
 @api_jwt_auth.verify_token
 @flask_db.with_db_session()
-def decode_token(db_session: db.Session, token: str) -> MgmtUserTokenSession:
+def decode_token(db_session: db.Session, token: str) -> UserTokenSession:
     """
     Process an internal jwt token as created by the above create_jwt_for_user method.
 
@@ -90,8 +90,8 @@ def decode_token(db_session: db.Session, token: str) -> MgmtUserTokenSession:
 
 
 def refresh_token_expiration(
-    token_session: MgmtUserTokenSession, config: ApiJwtConfig | None = None
-) -> MgmtUserTokenSession:
+    token_session: UserTokenSession, config: ApiJwtConfig | None = None
+) -> UserTokenSession:
     if config is None:
         config = get_config()
 

@@ -4,7 +4,7 @@ from typing import Any, cast
 
 from statemachine import StateChart
 
-from src.db.models.workflow_models import MgmtWorkflow
+from src.db.models.workflow_models import Workflow
 from src.workflow.state_persistence.base_state_persistence_model import BaseStatePersistenceModel
 
 logger = logging.getLogger(__name__)
@@ -49,7 +49,7 @@ class BaseStateMachine(StateChart):
         self.db_session = model.db_session
 
     @property
-    def workflow(self) -> MgmtWorkflow:
+    def workflow(self) -> Workflow:
         """Workflow property to get it from the underlying model a bit easier"""
         # Note we have to cast as self.model gets set in the StateMachine
         # We know it's our model class because we passed it in the __init__ function

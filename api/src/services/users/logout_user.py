@@ -4,7 +4,7 @@ from grants_shared.adapters import db
 from grants_shared.auth.api_jwt_auth import JwtAuth
 from grants_shared.auth.auth_errors import JwtValidationError
 
-from src.auth.auth_handler import MgmtAuthHandler
+from src.auth.auth_handler import AuthHandler
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ def logout_user(db_session: db.Session, user_token: str | None) -> None:
     # If there are any JWT-specific issues, we'll just log them, and still proceed with
     # the redirect logic that comes after this.
     try:
-        user_token_session = JwtAuth(MgmtAuthHandler(db_session)).parse_jwt_for_user(user_token)
+        user_token_session = JwtAuth(AuthHandler(db_session)).parse_jwt_for_user(user_token)
     except JwtValidationError:
         logger.info("Provided JWT was not valid, cannot logout of our system", exc_info=True)
         return

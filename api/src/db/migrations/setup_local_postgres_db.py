@@ -9,7 +9,7 @@ from sqlalchemy import select
 
 from src.auth.internal_resource import create_internal_resource
 from src.constants.schema import Schemas
-from src.db.models.user_models import MgmtUser
+from src.db.models.user_models import User
 from src.db.resource_automation.resource_automation import setup_resource_automation
 from src.workflow.config.workflow_service_config import WorkflowServiceConfig
 
@@ -65,7 +65,7 @@ def setup_internal_workflow_user() -> None:
             _create_internal_workflow_user(db_session)
 
 
-def _create_internal_workflow_user(db_session: db.Session) -> MgmtUser:
+def _create_internal_workflow_user(db_session: db.Session) -> User:
     """Create the user that automatic (engine-driven) state transitions are audited against.
 
     Idempotent - if a user with the configured ID already exists, it is returned
@@ -79,17 +79,17 @@ def _create_internal_workflow_user(db_session: db.Session) -> MgmtUser:
     """
     config = WorkflowServiceConfig()
 
-    log_extra = {"mgmt_user_id": config.workflow_service_internal_user_id}
+    log_extra = {"user_id": config.workflow_service_internal_user_id}
 
     workflow_user = db_session.execute(
-        select(MgmtUser).where(MgmtUser.mgmt_user_id == config.workflow_service_internal_user_id)
+        select(User).where(User.user_id == config.workflow_service_internal_user_id)
     ).scalar_one_or_none()
 
     if workflow_user is not None:
         logger.info("Internal workflow user already exists, skipping creation", extra=log_extra)
         return workflow_user
 
-    workflow_user = MgmtUser(mgmt_user_id=config.workflow_service_internal_user_id)
+    workflow_user = User(user_id=config.workflow_service_internal_user_id)
     db_session.add(workflow_user)
 
     logger.info("Created internal workflow user", extra=log_extra)
