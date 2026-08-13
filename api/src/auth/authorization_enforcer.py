@@ -12,7 +12,7 @@ from src.db.models.resource_models import (
     AbstractResourceTableMixin,
     MgmtInternalResource,
     MgmtResourceUser,
-    MgmtRole,
+    MgmtRole, MgmtResourceUserRole, MgmtLinkRolePrivilege,
 )
 from src.db.models.user_models import MgmtUser
 
@@ -255,3 +255,39 @@ class AuthorizationEnforcer:
         Get all relevant resources for an internal resource - which is just the internal resource itself
         """
         return [internal_resource]
+
+
+    def get_users_for_resource(
+            self,
+            resource: AbstractResourceTableMixin,
+            is_direct_inheritance_only: bool = False,
+            privilege: MgmtPrivilege | None = None,
+            # TODO - pagination
+    ) -> list[MgmtUser]: # TODO - type
+
+        if is_direct_inheritance_only:
+            # TODO - program should be excluded
+            relevant_resources = [resource]
+        else:
+            relevant_resources = self._get_relevant_resources(resource)
+
+        resource_ids = []
+
+        relevant_resource_map: dict[MgmtResourceType, list[str]] = defaultdict(list)
+        for resource in relevant_resources:
+            resource_ids.append(resource.get_resource_id())
+            relevant_resource_map[resource.get_resource_type()].append(
+                str(resource.get_resource_id())
+            )
+
+        stmt = select(MgmtResourceUser).where(MgmtResourceUser.mgmt_resource_id.in_(resource_ids))
+        # TODO - selectinload
+
+        if privilege is not None:
+            # TODO - this probably doesn't handle having two roles with the same privilege well
+            # TODO - make this a where exists
+            stmt = stmt.join(MgmtResourceUserRole).join(MgmtRole).join(MgmtLinkRolePrivilege).where(MgmtLinkRolePrivilege.mgmt_privilege == privilege)
+
+        # TODO - pagination
+
+        resource_users = self.db_session.execute(stmt)
