@@ -12,7 +12,7 @@ from src.api.resources.resource_schemas import (
     ListUserForResourceResponseSchema,
 )
 from src.auth.multi_auth import jwt_or_api_user_key_multi_auth
-from src.constants.lookup_constants import MgmtResourceType
+from src.constants.lookup_constants import ResourceType
 from src.services.resources.list_users_for_resource import list_users_for_resource
 
 logger = logging.getLogger(__name__)
@@ -30,12 +30,12 @@ logger = logging.getLogger(__name__)
 @flask_db.with_db_session()
 def list_users_in_resource(
     db_session: db.Session,
-    resource_type: MgmtResourceType,
+    resource_type: ResourceType,
     resource_id: uuid.UUID,
     json_data: dict,
 ) -> response.ApiResponse:
     add_extra_data_to_current_request_logs(
-        {"mgmt_resource_type": resource_type, "mgmt_resource_id": str(resource_id)}
+        {"resource_type": resource_type, "resource_id": str(resource_id)}
     )
     logger.info("POST /v1/resources/:resource_type/:resource_id/users/list")
 

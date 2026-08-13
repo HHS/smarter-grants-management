@@ -11,10 +11,10 @@ def build_enum_converter(enum_cls: type[StrEnum]) -> type[BaseConverter]:
 
     Register the result on the app's url_map, then use it in a route rule::
 
-        app.url_map.converters["resource_type"] = build_enum_converter(MgmtResourceType)
+        app.url_map.converters["resource_type"] = build_enum_converter(ResourceType)
 
         @blueprint.post("/<resource_type:resource_type>/...")
-        def handler(resource_type: MgmtResourceType) -> ...:
+        def handler(resource_type: ResourceType) -> ...:
 
     The value arrives at the handler already converted to the enum member. A path
     segment that isn't one of the values doesn't match the rule at all, so it 404s

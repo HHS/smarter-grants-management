@@ -9,27 +9,27 @@ Callers keep their own error handling - what a missing resource means differs by
 context - so this deliberately exposes the mapping rather than a fetch-and-raise helper.
 """
 
-from src.constants.lookup_constants import MgmtResourceType
+from src.constants.lookup_constants import ResourceType
 from src.db.models.grantor_organization_models import GrantorOrganization, Partner, Program
-from src.db.models.resource_models import AbstractResourceTableMixin, MgmtInternalResource
+from src.db.models.resource_models import AbstractResourceTableMixin, InternalResource
 
 # A resource type absent from here has no table yet and isn't fetchable at all.
-# MgmtResourceType.OPPORTUNITY is the current example - it's a valid resource type
-# with no mgmt table behind it.
+# ResourceType.OPPORTUNITY is the current example - it's a valid resource type
+# with no table behind it.
 #
 # Every resource-backed table uses its resource ID as its own primary key (see
 # AbstractResourceTableMixin), so a plain `db_session.get(model, resource_id)` fetches
 # any of them - no per-type ID column is needed.
-RESOURCE_TYPE_TO_MODEL: dict[MgmtResourceType, type[AbstractResourceTableMixin]] = {
-    MgmtResourceType.INTERNAL: MgmtInternalResource,
-    MgmtResourceType.PARTNER: Partner,
-    MgmtResourceType.GRANTOR_ORGANIZATION: GrantorOrganization,
-    MgmtResourceType.PROGRAM: Program,
+RESOURCE_TYPE_TO_MODEL: dict[ResourceType, type[AbstractResourceTableMixin]] = {
+    ResourceType.INTERNAL: InternalResource,
+    ResourceType.PARTNER: Partner,
+    ResourceType.GRANTOR_ORGANIZATION: GrantorOrganization,
+    ResourceType.PROGRAM: Program,
 }
 
 
 def get_resource_model(
-    resource_type: MgmtResourceType,
+    resource_type: ResourceType,
 ) -> type[AbstractResourceTableMixin] | None:
     """Get the table backing a resource type, or None if it doesn't have one yet."""
     return RESOURCE_TYPE_TO_MODEL.get(resource_type)

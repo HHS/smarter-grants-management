@@ -4,16 +4,16 @@ from collections.abc import Container
 from grants_shared.adapters import db
 from grants_shared.api.route_utils import raise_flask_error
 
-from src.constants.lookup_constants import MgmtResourceType
+from src.constants.lookup_constants import ResourceType
 from src.db.models.resource_models import AbstractResourceTableMixin
 from src.db.resource_lookup import get_resource_model
 
 
 def get_resource(
     db_session: db.Session,
-    resource_type: MgmtResourceType,
+    resource_type: ResourceType,
     resource_id: uuid.UUID,
-    supported_resource_types: Container[MgmtResourceType] | None = None,
+    supported_resource_types: Container[ResourceType] | None = None,
 ) -> AbstractResourceTableMixin:
     """Fetch a resource by its type and ID, erroring with a 404 if we can't.
 

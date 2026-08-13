@@ -19,7 +19,7 @@ from src.api.route_converters import build_enum_converter
 from src.api.users.user_blueprint import user_blueprint
 from src.app_config import AppConfig
 from src.auth.auth_utils import get_app_security_scheme
-from src.constants.lookup_constants import MgmtResourceType
+from src.constants.lookup_constants import ResourceType
 from src.db.resource_automation.resource_automation import setup_resource_automation
 from src.task.task_blueprint import task_blueprint
 from src.workflow import workflow_blueprint
@@ -74,7 +74,7 @@ def register_db_client(app: APIFlask) -> None:
 
 def register_url_converters(app: APIFlask) -> None:
     """Register custom path parameter converters used by our route rules."""
-    app.url_map.converters["resource_type"] = build_enum_converter(MgmtResourceType)
+    app.url_map.converters["resource_type"] = build_enum_converter(ResourceType)
 
 
 def register_blueprints(app: APIFlask) -> None:

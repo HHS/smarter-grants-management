@@ -3,13 +3,13 @@ import uuid
 import pytest
 
 from src.auth.api_jwt_auth import create_jwt_for_user
-from src.constants.lookup_constants import MgmtPrivilege, MgmtResourceType, ResourceInheritance
+from src.constants.lookup_constants import Privilege, ResourceInheritance, ResourceType
 from tests.db.models.factories import (
     GrantorOrganizationFactory,
-    MgmtLinkExternalUserFactory,
-    MgmtUserFactory,
+    LinkExternalUserFactory,
     PartnerFactory,
     ProgramFactory,
+    UserFactory,
 )
 from tests.test_utils.auth_test_utils import setup_user_with_roles
 
@@ -27,7 +27,7 @@ from tests.test_utils.auth_test_utils import setup_user_with_roles
 DEFAULT_PAGINATION = {
     "page_offset": 1,
     "page_size": 25,
-    "sort_order": [{"order_by": "mgmt_user_id", "sort_direction": "ascending"}],
+    "sort_order": [{"order_by": "user_id", "sort_direction": "ascending"}],
 }
 
 
@@ -54,9 +54,9 @@ def viewer_token(db_session, partner):
         db_session,
         resources=[partner],
         privileges=[
-            MgmtPrivilege.VIEW_PARTNER,
-            MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION,
-            MgmtPrivilege.VIEW_PROGRAM,
+            Privilege.VIEW_PARTNER,
+            Privilege.VIEW_GRANTOR_ORGANIZATION,
+            Privilege.VIEW_PROGRAM,
         ],
     )
     token, _ = create_jwt_for_user(user, db_session)
@@ -83,23 +83,21 @@ def post_list(client, resource_type, resource_id, token=None, body=None):
 def test_list_users_for_partner_200(client, db_session, partner, viewer_token):
     """The response reports each user with the roles granting them access."""
     user = setup_user_with_roles(
-        db_session, resources=[partner], privileges=[MgmtPrivilege.UPDATE_PARTNER]
+        db_session, resources=[partner], privileges=[Privilege.UPDATE_PARTNER]
     )
-    MgmtLinkExternalUserFactory.create(mgmt_user=user, email="grantee@example.com")
+    LinkExternalUserFactory.create(user=user, email="grantee@example.com")
     db_session.commit()
 
-    response = post_list(client, MgmtResourceType.PARTNER, partner.partner_id, viewer_token)
+    response = post_list(client, ResourceType.PARTNER, partner.partner_id, viewer_token)
 
     assert response.status_code == 200
-    entry = next(
-        row for row in response.json["data"] if row["mgmt_user_id"] == str(user.mgmt_user_id)
-    )
+    entry = next(row for row in response.json["data"] if row["user_id"] == str(user.user_id))
     assert entry["email"] == "grantee@example.com"
     assert len(entry["roles"]) == 1
 
     role = entry["roles"][0]
-    assert role["privileges"] == [MgmtPrivilege.UPDATE_PARTNER]
-    assert role["resource_type"] == MgmtResourceType.PARTNER
+    assert role["privileges"] == [Privilege.UPDATE_PARTNER]
+    assert role["resource_type"] == ResourceType.PARTNER
     assert role["resource"]["resource_id"] == str(partner.partner_id)
     assert role["resource"]["resource_name"] == "Test Partner"
 
@@ -108,71 +106,69 @@ def test_list_users_reports_null_email_for_user_without_login(
     client, db_session, partner, viewer_token
 ):
     """A user with no login.gov link still appears, with a null email."""
-    user = MgmtUserFactory.create(linked_login_gov_external_user=None)
+    user = UserFactory.create(linked_login_gov_external_user=None)
     setup_user_with_roles(
-        db_session, resources=[partner], user=user, privileges=[MgmtPrivilege.UPDATE_PARTNER]
+        db_session, resources=[partner], user=user, privileges=[Privilege.UPDATE_PARTNER]
     )
     db_session.commit()
 
-    response = post_list(client, MgmtResourceType.PARTNER, partner.partner_id, viewer_token)
+    response = post_list(client, ResourceType.PARTNER, partner.partner_id, viewer_token)
 
     assert response.status_code == 200
-    entry = next(
-        row for row in response.json["data"] if row["mgmt_user_id"] == str(user.mgmt_user_id)
-    )
+    entry = next(row for row in response.json["data"] if row["user_id"] == str(user.user_id))
     assert entry["email"] is None
 
 
 def test_list_users_privilege_filter_200(client, db_session, partner, viewer_token):
     """The privilege filter narrows the result to holders of that privilege."""
     wanted = setup_user_with_roles(
-        db_session, resources=[partner], privileges=[MgmtPrivilege.MANAGE_PARTNER_MEMBERS]
+        db_session, resources=[partner], privileges=[Privilege.MANAGE_PARTNER_MEMBERS]
     )
     db_session.commit()
 
     response = post_list(
         client,
-        MgmtResourceType.PARTNER,
+        ResourceType.PARTNER,
         partner.partner_id,
         viewer_token,
-        {"filters": {"privilege": {"one_of": [MgmtPrivilege.MANAGE_PARTNER_MEMBERS]}}},
+        {"filters": {"privilege": {"one_of": [Privilege.MANAGE_PARTNER_MEMBERS]}}},
     )
 
     assert response.status_code == 200
-    assert [row["mgmt_user_id"] for row in response.json["data"]] == [str(wanted.mgmt_user_id)]
+    assert [row["user_id"] for row in response.json["data"]] == [str(wanted.user_id)]
 
 
 def test_list_users_inheritance_filter_200(client, db_session, partner, organization, viewer_token):
     """Full inheritance reaches role holders above the resource, direct does not."""
     partner_user = setup_user_with_roles(
-        db_session, resources=[partner], privileges=[MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION]
+        db_session, resources=[partner], privileges=[Privilege.VIEW_GRANTOR_ORGANIZATION]
     )
     org_user = setup_user_with_roles(
-        db_session, resources=[organization], privileges=[MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION]
+        db_session, resources=[organization], privileges=[Privilege.VIEW_GRANTOR_ORGANIZATION]
     )
     db_session.commit()
 
     direct = post_list(
         client,
-        MgmtResourceType.GRANTOR_ORGANIZATION,
+        ResourceType.GRANTOR_ORGANIZATION,
         organization.grantor_organization_id,
         viewer_token,
         {"filters": {"inheritance": ResourceInheritance.DIRECT}},
     )
     assert direct.status_code == 200
-    assert {row["mgmt_user_id"] for row in direct.json["data"]} == {str(org_user.mgmt_user_id)}
+    assert {row["user_id"] for row in direct.json["data"]} == {str(org_user.user_id)}
 
     full = post_list(
         client,
-        MgmtResourceType.GRANTOR_ORGANIZATION,
+        ResourceType.GRANTOR_ORGANIZATION,
         organization.grantor_organization_id,
         viewer_token,
         {"filters": {"inheritance": ResourceInheritance.FULL}},
     )
     assert full.status_code == 200
-    assert {row["mgmt_user_id"] for row in full.json["data"]} >= {
-        str(org_user.mgmt_user_id),
-        str(partner_user.mgmt_user_id),
+    assert {row["user_id"] for row in full.json["data"]} >= {
+        str(org_user.user_id),
+        str(partner_user.user_id),
     }
 
 
@@ -188,14 +184,14 @@ def test_list_users_for_program_uses_its_offices(client, db_session, partner, vi
         partner=partner, program_office=program_office, grant_office=grant_office
     )
     office_user = setup_user_with_roles(
-        db_session, resources=[program_office], privileges=[MgmtPrivilege.VIEW_PROGRAM]
+        db_session, resources=[program_office], privileges=[Privilege.VIEW_PROGRAM]
     )
     db_session.commit()
 
-    response = post_list(client, MgmtResourceType.PROGRAM, program.program_id, viewer_token)
+    response = post_list(client, ResourceType.PROGRAM, program.program_id, viewer_token)
 
     assert response.status_code == 200
-    assert {row["mgmt_user_id"] for row in response.json["data"]} == {str(office_user.mgmt_user_id)}
+    assert {row["user_id"] for row in response.json["data"]} == {str(office_user.user_id)}
     assert response.json["data"][0]["roles"][0]["resource"]["resource_name"] == "Program Office"
 
 
@@ -213,19 +209,19 @@ def test_list_users_paginates_over_distinct_users(
     """
     for _ in range(3):
         user = setup_user_with_roles(
-            db_session, resources=[partner], privileges=[MgmtPrivilege.VIEW_PROGRAM]
+            db_session, resources=[partner], privileges=[Privilege.VIEW_PROGRAM]
         )
         setup_user_with_roles(
             db_session,
             resources=[organization],
             user=user,
-            privileges=[MgmtPrivilege.VIEW_PROGRAM],
+            privileges=[Privilege.VIEW_PROGRAM],
         )
     db_session.commit()
 
     response = post_list(
         client,
-        MgmtResourceType.GRANTOR_ORGANIZATION,
+        ResourceType.GRANTOR_ORGANIZATION,
         organization.grantor_organization_id,
         viewer_token,
         {
@@ -249,18 +245,18 @@ def test_list_users_sort_by_email(client, db_session, partner, viewer_token):
     """Sorting by email works even though email lives on the login.gov link table."""
     for email in ["c@example.com", "a@example.com", "b@example.com"]:
         user = setup_user_with_roles(
-            db_session, resources=[partner], privileges=[MgmtPrivilege.UPDATE_PARTNER]
+            db_session, resources=[partner], privileges=[Privilege.UPDATE_PARTNER]
         )
-        MgmtLinkExternalUserFactory.create(mgmt_user=user, email=email)
+        LinkExternalUserFactory.create(user=user, email=email)
     db_session.commit()
 
     response = post_list(
         client,
-        MgmtResourceType.PARTNER,
+        ResourceType.PARTNER,
         partner.partner_id,
         viewer_token,
         {
-            "filters": {"privilege": {"one_of": [MgmtPrivilege.UPDATE_PARTNER]}},
+            "filters": {"privilege": {"one_of": [Privilege.UPDATE_PARTNER]}},
             "pagination": {
                 **DEFAULT_PAGINATION,
                 "sort_order": [{"order_by": "email", "sort_direction": "ascending"}],
@@ -282,7 +278,7 @@ def test_list_users_sort_by_email(client, db_session, partner, viewer_token):
 
 
 def test_list_users_no_token_401(client, partner):
-    response = post_list(client, MgmtResourceType.PARTNER, partner.partner_id)
+    response = post_list(client, ResourceType.PARTNER, partner.partner_id)
 
     assert response.status_code == 401
 
@@ -290,12 +286,12 @@ def test_list_users_no_token_401(client, partner):
 def test_list_users_without_view_privilege_403(client, db_session, partner):
     """A user who can't view the resource can't list its users."""
     user = setup_user_with_roles(
-        db_session, resources=[partner], privileges=[MgmtPrivilege.MANAGE_PARTNER_MEMBERS]
+        db_session, resources=[partner], privileges=[Privilege.MANAGE_PARTNER_MEMBERS]
     )
     token, _ = create_jwt_for_user(user, db_session)
     db_session.commit()
 
-    response = post_list(client, MgmtResourceType.PARTNER, partner.partner_id, token)
+    response = post_list(client, ResourceType.PARTNER, partner.partner_id, token)
 
     assert response.status_code == 403
     assert response.json["message"] == "Forbidden"
@@ -307,7 +303,7 @@ def test_list_users_without_view_privilege_403(client, db_session, partner):
 
 
 def test_list_users_resource_not_found_404(client, viewer_token):
-    response = post_list(client, MgmtResourceType.PARTNER, uuid.uuid4(), viewer_token)
+    response = post_list(client, ResourceType.PARTNER, uuid.uuid4(), viewer_token)
 
     assert response.status_code == 404
 
@@ -315,7 +311,7 @@ def test_list_users_resource_not_found_404(client, viewer_token):
 def test_list_users_resource_type_mismatch_404(client, partner, viewer_token):
     """A real ID under the wrong type is a 404, not a leak that it exists elsewhere."""
     response = post_list(
-        client, MgmtResourceType.GRANTOR_ORGANIZATION, partner.partner_id, viewer_token
+        client, ResourceType.GRANTOR_ORGANIZATION, partner.partner_id, viewer_token
     )
 
     assert response.status_code == 404
@@ -323,7 +319,7 @@ def test_list_users_resource_type_mismatch_404(client, partner, viewer_token):
 
 def test_list_users_unsupported_resource_type_404(client, db_session, viewer_token):
     """Internal resources are fetchable but this endpoint doesn't list them."""
-    response = post_list(client, MgmtResourceType.INTERNAL, uuid.uuid4(), viewer_token)
+    response = post_list(client, ResourceType.INTERNAL, uuid.uuid4(), viewer_token)
 
     assert response.status_code == 404
 
@@ -346,24 +342,22 @@ def test_list_users_multiple_privileges_requires_all_of_them(
     has_both = setup_user_with_roles(
         db_session,
         resources=[partner],
-        privileges=[MgmtPrivilege.UPDATE_PARTNER, MgmtPrivilege.MANAGE_PARTNER_MEMBERS],
+        privileges=[Privilege.UPDATE_PARTNER, Privilege.MANAGE_PARTNER_MEMBERS],
     )
-    setup_user_with_roles(
-        db_session, resources=[partner], privileges=[MgmtPrivilege.UPDATE_PARTNER]
-    )
+    setup_user_with_roles(db_session, resources=[partner], privileges=[Privilege.UPDATE_PARTNER])
     db_session.commit()
 
     response = post_list(
         client,
-        MgmtResourceType.PARTNER,
+        ResourceType.PARTNER,
         partner.partner_id,
         viewer_token,
         {
             "filters": {
                 "privilege": {
                     "one_of": [
-                        MgmtPrivilege.UPDATE_PARTNER,
-                        MgmtPrivilege.MANAGE_PARTNER_MEMBERS,
+                        Privilege.UPDATE_PARTNER,
+                        Privilege.MANAGE_PARTNER_MEMBERS,
                     ]
                 }
             }
@@ -371,7 +365,7 @@ def test_list_users_multiple_privileges_requires_all_of_them(
     )
 
     assert response.status_code == 200
-    assert [row["mgmt_user_id"] for row in response.json["data"]] == [str(has_both.mgmt_user_id)]
+    assert [row["user_id"] for row in response.json["data"]] == [str(has_both.user_id)]
 
 
 @pytest.mark.parametrize(
@@ -394,7 +388,7 @@ def test_list_users_multiple_privileges_requires_all_of_them(
     ],
 )
 def test_list_users_request_validation_422(client, partner, viewer_token, body, expected_field):
-    response = post_list(client, MgmtResourceType.PARTNER, partner.partner_id, viewer_token, body)
+    response = post_list(client, ResourceType.PARTNER, partner.partner_id, viewer_token, body)
 
     assert response.status_code == 422
     assert any(expected_field in error["field"] for error in response.json["errors"])
@@ -402,7 +396,7 @@ def test_list_users_request_validation_422(client, partner, viewer_token, body, 
 
 def test_list_users_pagination_required_422(client, partner, viewer_token):
     response = client.post(
-        f"/v1/resources/{MgmtResourceType.PARTNER}/{partner.partner_id}/users/list",
+        f"/v1/resources/{ResourceType.PARTNER}/{partner.partner_id}/users/list",
         json={},
         headers={"X-MGMT-Token": viewer_token},
     )

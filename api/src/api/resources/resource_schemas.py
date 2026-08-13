@@ -3,13 +3,13 @@ from grants_shared.api.schemas.response_schema import AbstractResponseSchema, Pa
 from grants_shared.api.schemas.search_schema import StrSearchSchemaBuilder
 from grants_shared.pagination.pagination_schema import generate_pagination_schema
 
-from src.constants.lookup_constants import MgmtPrivilege, MgmtResourceType, ResourceInheritance
+from src.constants.lookup_constants import Privilege, ResourceInheritance, ResourceType
 
 
 class ListUserForResourceFilterSchema(Schema):
     privilege = fields.Nested(
         StrSearchSchemaBuilder("PrivilegeFilterSchema")
-        .with_one_of(allowed_values=MgmtPrivilege)
+        .with_one_of(allowed_values=Privilege)
         .build(),
         metadata={
             "description": "Only return users holding these privileges on the resource. A user must hold every privilege given, though not necessarily all from the same role."
@@ -33,8 +33,8 @@ class ListUserForResourceRequestSchema(Schema):
     pagination = fields.Nested(
         generate_pagination_schema(
             "ListUserForResourcePaginationSchema",
-            ["mgmt_user_id", "email"],
-            default_sort_order=[{"order_by": "mgmt_user_id", "sort_direction": "ascending"}],
+            ["user_id", "email"],
+            default_sort_order=[{"order_by": "user_id", "sort_direction": "ascending"}],
         ),
         required=True,
     )
@@ -56,16 +56,16 @@ class ResourceForRoleSchema(Schema):
 class RoleForUserSchema(Schema):
     """A role a user holds, and the resource that granted it."""
 
-    mgmt_role_id = fields.UUID(metadata={"description": "The role's unique identifier"})
+    role_id = fields.UUID(metadata={"description": "The role's unique identifier"})
     role_name = fields.String(
         metadata={"description": "The role's name", "example": "Program Officer"}
     )
     privileges = fields.List(
-        fields.Enum(MgmtPrivilege),
+        fields.Enum(Privilege),
         metadata={"description": "The privileges the role carries"},
     )
     resource_type = fields.Enum(
-        MgmtResourceType,
+        ResourceType,
         metadata={"description": "The type of resource the role was granted on"},
     )
     resource = fields.Nested(
@@ -75,7 +75,7 @@ class RoleForUserSchema(Schema):
 
 
 class UserForResourceSchema(Schema):
-    mgmt_user_id = fields.UUID(metadata={"description": "The user's unique identifier"})
+    user_id = fields.UUID(metadata={"description": "The user's unique identifier"})
     email = fields.String(
         allow_none=True,
         metadata={

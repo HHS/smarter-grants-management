@@ -11,9 +11,9 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import InstrumentedAttribute
 
 from src.auth.authorization_enforcer import AuthorizationEnforcer
-from src.constants.lookup_constants import MgmtPrivilege, MgmtResourceType, ResourceInheritance
-from src.db.models.resource_models import AbstractResourceTableMixin, MgmtRole
-from src.db.models.user_models import MgmtLinkExternalUser, MgmtUser
+from src.constants.lookup_constants import Privilege, ResourceInheritance, ResourceType
+from src.db.models.resource_models import AbstractResourceTableMixin, Role
+from src.db.models.user_models import LinkExternalUser, User
 from src.services.resources.get_resource import get_resource
 
 logger = logging.getLogger(__name__)
@@ -22,21 +22,21 @@ logger = logging.getLogger(__name__)
 # defines which resource types the endpoint supports at all - deliberately narrower than
 # what get_resource can fetch, with the others added as we need them.
 REQUIRED_PRIVILEGE_FOR_RESOURCE_TYPE = {
-    MgmtResourceType.PARTNER: MgmtPrivilege.VIEW_PARTNER,
-    MgmtResourceType.GRANTOR_ORGANIZATION: MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION,
-    MgmtResourceType.PROGRAM: MgmtPrivilege.VIEW_PROGRAM,
+    ResourceType.PARTNER: Privilege.VIEW_PARTNER,
+    ResourceType.GRANTOR_ORGANIZATION: Privilege.VIEW_GRANTOR_ORGANIZATION,
+    ResourceType.PROGRAM: Privilege.VIEW_PROGRAM,
 }
 
 # email lives on the login.gov link rather than the user, so it can't be resolved by
-# name off MgmtUser - we join that table below and point sorting straight at its column.
+# name off User - we join that table below and point sorting straight at its column.
 SORT_COLUMN_MAP: dict[str, InstrumentedAttribute] = {
-    "mgmt_user_id": MgmtUser.mgmt_user_id,
-    "email": MgmtLinkExternalUser.email,
+    "user_id": User.user_id,
+    "email": LinkExternalUser.email,
 }
 
 
 class PrivilegeFilter(BaseModel):
-    one_of: set[MgmtPrivilege] = set()
+    one_of: set[Privilege] = set()
 
 
 class ListUsersForResourceFilters(BaseModel):
@@ -44,7 +44,7 @@ class ListUsersForResourceFilters(BaseModel):
     inheritance: ResourceInheritance = ResourceInheritance.DIRECT
 
     @property
-    def required_privileges(self) -> set[MgmtPrivilege]:
+    def required_privileges(self) -> set[Privilege]:
         return self.privilege.one_of
 
 
@@ -71,24 +71,24 @@ class ResourceRef:
 class RoleForUser:
     """A role a user holds, and the resource that granted it."""
 
-    mgmt_role_id: uuid.UUID
+    role_id: uuid.UUID
     role_name: str
-    privileges: list[MgmtPrivilege]
-    resource_type: MgmtResourceType
+    privileges: list[Privilege]
+    resource_type: ResourceType
     resource: ResourceRef
 
 
 @dataclasses.dataclass
 class UserForResource:
-    mgmt_user_id: uuid.UUID
+    user_id: uuid.UUID
     email: str | None
     roles: list[RoleForUser]
 
 
 def list_users_for_resource(
     db_session: db.Session,
-    acting_user: MgmtUser,
-    resource_type: MgmtResourceType,
+    acting_user: User,
+    resource_type: ResourceType,
     resource_id: uuid.UUID,
     json_data: dict,
 ) -> tuple[Sequence[UserForResource], PaginationInfo]:
@@ -123,8 +123,8 @@ def list_users_for_resource(
     resource_by_id = {relevant.get_resource_id(): relevant for relevant in relevant_resources}
 
     log_extra = {
-        "mgmt_resource_id": resource_id,
-        "mgmt_resource_type": resource_type,
+        "resource_id": resource_id,
+        "resource_type": resource_type,
         "inheritance": params.filters.inheritance,
         "required_privileges": "|".join(sorted(params.filters.required_privileges)),
         "relevant_resource_count": len(relevant_resources),
@@ -136,14 +136,14 @@ def list_users_for_resource(
     )
 
     # Sorting is allowed on email, which lives on the login.gov link rather than on
-    # MgmtUser, so that table has to be in the FROM clause. Outer, because a user
+    # User, so that table has to be in the FROM clause. Outer, because a user
     # without a login still belongs in the results.
     # nulls_last so those users sort to the end rather than leading the first page.
-    stmt = stmt.outerjoin(MgmtUser.linked_login_gov_external_user)
+    stmt = stmt.outerjoin(User.linked_login_gov_external_user)
     stmt = apply_sorting(stmt, params.pagination.sort_order, SORT_COLUMN_MAP, nulls_last=True)
 
-    paginator: Paginator[MgmtUser] = Paginator(
-        MgmtUser, stmt, db_session, page_size=params.pagination.page_size
+    paginator: Paginator[User] = Paginator(
+        User, stmt, db_session, page_size=params.pagination.page_size
     )
     users = paginator.page_at(page_offset=params.pagination.page_offset)
     pagination_info = PaginationInfo.from_pagination_params(params.pagination, paginator)
@@ -151,16 +151,16 @@ def list_users_for_resource(
     # Roles are fetched for just this page of users rather than joined into the query
     # above, which would fan out the user rows and throw off the pagination counts.
     roles_by_user = enforcer.get_roles_by_user_for_resources(
-        [user.mgmt_user_id for user in users], list(resource_by_id.keys())
+        [user.user_id for user in users], list(resource_by_id.keys())
     )
 
     users_for_resource = [
         UserForResource(
-            mgmt_user_id=user.mgmt_user_id,
+            user_id=user.user_id,
             email=user.email,
             roles=[
                 _build_role_for_user(role, resource_by_id[granting_resource_id])
-                for granting_resource_id, role in roles_by_user.get(user.mgmt_user_id, [])
+                for granting_resource_id, role in roles_by_user.get(user.user_id, [])
             ],
         )
         for user in users
@@ -174,11 +174,9 @@ def list_users_for_resource(
     return users_for_resource, pagination_info
 
 
-def _build_role_for_user(
-    role: MgmtRole, granting_resource: AbstractResourceTableMixin
-) -> RoleForUser:
+def _build_role_for_user(role: Role, granting_resource: AbstractResourceTableMixin) -> RoleForUser:
     return RoleForUser(
-        mgmt_role_id=role.mgmt_role_id,
+        role_id=role.role_id,
         role_name=role.role_name,
         # privileges is a set on the model, so sort it for a stable response order
         privileges=sorted(role.privileges),
