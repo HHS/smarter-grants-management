@@ -85,6 +85,9 @@ class MgmtWorkflowEventProcessingResult(StrEnum):
     RETRYABLE_ERROR = "retryable_error"
     GENERAL_ERROR = "general_error"
 
+class ResourceInheritance(StrEnum):
+    FULL = "full"
+    DIRECT = "direct"
 
 # The resource types each privilege is allowed to be assigned at. A privilege may only be
 # included in a role when the role's resource types are a subset of the privilege's allowed
