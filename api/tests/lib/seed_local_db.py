@@ -67,8 +67,10 @@ def create_users(db_session: db.Session) -> None:
         scenario_name="Another API Key User",
     ).with_oauth_login("another_api_key_user").with_api_key("local-dev-api-key-2").build()
 
+    # User for cross-service communication with Simpler Grants
+    # This is a dedicated service user separate from other test users
     UserBuilder(
-        user_id=uuid.UUID("c3d4e5f6-a7b8-4c5d-9e0f-1a2b3c4d5e6f"),
+        user_id=uuid.UUID("d4e5f6a7-b8c9-4d5e-0f1a-2b3c4d5e6f7a"),
         db_session=db_session,
         scenario_name="Opportunity User - For Simpler Grants Communication",
     ).with_oauth_login("opportunity_user").with_api_key("local-grants-mgmt-api-key").build()
