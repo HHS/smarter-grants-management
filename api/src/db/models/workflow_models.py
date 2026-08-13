@@ -85,7 +85,9 @@ class MgmtWorkflowEventHistory(GrantorSchemaTable, TimestampMixin):
     MgmtWorkflowEventHistory model to store the SQS events in the DB.
 
     Attributes:
-        mgmt_workflow_event_history_id: Primary key, UUID
+        mgmt_workflow_event_history_id: Primary key, UUID - the event_id the caller
+            generated and put on the queue, not an ID we mint here. Keying on it is what
+            lets the ID handed back by the event API find this row later.
         mgmt_workflow_id: Foreign key to mgmt_workflow table, note the field is nullable in this table
         event_data: JSONB field containing event data
         sent_at: Timestamp indicating when the event was sent

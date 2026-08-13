@@ -39,9 +39,7 @@ resource "aws_ecs_task_definition" "workflow" {
       essential              = true,
       readonlyRootFilesystem = true,
 
-      # A placeholder consumer that drains the queue without processing it.
-      # Swapped for the workflow manager once the engine is copied over.
-      command = ["flask", "task", "workflow-queue-listener"],
+      command = ["flask", "workflow", "workflow-main"],
 
       healthCheck = null,
 
