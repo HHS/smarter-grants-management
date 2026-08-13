@@ -305,10 +305,13 @@ class AuthorizationEnforcer:
 
         Returns the statement rather than the rows so callers can add their own sorting,
         pagination, and filters - the endpoint paginates, the workflow approval emails
-        want every recipient. The statement is rooted on MgmtUser and outer-joined to
-        the login.gov external user, which is what makes ``MgmtLinkExternalUser.email``
-        available to sort on or filter by. Note that users without a login.gov link are
-        included, with a null email - callers that need an address filter them out.
+        want every recipient. A caller that needs to sort or filter on the user's email
+        has to join MgmtLinkExternalUser itself, since the email lives there rather than
+        on MgmtUser. The link is eager-loaded either way so reading ``user.email`` off
+        the results doesn't fire a query per user.
+
+        Note that users without a login.gov link are included, with a null email -
+        callers that need an address filter them out.
 
         A user must hold EVERY required privilege, though not necessarily all from the
         same role, matching how can_access treats a privilege set. Passing no privileges
@@ -316,11 +319,7 @@ class AuthorizationEnforcer:
         """
         resource_ids = [resource.get_resource_id() for resource in resources]
 
-        stmt = (
-            select(MgmtUser)
-            .outerjoin(MgmtUser.linked_login_gov_external_user)
-            .options(selectinload(MgmtUser.linked_login_gov_external_user))
-        )
+        stmt = select(MgmtUser).options(selectinload(MgmtUser.linked_login_gov_external_user))
 
         has_role_on_resource = (
             select(1)

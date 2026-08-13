@@ -18,15 +18,9 @@ from src.services.resources.get_resource import get_resource
 
 logger = logging.getLogger(__name__)
 
-# The types this endpoint lists users for. Deliberately narrower than what
-# get_resource can fetch - the others get added as we need them.
-SUPPORTED_RESOURCE_TYPES = {
-    MgmtResourceType.PARTNER,
-    MgmtResourceType.GRANTOR_ORGANIZATION,
-    MgmtResourceType.PROGRAM,
-}
-
-# The privilege a caller needs on the resource in order to list its users.
+# The privilege a caller needs on the resource in order to list its users. This also
+# defines which resource types the endpoint supports at all - deliberately narrower than
+# what get_resource can fetch, with the others added as we need them.
 REQUIRED_PRIVILEGE_FOR_RESOURCE_TYPE = {
     MgmtResourceType.PARTNER: MgmtPrivilege.VIEW_PARTNER,
     MgmtResourceType.GRANTOR_ORGANIZATION: MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION,
@@ -34,7 +28,7 @@ REQUIRED_PRIVILEGE_FOR_RESOURCE_TYPE = {
 }
 
 # email lives on the login.gov link rather than the user, so it can't be resolved by
-# name off MgmtUser - the query outer-joins that table and we point sorting at it.
+# name off MgmtUser - we join that table below and point sorting straight at its column.
 SORT_COLUMN_MAP: dict[str, InstrumentedAttribute] = {
     "mgmt_user_id": MgmtUser.mgmt_user_id,
     "email": MgmtLinkExternalUser.email,
@@ -45,30 +39,13 @@ class PrivilegeFilter(BaseModel):
     one_of: set[MgmtPrivilege] = set()
 
 
-class InheritanceFilter(BaseModel):
-    one_of: list[ResourceInheritance] = []
-
-
 class ListUsersForResourceFilters(BaseModel):
     privilege: PrivilegeFilter = Field(default_factory=PrivilegeFilter)
-    inheritance: InheritanceFilter = Field(default_factory=InheritanceFilter)
+    inheritance: ResourceInheritance = ResourceInheritance.DIRECT
 
     @property
     def required_privileges(self) -> set[MgmtPrivilege]:
         return self.privilege.one_of
-
-    @property
-    def resource_inheritance(self) -> ResourceInheritance:
-        """The single inheritance value, defaulting to direct.
-
-        The filter is shaped as a one_of for consistency with every other filter we
-        expose, but the schema caps it at a single value - asking for both full and
-        direct at once has no meaning.
-        """
-        if self.inheritance.one_of:
-            return self.inheritance.one_of[0]
-
-        return ResourceInheritance.DIRECT
 
 
 class ListUsersForResourceRequest(BaseModel):
@@ -127,7 +104,7 @@ def list_users_for_resource(
         db_session,
         resource_type,
         resource_id,
-        supported_resource_types=SUPPORTED_RESOURCE_TYPES,
+        supported_resource_types=REQUIRED_PRIVILEGE_FOR_RESOURCE_TYPE.keys(),
     )
 
     enforcer = AuthorizationEnforcer(db_session)
@@ -141,14 +118,14 @@ def list_users_for_resource(
     # than just their IDs because they carry the names the response reports, which saves
     # re-fetching them per role below.
     relevant_resources = enforcer.get_resources_for_user_lookup(
-        resource, params.filters.resource_inheritance
+        resource, params.filters.inheritance
     )
     resource_by_id = {relevant.get_resource_id(): relevant for relevant in relevant_resources}
 
     log_extra = {
         "mgmt_resource_id": resource_id,
         "mgmt_resource_type": resource_type,
-        "inheritance": params.filters.resource_inheritance,
+        "inheritance": params.filters.inheritance,
         "required_privileges": "|".join(sorted(params.filters.required_privileges)),
         "relevant_resource_count": len(relevant_resources),
     }
@@ -158,8 +135,11 @@ def list_users_for_resource(
         relevant_resources, required_privileges=params.filters.required_privileges
     )
 
-    # nulls_last so users with no login.gov link (and therefore no email) sort to the
-    # end rather than leading the first page when sorting ascending by email.
+    # Sorting is allowed on email, which lives on the login.gov link rather than on
+    # MgmtUser, so that table has to be in the FROM clause. Outer, because a user
+    # without a login still belongs in the results.
+    # nulls_last so those users sort to the end rather than leading the first page.
+    stmt = stmt.outerjoin(MgmtUser.linked_login_gov_external_user)
     stmt = apply_sorting(stmt, params.pagination.sort_order, SORT_COLUMN_MAP, nulls_last=True)
 
     paginator: Paginator[MgmtUser] = Paginator(

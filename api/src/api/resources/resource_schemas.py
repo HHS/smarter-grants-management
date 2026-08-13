@@ -1,15 +1,7 @@
-from typing import Any
-
-from grants_shared.api.schemas.extension import (
-    MarshmallowErrorContainer,
-    Schema,
-    SchemaValidationError,
-    fields,
-)
+from grants_shared.api.schemas.extension import Schema, fields
 from grants_shared.api.schemas.response_schema import AbstractResponseSchema, PaginationMixinSchema
 from grants_shared.api.schemas.search_schema import StrSearchSchemaBuilder
 from grants_shared.pagination.pagination_schema import generate_pagination_schema
-from marshmallow import ValidationError, validates_schema
 
 from src.constants.lookup_constants import MgmtPrivilege, MgmtResourceType, ResourceInheritance
 
@@ -20,39 +12,19 @@ class ListUserForResourceFilterSchema(Schema):
         .with_one_of(allowed_values=MgmtPrivilege)
         .build(),
         metadata={
-            "description": "Only return users holding this privilege on the resource. A user must hold every privilege given."
+            "description": "Only return users holding these privileges on the resource. A user must hold every privilege given, though not necessarily all from the same role."
         },
     )
 
-    inheritance = fields.Nested(
-        StrSearchSchemaBuilder("InheritanceFilterSchema")
-        .with_one_of(allowed_values=ResourceInheritance)
-        .build(),
+    # A scalar rather than a one_of filter: asking for both full and direct at once has
+    # no meaning, so there is nothing for a list to express.
+    inheritance = fields.Enum(
+        ResourceInheritance,
+        load_default=ResourceInheritance.DIRECT,
         metadata={
-            "description": "Whether to consider roles granted anywhere up the resource hierarchy ('full') or only on the resource itself ('direct'). Defaults to 'direct'."
+            "description": "Whether to consider roles granted anywhere up the resource hierarchy ('full') or only on the resource itself ('direct')."
         },
     )
-
-    # StrSearchSchemaBuilder can't express a maximum length on a one_of, so the caps the
-    # API contract promises are enforced here. Note the underlying query handles any
-    # number of privileges (a user must hold all of them) - the cap is an API-surface
-    # decision we can widen later, not a limitation of the lookup.
-    _MAX_VALUES_PER_FILTER = 1
-
-    @validates_schema
-    def validate_filter_lengths(self, data: dict[str, Any], **kwargs: Any) -> None:
-        for field_name in ("privilege", "inheritance"):
-            one_of = (data.get(field_name) or {}).get("one_of") or []
-            if len(one_of) > self._MAX_VALUES_PER_FILTER:
-                raise ValidationError(
-                    [
-                        MarshmallowErrorContainer(
-                            SchemaValidationError.MAX_LENGTH,
-                            f"{field_name} supports at most {self._MAX_VALUES_PER_FILTER} value",
-                        )
-                    ],
-                    field_name,
-                )
 
 
 class ListUserForResourceRequestSchema(Schema):

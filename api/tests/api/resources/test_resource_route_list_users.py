@@ -157,7 +157,7 @@ def test_list_users_inheritance_filter_200(client, db_session, partner, organiza
         MgmtResourceType.GRANTOR_ORGANIZATION,
         organization.grantor_organization_id,
         viewer_token,
-        {"filters": {"inheritance": {"one_of": [ResourceInheritance.DIRECT]}}},
+        {"filters": {"inheritance": ResourceInheritance.DIRECT}},
     )
     assert direct.status_code == 200
     assert {row["mgmt_user_id"] for row in direct.json["data"]} == {str(org_user.mgmt_user_id)}
@@ -167,7 +167,7 @@ def test_list_users_inheritance_filter_200(client, db_session, partner, organiza
         MgmtResourceType.GRANTOR_ORGANIZATION,
         organization.grantor_organization_id,
         viewer_token,
-        {"filters": {"inheritance": {"one_of": [ResourceInheritance.FULL]}}},
+        {"filters": {"inheritance": ResourceInheritance.FULL}},
     )
     assert full.status_code == 200
     assert {row["mgmt_user_id"] for row in full.json["data"]} >= {
@@ -229,7 +229,7 @@ def test_list_users_paginates_over_distinct_users(
         organization.grantor_organization_id,
         viewer_token,
         {
-            "filters": {"inheritance": {"one_of": [ResourceInheritance.FULL]}},
+            "filters": {"inheritance": ResourceInheritance.FULL},
             "pagination": {**DEFAULT_PAGINATION, "page_size": 2},
         },
     )
@@ -335,35 +335,52 @@ def test_list_users_unknown_resource_type_in_path_404(client, partner, viewer_to
     assert response.status_code == 404
 
 
+def test_list_users_multiple_privileges_requires_all_of_them(
+    client, db_session, partner, viewer_token
+):
+    """More than one privilege is allowed, and a user must hold every one.
+
+    The endpoint originally capped this at one privilege on the assumption the query
+    would be awkward; it isn't, so the cap is gone.
+    """
+    has_both = setup_user_with_roles(
+        db_session,
+        resources=[partner],
+        privileges=[MgmtPrivilege.UPDATE_PARTNER, MgmtPrivilege.MANAGE_PARTNER_MEMBERS],
+    )
+    setup_user_with_roles(
+        db_session, resources=[partner], privileges=[MgmtPrivilege.UPDATE_PARTNER]
+    )
+    db_session.commit()
+
+    response = post_list(
+        client,
+        MgmtResourceType.PARTNER,
+        partner.partner_id,
+        viewer_token,
+        {
+            "filters": {
+                "privilege": {
+                    "one_of": [
+                        MgmtPrivilege.UPDATE_PARTNER,
+                        MgmtPrivilege.MANAGE_PARTNER_MEMBERS,
+                    ]
+                }
+            }
+        },
+    )
+
+    assert response.status_code == 200
+    assert [row["mgmt_user_id"] for row in response.json["data"]] == [str(has_both.mgmt_user_id)]
+
+
 @pytest.mark.parametrize(
     "body,expected_field",
     [
-        # More than one privilege - capped by the API even though the query supports it
-        (
-            {
-                "filters": {
-                    "privilege": {
-                        "one_of": [MgmtPrivilege.VIEW_PARTNER, MgmtPrivilege.UPDATE_PARTNER]
-                    }
-                }
-            },
-            "privilege",
-        ),
-        # Both inheritance values at once
-        (
-            {
-                "filters": {
-                    "inheritance": {
-                        "one_of": [ResourceInheritance.FULL, ResourceInheritance.DIRECT]
-                    }
-                }
-            },
-            "inheritance",
-        ),
         # Not a real privilege
         ({"filters": {"privilege": {"one_of": ["not_a_privilege"]}}}, "privilege"),
         # Not a real inheritance value
-        ({"filters": {"inheritance": {"one_of": ["sideways"]}}}, "inheritance"),
+        ({"filters": {"inheritance": "sideways"}}, "inheritance"),
         # Not a sortable field
         (
             {
