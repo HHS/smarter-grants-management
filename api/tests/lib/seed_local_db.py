@@ -75,6 +75,7 @@ def create_users(db_session: db.Session) -> None:
         scenario_name="Opportunity User - For Simpler Grants Communication",
     ).with_oauth_login("opportunity_user").with_api_key("local-grants-mgmt-api-key").build()
 
+
 def create_programs() -> None:
     # Create a few programs just to have something to work with.
     # Later work will add more specific scenarios

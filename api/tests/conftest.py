@@ -321,7 +321,7 @@ def mock_s3_bucket_resource(mock_s3):
 def mock_s3_bucket(mock_s3_bucket_resource):
     return mock_s3_bucket_resource.name
 
-  
+
 @pytest.fixture
 def mock_sqs(reset_aws_env_vars):
     with moto.mock_aws(config={"core": {"service_whitelist": ["sqs"]}}):
