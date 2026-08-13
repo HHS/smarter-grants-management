@@ -10,8 +10,8 @@ from src.auth.api_user_key_auth import (
     api_user_key_auth,
     validate_api_key_in_db,
 )
-from src.db.models.user_models import MgmtUserApiKey
-from tests.db.models.factories import MgmtUserApiKeyFactory, MgmtUserFactory
+from src.db.models.user_models import UserApiKey
+from tests.db.models.factories import UserApiKeyFactory, UserFactory
 
 
 @pytest.fixture(scope="module")
@@ -29,7 +29,7 @@ def mini_app(monkeypatch_module):
     @mini_app.auth_required(api_user_key_auth)
     def dummy_endpoint():
         assert api_user_key_auth.current_user is not None
-        assert isinstance(api_user_key_auth.current_user, MgmtUserApiKey)
+        assert isinstance(api_user_key_auth.current_user, UserApiKey)
 
         return {"message": "ok"}
 
@@ -39,13 +39,13 @@ def mini_app(monkeypatch_module):
 
 def test_validate_api_key_in_db_success(enable_factory_create, db_session):
     """Test successful API key validation"""
-    user = MgmtUserFactory.create()
-    api_key = MgmtUserApiKeyFactory.create(mgmt_user=user, key_id="test-key-123", is_active=True)
+    user = UserFactory.create()
+    api_key = UserApiKeyFactory.create(user=user, key_id="test-key-123", is_active=True)
 
     result = validate_api_key_in_db("test-key-123", db_session)
 
-    assert result.mgmt_api_key_id == api_key.mgmt_api_key_id
-    assert result.mgmt_user_id == user.mgmt_user_id
+    assert result.api_key_id == api_key.api_key_id
+    assert result.user_id == user.user_id
     assert result.is_active is True
 
 
@@ -57,8 +57,8 @@ def test_validate_api_key_in_db_key_not_found(enable_factory_create, db_session)
 
 def test_validate_api_key_in_db_key_inactive(enable_factory_create, db_session):
     """Test API key validation when key is inactive"""
-    user = MgmtUserFactory.create()
-    MgmtUserApiKeyFactory.create(mgmt_user=user, key_id="inactive-key", is_active=False)
+    user = UserFactory.create()
+    UserApiKeyFactory.create(user=user, key_id="inactive-key", is_active=False)
 
     with pytest.raises(ApiKeyValidationError, match="API key is inactive"):
         validate_api_key_in_db("inactive-key", db_session)
@@ -68,9 +68,9 @@ def test_validate_api_key_in_db_key_inactive(enable_factory_create, db_session):
 def test_api_user_key_auth_happy_path(mini_app, enable_factory_create, db_session):
     """Test successful API Gateway key authentication"""
 
-    user = MgmtUserFactory.create()
-    api_key = MgmtUserApiKeyFactory.create(
-        mgmt_user=user, key_id="valid-gateway-key", is_active=True, last_used=None
+    user = UserFactory.create()
+    api_key = UserApiKeyFactory.create(
+        user=user, key_id="valid-gateway-key", is_active=True, last_used=None
     )
 
     resp = mini_app.test_client().get(
@@ -94,8 +94,8 @@ def test_api_user_key_auth_invalid_key(mini_app, enable_factory_create, db_sessi
 
 def test_api_user_key_auth_inactive_key(mini_app, enable_factory_create, db_session):
     """Test API Gateway key authentication with inactive key"""
-    user = MgmtUserFactory.create()
-    MgmtUserApiKeyFactory.create(mgmt_user=user, key_id="inactive-gateway-key", is_active=False)
+    user = UserFactory.create()
+    UserApiKeyFactory.create(user=user, key_id="inactive-gateway-key", is_active=False)
 
     resp = mini_app.test_client().get(
         "/dummy_auth_endpoint", headers={"X-API-Key": "inactive-gateway-key"}
@@ -122,9 +122,9 @@ def test_api_user_key_auth_empty_key_header(mini_app, enable_factory_create, db_
 
 def test_api_user_key_auth_multiple_active_keys(mini_app, enable_factory_create, db_session):
     """Test that different API keys for the same user work independently"""
-    user = MgmtUserFactory.create()
-    api_key1 = MgmtUserApiKeyFactory.create(mgmt_user=user, key_id="user-key-1", is_active=True)
-    api_key2 = MgmtUserApiKeyFactory.create(mgmt_user=user, key_id="user-key-2", is_active=True)
+    user = UserFactory.create()
+    api_key1 = UserApiKeyFactory.create(user=user, key_id="user-key-1", is_active=True)
+    api_key2 = UserApiKeyFactory.create(user=user, key_id="user-key-2", is_active=True)
 
     resp1 = mini_app.test_client().get("/dummy_auth_endpoint", headers={"X-API-Key": "user-key-1"})
     assert resp1.status_code == 200

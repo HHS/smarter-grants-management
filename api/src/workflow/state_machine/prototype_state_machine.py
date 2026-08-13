@@ -3,7 +3,7 @@ from enum import StrEnum
 from statemachine import Event
 from statemachine.states import States
 
-from src.constants.lookup_constants import MgmtWorkflowType
+from src.constants.lookup_constants import WorkflowType
 from src.workflow.base_state_machine import BaseStateMachine
 from src.workflow.registry.workflow_registry import WorkflowRegistry
 from src.workflow.state_persistence.program_persistence_model import ProgramPersistenceModel
@@ -23,7 +23,7 @@ class PrototypeState(StrEnum):
 
 
 prototype_state_machine_config = WorkflowConfig(
-    workflow_type=MgmtWorkflowType.PROTOTYPE_WORKFLOW,
+    workflow_type=WorkflowType.PROTOTYPE_WORKFLOW,
     # The persistence model is also what declares the resource type this workflow
     # attaches to, so there's no separate resource_type to keep in step with it.
     persistence_model_cls=ProgramPersistenceModel,

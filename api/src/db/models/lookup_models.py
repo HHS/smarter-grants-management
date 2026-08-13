@@ -9,14 +9,14 @@ from grants_shared.db.models.lookup import (
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.constants.lookup_constants import (
+    ApprovalResponseType,
+    ApprovalType,
     ExternalUserType,
     GrantorOrganizationType,
-    MgmtApprovalResponseType,
-    MgmtApprovalType,
-    MgmtPrivilege,
-    MgmtResourceType,
-    MgmtUserType,
-    MgmtWorkflowType,
+    Privilege,
+    ResourceType,
+    UserType,
+    WorkflowType,
 )
 from src.db.models.grantor_schema_table import GrantorSchemaTable
 
@@ -27,10 +27,10 @@ from src.db.models.grantor_schema_table import GrantorSchemaTable
 # representations in this section
 #######################################################
 
-MGMT_USER_TYPE_CONFIG: LookupConfig[MgmtUserType] = LookupConfig(
+USER_TYPE_CONFIG: LookupConfig[UserType] = LookupConfig(
     [
-        LookupStr(MgmtUserType.STANDARD, 1),
-        LookupStr(MgmtUserType.INTERNAL_FRONTEND, 2),
+        LookupStr(UserType.STANDARD, 1),
+        LookupStr(UserType.INTERNAL_FRONTEND, 2),
     ]
 )
 
@@ -38,29 +38,29 @@ EXTERNAL_USER_TYPE_CONFIG: LookupConfig[ExternalUserType] = LookupConfig(
     [LookupStr(ExternalUserType.LOGIN_GOV, 1)]
 )
 
-MGMT_PRIVILEGE_CONFIG: LookupConfig[MgmtPrivilege] = LookupConfig(
+PRIVILEGE_CONFIG: LookupConfig[Privilege] = LookupConfig(
     [
-        LookupStr(MgmtPrivilege.VIEW_PARTNER, 1),
-        LookupStr(MgmtPrivilege.UPDATE_PARTNER, 2),
-        LookupStr(MgmtPrivilege.MANAGE_PARTNER_MEMBERS, 3),
-        LookupStr(MgmtPrivilege.VIEW_PROGRAM, 4),
-        LookupStr(MgmtPrivilege.UPDATE_PROGRAM, 5),
-        LookupStr(MgmtPrivilege.UNUSED_PRIVILEGE_101, 6),
-        LookupStr(MgmtPrivilege.VIEW_GRANTOR_ORGANIZATION, 7),
-        LookupStr(MgmtPrivilege.UPDATE_GRANTOR_ORGANIZATION, 8),
-        LookupStr(MgmtPrivilege.MANAGE_GRANTOR_ORGANIZATION_MEMBERS, 9),
-        LookupStr(MgmtPrivilege.UNUSED_PRIVILEGE_102, 10),
-        LookupStr(MgmtPrivilege.UNUSED_PRIVILEGE_103, 11),
+        LookupStr(Privilege.VIEW_PARTNER, 1),
+        LookupStr(Privilege.UPDATE_PARTNER, 2),
+        LookupStr(Privilege.MANAGE_PARTNER_MEMBERS, 3),
+        LookupStr(Privilege.VIEW_PROGRAM, 4),
+        LookupStr(Privilege.UPDATE_PROGRAM, 5),
+        LookupStr(Privilege.UNUSED_PRIVILEGE_101, 6),
+        LookupStr(Privilege.VIEW_GRANTOR_ORGANIZATION, 7),
+        LookupStr(Privilege.UPDATE_GRANTOR_ORGANIZATION, 8),
+        LookupStr(Privilege.MANAGE_GRANTOR_ORGANIZATION_MEMBERS, 9),
+        LookupStr(Privilege.UNUSED_PRIVILEGE_102, 10),
+        LookupStr(Privilege.UNUSED_PRIVILEGE_103, 11),
     ]
 )
 
-MGMT_RESOURCE_TYPE_CONFIG: LookupConfig[MgmtResourceType] = LookupConfig(
+RESOURCE_TYPE_CONFIG: LookupConfig[ResourceType] = LookupConfig(
     [
-        LookupStr(MgmtResourceType.INTERNAL, 1),
-        LookupStr(MgmtResourceType.PARTNER, 2),
-        LookupStr(MgmtResourceType.PROGRAM, 3),
-        LookupStr(MgmtResourceType.GRANTOR_ORGANIZATION, 4),
-        LookupStr(MgmtResourceType.OPPORTUNITY, 5),
+        LookupStr(ResourceType.INTERNAL, 1),
+        LookupStr(ResourceType.PARTNER, 2),
+        LookupStr(ResourceType.PROGRAM, 3),
+        LookupStr(ResourceType.GRANTOR_ORGANIZATION, 4),
+        LookupStr(ResourceType.OPPORTUNITY, 5),
     ]
 )
 
@@ -73,25 +73,25 @@ GRANTOR_ORGANIZATION_TYPE_CONFIG: LookupConfig[GrantorOrganizationType] = Lookup
 
 # Only the values the engine itself needs are seeded here. The find/apply workflow
 # and approval types (opportunity_publish, award recommendation review, and so on)
-# are deliberately not ported - teams add values as they build real mgmt workflows.
-MGMT_WORKFLOW_TYPE_CONFIG: LookupConfig[MgmtWorkflowType] = LookupConfig(
+# are deliberately not ported - teams add values as they build real  workflows.
+WORKFLOW_TYPE_CONFIG: LookupConfig[WorkflowType] = LookupConfig(
     [
-        LookupStr(MgmtWorkflowType.BASIC_TEST_WORKFLOW, 1),
-        LookupStr(MgmtWorkflowType.PROTOTYPE_WORKFLOW, 2),
+        LookupStr(WorkflowType.BASIC_TEST_WORKFLOW, 1),
+        LookupStr(WorkflowType.PROTOTYPE_WORKFLOW, 2),
     ]
 )
 
-MGMT_APPROVAL_TYPE_CONFIG: LookupConfig[MgmtApprovalType] = LookupConfig(
+APPROVAL_TYPE_CONFIG: LookupConfig[ApprovalType] = LookupConfig(
     [
-        LookupStr(MgmtApprovalType.BASIC_TEST_APPROVAL, 1),
+        LookupStr(ApprovalType.BASIC_TEST_APPROVAL, 1),
     ]
 )
 
-MGMT_APPROVAL_RESPONSE_TYPE_CONFIG: LookupConfig[MgmtApprovalResponseType] = LookupConfig(
+APPROVAL_RESPONSE_TYPE_CONFIG: LookupConfig[ApprovalResponseType] = LookupConfig(
     [
-        LookupStr(MgmtApprovalResponseType.APPROVED, 1),
-        LookupStr(MgmtApprovalResponseType.DECLINED, 2),
-        LookupStr(MgmtApprovalResponseType.REQUIRES_MODIFICATION, 3),
+        LookupStr(ApprovalResponseType.APPROVED, 1),
+        LookupStr(ApprovalResponseType.DECLINED, 2),
+        LookupStr(ApprovalResponseType.REQUIRES_MODIFICATION, 3),
     ]
 )
 
@@ -119,18 +119,16 @@ class GrantorLookupTable(LookupTable, GrantorSchemaTable):
 #######################################################
 
 
-@LookupRegistry.register_lookup(MGMT_USER_TYPE_CONFIG)
-class LkMgmtUserType(GrantorLookupTable, TimestampMixin):
-    __tablename__ = "lk_mgmt_user_type"
+@LookupRegistry.register_lookup(USER_TYPE_CONFIG)
+class LkUserType(GrantorLookupTable, TimestampMixin):
+    __tablename__ = "lk_user_type"
 
-    mgmt_user_type_id: Mapped[int] = mapped_column(primary_key=True)
+    user_type_id: Mapped[int] = mapped_column(primary_key=True)
     description: Mapped[str]
 
     @classmethod
-    def from_lookup(cls, lookup: Lookup) -> LkMgmtUserType:
-        return LkMgmtUserType(
-            mgmt_user_type_id=lookup.lookup_val, description=lookup.get_description()
-        )
+    def from_lookup(cls, lookup: Lookup) -> LkUserType:
+        return LkUserType(user_type_id=lookup.lookup_val, description=lookup.get_description())
 
 
 @LookupRegistry.register_lookup(EXTERNAL_USER_TYPE_CONFIG)
@@ -147,31 +145,29 @@ class LkExternalUserType(GrantorLookupTable, TimestampMixin):
         )
 
 
-@LookupRegistry.register_lookup(MGMT_PRIVILEGE_CONFIG)
-class LkMgmtPrivilege(GrantorLookupTable, TimestampMixin):
-    __tablename__ = "lk_mgmt_privilege"
+@LookupRegistry.register_lookup(PRIVILEGE_CONFIG)
+class LkPrivilege(GrantorLookupTable, TimestampMixin):
+    __tablename__ = "lk_privilege"
 
-    mgmt_privilege_id: Mapped[int] = mapped_column(primary_key=True)
+    privilege_id: Mapped[int] = mapped_column(primary_key=True)
     description: Mapped[str]
 
     @classmethod
-    def from_lookup(cls, lookup: Lookup) -> LkMgmtPrivilege:
-        return LkMgmtPrivilege(
-            mgmt_privilege_id=lookup.lookup_val, description=lookup.get_description()
-        )
+    def from_lookup(cls, lookup: Lookup) -> LkPrivilege:
+        return LkPrivilege(privilege_id=lookup.lookup_val, description=lookup.get_description())
 
 
-@LookupRegistry.register_lookup(MGMT_RESOURCE_TYPE_CONFIG)
-class LkMgmtResourceType(GrantorLookupTable, TimestampMixin):
-    __tablename__ = "lk_mgmt_resource_type"
+@LookupRegistry.register_lookup(RESOURCE_TYPE_CONFIG)
+class LkResourceType(GrantorLookupTable, TimestampMixin):
+    __tablename__ = "lk_resource_type"
 
-    mgmt_resource_type_id: Mapped[int] = mapped_column(primary_key=True)
+    resource_type_id: Mapped[int] = mapped_column(primary_key=True)
     description: Mapped[str]
 
     @classmethod
-    def from_lookup(cls, lookup: Lookup) -> LkMgmtResourceType:
-        return LkMgmtResourceType(
-            mgmt_resource_type_id=lookup.lookup_val, description=lookup.get_description()
+    def from_lookup(cls, lookup: Lookup) -> LkResourceType:
+        return LkResourceType(
+            resource_type_id=lookup.lookup_val, description=lookup.get_description()
         )
 
 
@@ -189,43 +185,43 @@ class LkGrantorOrganizationType(GrantorLookupTable, TimestampMixin):
         )
 
 
-@LookupRegistry.register_lookup(MGMT_WORKFLOW_TYPE_CONFIG)
-class LkMgmtWorkflowType(GrantorLookupTable, TimestampMixin):
-    __tablename__ = "lk_mgmt_workflow_type"
+@LookupRegistry.register_lookup(WORKFLOW_TYPE_CONFIG)
+class LkWorkflowType(GrantorLookupTable, TimestampMixin):
+    __tablename__ = "lk_workflow_type"
 
-    mgmt_workflow_type_id: Mapped[int] = mapped_column(primary_key=True)
+    workflow_type_id: Mapped[int] = mapped_column(primary_key=True)
     description: Mapped[str]
 
     @classmethod
-    def from_lookup(cls, lookup: Lookup) -> LkMgmtWorkflowType:
-        return LkMgmtWorkflowType(
-            mgmt_workflow_type_id=lookup.lookup_val, description=lookup.get_description()
+    def from_lookup(cls, lookup: Lookup) -> LkWorkflowType:
+        return LkWorkflowType(
+            workflow_type_id=lookup.lookup_val, description=lookup.get_description()
         )
 
 
-@LookupRegistry.register_lookup(MGMT_APPROVAL_TYPE_CONFIG)
-class LkMgmtApprovalType(GrantorLookupTable, TimestampMixin):
-    __tablename__ = "lk_mgmt_approval_type"
+@LookupRegistry.register_lookup(APPROVAL_TYPE_CONFIG)
+class LkApprovalType(GrantorLookupTable, TimestampMixin):
+    __tablename__ = "lk_approval_type"
 
-    mgmt_approval_type_id: Mapped[int] = mapped_column(primary_key=True)
+    approval_type_id: Mapped[int] = mapped_column(primary_key=True)
     description: Mapped[str]
 
     @classmethod
-    def from_lookup(cls, lookup: Lookup) -> LkMgmtApprovalType:
-        return LkMgmtApprovalType(
-            mgmt_approval_type_id=lookup.lookup_val, description=lookup.get_description()
+    def from_lookup(cls, lookup: Lookup) -> LkApprovalType:
+        return LkApprovalType(
+            approval_type_id=lookup.lookup_val, description=lookup.get_description()
         )
 
 
-@LookupRegistry.register_lookup(MGMT_APPROVAL_RESPONSE_TYPE_CONFIG)
-class LkMgmtApprovalResponseType(GrantorLookupTable, TimestampMixin):
-    __tablename__ = "lk_mgmt_approval_response_type"
+@LookupRegistry.register_lookup(APPROVAL_RESPONSE_TYPE_CONFIG)
+class LkApprovalResponseType(GrantorLookupTable, TimestampMixin):
+    __tablename__ = "lk_approval_response_type"
 
-    mgmt_approval_response_type_id: Mapped[int] = mapped_column(primary_key=True)
+    approval_response_type_id: Mapped[int] = mapped_column(primary_key=True)
     description: Mapped[str]
 
     @classmethod
-    def from_lookup(cls, lookup: Lookup) -> LkMgmtApprovalResponseType:
-        return LkMgmtApprovalResponseType(
-            mgmt_approval_response_type_id=lookup.lookup_val, description=lookup.get_description()
+    def from_lookup(cls, lookup: Lookup) -> LkApprovalResponseType:
+        return LkApprovalResponseType(
+            approval_response_type_id=lookup.lookup_val, description=lookup.get_description()
         )

@@ -24,7 +24,7 @@ from src.auth.auth_utils import (
     with_logout_redirect_error_handler,
 )
 from src.auth.multi_auth import jwt_or_api_user_key_multi_auth
-from src.db.models.user_models import MgmtUserTokenSession
+from src.db.models.user_models import UserTokenSession
 from src.services.users.login_gov_callback_handler import (
     handle_login_gov_callback_request,
     handle_login_gov_token,
@@ -130,7 +130,7 @@ def user_logout_callback() -> flask.Response:
 def user_token_logout(db_session: db.Session) -> response.ApiResponse:
     logger.info("POST /v1/users/token/logout")
 
-    user_token_session: MgmtUserTokenSession = api_jwt_auth.get_user_token_session()
+    user_token_session: UserTokenSession = api_jwt_auth.get_user_token_session()
     with db_session.begin():
         user_token_session.is_valid = False
         db_session.add(user_token_session)
@@ -151,7 +151,7 @@ def user_token_logout(db_session: db.Session) -> response.ApiResponse:
 def user_token_refresh(db_session: db.Session) -> response.ApiResponse:
     logger.info("POST /v1/users/token/refresh")
 
-    user_token_session: MgmtUserTokenSession = api_jwt_auth.get_user_token_session()
+    user_token_session: UserTokenSession = api_jwt_auth.get_user_token_session()
 
     with db_session.begin():
         refresh_token_expiration(user_token_session)
@@ -165,24 +165,22 @@ def user_token_refresh(db_session: db.Session) -> response.ApiResponse:
     return response.ApiResponse(message="Success")
 
 
-@user_blueprint.post("/<uuid:mgmt_user_id>/can_access")
-@user_blueprint.input(user_schemas.MgmtUserCanAccessRequestSchema, location="json")
-@user_blueprint.output(user_schemas.MgmtUserCanAccessResponseSchema)
+@user_blueprint.post("/<uuid:user_id>/can_access")
+@user_blueprint.input(user_schemas.UserCanAccessRequestSchema, location="json")
+@user_blueprint.output(user_schemas.UserCanAccessResponseSchema)
 @user_blueprint.doc(responses=[200, 401, 403, 404])
 @user_blueprint.auth_required(jwt_or_api_user_key_multi_auth)
 @flask_db.with_db_session()
-def user_can_access(
-    db_session: db.Session, mgmt_user_id: UUID, json_data: dict
-) -> response.ApiResponse:
+def user_can_access(db_session: db.Session, user_id: UUID, json_data: dict) -> response.ApiResponse:
     """Check whether the calling user can access a resource with the given privileges."""
-    add_extra_data_to_current_request_logs({"mgmt_user_id": mgmt_user_id})
-    logger.info("POST /v1/users/:mgmt_user_id/can_access")
+    add_extra_data_to_current_request_logs({"user_id": user_id})
+    logger.info("POST /v1/users/:user_id/can_access")
 
     # Get the user from multi-auth (supports both JWT and User API Key)
     user = jwt_or_api_user_key_multi_auth.get_user()
 
     # A user may only check access for themselves
-    if user.mgmt_user_id != mgmt_user_id:
+    if user.user_id != user_id:
         raise_flask_error(403, "Forbidden")
 
     with db_session.begin():
@@ -190,9 +188,9 @@ def user_can_access(
         check_user_can_access(
             db_session,
             user=user,
-            resource_type=json_data["mgmt_resource_type"],
-            resource_id=json_data["mgmt_resource_id"],
-            privileges=set(json_data["mgmt_privileges"]),
+            resource_type=json_data["resource_type"],
+            resource_id=json_data["resource_id"],
+            privileges=set(json_data["privileges"]),
         )
 
     return response.ApiResponse(message="Success")

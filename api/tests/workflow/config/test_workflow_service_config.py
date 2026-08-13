@@ -6,7 +6,7 @@ from src.workflow.config.workflow_service_config import WorkflowServiceConfig
 
 def test_workflow_service_config(workflow_user):
     config = WorkflowServiceConfig()
-    assert config.workflow_service_internal_user_id == workflow_user.mgmt_user_id
+    assert config.workflow_service_internal_user_id == workflow_user.user_id
 
 
 def test_workflow_service_config_missing_param(monkeypatch):

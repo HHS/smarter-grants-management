@@ -159,7 +159,7 @@ def internal_resource(monkeypatch_session, db_client):
     can depend on this fixture rather than creating one themselves. Scoped to the session
     so we only create it once for the whole suite.
     """
-    monkeypatch_session.setenv("MGMT_INTERNAL_RESOURCE_ID", "2a9c7e50-6b1e-4c8f-9d3a-5e7f1b2c4d6e")
+    monkeypatch_session.setenv("INTERNAL_RESOURCE_ID", "2a9c7e50-6b1e-4c8f-9d3a-5e7f1b2c4d6e")
 
     with db_client.get_session() as db_session, db_session.begin():
         create_internal_resource(db_session)

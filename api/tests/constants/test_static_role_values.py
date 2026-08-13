@@ -19,5 +19,5 @@ def test_core_roles_have_expected_privileges_and_resource_types():
 
 
 def test_core_roles_have_unique_ids():
-    role_ids = [role.mgmt_role_id for role in CORE_ROLES]
+    role_ids = [role.role_id for role in CORE_ROLES]
     assert len(role_ids) == len(set(role_ids))

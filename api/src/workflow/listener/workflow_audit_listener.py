@@ -4,7 +4,7 @@ from typing import Any
 from grants_shared.adapters import db
 from statemachine.event_data import EventData
 
-from src.db.models.workflow_models import MgmtWorkflowAudit
+from src.db.models.workflow_models import WorkflowAudit
 from src.workflow.config.workflow_service_config import WorkflowServiceConfig
 from src.workflow.event.state_machine_event import StateMachineEvent
 from src.workflow.event.workflow_metric_context import WorkflowMetricContext
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class WorkflowAuditListener:
     """
     Listener for state machine transitions that automatically creates
-    audit records in the mgmt_workflow_audit table.
+    audit records in the workflow_audit table.
 
     This listener is attached to state machines to track all state transitions,
     including who performed the action, what event triggered it, and the
@@ -69,13 +69,13 @@ class WorkflowAuditListener:
             # Subsequent automatic transitions - use the system user ID from config
             # This avoids a DB query and will fail at commit time if the user doesn't exist
             config = WorkflowServiceConfig()
-            audit_kwargs["acting_mgmt_user_id"] = config.workflow_service_internal_user_id
+            audit_kwargs["acting_user_id"] = config.workflow_service_internal_user_id
 
         # Increment the transition count for subsequent transitions
         self.transition_count += 1
 
         # Create the audit record
-        workflow_audit = MgmtWorkflowAudit(**audit_kwargs)
+        workflow_audit = WorkflowAudit(**audit_kwargs)
 
         self.db_session.add(workflow_audit)
 

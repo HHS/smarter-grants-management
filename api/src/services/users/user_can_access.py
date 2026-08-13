@@ -6,23 +6,21 @@ from sqlalchemy import select
 from sqlalchemy.orm import InstrumentedAttribute
 
 from src.auth.authorization_enforcer import AuthorizationEnforcer
-from src.constants.lookup_constants import MgmtPrivilege, MgmtResourceType
-from src.db.models.resource_models import AbstractResourceTableMixin, MgmtInternalResource
-from src.db.models.user_models import MgmtUser
+from src.constants.lookup_constants import Privilege, ResourceType
+from src.db.models.resource_models import AbstractResourceTableMixin, InternalResource
+from src.db.models.user_models import User
 
 # Each resource type we support needs its own getter that fetches the resource by its ID.
-RESOURCE_MAP: dict[
-    MgmtResourceType, tuple[type[AbstractResourceTableMixin], InstrumentedAttribute]
-] = {
-    MgmtResourceType.INTERNAL: (
-        MgmtInternalResource,
-        MgmtInternalResource.mgmt_internal_resource_id,
+RESOURCE_MAP: dict[ResourceType, tuple[type[AbstractResourceTableMixin], InstrumentedAttribute]] = {
+    ResourceType.INTERNAL: (
+        InternalResource,
+        InternalResource.internal_resource_id,
     )
 }
 
 
 def get_resource(
-    db_session: db.Session, resource_type: MgmtResourceType, resource_id: uuid.UUID
+    db_session: db.Session, resource_type: ResourceType, resource_id: uuid.UUID
 ) -> AbstractResourceTableMixin:
     # An unsupported (or mismatched) type is treated the same as a missing resource so we
     # don't reveal that a resource with that ID exists as a different type.
@@ -40,10 +38,10 @@ def get_resource(
 
 def check_user_can_access(
     db_session: db.Session,
-    user: MgmtUser,
-    resource_type: MgmtResourceType,
+    user: User,
+    resource_type: ResourceType,
     resource_id: uuid.UUID,
-    privileges: set[MgmtPrivilege],
+    privileges: set[Privilege],
 ) -> None:
     resource = get_resource(db_session, resource_type, resource_id)
 

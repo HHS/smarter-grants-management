@@ -8,52 +8,48 @@ from sqlalchemy.orm import selectinload
 
 from src.constants.lookup_constants import ExternalUserType
 from src.db.models.user_models import (
-    MgmtLinkExternalUser,
-    MgmtLoginGovState,
-    MgmtUser,
-    MgmtUserApiKey,
-    MgmtUserTokenSession,
+    LinkExternalUser,
+    LoginGovState,
+    User,
+    UserApiKey,
+    UserTokenSession,
 )
 
 
-class MgmtAuthHandler(
-    AbstractAuthHandler[
-        MgmtUser, MgmtLinkExternalUser, MgmtLoginGovState, MgmtUserApiKey, MgmtUserTokenSession
-    ]
+class AuthHandler(
+    AbstractAuthHandler[User, LinkExternalUser, LoginGovState, UserApiKey, UserTokenSession]
 ):
     """Concrete auth handler backed by the grants management user tables."""
 
     # --- User token sessions ---
 
     def create_token_session(
-        self, user: MgmtUser, token_id: uuid.UUID, expires_at: datetime
-    ) -> MgmtUserTokenSession:
-        user_token_session = MgmtUserTokenSession(
-            mgmt_user=user, token_id=token_id, expires_at=expires_at
-        )
+        self, user: User, token_id: uuid.UUID, expires_at: datetime
+    ) -> UserTokenSession:
+        user_token_session = UserTokenSession(user=user, token_id=token_id, expires_at=expires_at)
         self.db_session.add(user_token_session)
         return user_token_session
 
-    def get_token_session_by_token_id(self, token_id: str) -> MgmtUserTokenSession | None:
+    def get_token_session_by_token_id(self, token_id: str) -> UserTokenSession | None:
         return self.db_session.execute(
-            select(MgmtUserTokenSession)
-            .where(MgmtUserTokenSession.token_id == token_id)
-            .options(selectinload(MgmtUserTokenSession.mgmt_user))
+            select(UserTokenSession)
+            .where(UserTokenSession.token_id == token_id)
+            .options(selectinload(UserTokenSession.user))
         ).scalar()
 
     # --- API keys ---
 
-    def get_api_key_by_key_id(self, key_id: str) -> MgmtUserApiKey | None:
+    def get_api_key_by_key_id(self, key_id: str) -> UserApiKey | None:
         return self.db_session.execute(
-            select(MgmtUserApiKey)
-            .where(MgmtUserApiKey.key_id == key_id)
-            .options(selectinload(MgmtUserApiKey.mgmt_user))
+            select(UserApiKey)
+            .where(UserApiKey.key_id == key_id)
+            .options(selectinload(UserApiKey.user))
         ).scalar_one_or_none()
 
-    def create_api_key(self, user_id: uuid.UUID, key_name: str, key_id: str) -> MgmtUserApiKey:
-        api_key = MgmtUserApiKey(
-            mgmt_api_key_id=uuid.uuid4(),
-            mgmt_user_id=user_id,
+    def create_api_key(self, user_id: uuid.UUID, key_name: str, key_id: str) -> UserApiKey:
+        api_key = UserApiKey(
+            api_key_id=uuid.uuid4(),
+            user_id=user_id,
             key_name=key_name,
             key_id=key_id,
             is_active=True,
@@ -61,54 +57,52 @@ class MgmtAuthHandler(
         self.db_session.add(api_key)
         return api_key
 
-    def list_api_keys_for_user(self, user_id: uuid.UUID) -> Sequence[MgmtUserApiKey]:
+    def list_api_keys_for_user(self, user_id: uuid.UUID) -> Sequence[UserApiKey]:
         result = self.db_session.execute(
-            select(MgmtUserApiKey)
-            .where(MgmtUserApiKey.mgmt_user_id == user_id)
-            .order_by(MgmtUserApiKey.created_at.desc())
+            select(UserApiKey)
+            .where(UserApiKey.user_id == user_id)
+            .order_by(UserApiKey.created_at.desc())
         )
         return list(result.scalars().all())
 
-    def get_api_key_for_user(
-        self, user_id: uuid.UUID, api_key_id: uuid.UUID
-    ) -> MgmtUserApiKey | None:
+    def get_api_key_for_user(self, user_id: uuid.UUID, api_key_id: uuid.UUID) -> UserApiKey | None:
         return self.db_session.execute(
-            select(MgmtUserApiKey).filter(
-                MgmtUserApiKey.mgmt_api_key_id == api_key_id,
-                MgmtUserApiKey.mgmt_user_id == user_id,
+            select(UserApiKey).filter(
+                UserApiKey.api_key_id == api_key_id,
+                UserApiKey.user_id == user_id,
             )
         ).scalar_one_or_none()
 
     # --- login.gov state ---
 
-    def create_login_gov_state(self, state_id: uuid.UUID, nonce: uuid.UUID) -> MgmtLoginGovState:
-        login_gov_state = MgmtLoginGovState(mgmt_login_gov_state_id=state_id, nonce=nonce)
+    def create_login_gov_state(self, state_id: uuid.UUID, nonce: uuid.UUID) -> LoginGovState:
+        login_gov_state = LoginGovState(login_gov_state_id=state_id, nonce=nonce)
         self.db_session.add(login_gov_state)
         return login_gov_state
 
-    def get_login_gov_state(self, state_id: str) -> MgmtLoginGovState | None:
+    def get_login_gov_state(self, state_id: str) -> LoginGovState | None:
         return self.db_session.execute(
-            select(MgmtLoginGovState).where(MgmtLoginGovState.mgmt_login_gov_state_id == state_id)
+            select(LoginGovState).where(LoginGovState.login_gov_state_id == state_id)
         ).scalar_one_or_none()
 
     # --- External user link / user creation ---
 
-    def get_link_external_user(self, external_user_id: str) -> MgmtLinkExternalUser | None:
+    def get_link_external_user(self, external_user_id: str) -> LinkExternalUser | None:
         return self.db_session.execute(
-            select(MgmtLinkExternalUser)
-            .where(MgmtLinkExternalUser.external_user_id == external_user_id)
+            select(LinkExternalUser)
+            .where(LinkExternalUser.external_user_id == external_user_id)
             # We only support login.gov right now, so this does nothing, but let's
             # be explicit just in case.
-            .where(MgmtLinkExternalUser.external_user_type == ExternalUserType.LOGIN_GOV)
-            .options(selectinload(MgmtLinkExternalUser.mgmt_user))
+            .where(LinkExternalUser.external_user_type == ExternalUserType.LOGIN_GOV)
+            .options(selectinload(LinkExternalUser.user))
         ).scalar()
 
-    def create_user_with_external_link(self, external_user_id: str) -> MgmtLinkExternalUser:
-        user = MgmtUser()
+    def create_user_with_external_link(self, external_user_id: str) -> LinkExternalUser:
+        user = User()
         self.db_session.add(user)
 
-        external_user = MgmtLinkExternalUser(
-            mgmt_user=user,
+        external_user = LinkExternalUser(
+            user=user,
             external_user_type=ExternalUserType.LOGIN_GOV,
             external_user_id=external_user_id,
             # note we set other params in the calling method to also handle updates
@@ -117,5 +111,5 @@ class MgmtAuthHandler(
 
         return external_user
 
-    def get_user_for_external_link(self, external_user: MgmtLinkExternalUser) -> MgmtUser:
-        return external_user.mgmt_user
+    def get_user_for_external_link(self, external_user: LinkExternalUser) -> User:
+        return external_user.user

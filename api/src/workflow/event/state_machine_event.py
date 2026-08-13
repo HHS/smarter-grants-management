@@ -1,8 +1,8 @@
 import dataclasses
 from typing import TYPE_CHECKING, Any
 
-from src.db.models.user_models import MgmtUser
-from src.db.models.workflow_models import MgmtWorkflow, MgmtWorkflowEventHistory
+from src.db.models.user_models import User
+from src.db.models.workflow_models import Workflow, WorkflowEventHistory
 from src.workflow.event.workflow_metric_context import WorkflowMetricContext
 from src.workflow.workflow_config import WorkflowConfig
 
@@ -30,16 +30,16 @@ class StateMachineEvent:
 
     event_to_send: str
 
-    acting_user: MgmtUser
+    acting_user: User
 
     # These likely aren't going to be used in the state machine
     # but are used to setup the state machine record and actually
     # run it.
-    workflow: MgmtWorkflow
+    workflow: Workflow
     config: WorkflowConfig
     state_machine_cls: type[BaseStateMachine]
 
-    workflow_history_event: MgmtWorkflowEventHistory
+    workflow_history_event: WorkflowEventHistory
 
     workflow_metric_context: WorkflowMetricContext = dataclasses.field(
         default_factory=WorkflowMetricContext
@@ -55,9 +55,9 @@ class StateMachineEvent:
 
     def get_log_extra(self) -> dict[str, Any]:
         return {
-            "acting_mgmt_user_id": self.acting_user.mgmt_user_id,
+            "acting_user_id": self.acting_user.user_id,
             "event_to_send": self.event_to_send,
-            "mgmt_workflow_event_history_id": self.workflow_history_event.mgmt_workflow_event_history_id,
+            "workflow_event_history_id": self.workflow_history_event.workflow_event_history_id,
             "state_machine_cls": self.state_machine_cls.__name__,
         } | self.workflow.get_log_extra()
 

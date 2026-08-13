@@ -3,8 +3,8 @@ import abc
 import grants_shared.adapters.db as db
 import statemachine.state
 
-from src.constants.lookup_constants import MgmtResourceType
-from src.db.models.workflow_models import MgmtWorkflow
+from src.constants.lookup_constants import ResourceType
+from src.db.models.workflow_models import Workflow
 
 
 class BaseStatePersistenceModel(abc.ABC):
@@ -22,13 +22,13 @@ class BaseStatePersistenceModel(abc.ABC):
     can't be configured out of sync with each other.
     """
 
-    def __init__(self, db_session: db.Session, workflow: MgmtWorkflow):
+    def __init__(self, db_session: db.Session, workflow: Workflow):
         self.db_session = db_session
         self.workflow = workflow
 
     @classmethod
     @abc.abstractmethod
-    def get_resource_type(cls) -> MgmtResourceType:
+    def get_resource_type(cls) -> ResourceType:
         """The type of resource that workflows using this model attach to."""
 
     @property
