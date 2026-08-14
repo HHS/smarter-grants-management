@@ -6,10 +6,6 @@ on:
     # Runs daily at 10 AM EST (staggered an hour after the api ci-openapi job)
     - cron: '0 15 * * *'
 
-  pull_request: # TODO - remove, just seeing if this works for testing it
-    paths:
-      - .github/workflows/ci-openapi.yml
-
 defaults:
   run:
     working-directory: ./api
