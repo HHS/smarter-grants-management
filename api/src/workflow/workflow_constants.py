@@ -12,8 +12,8 @@ class WorkflowConstants:
     HAS_ENOUGH_APPROVALS = "has_enough_approvals"
 
     # Common "on" handlers
-    # Note these are named for the approval rather than the approver - approvals here are
-    # checked against a resource, and there are no agencies in this system.
+    # Named for the approval itself rather than for who gives it - an approval is
+    # checked against the workflow's resource.
     ON_APPROVAL_APPROVED = "on_approval_approved"
     ON_APPROVAL_DECLINED = "on_approval_declined"
     ON_APPROVAL_REQUIRES_MODIFICATION = "on_approval_requires_modification"
