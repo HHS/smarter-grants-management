@@ -35,6 +35,10 @@ class Partner(GrantorSchemaTable, TimestampMixin, AbstractResourceTableMixin):
     def get_resource_type(self) -> ResourceType:
         return ResourceType.PARTNER
 
+    @property
+    def resource_name(self) -> str | None:
+        return self.partner_name
+
 
 class GrantorOrganization(GrantorSchemaTable, TimestampMixin, AbstractResourceTableMixin):
     __tablename__ = "grantor_organization"
@@ -69,6 +73,10 @@ class GrantorOrganization(GrantorSchemaTable, TimestampMixin, AbstractResourceTa
 
     def get_resource_type(self) -> ResourceType:
         return ResourceType.GRANTOR_ORGANIZATION
+
+    @property
+    def resource_name(self) -> str | None:
+        return self.organization_name
 
 
 class Program(GrantorSchemaTable, TimestampMixin, AbstractResourceTableMixin):
@@ -113,6 +121,10 @@ class Program(GrantorSchemaTable, TimestampMixin, AbstractResourceTableMixin):
 
     def get_resource_type(self) -> ResourceType:
         return ResourceType.PROGRAM
+
+    @property
+    def resource_name(self) -> str | None:
+        return self.program_name
 
 
 class SecondaryProgramPartner(GrantorSchemaTable, TimestampMixin):

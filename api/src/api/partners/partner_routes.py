@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 @partner_blueprint.get("/<uuid:partner_id>")
 @partner_blueprint.output(GetPartnerResponseSchema)
+@partner_blueprint.doc(summary="Fetch a Partner", responses=[200, 401, 403, 404, 422])
 @partner_blueprint.auth_required(jwt_or_api_user_key_multi_auth)
 @flask_db.with_db_session()
 def partner_get(db_session: db.Session, partner_id: uuid.UUID) -> response.ApiResponse:
