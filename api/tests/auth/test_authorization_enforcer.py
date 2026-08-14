@@ -2,7 +2,7 @@ import pytest
 from apiflask import HTTPError
 
 from src.auth.authorization_enforcer import AuthorizationEnforcer
-from src.constants.lookup_constants import Privilege, ResourceType
+from src.constants.lookup_constants import Privilege, ResourceInheritance, ResourceType
 from tests.db.models.factories import (
     GrantorOrganizationFactory,
     InternalResourceFactory,
@@ -853,3 +853,218 @@ def test_who_can_access_program_with_secondary_partner(
             )
             is False
         )
+
+
+######################################
+# Looking up users for a resource
+######################################
+
+
+def user_ids(users) -> set:
+    return {user.user_id for user in users}
+
+
+def test_get_resources_for_user_lookup_direct_is_the_resource_itself(
+    db_session, partner_a, organization_1
+):
+    enforcer = AuthorizationEnforcer(db_session)
+
+    for resource in [partner_a, organization_1]:
+        assert enforcer.get_resources_for_user_lookup(resource, ResourceInheritance.DIRECT) == [
+            resource
+        ]
+
+
+def test_get_resources_for_user_lookup_direct_on_program_is_its_offices(
+    db_session, program_x, organization_2, organization_4
+):
+    """A program is the exception - users are never attached to program resources.
+
+    So direct on a program means the offices immediately responsible for it, otherwise
+    the lookup could only ever come back empty.
+    """
+    resources = AuthorizationEnforcer(db_session).get_resources_for_user_lookup(
+        program_x, ResourceInheritance.DIRECT
+    )
+
+    assert {resource.get_resource_id() for resource in resources} == {
+        organization_2.get_resource_id(),
+        organization_4.get_resource_id(),
+    }
+    assert program_x.get_resource_id() not in {r.get_resource_id() for r in resources}
+
+
+def test_get_resources_for_user_lookup_full_walks_the_hierarchy(
+    db_session, program_x, partner_a, organization_1, organization_2, organization_4
+):
+    """Full inheritance reuses the same walk can_access does."""
+    resources = AuthorizationEnforcer(db_session).get_resources_for_user_lookup(
+        program_x, ResourceInheritance.FULL
+    )
+
+    assert {resource.get_resource_id() for resource in resources} == {
+        partner_a.get_resource_id(),
+        organization_1.get_resource_id(),
+        organization_2.get_resource_id(),
+        organization_4.get_resource_id(),
+    }
+
+
+def test_get_users_for_resource_direct_only_returns_direct_role_holders(
+    db_session, partner_a, organization_1
+):
+    direct_user = setup_user_with_roles(
+        db_session, resources=[organization_1], privileges=[Privilege.VIEW_PROGRAM]
+    )
+    # Holds the privilege a level up - reachable under full, not under direct
+    parent_user = setup_user_with_roles(
+        db_session, resources=[partner_a], privileges=[Privilege.VIEW_PROGRAM]
+    )
+
+    enforcer = AuthorizationEnforcer(db_session)
+
+    assert user_ids(
+        enforcer.get_users_for_resource(organization_1, ResourceInheritance.DIRECT)
+    ) == {direct_user.user_id}
+
+    assert user_ids(enforcer.get_users_for_resource(organization_1, ResourceInheritance.FULL)) == {
+        direct_user.user_id,
+        parent_user.user_id,
+    }
+
+
+def test_get_users_for_resource_requires_every_privilege(db_session, organization_1):
+    """A user has to hold all the required privileges, not just one of them."""
+    has_both = setup_user_with_roles(
+        db_session,
+        resources=[organization_1],
+        privileges=[Privilege.VIEW_PROGRAM, Privilege.UPDATE_PROGRAM],
+    )
+    setup_user_with_roles(
+        db_session, resources=[organization_1], privileges=[Privilege.VIEW_PROGRAM]
+    )
+
+    users = AuthorizationEnforcer(db_session).get_users_for_resource(
+        organization_1,
+        ResourceInheritance.DIRECT,
+        required_privileges={Privilege.VIEW_PROGRAM, Privilege.UPDATE_PROGRAM},
+    )
+
+    assert user_ids(users) == {has_both.user_id}
+
+
+def test_get_users_for_resource_privileges_can_come_from_separate_roles(db_session, organization_1):
+    """The privileges don't all have to come from the same role."""
+    user = setup_user_with_roles(
+        db_session, resources=[organization_1], privileges=[Privilege.VIEW_PROGRAM]
+    )
+    setup_user_with_roles(
+        db_session,
+        resources=[organization_1],
+        user=user,
+        privileges=[Privilege.UPDATE_PROGRAM],
+    )
+
+    users = AuthorizationEnforcer(db_session).get_users_for_resource(
+        organization_1,
+        ResourceInheritance.DIRECT,
+        required_privileges={Privilege.VIEW_PROGRAM, Privilege.UPDATE_PROGRAM},
+    )
+
+    assert user_ids(users) == {user.user_id}
+
+
+def test_get_users_for_resource_same_privilege_twice_does_not_satisfy_two(
+    db_session, organization_1
+):
+    """Holding one privilege via two roles counts once, not twice.
+
+    Without counting DISTINCT privileges, two roles that both carry VIEW_PROGRAM would
+    satisfy a requirement for VIEW_PROGRAM *and* UPDATE_PROGRAM.
+    """
+    user = setup_user_with_roles(
+        db_session, resources=[organization_1], privileges=[Privilege.VIEW_PROGRAM]
+    )
+    setup_user_with_roles(
+        db_session, resources=[organization_1], user=user, privileges=[Privilege.VIEW_PROGRAM]
+    )
+
+    users = AuthorizationEnforcer(db_session).get_users_for_resource(
+        organization_1,
+        ResourceInheritance.DIRECT,
+        required_privileges={Privilege.VIEW_PROGRAM, Privilege.UPDATE_PROGRAM},
+    )
+
+    assert users == []
+
+
+def test_get_users_for_resource_returns_each_user_once(
+    db_session, program_x, partner_a, organization_1, organization_2
+):
+    """A user with roles on several resources in the hierarchy appears once.
+
+    Duplicate rows here would also corrupt the endpoint's pagination counts.
+    """
+    user = setup_user_with_roles(
+        db_session, resources=[partner_a], privileges=[Privilege.VIEW_PROGRAM]
+    )
+    setup_user_with_roles(
+        db_session,
+        resources=[organization_1, organization_2],
+        user=user,
+        privileges=[Privilege.VIEW_PROGRAM],
+    )
+
+    users = AuthorizationEnforcer(db_session).get_users_for_resource(
+        program_x, ResourceInheritance.FULL, required_privileges={Privilege.VIEW_PROGRAM}
+    )
+
+    assert len(users) == 1
+    assert users[0].user_id == user.user_id
+
+
+def test_get_users_for_resource_no_privileges_matches_any_role_holder(db_session, organization_1):
+    user = setup_user_with_roles(
+        db_session, resources=[organization_1], privileges=[Privilege.MANAGE_PARTNER_MEMBERS]
+    )
+
+    users = AuthorizationEnforcer(db_session).get_users_for_resource(
+        organization_1, ResourceInheritance.DIRECT
+    )
+
+    assert user_ids(users) == {user.user_id}
+
+
+def test_get_users_for_resource_excludes_users_on_unrelated_resources(
+    db_session, organization_1, partner_b
+):
+    setup_user_with_roles(db_session, resources=[partner_b], privileges=[Privilege.VIEW_PROGRAM])
+
+    users = AuthorizationEnforcer(db_session).get_users_for_resource(
+        organization_1, ResourceInheritance.DIRECT, required_privileges={Privilege.VIEW_PROGRAM}
+    )
+
+    assert users == []
+
+
+def test_get_roles_by_user_for_resources_reports_the_granting_resource(
+    db_session, partner_a, organization_1
+):
+    user = setup_user_with_roles(
+        db_session, resources=[partner_a], privileges=[Privilege.VIEW_PARTNER]
+    )
+    setup_user_with_roles(
+        db_session, resources=[organization_1], user=user, privileges=[Privilege.VIEW_PROGRAM]
+    )
+
+    roles_by_user = AuthorizationEnforcer(db_session).get_roles_by_user_for_resources(
+        [user.user_id], [partner_a.get_resource_id(), organization_1.get_resource_id()]
+    )
+
+    granting = {
+        resource_id: set(role.privileges) for resource_id, role in roles_by_user[user.user_id]
+    }
+    assert granting == {
+        partner_a.get_resource_id(): {Privilege.VIEW_PARTNER},
+        organization_1.get_resource_id(): {Privilege.VIEW_PROGRAM},
+    }
