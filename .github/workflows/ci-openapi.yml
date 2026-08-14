@@ -39,7 +39,7 @@ jobs:
         working-directory: .
         run: |
           mkdir -p /tmp/sgm-artifacts
-          cp -v backend/grants_management_api/openapi.generated.yml /tmp/sgm-artifacts/ || true
+          cp -v api/openapi.generated.yml /tmp/sgm-artifacts/ || true
           # The grants-management-api only owns the grantor-schema diagram; the
           # api/staging diagrams live in the same folder but belong to the api's
           # own ci-openapi workflow, so we deliberately don't touch them here.
@@ -86,8 +86,8 @@ jobs:
             git add . || true
             # Restore our generated files
             if [ -f /tmp/sgm-artifacts/openapi.generated.yml ]; then
-              cp -v /tmp/sgm-artifacts/openapi.generated.yml backend/grants_management_api/openapi.generated.yml
-              git add backend/grants_management_api/openapi.generated.yml || true
+              cp -v /tmp/sgm-artifacts/openapi.generated.yml api/openapi.generated.yml
+              git add api/openapi.generated.yml || true
             fi
             if [ -f /tmp/sgm-artifacts/grantor-schema.png ]; then
               cp -v /tmp/sgm-artifacts/grantor-schema.png documentation/api/database/erds/grantor-schema.png
@@ -101,7 +101,7 @@ jobs:
         run: |
           # Restore generated files from temp stash
           if [ -f /tmp/sgm-artifacts/openapi.generated.yml ]; then
-            cp -v /tmp/sgm-artifacts/openapi.generated.yml backend/grants_management_api/
+            cp -v /tmp/sgm-artifacts/openapi.generated.yml api/
           fi
           if [ -f /tmp/sgm-artifacts/grantor-schema.png ]; then
             cp -v /tmp/sgm-artifacts/grantor-schema.png documentation/api/database/erds/
@@ -115,11 +115,11 @@ jobs:
 
           # Show file status before adding
           echo "Files before git add:"
-          ls -lh backend/grants_management_api/openapi.generated.yml || echo "openapi.generated.yml not found"
+          ls -lh api/openapi.generated.yml || echo "openapi.generated.yml not found"
           ls -lh documentation/api/database/erds/grantor-schema.png || echo "ERD file not found"
 
           # Add the generated spec and the grantor ERD diagram
-          git add backend/grants_management_api/openapi.generated.yml documentation/api/database/erds/grantor-schema.png
+          git add api/openapi.generated.yml documentation/api/database/erds/grantor-schema.png
 
           echo "Git status after adding files:"
           git status
