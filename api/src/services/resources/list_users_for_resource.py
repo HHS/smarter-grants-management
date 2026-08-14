@@ -39,13 +39,29 @@ class PrivilegeFilter(BaseModel):
     one_of: set[Privilege] = set()
 
 
+class InheritanceFilter(BaseModel):
+    one_of: list[ResourceInheritance] = []
+
+
 class ListUsersForResourceFilters(BaseModel):
     privilege: PrivilegeFilter = Field(default_factory=PrivilegeFilter)
-    inheritance: ResourceInheritance = ResourceInheritance.DIRECT
+    inheritance: InheritanceFilter = Field(default_factory=InheritanceFilter)
 
     @property
     def required_privileges(self) -> set[Privilege]:
         return self.privilege.one_of
+
+    @property
+    def resource_inheritance(self) -> ResourceInheritance:
+        """The single inheritance value, defaulting to direct.
+
+        Shaped as a one_of for consistency with every other filter, but the schema caps
+        it at one value, so at most one ever arrives here.
+        """
+        if self.inheritance.one_of:
+            return self.inheritance.one_of[0]
+
+        return ResourceInheritance.DIRECT
 
 
 class ListUsersForResourceRequest(BaseModel):
@@ -118,14 +134,14 @@ def list_users_for_resource(
     # than just their IDs because they carry the names the response reports, which saves
     # re-fetching them per role below.
     relevant_resources = enforcer.get_resources_for_user_lookup(
-        resource, params.filters.inheritance
+        resource, params.filters.resource_inheritance
     )
     resource_by_id = {relevant.get_resource_id(): relevant for relevant in relevant_resources}
 
     log_extra = {
         "resource_id": resource_id,
         "resource_type": resource_type,
-        "inheritance": params.filters.inheritance,
+        "inheritance": params.filters.resource_inheritance,
         "required_privileges": "|".join(sorted(params.filters.required_privileges)),
         "relevant_resource_count": len(relevant_resources),
     }

@@ -1,7 +1,15 @@
-from grants_shared.api.schemas.extension import Schema, fields
+from typing import Any
+
+from grants_shared.api.schemas.extension import (
+    MarshmallowErrorContainer,
+    Schema,
+    SchemaValidationError,
+    fields,
+)
 from grants_shared.api.schemas.response_schema import AbstractResponseSchema, PaginationMixinSchema
 from grants_shared.api.schemas.search_schema import StrSearchSchemaBuilder
 from grants_shared.pagination.pagination_schema import generate_pagination_schema
+from marshmallow import ValidationError, validates_schema
 
 from src.constants.lookup_constants import Privilege, ResourceInheritance, ResourceType
 
@@ -16,15 +24,37 @@ class ListUserForResourceFilterSchema(Schema):
         },
     )
 
-    # A scalar rather than a one_of filter: asking for both full and direct at once has
-    # no meaning, so there is nothing for a list to express.
-    inheritance = fields.Enum(
-        ResourceInheritance,
-        load_default=ResourceInheritance.DIRECT,
+    # Shaped as a one_of like every other filter, so the nesting sits at the same layer
+    # throughout - even though only one value is meaningful. Asking for both full and
+    # direct at once has no meaning, so more than one value is rejected below rather than
+    # silently ignored.
+    inheritance = fields.Nested(
+        StrSearchSchemaBuilder("InheritanceFilterSchema")
+        .with_one_of(allowed_values=ResourceInheritance)
+        .build(),
         metadata={
-            "description": "Whether to consider roles granted anywhere up the resource hierarchy ('full') or only on the resource itself ('direct')."
+            "description": "Whether to consider roles granted anywhere up the resource hierarchy ('full') or only on the resource itself ('direct'). Accepts a single value, and defaults to 'direct'."
         },
     )
+
+    @validates_schema
+    def validate_single_inheritance(self, data: dict[str, Any], **kwargs: Any) -> None:
+        """Reject more than one inheritance value.
+
+        Belongs on the builder as a maximum length rather than here - that needs a
+        grants-shared change, which is tracked separately.
+        """
+        one_of = (data.get("inheritance") or {}).get("one_of") or []
+        if len(one_of) > 1:
+            raise ValidationError(
+                [
+                    MarshmallowErrorContainer(
+                        SchemaValidationError.MAX_LENGTH,
+                        "inheritance supports at most 1 value",
+                    )
+                ],
+                "inheritance",
+            )
 
 
 class ListUserForResourceRequestSchema(Schema):

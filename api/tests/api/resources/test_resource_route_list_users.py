@@ -153,7 +153,7 @@ def test_list_users_inheritance_filter_200(client, db_session, partner, organiza
         ResourceType.GRANTOR_ORGANIZATION,
         organization.grantor_organization_id,
         viewer_token,
-        {"filters": {"inheritance": ResourceInheritance.DIRECT}},
+        {"filters": {"inheritance": {"one_of": [ResourceInheritance.DIRECT]}}},
     )
     assert direct.status_code == 200
     assert {row["user_id"] for row in direct.json["data"]} == {str(org_user.user_id)}
@@ -163,7 +163,7 @@ def test_list_users_inheritance_filter_200(client, db_session, partner, organiza
         ResourceType.GRANTOR_ORGANIZATION,
         organization.grantor_organization_id,
         viewer_token,
-        {"filters": {"inheritance": ResourceInheritance.FULL}},
+        {"filters": {"inheritance": {"one_of": [ResourceInheritance.FULL]}}},
     )
     assert full.status_code == 200
     assert {row["user_id"] for row in full.json["data"]} >= {
@@ -225,7 +225,7 @@ def test_list_users_paginates_over_distinct_users(
         organization.grantor_organization_id,
         viewer_token,
         {
-            "filters": {"inheritance": ResourceInheritance.FULL},
+            "filters": {"inheritance": {"one_of": [ResourceInheritance.FULL]}},
             "pagination": {**DEFAULT_PAGINATION, "page_size": 2},
         },
     )
@@ -374,7 +374,18 @@ def test_list_users_multiple_privileges_requires_all_of_them(
         # Not a real privilege
         ({"filters": {"privilege": {"one_of": ["not_a_privilege"]}}}, "privilege"),
         # Not a real inheritance value
-        ({"filters": {"inheritance": "sideways"}}, "inheritance"),
+        ({"filters": {"inheritance": {"one_of": ["sideways"]}}}, "inheritance"),
+        # Both inheritance values at once - only one is meaningful
+        (
+            {
+                "filters": {
+                    "inheritance": {
+                        "one_of": [ResourceInheritance.FULL, ResourceInheritance.DIRECT]
+                    }
+                }
+            },
+            "inheritance",
+        ),
         # Not a sortable field
         (
             {
