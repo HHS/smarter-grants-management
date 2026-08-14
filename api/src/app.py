@@ -123,6 +123,13 @@ def configure_app(app: APIFlask) -> None:
     @app.errorhandler(SimplerResponseException)
     def handle_simpler_response_exception(error: SimplerResponseException) -> tuple[dict, int]:
         """Convert SimplerResponseException to proper HTTP error response."""
+        logger.exception(
+            "Error from Simpler Grants API",
+            extra={
+                "status_code": error.simpler_response_error.status_code,
+                "error_message": error.simpler_response_error.message,
+            },
+        )
         http_error = exceptions.HTTPError(
             status_code=error.simpler_response_error.status_code,
             message=error.simpler_response_error.message,
