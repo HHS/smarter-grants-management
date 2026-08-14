@@ -4,7 +4,7 @@ from src.workflow.workflow_blueprint import workflow_blueprint
 
 # Importing the state machine package registers every state machine against the
 # WorkflowRegistry, which is what the event handler resolves workflow types through.
-import src.workflow.state_machine  # noqa: F401 isort:skip
+import src.workflow.state_machine  # ruff: ignore[unused-import] isort:skip
 
 
 @workflow_blueprint.cli.command("workflow-main")
