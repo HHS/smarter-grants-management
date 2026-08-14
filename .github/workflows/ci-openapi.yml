@@ -3,7 +3,7 @@ name: Update Grants Management API ERD Diagrams and OpenAPI Docs
 on:
   workflow_dispatch:
   schedule:
-    # Runs daily at 10 AM EST (staggered an hour after the api ci-openapi job)
+    # Runs daily at 10 AM EST
     - cron: '0 15 * * *'
 
 defaults:
