@@ -12,7 +12,7 @@ on:
 
 defaults:
   run:
-    working-directory: ./backend/grants_management_api
+    working-directory: ./api
 
 jobs:
   update-openapi-docs:
