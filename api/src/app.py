@@ -16,9 +16,12 @@ from src.adapters.newrelic import init_newrelic
 from src.adapters.simpler_grants.client import SimplerResponseException
 from src.api.healthcheck.healthcheck_blueprint import healthcheck_blueprint
 from src.api.proof_of_concept.proof_of_concept_blueprint import proof_of_concept_blueprint
+from src.api.resources import resource_blueprint
+from src.api.route_converters import build_enum_converter
 from src.api.users.user_blueprint import user_blueprint
 from src.app_config import AppConfig
 from src.auth.auth_utils import get_app_security_scheme
+from src.constants.lookup_constants import ResourceType
 from src.db.resource_automation.resource_automation import setup_resource_automation
 from src.task.task_blueprint import task_blueprint
 from src.workflow import workflow_blueprint
@@ -43,6 +46,8 @@ def create_app() -> APIFlask:
 
     CORS(app)
     configure_app(app)
+
+    register_url_converters(app)
     register_blueprints(app)
 
     # Initialize auth
@@ -69,6 +74,11 @@ def register_db_client(app: APIFlask) -> None:
     setup_resource_automation()
 
 
+def register_url_converters(app: APIFlask) -> None:
+    """Register custom path parameter converters used by our route rules."""
+    app.url_map.converters["resource_type"] = build_enum_converter(ResourceType)
+
+
 def register_blueprints(app: APIFlask) -> None:
 
     app.register_blueprint(healthcheck_blueprint)
@@ -77,6 +87,7 @@ def register_blueprints(app: APIFlask) -> None:
     app.register_blueprint(user_blueprint)
     app.register_blueprint(proof_of_concept_blueprint)
     app.register_blueprint(workflow_blueprint)
+    app.register_blueprint(resource_blueprint)
 
 
 def configure_app(app: APIFlask) -> None:

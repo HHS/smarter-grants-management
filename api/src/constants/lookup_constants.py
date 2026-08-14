@@ -90,6 +90,21 @@ class WorkflowEventProcessingResult(StrEnum):
     GENERAL_ERROR = "general_error"
 
 
+class ResourceInheritance(StrEnum):
+    """How far up the resource hierarchy a user lookup should reach.
+
+    Not a lookup table - this is an API filter value, so it has no DB representation.
+    """
+
+    # Every resource from the one asked about up through the hierarchy, matching what
+    # AuthorizationEnforcer.can_access considers.
+    FULL = "full"
+
+    # Only roles granted on the resource itself. Note that a program is a special case
+    # (users are never attached to programs).
+    DIRECT = "direct"
+
+
 # The resource types each privilege is allowed to be assigned at. A privilege may only be
 # included in a role when the role's resource types are a subset of the privilege's allowed
 # resource types (validated in src/util/role_util.py::build_role). This prevents assigning,
