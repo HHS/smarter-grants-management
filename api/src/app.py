@@ -14,8 +14,8 @@ from grants_shared.auth.login_gov_jwt_auth import initialize_login_gov_config
 
 from src.adapters.newrelic import init_newrelic
 from src.api.healthcheck.healthcheck_blueprint import healthcheck_blueprint
-from src.api.proof_of_concept.proof_of_concept_blueprint import proof_of_concept_blueprint
 from src.api.partners.partner_blueprint import partner_blueprint
+from src.api.proof_of_concept.proof_of_concept_blueprint import proof_of_concept_blueprint
 from src.api.resources import resource_blueprint
 from src.api.route_converters import build_enum_converter
 from src.api.users.user_blueprint import user_blueprint
