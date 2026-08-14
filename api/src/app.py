@@ -11,9 +11,13 @@ from grants_shared.api.response import restructure_error_response
 from grants_shared.api.schemas import response_schema
 from grants_shared.auth.api_jwt_auth import initialize_jwt_auth
 from grants_shared.auth.login_gov_jwt_auth import initialize_login_gov_config
+from grants_shared.util.env_config import PydanticBaseEnvConfig
+from grants_shared.util.local import error_if_not_local
+from pydantic import Field
 
 from src.adapters.newrelic import init_newrelic
 from src.api.healthcheck.healthcheck_blueprint import healthcheck_blueprint
+from src.api.local import local_blueprint
 from src.api.resources import resource_blueprint
 from src.api.route_converters import build_enum_converter
 from src.api.users.user_blueprint import user_blueprint
@@ -33,6 +37,12 @@ Back end API for Grants Management.
 
 This API is in early development, and is not yet ready for public use.
 """
+
+
+class EndpointConfig(PydanticBaseEnvConfig):
+    # Do not ever change this to True, this controls endpoints we only
+    # want to exist for local development.
+    enable_local_endpoints: bool = Field(False, alias="ENABLE_LOCAL_ENDPOINTS")
 
 
 def create_app() -> APIFlask:
@@ -78,6 +88,7 @@ def register_url_converters(app: APIFlask) -> None:
 
 
 def register_blueprints(app: APIFlask) -> None:
+    endpoint_config = EndpointConfig()
 
     app.register_blueprint(healthcheck_blueprint)
 
@@ -85,6 +96,12 @@ def register_blueprints(app: APIFlask) -> None:
     app.register_blueprint(user_blueprint)
     app.register_blueprint(workflow_blueprint)
     app.register_blueprint(resource_blueprint)
+
+    # Local endpoints for development, will error
+    # if this is ever enabled non-locally.
+    if endpoint_config.enable_local_endpoints:
+        error_if_not_local()
+        app.register_blueprint(local_blueprint)
 
 
 def configure_app(app: APIFlask) -> None:
