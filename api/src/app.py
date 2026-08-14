@@ -13,7 +13,6 @@ from grants_shared.auth.api_jwt_auth import initialize_jwt_auth
 from grants_shared.auth.login_gov_jwt_auth import initialize_login_gov_config
 
 from src.adapters.newrelic import init_newrelic
-from src.adapters.simpler_grants.client import SimplerResponseException
 from src.api.healthcheck.healthcheck_blueprint import healthcheck_blueprint
 from src.api.proof_of_concept.proof_of_concept_blueprint import proof_of_concept_blueprint
 from src.api.partners.partner_blueprint import partner_blueprint
@@ -132,23 +131,6 @@ def configure_app(app: APIFlask) -> None:
     @app.error_processor
     def error_processor(error: exceptions.HTTPError) -> tuple[dict, int, Any]:
         return restructure_error_response(error)
-
-    @app.errorhandler(SimplerResponseException)
-    def handle_simpler_response_exception(error: SimplerResponseException) -> tuple[dict, int]:
-        """Convert SimplerResponseException to proper HTTP error response."""
-        logger.exception(
-            "Error from Simpler Grants API",
-            extra={
-                "status_code": error.simpler_response_error.status_code,
-                "error_message": error.simpler_response_error.message,
-            },
-        )
-        http_error = exceptions.HTTPError(
-            status_code=error.simpler_response_error.status_code,
-            message=error.simpler_response_error.message,
-        )
-        response_dict, status_code, _ = restructure_error_response(http_error)
-        return response_dict, status_code
 
 
 def register_index(app: APIFlask) -> None:

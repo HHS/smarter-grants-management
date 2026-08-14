@@ -149,7 +149,7 @@ class TestGetOpportunity:
             opportunity_id,
             SimplerResponseException(
                 SimplerResponseError(
-                    message="Internal server error",
+                    message="Internal server error from simpler grants client",
                     status_code=500,
                 )
             ),
@@ -161,7 +161,8 @@ class TestGetOpportunity:
         )
 
         assert response.status_code == 500
-        assert response.get_json()["message"] == "Internal server error"
+        # Error message is from Flask, not from simpler grants client
+        assert response.get_json()["message"] == "Internal Server Error"
 
     def test_get_opportunity_no_auth_401(self, client):
         opportunity_id = uuid.uuid4()

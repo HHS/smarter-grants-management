@@ -25,7 +25,6 @@ logger = logging.getLogger(__name__)
         200: "Successfully retrieved opportunity from Simpler Grants",
         401: "Authentication required",
         404: "Opportunity not found in Simpler Grants",
-        500: "Error communicating with Simpler Grants",
     },
 )
 @flask_db.with_db_session()
