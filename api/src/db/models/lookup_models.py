@@ -78,12 +78,15 @@ WORKFLOW_TYPE_CONFIG: LookupConfig[WorkflowType] = LookupConfig(
     [
         LookupStr(WorkflowType.BASIC_TEST_WORKFLOW, 1),
         LookupStr(WorkflowType.PROTOTYPE_WORKFLOW, 2),
+        LookupStr(WorkflowType.APPROVAL_TEST_WORKFLOW, 3),
+        LookupStr(WorkflowType.LIMITED_APPROVAL_TEST_WORKFLOW, 4),
     ]
 )
 
 APPROVAL_TYPE_CONFIG: LookupConfig[ApprovalType] = LookupConfig(
     [
         LookupStr(ApprovalType.BASIC_TEST_APPROVAL, 1),
+        LookupStr(ApprovalType.SECONDARY_TEST_APPROVAL, 2),
     ]
 )
 

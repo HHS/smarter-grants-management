@@ -1,3 +1,5 @@
+from src.constants.lookup_constants import ApprovalResponseType
+
 #####################
 # Retryable Errors
 #####################
@@ -44,6 +46,22 @@ class NonRetryableWorkflowError(Exception):
 
 
 class InvalidEventError(NonRetryableWorkflowError):
+    pass
+
+
+class InvalidWorkflowResponseTypeError(NonRetryableWorkflowError):
+    pass
+
+
+class DisallowedApprovalResponseTypeError(NonRetryableWorkflowError):
+    """Error raised when an approval response type is not allowed for a specific approval configuration."""
+
+    def __init__(self, message: str, allowed_approval_response_types: set[ApprovalResponseType]):
+        super().__init__(message)
+        self.allowed_approval_response_types = allowed_approval_response_types
+
+
+class DuplicateApprovalError(NonRetryableWorkflowError):
     pass
 
 

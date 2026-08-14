@@ -1,9 +1,11 @@
 import pytest
 
+from src.constants.lookup_constants import Privilege
 from src.db.models.grantor_organization_models import Program
 from src.db.models.user_models import User
 from src.workflow.workflow_background_task import _init_newrelic_app
 from tests.db.models.factories import ProgramFactory, UserFactory
+from tests.workflow.workflow_test_util import create_approver
 
 # The real state machines register themselves when src/workflow/state_machine is
 # imported. Import the test-only ones here so they're registered for every workflow
@@ -50,3 +52,31 @@ def program(enable_factory_create) -> Program:
     created for us by the resource automation flush hook.
     """
     return ProgramFactory.create()
+
+
+@pytest.fixture
+def primary_approver(db_session, program) -> User:
+    """A user who can do the primary approval on a workflow attached to `program`.
+
+    The role sits on the program's grant office rather than the program itself: users
+    are never attached to a program resource, so a DIRECT lookup against a program
+    resolves to its offices (see AuthorizationEnforcer.get_resources_for_user_lookup).
+    """
+    return create_approver(db_session, program.grant_office, privileges=[Privilege.UPDATE_PROGRAM])
+
+
+@pytest.fixture
+def secondary_approver(db_session, program) -> User:
+    """A user who can do the secondary approval on a workflow attached to `program`."""
+    return create_approver(db_session, program.program_office, privileges=[Privilege.VIEW_PROGRAM])
+
+
+@pytest.fixture
+def inherited_privilege_user(db_session, program) -> User:
+    """A user whose approval privilege comes only from above the program's offices.
+
+    The partner sits above both offices, so the authorization hierarchy would let this
+    user act on the program - the v1 approval checks deliberately do not see them.
+    Tests use this to pin that limitation so the follow-up work flips it consciously.
+    """
+    return create_approver(db_session, program.partner, privileges=[Privilege.UPDATE_PROGRAM])

@@ -4,7 +4,11 @@ from typing import Any, cast
 
 from statemachine import StateChart
 
+from src.constants.lookup_constants import ApprovalResponseType
 from src.db.models.workflow_models import Workflow
+from src.workflow.event.state_machine_event import StateMachineEvent
+from src.workflow.processor.approval_processor import ApprovalProcessor
+from src.workflow.service.approval_service import get_approval_response_type
 from src.workflow.state_persistence.base_state_persistence_model import BaseStatePersistenceModel
 
 logger = logging.getLogger(__name__)
@@ -15,9 +19,6 @@ class BaseStateMachine(StateChart):
 
     Contains functionality that will be useful for
     all state machines that we build.
-
-    NOTE: The approval event handlers and conditionals that this class carries in
-    simpler-grants-gov are not here yet - they arrive with the approval machinery.
     """
 
     # Atomic configuration update makes it so the state
@@ -74,3 +75,52 @@ class BaseStateMachine(StateChart):
     @classmethod
     def get_valid_states(cls) -> list[str]:
         return list(cls.states_map.keys())
+
+    #############################
+    # Event Handlers
+    #############################
+
+    def on_approval_approved(self, state_machine_event: StateMachineEvent) -> None:
+        """Handler for an approval event - when approved."""
+        ApprovalProcessor(
+            db_session=self.db_session, state_machine_event=state_machine_event
+        ).handle_approval_accepted()
+
+    def on_approval_declined(self, state_machine_event: StateMachineEvent) -> None:
+        """Handler for an approval event - when declined."""
+        ApprovalProcessor(
+            db_session=self.db_session, state_machine_event=state_machine_event
+        ).handle_approval_declined()
+
+    def on_approval_requires_modification(self, state_machine_event: StateMachineEvent) -> None:
+        """Handler for an approval event - when it requires modification."""
+        ApprovalProcessor(
+            db_session=self.db_session, state_machine_event=state_machine_event
+        ).handle_approval_requires_modification()
+
+    #############################
+    # Conditionals
+    #############################
+
+    def has_enough_approvals(self, state_machine_event: StateMachineEvent) -> bool:
+        """Conditional function for checking if enough approval events have been received for the current state"""
+        return ApprovalProcessor(
+            db_session=self.db_session, state_machine_event=state_machine_event
+        ).has_enough_approvals()
+
+    def is_approval_event_approved(self, state_machine_event: StateMachineEvent) -> bool:
+        """Conditional function for checking if the approval event is Approved"""
+        return get_approval_response_type(state_machine_event) == ApprovalResponseType.APPROVED
+
+    def is_approval_event_declined(self, state_machine_event: StateMachineEvent) -> bool:
+        """Conditional function for checking if the approval event is Declined"""
+        return get_approval_response_type(state_machine_event) == ApprovalResponseType.DECLINED
+
+    def is_approval_event_requires_modification(
+        self, state_machine_event: StateMachineEvent
+    ) -> bool:
+        """Conditional function for checking if the approval event is Requires Modification"""
+        return (
+            get_approval_response_type(state_machine_event)
+            == ApprovalResponseType.REQUIRES_MODIFICATION
+        )
