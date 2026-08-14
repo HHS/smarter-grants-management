@@ -23,7 +23,7 @@ def user_with_jwt(enable_factory_create, db_session):
 
 
 class TestGetOpportunity:
-    def test_get_opportunity_with_jwt_auth_success(
+    def test_get_opportunity_with_jwt_auth_200(
         self, client, user_with_jwt, mock_simpler_grants_client
     ):
         user, token = user_with_jwt
@@ -54,7 +54,7 @@ class TestGetOpportunity:
         assert data["opportunity_status"] == "posted"
         assert data["summary"]["post_date"] == "2010-01-01"
 
-    def test_get_opportunity_with_api_key_auth_success(
+    def test_get_opportunity_with_api_key_auth_200(
         self, client, enable_factory_create, db_session, mock_simpler_grants_client
     ):
         api_key = UserApiKeyFactory.create(key_id="test-api-key")
@@ -86,7 +86,7 @@ class TestGetOpportunity:
         assert data["opportunity_status"] == "closed"
         assert data["summary"]["post_date"] == "2020-05-15"
 
-    def test_get_opportunity_with_null_fields(
+    def test_get_opportunity_with_null_fields_200(
         self, client, user_with_jwt, mock_simpler_grants_client
     ):
         user, token = user_with_jwt
@@ -117,7 +117,7 @@ class TestGetOpportunity:
         assert data["opportunity_status"] is None
         assert data["summary"] is None
 
-    def test_get_opportunity_not_found(self, client, user_with_jwt, mock_simpler_grants_client):
+    def test_get_opportunity_not_found_404(self, client, user_with_jwt, mock_simpler_grants_client):
         user, token = user_with_jwt
         opportunity_id = uuid.uuid4()
 
@@ -139,7 +139,7 @@ class TestGetOpportunity:
         assert response.status_code == 404
         assert response.get_json()["message"] == "Opportunity not found"
 
-    def test_get_opportunity_simpler_grants_error(
+    def test_get_opportunity_simpler_grants_error_500(
         self, client, user_with_jwt, mock_simpler_grants_client
     ):
         user, token = user_with_jwt
