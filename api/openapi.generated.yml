@@ -17,6 +17,7 @@ tags:
 - name: Health
 - name: User v1 - Internal Only
 - name: Workflow
+- name: Partners
 - name: Resources
 servers: .
 paths:
@@ -145,6 +146,51 @@ paths:
       summary: User Token Refresh
       security:
       - ApiJwtAuth: []
+  /v1/partners/{partner_id}:
+    get:
+      parameters:
+      - in: path
+        name: partner_id
+        schema:
+          type: string
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetPartnerResponseSchema'
+          description: Successful response
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Not found
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Forbidden
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Unprocessable Entity
+      tags:
+      - Partners
+      summary: Fetch a Partner
+      security:
+      - ApiJwtAuth: &id001 []
+      - ApiUserKeyAuth: *id001
   /v1/users/{user_id}/can_access:
     post:
       parameters:
@@ -194,8 +240,8 @@ paths:
             schema:
               $ref: '#/components/schemas/UserCanAccessRequestSchema'
       security:
-      - ApiJwtAuth: &id001 []
-      - ApiUserKeyAuth: *id001
+      - ApiJwtAuth: &id002 []
+      - ApiUserKeyAuth: *id002
   /v1/resources/{resource_type}/{resource_id}/users/list:
     post:
       parameters:
@@ -251,8 +297,8 @@ paths:
             schema:
               $ref: '#/components/schemas/ListUserForResourceRequestSchema'
       security:
-      - ApiJwtAuth: &id002 []
-      - ApiUserKeyAuth: *id002
+      - ApiJwtAuth: &id003 []
+      - ApiUserKeyAuth: *id003
 openapi: 3.1.0
 components:
   schemas:
@@ -361,6 +407,33 @@ components:
           example: Success
         data:
           example: null
+        status_code:
+          type: integer
+          description: The HTTP status code
+          example: 200
+    PartnerSchema:
+      type: object
+      properties:
+        partner_id:
+          type: string
+          format: uuid
+          description: Unique ID of a partner
+          example: 123e4567-e89b-12d3-a456-426614174000
+        partner_name:
+          type: string
+          description: Name of the partner
+          example: Department of Examples
+    GetPartnerResponseSchema:
+      type: object
+      properties:
+        message:
+          type: string
+          description: The message to return
+          example: Success
+        data:
+          type:
+          - object
+          $ref: '#/components/schemas/PartnerSchema'
         status_code:
           type: integer
           description: The HTTP status code
