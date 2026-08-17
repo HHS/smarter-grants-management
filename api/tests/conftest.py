@@ -17,6 +17,8 @@ from grants_shared.util.local import load_local_env_vars
 
 import src.app as app_entry
 import tests.db.models.factories as factories
+from src.adapters.simpler_grants import client as simpler_grants_client
+from src.adapters.simpler_grants.mock_client import MockSimplerGrantsClient
 from src.auth.internal_resource import create_internal_resource
 from src.db import models
 from src.db.models.lookup.sync_lookup_values import sync_lookup_values
@@ -333,3 +335,15 @@ def workflow_sqs_queue(mock_sqs, monkeypatch):
     # Set the env var of this queue so the SQSConfig picks it up
     monkeypatch.setenv("WORKFLOW_QUEUE_URL", queue["QueueUrl"])
     return queue["QueueUrl"]
+
+
+####################
+# Simpler Grants Client Mock
+####################
+
+
+@pytest.fixture
+def mock_simpler_grants_client(monkeypatch):
+    mock_client = MockSimplerGrantsClient()
+    monkeypatch.setattr(simpler_grants_client, "SimplerGrantsClient", lambda config: mock_client)
+    return mock_client
