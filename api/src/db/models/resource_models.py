@@ -1,4 +1,5 @@
 import uuid
+from typing import TYPE_CHECKING
 
 from grants_shared.adapters.db.type_decorators.postgres_type_decorators import LookupColumn
 from grants_shared.db.models.base import TimestampMixin
@@ -10,6 +11,11 @@ from src.constants.lookup_constants import Privilege, ResourceType
 from src.db.models.grantor_schema_table import GrantorSchemaTable
 from src.db.models.lookup_models import LkPrivilege, LkResourceType
 from src.db.models.user_models import User
+
+if TYPE_CHECKING:
+    # Imported for the relationship annotations below only - the grantor organization
+    # models import this module at runtime, so a real import would be circular.
+    from src.db.models.grantor_organization_models import GrantorOrganization, Partner, Program
 
 ########################
 # Core Resource Table
@@ -26,6 +32,46 @@ class Resource(GrantorSchemaTable, TimestampMixin):
         LookupColumn(LkResourceType),
         ForeignKey(LkResourceType.resource_type_id),
     )
+
+    internal_resource: Mapped[InternalResource | None] = relationship(
+        "InternalResource", viewonly=True
+    )
+    partner: Mapped[Partner | None] = relationship("Partner", viewonly=True)
+    grantor_organization: Mapped[GrantorOrganization | None] = relationship(
+        "GrantorOrganization", viewonly=True
+    )
+    program: Mapped[Program | None] = relationship("Program", viewonly=True)
+
+    @property
+    def concrete_resource(self) -> AbstractResourceTableMixin:
+        """The row in the table that this resource stands for.
+
+        Anything that needs to act on the entity itself - rather than on the resource
+        row - goes through here, so callers holding a resource don't each have to map
+        the type back to a table themselves.
+        """
+        concrete_resource: AbstractResourceTableMixin | None
+
+        if self.resource_type == ResourceType.INTERNAL:
+            concrete_resource = self.internal_resource
+        elif self.resource_type == ResourceType.PARTNER:
+            concrete_resource = self.partner
+        elif self.resource_type == ResourceType.GRANTOR_ORGANIZATION:
+            concrete_resource = self.grantor_organization
+        elif self.resource_type == ResourceType.PROGRAM:
+            concrete_resource = self.program
+        else:
+            # A valid resource type that has no table yet - opportunity, today.
+            raise ValueError(f"Resource type {self.resource_type} has no table behind it")
+
+        if concrete_resource is None:
+            # The resource row and its concrete row are created together, so one
+            # without the other means something has gone wrong upstream.
+            raise ValueError(
+                f"Resource {self.resource_id} has no {self.resource_type} row behind it"
+            )
+
+        return concrete_resource
 
 
 class AbstractResourceTableMixin:

@@ -69,12 +69,7 @@ class WorkflowApprovalEmailListener:
         # The same query that decides whether a user may approve, so nobody is emailed
         # an approval request they'd be turned away from (or silently left out of one
         # they could act on).
-        stmt = get_approver_query(
-            self.db_session,
-            state_machine_event.workflow,
-            approval_config,
-            state_machine_event.config,
-        )
+        stmt = get_approver_query(self.db_session, state_machine_event.workflow, approval_config)
         # A user with no login.gov link comes back with a null email - there's nowhere
         # to send their notification, so drop them here rather than in the query.
         users: list[User] = [

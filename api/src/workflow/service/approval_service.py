@@ -101,31 +101,18 @@ def get_approval_response_type(state_machine_event: StateMachineEvent) -> Approv
 
 
 def get_approver_query(
-    db_session: db.Session,
-    workflow: Workflow,
-    approval_config: ApprovalConfig,
-    config: WorkflowConfig,
+    db_session: db.Session, workflow: Workflow, approval_config: ApprovalConfig
 ) -> Select:
-    """Build the query for users eligible to do a given approval on a workflow.
+    """Build the query for the users who can do a given approval on a workflow.
 
-    Both approval questions - can this user approve, and who should be emailed that an
-    approval is waiting - run off this one query so they can't drift apart.
-
-    V1 uses DIRECT inheritance: a user whose privileges come only from a role further up
-    the hierarchy neither can approve nor gets notified. Note DIRECT is not literally
-    "roles on the workflow's own resource" - for a program it means the program's offices,
-    since users are never attached to a program resource. Widening approvals to the full
-    hierarchy is follow-up work and amounts to changing this one argument.
+    Uses our authorization logic against the workflow's resource. Both the check on
+    whether a user may approve and the approval emails run off this, so the two can't
+    disagree on who an approver is.
     """
-    # Imported here rather than at module scope: workflow_service imports
-    # base_state_machine, which imports this module for its approval handlers, so a
-    # top-level import would close that loop.
-    from src.workflow.service.workflow_service import get_workflow_entity
-
-    entity = get_workflow_entity(db_session, workflow.resource_id, config)
-
     enforcer = AuthorizationEnforcer(db_session)
-    resources = enforcer.get_resources_for_user_lookup(entity, ResourceInheritance.DIRECT)
+    resources = enforcer.get_resources_for_user_lookup(
+        workflow.resource.concrete_resource, ResourceInheritance.FULL
+    )
 
     return enforcer.get_users_for_resource_query(
         resources, required_privileges=set(approval_config.required_privileges)
@@ -153,7 +140,7 @@ def can_user_do_approval(
 
     logger.info("Checking if user can do approval for workflow resource", extra=log_extra)
 
-    stmt = get_approver_query(db_session, workflow, approval_config, config).where(
+    stmt = get_approver_query(db_session, workflow, approval_config).where(
         User.user_id == user.user_id
     )
     can_approve = db_session.execute(stmt).scalar() is not None

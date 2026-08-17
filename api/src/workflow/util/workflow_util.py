@@ -4,7 +4,6 @@ workflow logic.
 """
 
 import logging
-import uuid
 
 from grants_shared.adapters.aws.ses_adapter import send_email
 
@@ -28,11 +27,7 @@ def send_workflow_email(
     so nothing needs to be mocked out for local development.
     """
 
-    trace_id = str(uuid.uuid4())
-    log_extra = state_machine_event.get_log_extra() | {
-        "trace_id": trace_id,
-        "user_id": user.user_id,
-    }
+    log_extra = state_machine_event.get_log_extra() | {"user_id": user.user_id}
 
     # Not every user in our system is guaranteed to have an email
     # Before calling this function, probably should make sure this

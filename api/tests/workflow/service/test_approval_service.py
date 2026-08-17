@@ -109,20 +109,20 @@ def test_can_user_do_approval_role_on_another_resource(db_session, program, enab
     verify_can_do_only(db_session, other_program_user, workflow, expected_allowed_events=set())
 
 
-def test_can_user_do_approval_inherited_privilege_is_not_enough(
+def test_can_user_do_approval_with_inherited_privilege(
     db_session, program, inherited_privilege_user
 ):
-    """Pin the v1 limitation: privileges from a parent resource do not allow approving.
+    """A privilege inherited from a parent resource is enough to approve.
 
-    The authorization layer itself says this user can act on the program - the approval
-    check deliberately disagrees, because it looks the resource up with DIRECT
-    inheritance. When the follow-up work widens that to FULL, this assertion flips.
+    Approvals resolve approvers the same way the enforcer resolves access, so anyone
+    can_access would let act on the resource can approve. Both are asserted here so
+    the two can't drift apart.
     """
     workflow = ProgramWorkflowFactory.create(
         workflow_type=WorkflowType.APPROVAL_TEST_WORKFLOW, program=program
     )
 
-    # The hierarchy-aware authZ check does grant this user access to the program
+    # The role is on the partner above the program, not on the program's offices
     assert (
         AuthorizationEnforcer(db_session).can_access(
             user=inherited_privilege_user,
@@ -132,9 +132,11 @@ def test_can_user_do_approval_inherited_privilege_is_not_enough(
         is True
     )
 
-    # ...but the v1 approval check does not
     verify_can_do_only(
-        db_session, inherited_privilege_user, workflow, expected_allowed_events=set()
+        db_session,
+        inherited_privilege_user,
+        workflow,
+        expected_allowed_events={PRIMARY_APPROVAL_EVENT},
     )
 
 

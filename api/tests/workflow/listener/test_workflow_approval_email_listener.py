@@ -105,9 +105,11 @@ def test_approval_email_listener_multiple_users_can_approve(
         db_session, program.grant_office, privileges=[Privilege.UPDATE_PROGRAM]
     )
 
-    # This user holds the privilege on the partner, which sits above the program's
-    # offices - v1 does not walk the hierarchy, so they aren't emailed.
-    create_approver(db_session, program.partner, privileges=[Privilege.UPDATE_PROGRAM])
+    # This user's privilege is inherited from the partner above the program, which
+    # counts the same as one held on the offices.
+    inherited_approver = create_approver(
+        db_session, program.partner, privileges=[Privilege.UPDATE_PROGRAM]
+    )
 
     # This user has a role in scope, but not the privilege the approval needs
     create_approver(db_session, program.program_office, privileges=[Privilege.VIEW_PROGRAM])
@@ -129,15 +131,13 @@ def test_approval_email_listener_multiple_users_can_approve(
 
     # The approver query doesn't order its rows, so match recipients rather than
     # asserting an order the engine never promised.
-    assert len(emails) == 3
-    emails_by_address = {email.destinations["ToAddresses"][0]: email for email in emails}
-    assert set(emails_by_address) == {
-        primary_approver.email,
-        primary_approver2.email,
-        primary_approver3.email,
-    }
+    approvers = [primary_approver, primary_approver2, primary_approver3, inherited_approver]
 
-    for approver in [primary_approver, primary_approver2, primary_approver3]:
+    assert len(emails) == len(approvers)
+    emails_by_address = {email.destinations["ToAddresses"][0]: email for email in emails}
+    assert set(emails_by_address) == {approver.email for approver in approvers}
+
+    for approver in approvers:
         verify_email(
             emails_by_address[approver.email],
             user=approver,
@@ -272,14 +272,13 @@ def test_approval_email_listener_no_users(db_session, program, caplog, ses_clien
     assert caplog.messages.count("No users can do approval - cannot send email") == 1
 
 
-def test_approval_email_listener_only_direct_role_holders_notified(
-    db_session, program, inherited_privilege_user, caplog, ses_client, get_sent_emails
+def test_approval_email_listener_inherited_privilege_holder_notified(
+    db_session, program, inherited_privilege_user, ses_client, get_sent_emails
 ):
-    """Pin the v1 limitation - a user whose privilege is inherited is not emailed.
+    """A user whose approval privilege is inherited from a parent resource is emailed.
 
-    The user here holds the approval privilege on the program's grant office, which
-    the authorization hierarchy would honor. When approver resolution becomes
-    hierarchy-aware, this test flips to expecting an email.
+    The privilege here comes from the partner above the program rather than from the
+    program's own offices, and approvals reach as far as the authorization hierarchy does.
     """
     user = UserFactory.create()
 
@@ -293,5 +292,12 @@ def test_approval_email_listener_only_direct_role_holders_notified(
         expected_state=ApprovalState.PENDING_PRIMARY_APPROVAL,
     )
 
-    assert len(get_sent_emails()) == 0
-    assert caplog.messages.count("No users can do approval - cannot send email") == 1
+    emails = get_sent_emails()
+    assert len(emails) == 1
+    verify_email(
+        emails[0],
+        user=inherited_privilege_user,
+        workflow=workflow,
+        expected_state=ApprovalState.PENDING_PRIMARY_APPROVAL,
+        expected_privilege=Privilege.UPDATE_PROGRAM,
+    )

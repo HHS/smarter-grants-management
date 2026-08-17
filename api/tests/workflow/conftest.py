@@ -58,9 +58,8 @@ def program(enable_factory_create) -> Program:
 def primary_approver(db_session, program) -> User:
     """A user who can do the primary approval on a workflow attached to `program`.
 
-    The role sits on the program's grant office rather than the program itself: users
-    are never attached to a program resource, so a DIRECT lookup against a program
-    resolves to its offices (see AuthorizationEnforcer.get_resources_for_user_lookup).
+    The role sits on the program's grant office because users are never attached to a
+    program resource itself (see AuthorizationEnforcer._get_resources_for_program).
     """
     return create_approver(db_session, program.grant_office, privileges=[Privilege.UPDATE_PROGRAM])
 
@@ -73,10 +72,9 @@ def secondary_approver(db_session, program) -> User:
 
 @pytest.fixture
 def inherited_privilege_user(db_session, program) -> User:
-    """A user whose approval privilege comes only from above the program's offices.
+    """A user whose approval privilege comes from the partner above the program.
 
-    The partner sits above both offices, so the authorization hierarchy would let this
-    user act on the program - the v1 approval checks deliberately do not see them.
-    Tests use this to pin that limitation so the follow-up work flips it consciously.
+    Approvals resolve approvers the same way the enforcer resolves access, so an
+    inherited privilege is enough to approve - this fixture is what pins that.
     """
     return create_approver(db_session, program.partner, privileges=[Privilege.UPDATE_PROGRAM])
