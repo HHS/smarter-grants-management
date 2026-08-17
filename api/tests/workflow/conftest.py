@@ -10,7 +10,7 @@ from tests.workflow.workflow_test_util import create_approver
 # The real state machines register themselves when src/workflow/state_machine is
 # imported. Import the test-only ones here so they're registered for every workflow
 # test rather than only the modules that happen to reference them directly.
-import tests.workflow.state_machine.test_state_machines  # noqa: F401 isort:skip
+import tests.workflow.state_machine.test_state_machines  # ruff: ignore[unused-import] isort:skip
 
 
 @pytest.fixture(scope="session", autouse=True)

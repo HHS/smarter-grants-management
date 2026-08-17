@@ -16,6 +16,9 @@ info:
 tags:
 - name: Health
 - name: User v1 - Internal Only
+- name: Workflow
+- name: Partners
+- name: Resources
 servers: .
 paths:
   /health:
@@ -143,11 +146,11 @@ paths:
       summary: User Token Refresh
       security:
       - ApiJwtAuth: []
-  /v1/users/{mgmt_user_id}/can_access:
-    post:
+  /v1/partners/{partner_id}:
+    get:
       parameters:
       - in: path
-        name: mgmt_user_id
+        name: partner_id
         schema:
           type: string
         required: true
@@ -156,7 +159,52 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MgmtUserCanAccessResponseSchema'
+                $ref: '#/components/schemas/GetPartnerResponseSchema'
+          description: Successful response
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Not found
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Forbidden
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Unprocessable Entity
+      tags:
+      - Partners
+      summary: Fetch a Partner
+      security:
+      - ApiJwtAuth: &id001 []
+      - ApiUserKeyAuth: *id001
+  /v1/users/{user_id}/can_access:
+    post:
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: string
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserCanAccessResponseSchema'
           description: Successful response
         '422':
           content:
@@ -190,10 +238,67 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MgmtUserCanAccessRequestSchema'
+              $ref: '#/components/schemas/UserCanAccessRequestSchema'
       security:
-      - ApiJwtAuth: &id001 []
-      - ApiUserKeyAuth: *id001
+      - ApiJwtAuth: &id002 []
+      - ApiUserKeyAuth: *id002
+  /v1/resources/{resource_type}/{resource_id}/users/list:
+    post:
+      parameters:
+      - in: path
+        name: resource_type
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: resource_id
+        schema:
+          type: string
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListUserForResourceResponseSchema'
+          description: Successful response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Validation error
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Not found
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Forbidden
+      tags:
+      - Resources
+      summary: List Users For Resource
+      description: List the users who can access a resource, along with the roles
+        that grant them access.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListUserForResourceRequestSchema'
+      security:
+      - ApiJwtAuth: &id003 []
+      - ApiUserKeyAuth: *id003
 openapi: 3.1.0
 components:
   schemas:
@@ -306,7 +411,34 @@ components:
           type: integer
           description: The HTTP status code
           example: 200
-    MgmtUserCanAccessResponseSchema:
+    PartnerSchema:
+      type: object
+      properties:
+        partner_id:
+          type: string
+          format: uuid
+          description: Unique ID of a partner
+          example: 123e4567-e89b-12d3-a456-426614174000
+        partner_name:
+          type: string
+          description: Name of the partner
+          example: Department of Examples
+    GetPartnerResponseSchema:
+      type: object
+      properties:
+        message:
+          type: string
+          description: The message to return
+          example: Success
+        data:
+          type:
+          - object
+          $ref: '#/components/schemas/PartnerSchema'
+        status_code:
+          type: integer
+          description: The HTTP status code
+          example: 200
+    UserCanAccessResponseSchema:
       type: object
       properties:
         message:
@@ -319,48 +451,302 @@ components:
           type: integer
           description: The HTTP status code
           example: 200
-    MgmtUserCanAccessRequestSchema:
+    UserCanAccessRequestSchema:
       type: object
       properties:
-        mgmt_resource_id:
+        resource_id:
           type: string
           format: uuid
           description: The ID of the resource to check access against
           example: 123e4567-e89b-12d3-a456-426614174000
-        mgmt_resource_type:
+        resource_type:
           description: The type of the resource to check access against
           enum:
           - internal
-          - department
-          - subagency
-          - team
+          - partner
+          - program
+          - grantor_organization
           - opportunity
           type:
           - string
-        mgmt_privileges:
+        privileges:
           type: array
           minItems: 1
           description: The privileges the user must have against the resource. The
             user must have all of them.
           items:
             enum:
-            - view_department
-            - update_department
-            - manage_department_members
-            - view_subagency
-            - update_subagency
-            - manage_subagency_members
-            - view_team
-            - update_team
-            - manage_team_members
-            - create_team
-            - delete_team
+            - view_partner
+            - update_partner
+            - manage_partner_members
+            - view_program
+            - update_program
+            - view_grantor_organization
+            - update_grantor_organization
+            - manage_grantor_organization_members
+            - unused_privilege_101
+            - unused_privilege_102
+            - unused_privilege_103
             type:
             - string
       required:
-      - mgmt_privileges
-      - mgmt_resource_id
-      - mgmt_resource_type
+      - privileges
+      - resource_id
+      - resource_type
+    SortOrderSchema:
+      type: object
+      properties:
+        order_by:
+          type: string
+          description: The field that the records were sorted by
+          example: id
+        sort_direction:
+          description: The direction the records are sorted
+          enum:
+          - ascending
+          - descending
+          type:
+          - string
+    PaginationInfoSchema:
+      type: object
+      properties:
+        page_offset:
+          type: integer
+          description: The page number that was fetched
+          example: 1
+        page_size:
+          type: integer
+          description: The size of the page fetched
+          example: 25
+        total_records:
+          type: integer
+          description: The total number of records fetchable
+          example: 42
+        total_pages:
+          type: integer
+          description: The total number of pages that can be fetched
+          example: 2
+        sort_order:
+          type: array
+          description: The sort order passed in originally
+          items:
+            type:
+            - object
+            $ref: '#/components/schemas/SortOrderSchema'
+    ResourceForRoleSchema:
+      type: object
+      properties:
+        resource_id:
+          type: string
+          format: uuid
+          description: The resource's unique identifier
+          example: 123e4567-e89b-12d3-a456-426614174000
+        resource_name:
+          type:
+          - string
+          - 'null'
+          description: The resource's name, if its type has one
+          example: Office of Grants
+    RoleForUserSchema:
+      type: object
+      properties:
+        role_id:
+          type: string
+          format: uuid
+          description: The role's unique identifier
+          example: 123e4567-e89b-12d3-a456-426614174000
+        role_name:
+          type: string
+          description: The role's name
+          example: Program Officer
+        privileges:
+          type: array
+          description: The privileges the role carries
+          items:
+            enum:
+            - view_partner
+            - update_partner
+            - manage_partner_members
+            - view_program
+            - update_program
+            - view_grantor_organization
+            - update_grantor_organization
+            - manage_grantor_organization_members
+            - unused_privilege_101
+            - unused_privilege_102
+            - unused_privilege_103
+            type:
+            - string
+        resource_type:
+          description: The type of resource the role was granted on
+          enum:
+          - internal
+          - partner
+          - program
+          - grantor_organization
+          - opportunity
+          type:
+          - string
+        resource:
+          description: The resource the role was granted on
+          type:
+          - object
+          $ref: '#/components/schemas/ResourceForRoleSchema'
+    UserForResourceSchema:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+          description: The user's unique identifier
+          example: 123e4567-e89b-12d3-a456-426614174000
+        email:
+          type:
+          - string
+          - 'null'
+          description: The user's email address, null if they have no login
+          example: user@example.com
+        roles:
+          type: array
+          description: The roles granting this user access to the resource
+          items:
+            type:
+            - object
+            $ref: '#/components/schemas/RoleForUserSchema'
+    ListUserForResourceResponseSchema:
+      type: object
+      properties:
+        pagination_info:
+          description: The pagination information for paginated endpoints
+          type:
+          - object
+          $ref: '#/components/schemas/PaginationInfoSchema'
+        message:
+          type: string
+          description: The message to return
+          example: Success
+        data:
+          type: array
+          description: The users with access to the resource
+          items:
+            type:
+            - object
+            $ref: '#/components/schemas/UserForResourceSchema'
+        status_code:
+          type: integer
+          description: The HTTP status code
+          example: 200
+    PrivilegeFilterSchema:
+      type: object
+      properties:
+        one_of:
+          type: array
+          minItems: 1
+          items:
+            enum:
+            - view_partner
+            - update_partner
+            - manage_partner_members
+            - view_program
+            - update_program
+            - view_grantor_organization
+            - update_grantor_organization
+            - manage_grantor_organization_members
+            - unused_privilege_101
+            - unused_privilege_102
+            - unused_privilege_103
+            type:
+            - string
+    InheritanceFilterSchema:
+      type: object
+      properties:
+        one_of:
+          type: array
+          minItems: 1
+          items:
+            enum:
+            - full
+            - direct
+            type:
+            - string
+    ListUserForResourceFilterSchema:
+      type: object
+      properties:
+        privilege:
+          description: Only return users holding these privileges on the resource.
+            A user must hold every privilege given, though not necessarily all from
+            the same role.
+          type:
+          - object
+          $ref: '#/components/schemas/PrivilegeFilterSchema'
+        inheritance:
+          description: Whether to consider roles granted anywhere up the resource
+            hierarchy ('full') or only on the resource itself ('direct'). Accepts
+            a single value, and defaults to 'direct'.
+          type:
+          - object
+          $ref: '#/components/schemas/InheritanceFilterSchema'
+    SortOrderListUserForResourcePaginationSchema:
+      type: object
+      properties:
+        order_by:
+          type: string
+          enum:
+          - user_id
+          - email
+          description: The field to sort the response by
+        sort_direction:
+          description: Whether to sort the response ascending or descending
+          enum:
+          - ascending
+          - descending
+          type:
+          - string
+      required:
+      - order_by
+      - sort_direction
+    ListUserForResourcePaginationSchema:
+      type: object
+      properties:
+        sort_order:
+          type: array
+          default:
+          - order_by: user_id
+            sort_direction: ascending
+          minItems: 1
+          maxItems: 5
+          description: The list of sorting rules
+          items:
+            type:
+            - object
+            $ref: '#/components/schemas/SortOrderListUserForResourcePaginationSchema'
+        page_size:
+          type: integer
+          minimum: 1
+          maximum: 5000
+          description: The size of the page to fetch
+          example: 25
+        page_offset:
+          type: integer
+          minimum: 1
+          description: The page number to fetch, starts counting from 1
+          example: 1
+      required:
+      - page_offset
+      - page_size
+    ListUserForResourceRequestSchema:
+      type: object
+      properties:
+        filters:
+          type:
+          - object
+          $ref: '#/components/schemas/ListUserForResourceFilterSchema'
+        pagination:
+          type:
+          - object
+          $ref: '#/components/schemas/ListUserForResourcePaginationSchema'
+      required:
+      - pagination
   securitySchemes:
     ApiJwtAuth:
       type: apiKey

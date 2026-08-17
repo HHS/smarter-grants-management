@@ -2,7 +2,7 @@ from src.workflow.registry.workflow_registry import WorkflowRegistry
 
 # Imported for the side effect of registering the test-only state machines, so this
 # check covers them alongside the real ones.
-import tests.workflow.state_machine.test_state_machines  # noqa: F401 isort:skip
+import tests.workflow.state_machine.test_state_machines  # ruff: ignore[unused-import] isort:skip
 
 
 def test_state_machines_configured_as_expected():
