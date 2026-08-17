@@ -4,4 +4,4 @@
 # https://github.com/goodwithtech/dockle#accept-suspicious-environment-variables--files--file-extensions
 # These are stub/config modules that Dockle flags on filename alone. They have
 # been reviewed and hold no sensitive data.
-DOCKLE_ACCEPT_FILES=api/.venv/lib/python3.14/site-packages/newrelic/api/settings.py,api/.venv/lib/python3.14/site-packages/apiflask/settings.py,api/.venv/lib/python3.14/site-packages/docx/oxml/settings.py,api/.venv/lib/python3.14/site-packages/docx/parts/settings.py,api/.venv/lib/python3.14/site-packages/docx/settings.py
+DOCKLE_ACCEPT_FILES=grants_management_api/.venv/lib/python3.14/site-packages/newrelic/api/settings.py,grants_management_api/.venv/lib/python3.14/site-packages/apiflask/settings.py
