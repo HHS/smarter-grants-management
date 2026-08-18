@@ -1,8 +1,5 @@
 import { JSONSchema7 } from "json-schema";
 import { PaginationInfo } from "src/types/apiResponseTypes";
-import { ApplicationSubmission } from "src/types/application/applicationSubmissionTypes";
-import { Organization } from "src/types/applicationResponseTypes";
-import { FormattedFormValidationWarning } from "src/types/applyForm/types";
 import { UserProfile } from "src/types/authTypes";
 import {
   AwardRecommendationDetails,
@@ -30,7 +27,6 @@ import {
   TestUser,
   UserDetail,
   UserDetailWithProfile,
-  UserOrganization,
   UserPrivilegesResponse,
   UserRole,
 } from "src/types/userTypes";
@@ -569,31 +565,6 @@ export const fakeFilterPillLabelData: FilterPillLabelData[] = [
   },
 ];
 
-export const fakeUserOrganization: UserOrganization = {
-  is_organization_owner: true,
-  organization_id: "great id",
-  sam_gov_entity: {
-    ebiz_poc_email: "email@email.email",
-    ebiz_poc_first_name: "first",
-    ebiz_poc_last_name: "last",
-    expiration_date: "1-1-25",
-    legal_business_name: "Completely Legal Organization",
-    uei: "unique entity identifier",
-  },
-};
-
-export const fakeOrganizationDetailsResponse: Organization = {
-  organization_id: "great id",
-  sam_gov_entity: {
-    ebiz_poc_email: "email@email.email",
-    ebiz_poc_first_name: "first",
-    ebiz_poc_last_name: "last",
-    expiration_date: "1-1-25",
-    legal_business_name: "Completely Legal Organization",
-    uei: "unique entity identifier",
-  },
-};
-
 export const fakeCompetition = {
   closing_date: "1-1-30",
   competition_forms: [
@@ -820,21 +791,4 @@ export const fakeTestUser: TestUser = {
 export const fakeUserProfile: UserProfile = {
   token: "a token",
   user_id: "an id",
-};
-
-export const mockApplicationSubmission: ApplicationSubmission = {
-  application_submission_id: "uuid-13",
-  download_path: "http://s3signedurl.com/download.zip",
-  file_size_bytes: 10,
-  legacy_tracking_number: 1,
-};
-
-export const fakeValidationError: FormattedFormValidationWarning = {
-  definition: "/properties/field_one",
-  field: "$.field_one",
-  formatted: "Submission Type is required",
-  htmlField: "field_one",
-  message: "'field_one' is a required property",
-  type: "required",
-  value: null,
 };
