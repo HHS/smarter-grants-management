@@ -4,7 +4,11 @@ import tests.db.models.factories as factories
 from tests.lib.seed_local_db import run_seed_logic
 
 
-def test_run_seed_logic_can_run_multiple_times(db_session, enable_factory_create):
+def test_run_seed_logic_can_run_multiple_times(
+    db_session, enable_factory_create, internal_resource
+):
+    # The seed grants internal privileges to the workflow-event user, so the internal
+    # resource has to exist first - locally `make init-db` creates it before seeding.
     # A few times when modifying our seed script we've modified it
     # in a way that if you run it multiple times, it breaks
     run_seed_logic(db_session)

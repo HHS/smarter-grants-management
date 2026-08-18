@@ -45,7 +45,7 @@ PRIVILEGE_CONFIG: LookupConfig[Privilege] = LookupConfig(
         LookupStr(Privilege.MANAGE_PARTNER_MEMBERS, 3),
         LookupStr(Privilege.VIEW_PROGRAM, 4),
         LookupStr(Privilege.UPDATE_PROGRAM, 5),
-        LookupStr(Privilege.UNUSED_PRIVILEGE_101, 6),
+        LookupStr(Privilege.INTERNAL_WORKFLOW_EVENT_SEND, 6),
         LookupStr(Privilege.VIEW_GRANTOR_ORGANIZATION, 7),
         LookupStr(Privilege.UPDATE_GRANTOR_ORGANIZATION, 8),
         LookupStr(Privilege.MANAGE_GRANTOR_ORGANIZATION_MEMBERS, 9),
