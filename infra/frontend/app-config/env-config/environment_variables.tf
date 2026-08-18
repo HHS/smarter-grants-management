@@ -37,80 +37,30 @@ locals {
   #   }
   # }
   secrets = {
-    # Every manage_method = "manual" entry resolves through a
-    # data.aws_ssm_parameter lookup, so ALL of them must already exist in SSM or the
-    # frontend service apply fails at plan time.
+    # Only the env vars this application actually reads are listed here. Every
+    # manage_method = "manual" entry resolves through a data.aws_ssm_parameter
+    # lookup, so each one MUST exist in SSM before the service layer will apply.
     #
-    # They are all commented out because /frontend is still a placeholder — there is
-    # no frontend source in this repo yet, so none of these can be checked against
-    # code that reads them, and none of the features they configure exist. Re-add
-    # each one as the feature that needs it lands, the same way infra/api's list was
-    # pruned to only what that app actually reads.
+    # The authoritative list of what the app reads is the destructure at the top
+    # of frontend/src/constants/environments.ts — every server-side env var goes
+    # through that module. frontend/.env.local.example is NOT authoritative; it
+    # documents local-dev and test-only settings too.
     #
-    # Carried over from simpler-grants-gov and pending that port:
+    # Pruned from the upstream simpler-grants-gov config because nothing in
+    # frontend/src reads them:
     #
-    # # Mailchimp API key to pass with requests for newsletter subscriber endpoints.
-    # MAILCHIMP_API_KEY = {
-    #   manage_method     = "manual"
-    #   secret_store_name = "/${var.app_name}/${var.environment}/mailchimp-api-key"
-    # },
-    # # Mailchimp data center prefix (e.g. "us4") used to build the API base url.
-    # MAILCHIMP_API_URL_PREFIX = {
-    #   manage_method     = "manual"
-    #   secret_store_name = "/${var.app_name}/${var.environment}/mailchimp-api-url-prefix"
-    # },
-    # # Mailchimp list ID for requests to manage subscribers to the distribution list.
-    # MAILCHIMP_LIST_ID = {
-    #   manage_method     = "manual"
-    #   secret_store_name = "/${var.app_name}/${var.environment}/mailchimp-list-id"
-    # },
-    # # URL that the frontend uses to make fetch requests to the Grants API.
-    # API_URL = {
-    #   manage_method     = "manual"
-    #   secret_store_name = "/${var.app_name}/${var.environment}/api-url"
-    # },
-    # # URL for the API login route.
-    # AUTH_LOGIN_URL = {
-    #   manage_method     = "manual"
-    #   secret_store_name = "/${var.app_name}/${var.environment}/auth-login-url"
-    # },
-    # FEATURE_APPLY_FORM_PROTOTYPE_OFF = {
-    #   manage_method     = "manual"
-    #   secret_store_name = "/${var.app_name}/${var.environment}/feature-apply-form-prototype-off"
-    # },
-    # FEATURE_AWARD_RECOMMENDATION_OFF = {
-    #   manage_method     = "manual"
-    #   secret_store_name = "/${var.app_name}/${var.environment}/feature-award-recommendation-off"
-    # },
-    # FEATURE_MAINTENANCE_MODE = {
-    #   manage_method     = "manual"
-    #   secret_store_name = "/${var.app_name}/${var.environment}/feature-maintenance-mode"
-    # },
-    # FEATURE_MAINTENANCE_BANNER_ENABLED = {
-    #   manage_method     = "manual"
-    #   secret_store_name = "/${var.app_name}/${var.environment}/feature-maintenance-banner-enabled"
-    # },
-    # MAINTENANCE_BANNER_MESSAGE = {
-    #   manage_method     = "manual"
-    #   secret_store_name = "/${var.app_name}/${var.environment}/maintenance-banner-message"
-    # },
-    # FEATURE_OPPORTUNITIES_LIST_OFF = {
-    #   manage_method     = "manual"
-    #   secret_store_name = "/${var.app_name}/${var.environment}/feature-opportunities-list-off"
-    # },
-    # FEATURE_FEATURE_FLAG_ADMIN_OFF = {
-    #   manage_method     = "manual"
-    #   secret_store_name = "/${var.app_name}/${var.environment}/feature-feature-flag-admin-off"
-    # },
-    # API_JWT_PUBLIC_KEY = {
-    #   manage_method     = "manual"
-    #   secret_store_name = "/api/${var.environment}/api-jwt-public-key"
-    # },
-    # API_GW_AUTH = {
-    #   manage_method     = "manual"
-    #   secret_store_name = "/${var.app_name}/${var.environment}/X-API-KEY"
-    # },
+    #   FEATURE_APPLY_FORM_PROTOTYPE_OFF, FEATURE_OPPORTUNITIES_LIST_OFF —
+    #     not destructured in environments.ts and not referenced anywhere in
+    #     frontend/src. They appear only in .env.local.example, carried over
+    #     with the port. The features they gate do not exist here.
     #
+    #   MAILCHIMP_API_KEY, MAILCHIMP_API_URL_PREFIX, MAILCHIMP_LIST_ID —
+    #     plumbed through environments.ts but no consumer: there is no
+    #     /subscribe route and no newsletter code in frontend/src. Re-add all
+    #     three together if the subscribe feature is ported.
+    #
+    # Re-add an entry when the feature that needs it lands.
+
     # NEW RELIC DISABLED — see enable_newrelic in infra/project-config/main.tf.
     # NEW_RELIC_APP_NAME = {
     #   manage_method     = "manual"
@@ -121,8 +71,66 @@ locals {
     #   secret_store_name = "/new-relic-license-key"
     # },
 
-    # Kept: "generated" creates the SSM parameter itself rather than reading an
-    # existing one, so it needs nothing pre-provisioned.
+    # URL that the frontend uses to make fetch requests to the Grants API.
+    # Read in environments.ts; also drives LOCAL_DEV detection.
+    API_URL = {
+      manage_method     = "manual"
+      secret_store_name = "/${var.app_name}/${var.environment}/api-url"
+    },
+
+    # Sent as the X-API-KEY header on API requests.
+    # See frontend/src/services/fetch/fetcherHelpers.ts.
+    API_GW_AUTH = {
+      manage_method     = "manual"
+      secret_store_name = "/${var.app_name}/${var.environment}/X-API-KEY"
+    },
+
+    # Public half of the API's JWT signing key, used to verify session tokens.
+    # See frontend/src/services/auth/session.ts. This reads the api's parameter
+    # (/api/...), whose private counterpart is API_JWT_PRIVATE_KEY in
+    # infra/api/app-config/env-config/environment_variables.tf.
+    API_JWT_PUBLIC_KEY = {
+      manage_method     = "manual"
+      secret_store_name = "/api/${var.environment}/api-jwt-public-key"
+    },
+
+    # URL for the API login route.
+    # See frontend/src/app/api/auth/login/route.ts.
+    AUTH_LOGIN_URL = {
+      manage_method     = "manual"
+      secret_store_name = "/${var.app_name}/${var.environment}/auth-login-url"
+    },
+
+    # Feature flags. Each is read in environments.ts and surfaced through
+    # envFeatureFlags; "true" disables the feature.
+    FEATURE_AWARD_RECOMMENDATION_OFF = {
+      manage_method     = "manual"
+      secret_store_name = "/${var.app_name}/${var.environment}/feature-award-recommendation-off"
+    },
+    FEATURE_FEATURE_FLAG_ADMIN_OFF = {
+      manage_method     = "manual"
+      secret_store_name = "/${var.app_name}/${var.environment}/feature-feature-flag-admin-off"
+    },
+    FEATURE_MAINTENANCE_BANNER_ENABLED = {
+      manage_method     = "manual"
+      secret_store_name = "/${var.app_name}/${var.environment}/feature-maintenance-banner-enabled"
+    },
+    FEATURE_MAINTENANCE_MODE = {
+      manage_method     = "manual"
+      secret_store_name = "/${var.app_name}/${var.environment}/feature-maintenance-mode"
+    },
+
+    # Free-text message shown in the site-wide maintenance banner when
+    # FEATURE_MAINTENANCE_BANNER_ENABLED is true.
+    MAINTENANCE_BANNER_MESSAGE = {
+      manage_method     = "manual"
+      secret_store_name = "/${var.app_name}/${var.environment}/maintenance-banner-message"
+    },
+
+    # "generated" creates the SSM parameter itself rather than reading an
+    # existing one, so it needs nothing pre-provisioned. Paired with
+    # API_JWT_PUBLIC_KEY in session.ts — both must be set or session
+    # initialization is skipped.
     SESSION_SECRET = {
       manage_method     = "generated"
       secret_store_name = "/${var.app_name}/${var.environment}/session-secret"
