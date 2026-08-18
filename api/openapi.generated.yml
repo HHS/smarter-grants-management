@@ -16,9 +16,11 @@ info:
 tags:
 - name: Health
 - name: User v1 - Internal Only
+- name: Proof of Concept - Alpha
 - name: Workflow
 - name: Partners
 - name: Resources
+- name: LOCAL ONLY
 servers: .
 paths:
   /health:
@@ -104,6 +106,19 @@ paths:
         the OAuth system.
 
         '
+  /local/local-users:
+    get:
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocalUserTokenResponseSchema'
+          description: Successful response
+      tags:
+      - LOCAL ONLY
+      summary: Local Users Get
   /v1/users/token/logout:
     post:
       parameters: []
@@ -242,6 +257,42 @@ paths:
       security:
       - ApiJwtAuth: &id002 []
       - ApiUserKeyAuth: *id002
+  /alpha/proof_of_concept/opportunities/{opportunity_id}:
+    get:
+      parameters:
+      - in: path
+        name: opportunity_id
+        schema:
+          type: string
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpportunityGetResponseSchema'
+          description: Successfully retrieved opportunity from Simpler Grants
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication required
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Opportunity not found in Simpler Grants
+      tags:
+      - Proof of Concept - Alpha
+      summary: Opportunity Get Simpler Min
+      description: Fetch an opportunity from Simpler Grants as a proof-of-concept
+        of cross-service data transfer. This endpoint requires JWT or API key authentication
+        but has no authorization enforcement.
+      security:
+      - ApiJwtAuth: &id003 []
+      - ApiUserKeyAuth: *id003
   /v1/resources/{resource_type}/{resource_id}/users/list:
     post:
       parameters:
@@ -297,8 +348,8 @@ paths:
             schema:
               $ref: '#/components/schemas/ListUserForResourceRequestSchema'
       security:
-      - ApiJwtAuth: &id003 []
-      - ApiUserKeyAuth: *id003
+      - ApiJwtAuth: &id004 []
+      - ApiUserKeyAuth: *id004
 openapi: 3.1.0
 components:
   schemas:
@@ -385,6 +436,62 @@ components:
           type: string
           description: An internal tracking ID
           example: 550e8400-e29b-41d4-a716-446655440000
+    LocalUserTokenSchema:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+          description: The ID of the user
+          example: 123e4567-e89b-12d3-a456-426614174000
+        first_name:
+          type:
+          - string
+          - 'null'
+          description: The first name of the user
+          example: Bob
+        last_name:
+          type:
+          - string
+          - 'null'
+          description: The last name of the user
+          example: Smith
+        oauth_id:
+          type:
+          - string
+          - 'null'
+          description: The OAuth id of the user - can be used to login locally via
+            our mock OAuth server
+          example: my_example_user
+        user_jwt:
+          type:
+          - string
+          - 'null'
+          description: The JWT of the user, can be used with our X-MGMT-Token auth
+          example: abc123
+        user_api_key:
+          type:
+          - string
+          - 'null'
+          description: The API key of the user, can be used with our X-API-Key auth
+          example: my_example_user_token
+    LocalUserTokenResponseSchema:
+      type: object
+      properties:
+        message:
+          type: string
+          description: The message to return
+          example: Success
+        data:
+          type: array
+          items:
+            type:
+            - object
+            $ref: '#/components/schemas/LocalUserTokenSchema'
+        status_code:
+          type: integer
+          description: The HTTP status code
+          example: 200
     UserTokenLogoutResponseSchema:
       type: object
       properties:
@@ -493,6 +600,57 @@ components:
       - privileges
       - resource_id
       - resource_type
+    OpportunitySummarySchema:
+      type: object
+      properties:
+        post_date:
+          type:
+          - string
+          - 'null'
+          format: date
+          description: The date the opportunity was posted
+    OpportunityDataSchema:
+      type: object
+      properties:
+        opportunity_id:
+          type: string
+          format: uuid
+          description: The unique identifier for the opportunity
+          example: 123e4567-e89b-12d3-a456-426614174000
+        opportunity_title:
+          type:
+          - string
+          - 'null'
+          description: The title of the opportunity
+        opportunity_status:
+          description: The current status of the opportunity
+          enum:
+          - forecasted
+          - posted
+          - closed
+          - archived
+          type:
+          - string
+          - 'null'
+          - 'null'
+        summary:
+          description: Summary information about the opportunity
+          type:
+          - object
+          - 'null'
+          anyOf:
+          - $ref: '#/components/schemas/OpportunitySummarySchema'
+          - type: 'null'
+      required:
+      - opportunity_id
+    OpportunityGetResponseSchema:
+      type: object
+      properties:
+        data:
+          description: The opportunity data
+          type:
+          - object
+          $ref: '#/components/schemas/OpportunityDataSchema'
     SortOrderSchema:
       type: object
       properties:
@@ -748,12 +906,12 @@ components:
       required:
       - pagination
   securitySchemes:
-    ApiJwtAuth:
-      type: apiKey
-      in: header
-      name: X-MGMT-Token
     ApiUserKeyAuth:
       type: apiKey
       in: header
       name: X-API-Key
+    ApiJwtAuth:
+      type: apiKey
+      in: header
+      name: X-MGMT-Token
 
