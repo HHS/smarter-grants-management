@@ -62,12 +62,22 @@ class WorkflowType(StrEnum):
     # engine works end to end until the first real grantor workflow lands.
     PROTOTYPE_WORKFLOW = "prototype_workflow"
 
+    # Also not real - back the test-only state machines that exercise approvals,
+    # which neither the basic test machine nor the prototype configures.
+    APPROVAL_TEST_WORKFLOW = "approval_test_workflow"
+    LIMITED_APPROVAL_TEST_WORKFLOW = "limited_approval_test_workflow"
+
     def get_human_friendly_text(self) -> str:
         return self.value.replace("_", " ").title()
 
 
 class ApprovalType(StrEnum):
+    # As with the workflow types above, real approval types arrive with the real
+    # workflows - these two exist so the approval machinery can be tested, and
+    # having two of them is what lets us cover a user doing more than one kind of
+    # approval on the same workflow.
     BASIC_TEST_APPROVAL = "basic_test_approval"
+    SECONDARY_TEST_APPROVAL = "secondary_test_approval"
 
 
 class ApprovalResponseType(StrEnum):

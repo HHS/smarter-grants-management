@@ -11,6 +11,7 @@ from src.workflow.base_state_machine import BaseStateMachine
 from src.workflow.event.sqs_message_container import SqsMessageContainer
 from src.workflow.event.state_machine_event import StateMachineEvent
 from src.workflow.event.workflow_metric_context import WorkflowMetricContext
+from src.workflow.listener.workflow_approval_email_listener import WorkflowApprovalEmailListener
 from src.workflow.listener.workflow_audit_listener import WorkflowAuditListener
 from src.workflow.registry.workflow_registry import WorkflowRegistry
 from src.workflow.service.workflow_service import (
@@ -259,7 +260,7 @@ class EventHandler:
     def get_listeners(self) -> list:
         # Create the audit listener to track all state transitions
         audit_listener = WorkflowAuditListener(db_session=self.db_session)
+        # Create a listener that sends emails whenever a workflow enters an approval state
+        approval_email_listener = WorkflowApprovalEmailListener(db_session=self.db_session)
 
-        # The approval-email listener that simpler-grants-gov attaches here arrives
-        # with the approval machinery.
-        return [audit_listener]
+        return [audit_listener, approval_email_listener]

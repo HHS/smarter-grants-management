@@ -1,3 +1,4 @@
+import os
 import uuid
 
 import _pytest.monkeypatch
@@ -14,6 +15,8 @@ from grants_shared.adapters.oauth.login_gov.mock_login_gov_oauth_client import (
     MockLoginGovOauthClient,
 )
 from grants_shared.util.local import load_local_env_vars
+from moto.core import DEFAULT_ACCOUNT_ID
+from moto.ses.models import ses_backends
 
 import src.app as app_entry
 import tests.db.models.factories as factories
@@ -326,6 +329,29 @@ def mock_s3_bucket(mock_s3_bucket_resource):
 def mock_sqs(reset_aws_env_vars):
     with moto.mock_aws(config={"core": {"service_whitelist": ["sqs"]}}):
         yield
+
+
+@pytest.fixture
+def ses_client(monkeypatch, reset_aws_env_vars):
+    """Create a mocked SESv2 client using moto."""
+    # The SES adapter logs instead of sending when running against local AWS, so
+    # turn that off or nothing reaches the mocked backend.
+    monkeypatch.setenv("IS_LOCAL_AWS", "0")
+
+    # to access ses_backends, need to add ses to the whitelist
+    with moto.mock_aws(config={"core": {"service_whitelist": ["ses", "sesv2"]}}):
+        ses_client = boto3.client("sesv2", region_name="us-east-1")
+        ses_client.create_email_identity(EmailIdentity=os.getenv("AWS_SES_FROM_EMAIL"))
+        yield ses_client
+
+
+@pytest.fixture
+def get_sent_emails():
+    def func():
+        ses_backend = ses_backends[DEFAULT_ACCOUNT_ID]["us-east-1"]
+        return ses_backend.sent_messages
+
+    return func
 
 
 @pytest.fixture
