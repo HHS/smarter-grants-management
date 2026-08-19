@@ -54,7 +54,7 @@ def verify_user_can_access_workflow(
     event_to_send: str,
 ) -> None:
     """Verify a user is allowed to send workflow events - erroring if not."""
-    
+
     # For testing, we have an internal privilege capable of sending any event
     # that passes our other validation.
     if AuthorizationEnforcer(db_session).can_access(
