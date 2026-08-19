@@ -101,6 +101,7 @@ def validate_ltxtquery(db_session, query: str, expected_results: list[LtreeTestT
 # Tests
 ############
 
+
 @pytest.mark.parametrize("path", ["x.y.z", "X.y.Z", "a", "a-b-c.x-y-z"])
 def test_valid_ltree_paths(path):
     assert Ltree(path).path == path
