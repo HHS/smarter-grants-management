@@ -5,7 +5,6 @@ import {
   fetchUserWithMethod,
 } from "src/services/fetch/fetchers/fetchers";
 import {
-  OrganizationInvitation,
   TestUser,
   UserDetailProfile,
   UserDetailWithProfile,
@@ -60,31 +59,6 @@ export const checkUserPrivilege = async (
       privileges: [privilege],
     },
   });
-};
-
-export const getUserInvitations = async (
-  userId: string,
-): Promise<OrganizationInvitation[]> => {
-  const resp = await fetchUserWithMethod("POST")({
-    subPath: `${userId}/invitations/list`,
-  });
-  const json = (await resp.json()) as { data: OrganizationInvitation[] };
-
-  return json.data;
-};
-
-export const updateUserInvitation = async (
-  userId: string,
-  invitationId: string,
-  status: "accepted" | "rejected",
-): Promise<OrganizationInvitation> => {
-  const resp = await fetchUserWithMethod("POST")({
-    subPath: `${userId}/invitations/${invitationId}/organizations`,
-    body: { status },
-  });
-  const json = (await resp.json()) as { data: OrganizationInvitation };
-
-  return json.data;
 };
 
 export const getTestUsers = async (): Promise<TestUser[]> => {

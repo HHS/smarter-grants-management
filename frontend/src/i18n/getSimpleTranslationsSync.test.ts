@@ -3,19 +3,19 @@ import { getSimpleTranslationsSync } from "src/i18n/getMessagesSync";
 describe("getSimpleTranslationsSync", () => {
   it("returns original string for string that is not in namespace", () => {
     const result = getSimpleTranslationsSync({
-      nameSpace: "Form",
-      translateableString: "hello",
+      nameSpace: "Homepage",
+      translateableString: "NOT A REAL KEY",
     });
-    expect(result).toBe("hello");
+    expect(result).toBe("NOT A REAL KEY");
     expect(typeof result).toBe("string");
   });
 
-  it("returns fallback translations for correct string", () => {
+  it("returns actual translations for correct string", () => {
     const result = getSimpleTranslationsSync({
-      nameSpace: "Form",
-      translateableString: "AL: Alabama",
+      nameSpace: "Homepage",
+      translateableString: "title",
     });
-    expect(result).toBe("Alabama");
+    expect(result).toBe("Smarter Grants Management");
     expect(typeof result).toBe("string");
   });
 });
