@@ -111,19 +111,15 @@ module "account_guard" {
   context             = "the ${var.environment_name} frontend service"
 }
 
-# The frontend has ONE build repository shared across environments, living in the
-# account named by frontend/app-config's shared_network_name (dev), which
-# frontend/build-repository grants cross-account pull to every environment account.
-# So take the ARN and URL straight from app-config rather than re-deriving them
-# from this environment's own network account — doing that resolved staging to
-# 530702498822, where no repository is ever created.
-#
-# Note this differs from infra/api, which deliberately has one build repository per
-# environment in that environment's own account and therefore does resolve the
-# account locally.
+
+data "external" "account_ids_by_name" {
+  program = ["${path.module}/../../../bin/account-ids-by-name"]
+}
+
 locals {
-  image_repository_url = local.build_repository_config.repository_url
-  image_repository_arn = local.build_repository_config.repository_arn
+  image_repository_account_id = data.external.account_ids_by_name.result[local.network_config.account_name]
+  image_repository_url        = "${local.image_repository_account_id}.dkr.ecr.${local.build_repository_config.region}.amazonaws.com/${local.build_repository_config.name}"
+  image_repository_arn        = "arn:aws:ecr:${local.build_repository_config.region}:${local.image_repository_account_id}:repository/${local.build_repository_config.name}"
 }
 
 # Retrieve url for external incident management tool (e.g. Pagerduty, Splunk-On-Call)
@@ -218,7 +214,6 @@ module "service" {
       name      = secret_name
       valueFrom = secret_arn
     }],
-    local.feature_flags_secrets,
     module.app_config.enable_identity_provider ? [{
       # name      = "COGNITO_CLIENT_SECRET"
       # valueFrom = module.identity_provider_client[0].client_secret_arn

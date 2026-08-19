@@ -63,7 +63,7 @@ func BuildAndPublish(t *testing.T) {
 	// and replace the call to terraform.RunTerraformCommand with terraform.Init
 	TerraformInit(t, &terraform.Options{
 		TerraformDir: fmt.Sprintf("../%s/build-repository/", *appName),
-	}, "shared.s3.tfbackend")
+	}, "dev.s3.tfbackend")
 	fmt.Println("::endgroup::")
 
 	fmt.Println("::group::Build release")
