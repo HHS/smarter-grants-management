@@ -8,6 +8,11 @@ output "public_endpoint" {
 #   value       = var.enable_cdn ? aws_cloudfront_distribution.cdn[0].domain_name : null
 # }
 
+output "cloudfront_distribution_id" {
+  description = "The CloudFront distribution id, or null when no CDN is enabled."
+  value       = local.enable_cdn ? aws_cloudfront_distribution.cdn[0].id : null
+}
+
 output "cluster_name" {
   value = aws_ecs_cluster.cluster.name
 }

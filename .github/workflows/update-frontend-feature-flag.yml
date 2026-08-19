@@ -9,8 +9,10 @@ on:
         required: true
         type: choice
         options:
-          - feature-apply-form-prototype-off
-          - feature-developer-page-off
+          - feature-award-recommendation-off
+          - feature-feature-flag-admin-off
+          - feature-maintenance-banner-enabled
+          - feature-maintenance-mode
       environment:
         description: Target environment
         required: true
@@ -18,10 +20,6 @@ on:
         options:
           - dev
           - staging
-          - grantee1
-          - infra-grantee1
-          - infra-grantee2
-          - infra-grantor1
       value:
         description: Feature flag value
         required: true
