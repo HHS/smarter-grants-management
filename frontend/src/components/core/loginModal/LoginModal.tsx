@@ -47,7 +47,7 @@ export const LoginModal = ({
   );
 };
 
-export const LoginModalBody = ({
+const LoginModalBody = ({
   buttonText,
   closeText,
   descriptionText,
