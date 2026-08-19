@@ -5,7 +5,6 @@ from grants_shared.db.models.base import TimestampMixin
 from sqlalchemy import UUID, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.adapters.db.ltree_column import Ltree, LtreeType
 from src.constants.lookup_constants import GrantorOrganizationType, ResourceType
 from src.db.models.grantor_schema_table import GrantorSchemaTable
 from src.db.models.lookup_models import LkGrantorOrganizationType
@@ -68,8 +67,6 @@ class GrantorOrganization(GrantorSchemaTable, TimestampMixin, AbstractResourceTa
         LookupColumn(LkGrantorOrganizationType),
         ForeignKey(LkGrantorOrganizationType.grantor_organization_type_id),
     )
-
-    path: Mapped[Ltree | None] = mapped_column(LtreeType)
 
     def get_resource_id(self) -> uuid.UUID:
         return self.grantor_organization_id
