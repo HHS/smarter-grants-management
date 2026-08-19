@@ -23,12 +23,12 @@ from src.api.proof_of_concept.proof_of_concept_blueprint import proof_of_concept
 from src.api.resources import resource_blueprint
 from src.api.route_converters import build_enum_converter
 from src.api.users.user_blueprint import user_blueprint
+from src.api.workflows import workflow_blueprint
 from src.app_config import AppConfig
 from src.auth.auth_utils import get_app_security_scheme
 from src.constants.lookup_constants import ResourceType
 from src.db.resource_automation.resource_automation import setup_resource_automation
 from src.task.task_blueprint import task_blueprint
-from src.workflow import workflow_blueprint
 
 logger = logging.getLogger(__name__)
 
