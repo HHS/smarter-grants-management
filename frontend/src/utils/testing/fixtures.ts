@@ -1,8 +1,4 @@
 import { JSONSchema7 } from "json-schema";
-import { PaginationInfo } from "src/types/apiResponseTypes";
-import { ApplicationSubmission } from "src/types/application/applicationSubmissionTypes";
-import { Organization } from "src/types/applicationResponseTypes";
-import { FormattedFormValidationWarning } from "src/types/applyForm/types";
 import { UserProfile } from "src/types/authTypes";
 import {
   AwardRecommendationDetails,
@@ -10,33 +6,44 @@ import {
   AwardRecommendationStatus,
   AwardRecommendationSubmission,
 } from "src/types/awardRecommendationTypes";
-import { BaseOpportunity } from "src/types/opportunity/opportunityResponseTypes";
+import { RelevantAgencyRecord } from "src/types/search/searchFilterTypes";
 import {
-  FilterOption,
-  FilterPillLabelData,
-  RelevantAgencyRecord,
-} from "src/types/search/searchFilterTypes";
-import { ValidSearchQueryParamData } from "src/types/search/searchQueryTypes";
-import {
-  PaginationOrderBy,
-  PaginationSortDirection,
-  QueryOperator,
-  QueryParamData,
-  SearchAPIResponse,
-  SearchFetcherActionType,
-} from "src/types/search/searchRequestTypes";
-import {
-  OrganizationInvitation,
   TestUser,
   UserDetail,
   UserDetailWithProfile,
-  UserOrganization,
   UserPrivilegesResponse,
   UserRole,
 } from "src/types/userTypes";
 
 export const mockAwardRecommendationStatus: AwardRecommendationStatus =
   "in_review";
+
+export const fakeAgencyResponseData: RelevantAgencyRecord[] = [
+  {
+    agency_code: "DOCNIST",
+    agency_name: "National Institute of Standards and Technology",
+    top_level_agency: null,
+    agency_id: 1,
+  },
+  {
+    agency_code: "MOCKNIST",
+    agency_name: "Mational Institute",
+    top_level_agency: null,
+    agency_id: 1,
+  },
+  {
+    agency_code: "MOCKTRASH",
+    agency_name: "Mational TRASH",
+    top_level_agency: null,
+    agency_id: 1,
+  },
+  {
+    agency_code: "FAKEORG",
+    agency_name: "Completely fake",
+    top_level_agency: null,
+    agency_id: 1,
+  },
+];
 
 export const mockAwardRecommendationDetails: AwardRecommendationDetails = {
   award_recommendation_id: "63588df8-f2d1-44ed-a201-5804abba696a",
@@ -133,54 +140,6 @@ export const mockAwardRecommendationSubmissions: AwardRecommendationSubmission[]
     },
   ];
 
-export const mockOpportunity: BaseOpportunity = {
-  opportunity_id: "63588df8-f2d1-44ed-a201-5804abba696a",
-  legacy_opportunity_id: 12345,
-  opportunity_title: "Test Opportunity",
-  opportunity_status: "posted",
-  summary: {
-    archive_date: "2023-01-01",
-    close_date: "2023-02-01",
-    post_date: "2023-01-15",
-    agency_name: "Test Agency",
-    award_ceiling: 50000,
-    award_floor: 10000,
-  },
-  opportunity_number: "OPP-12345",
-} as BaseOpportunity;
-
-export const createMockOpportunity = (
-  overrides: Partial<BaseOpportunity> = {},
-): BaseOpportunity => ({
-  ...mockOpportunity,
-  // ensure required nested objects are safe to override
-  summary: {
-    ...mockOpportunity.summary,
-    ...(overrides.summary ?? {}),
-  },
-  saved_to_organizations: [],
-  ...overrides,
-});
-
-export const searchFetcherParams: QueryParamData = {
-  page: 1,
-  status: new Set(["forecasted", "posted"]),
-  fundingInstrument: new Set(["grant", "cooperative_agreement"]),
-  agency: new Set(),
-  assistanceListingNumber: new Set(),
-  category: new Set(),
-  eligibility: new Set(),
-  closeDate: new Set(),
-  postedDate: new Set(),
-  costSharing: new Set(),
-  topLevelAgency: new Set(),
-  query: "research",
-  sortby: "opportunityTitleAsc",
-  actionType: "fun" as SearchFetcherActionType,
-  fieldChanged: "baseball",
-  andOr: "OR",
-};
-
 export const mockOpportunityDetail = {
   opportunity_id: "6a483cd8-9169-418a-8dfb-60fa6e6f51e5",
   legacy_opportunity_id: 1,
@@ -234,191 +193,6 @@ export const mockOpportunityDetail = {
   },
 };
 
-export const arbitrarySearchPagination = {
-  sort_order: [
-    {
-      order_by: "opportunity_number" as PaginationOrderBy,
-      sort_direction: "ascending" as PaginationSortDirection,
-    },
-  ],
-  page_offset: 1,
-  page_size: 25,
-};
-
-const fakeSearchFilterRequestBody = {
-  opportunity_status: { one_of: ["Archived"] },
-  funding_instrument: { one_of: ["Cooperative Agreement"] },
-  applicant_type: { one_of: ["Individuals"] },
-  agency: { one_of: ["Economic Development Administration"] },
-  funding_category: { one_of: ["Recovery Act"] },
-};
-
-export const fakeSavedSearch = {
-  filters: fakeSearchFilterRequestBody,
-  pagination: arbitrarySearchPagination,
-  query: "something to search for",
-  query_operator: "OR" as QueryOperator,
-};
-
-export const fakeSearchQueryParamData: ValidSearchQueryParamData = {
-  query: "search term",
-  status: "forecasted,closed",
-  fundingInstrument: "cooperative_agreement",
-  eligibility: "individuals",
-  agency: "DOC-EDA",
-  category: "recovery_act",
-  page: "1",
-  sortby: "relevancy",
-};
-
-export const fakeAgencyOptions: FilterOption[] = [
-  {
-    id: "1",
-    label: "Economic Development Administration",
-    value: "DOC-EDA",
-  },
-];
-
-const fakePaginationInfo: PaginationInfo = {
-  order_by: "opportunity_number",
-  page_offset: 1,
-  page_size: 10,
-  sort_direction: "ascending",
-  total_pages: 1,
-  total_records: 10,
-};
-
-export const fakeFacetCounts = {
-  opportunity_status: {
-    posted: 1,
-    forecasted: 1,
-  },
-  assistance_listing_number: {
-    "15.808": 1,
-  },
-  funding_instrument: {
-    arbitraryKey: 1,
-  },
-  applicant_type: {
-    arbitraryKey: 1,
-  },
-  agency: {
-    arbitraryKey: 1,
-  },
-  funding_category: {
-    arbitraryKey: 1,
-  },
-  close_date: {
-    arbitraryKey: 1,
-  },
-  post_date: {
-    arbitraryKey: 1,
-  },
-  is_cost_sharing: {
-    true: 1,
-  },
-};
-
-export const fakeSearchAPIResponse: SearchAPIResponse = {
-  data: [
-    mockOpportunity,
-    { ...mockOpportunity, opportunity_status: "forecasted" },
-  ],
-  pagination_info: fakePaginationInfo,
-  facet_counts: fakeFacetCounts,
-  message: "anything",
-  status_code: 200,
-};
-
-export const fakeOpportunityDocument = {
-  file_name: "your_file_thanks.mp3",
-  download_path: "http://big-website.net/your_file_again.mp4",
-  updated_at: Date.now().toString(),
-  file_description: "a description for your file",
-};
-
-export const initialFilterOptions: FilterOption[] = [
-  {
-    id: "funding-instrument-cooperative_agreement",
-    label: "Cooperative Agreement",
-    value: "cooperative_agreement",
-  },
-  {
-    id: "funding-instrument-grant",
-    label: "Grant",
-    value: "grant",
-  },
-  {
-    id: "funding-instrument-procurement_contract",
-    label: "Procurement Contract ",
-    value: "procurement_contract",
-  },
-  {
-    id: "funding-instrument-other",
-    label: "Other",
-    value: "other",
-  },
-];
-
-export const filterOptionsWithChildren = [
-  {
-    id: "AGNC",
-    label: "Top Level Agency",
-    value: "AGNC",
-    children: [
-      {
-        id: "AGNC-KID",
-        label: "Kid",
-        value: "AGNC-KID",
-      },
-      {
-        id: "AGNC-CHILD",
-        label: "Child",
-        value: "AGNC-CHILD",
-      },
-    ],
-  },
-  {
-    id: "DOC-NIST",
-    label: "National Institute of Standards and Technology",
-    value: "DOC-NIST",
-    children: [
-      {
-        id: "HI",
-        label: "Hello",
-        value: "HI",
-      },
-      {
-        id: "There",
-        label: "Again",
-        value: "There",
-      },
-    ],
-  },
-  {
-    id: "MOCK-NIST",
-    label: "Mational Institute",
-    value: "MOCK-NIST",
-  },
-  {
-    id: "MOCK-TRASH",
-    label: "Mational TRASH",
-    value: "MOCK-TRASH",
-    children: [
-      {
-        id: "TRASH",
-        label: "More TRASH",
-        value: "TRASH",
-      },
-    ],
-  },
-  {
-    id: "FAKE",
-    label: "Completely fake",
-    value: "FAKE",
-  },
-];
-
 export const fakeAttachments = [
   {
     created_at: "2007-11-02T15:23:09+00:00",
@@ -439,33 +213,6 @@ export const fakeAttachments = [
     file_size_bytes: 122880,
     mime_type: "application/msword",
     updated_at: "2007-11-02T15:23:10+00:00",
-  },
-];
-
-export const fakeAgencyResponseData: RelevantAgencyRecord[] = [
-  {
-    agency_code: "DOCNIST",
-    agency_name: "National Institute of Standards and Technology",
-    top_level_agency: null,
-    agency_id: 1,
-  },
-  {
-    agency_code: "MOCKNIST",
-    agency_name: "Mational Institute",
-    top_level_agency: null,
-    agency_id: 1,
-  },
-  {
-    agency_code: "MOCKTRASH",
-    agency_name: "Mational TRASH",
-    top_level_agency: null,
-    agency_id: 1,
-  },
-  {
-    agency_code: "FAKEORG",
-    agency_name: "Completely fake",
-    top_level_agency: null,
-    agency_id: 1,
   },
 ];
 
@@ -546,54 +293,6 @@ export const fakeResponsiveTableRows = [
   ],
 ];
 
-export const fakeFilterPillLabelData: FilterPillLabelData[] = [
-  {
-    label: "whatever",
-    queryParamKey: "status",
-    queryParamValue: "whichever",
-  },
-  {
-    label: "another",
-    queryParamKey: "category",
-    queryParamValue: "overHere",
-  },
-  {
-    label: "this one.",
-    queryParamKey: "agency",
-    queryParamValue: "that one!",
-  },
-  {
-    label: "last",
-    queryParamKey: "eligibility",
-    queryParamValue: "again",
-  },
-];
-
-export const fakeUserOrganization: UserOrganization = {
-  is_organization_owner: true,
-  organization_id: "great id",
-  sam_gov_entity: {
-    ebiz_poc_email: "email@email.email",
-    ebiz_poc_first_name: "first",
-    ebiz_poc_last_name: "last",
-    expiration_date: "1-1-25",
-    legal_business_name: "Completely Legal Organization",
-    uei: "unique entity identifier",
-  },
-};
-
-export const fakeOrganizationDetailsResponse: Organization = {
-  organization_id: "great id",
-  sam_gov_entity: {
-    ebiz_poc_email: "email@email.email",
-    ebiz_poc_first_name: "first",
-    ebiz_poc_last_name: "last",
-    expiration_date: "1-1-25",
-    legal_business_name: "Completely Legal Organization",
-    uei: "unique entity identifier",
-  },
-};
-
 export const fakeCompetition = {
   closing_date: "1-1-30",
   competition_forms: [
@@ -663,19 +362,6 @@ export const fakeFieldSchema: JSONSchema7 = {
   minLength: 0,
   title: "Description for application",
   type: "string",
-};
-
-export const fakeWidgetProps = {
-  id: "some-id",
-  key: "some-id",
-  disabled: false,
-  required: false,
-  minLength: fakeFieldSchema.minLength,
-  maxLength: fakeFieldSchema.maxLength,
-  schema: fakeFieldSchema,
-  rawErrors: [],
-  value: "hi",
-  options: {},
 };
 
 export const fakeUser: UserDetail = {
@@ -771,43 +457,6 @@ export const fakeUserPrivilegesResponse: UserPrivilegesResponse = {
   ],
 };
 
-export const fakeOrganizationInviteRecord = {
-  organization_invitation_id: "1",
-  organization_id: "2",
-  invitee_email: "not-a-real@email.org",
-  status: "pending",
-  roles: [
-    {
-      role_id: "5",
-      role_name: "role_5",
-    },
-  ],
-};
-
-export const fakeOrganizationInvitation: OrganizationInvitation = {
-  organization_invitation_id: "uuid",
-  organization: {
-    organization_id: "uuid",
-    organization_name: "Example Organization",
-  },
-  status: "pending",
-  created_at: "2024-0108T13:00Z",
-  expires_at: "2024-0115T13:00Z",
-  inviter: {
-    first_name: "John",
-    last_name: "Doe",
-    email: "admin@org.com",
-    user_id: "1",
-  },
-  roles: [
-    {
-      role_id: "uuid",
-      role_name: "Organization Member",
-      privileges: ["view_org_membership", "start_application"],
-    },
-  ],
-};
-
 export const fakeTestUser: TestUser = {
   first_name: "hi",
   last_name: "there",
@@ -820,21 +469,4 @@ export const fakeTestUser: TestUser = {
 export const fakeUserProfile: UserProfile = {
   token: "a token",
   user_id: "an id",
-};
-
-export const mockApplicationSubmission: ApplicationSubmission = {
-  application_submission_id: "uuid-13",
-  download_path: "http://s3signedurl.com/download.zip",
-  file_size_bytes: 10,
-  legacy_tracking_number: 1,
-};
-
-export const fakeValidationError: FormattedFormValidationWarning = {
-  definition: "/properties/field_one",
-  field: "$.field_one",
-  formatted: "Submission Type is required",
-  htmlField: "field_one",
-  message: "'field_one' is a required property",
-  type: "required",
-  value: null,
 };

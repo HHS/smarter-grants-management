@@ -1,9 +1,3 @@
-import { Organization } from "./applicationResponseTypes";
-
-export interface UserOrganization extends Organization {
-  is_organization_owner: boolean;
-}
-
 export type GatedResourceTypes = "application" | "organization" | "agency";
 
 export type Privileges =
