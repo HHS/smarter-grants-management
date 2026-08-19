@@ -101,7 +101,6 @@ def validate_ltxtquery(db_session, query: str, expected_results: list[LtreeTestT
 # Tests
 ############
 
-
 @pytest.mark.parametrize("path", ["x.y.z", "X.y.Z", "a", "a-b-c.x-y-z"])
 def test_valid_ltree_paths(path):
     assert Ltree(path).path == path
@@ -293,8 +292,3 @@ def test_invalid_ltxtquery(isolated_db_session):
         isolated_db_session.execute(
             select(LtreeTestTable).where(LtreeTestTable.path.ltxtquery("!@#$@%$#^%"))
         )
-
-
-# TODO
-# Invalid descendant/ancestor/lquery/ltxtquery
-# Auto-conversion of the paths
