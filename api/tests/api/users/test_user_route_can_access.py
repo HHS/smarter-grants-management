@@ -281,3 +281,64 @@ def test_can_access_grantor_organization_resource_type_200(user_and_token, clien
     )
 
     assert resp.status_code == 200
+
+
+def test_can_access_partner_missing_privilege_403(user_and_token, client, db_session):
+    """Test that a user without the required privilege cannot access a Partner resource."""
+    user, token = user_and_token
+    partner = PartnerFactory.create()
+    setup_user_with_roles(db_session, [partner], user=user, privileges=[Privilege.VIEW_PARTNER])
+
+    resp = _post(
+        client,
+        user.user_id,
+        token,
+        ResourceType.PARTNER,
+        partner.partner_id,
+        [Privilege.UPDATE_PARTNER],
+    )
+
+    assert resp.status_code == 403
+
+
+def test_can_access_program_missing_privilege_403(user_and_token, client, db_session):
+    """Test that a user without the required privilege cannot access a Program resource."""
+    user, token = user_and_token
+    program = ProgramFactory.create()
+    setup_user_with_roles(
+        db_session, [program.partner], user=user, privileges=[Privilege.VIEW_PROGRAM]
+    )
+
+    resp = _post(
+        client,
+        user.user_id,
+        token,
+        ResourceType.PROGRAM,
+        program.program_id,
+        [Privilege.UPDATE_PROGRAM],
+    )
+
+    assert resp.status_code == 403
+
+
+def test_can_access_grantor_organization_missing_privilege_403(user_and_token, client, db_session):
+    """Test that a user without the required privilege cannot access a Grantor Organization resource."""
+    user, token = user_and_token
+    organization = GrantorOrganizationFactory.create()
+    setup_user_with_roles(
+        db_session,
+        [organization],
+        user=user,
+        privileges=[Privilege.VIEW_GRANTOR_ORGANIZATION],
+    )
+
+    resp = _post(
+        client,
+        user.user_id,
+        token,
+        ResourceType.GRANTOR_ORGANIZATION,
+        organization.grantor_organization_id,
+        [Privilege.UPDATE_GRANTOR_ORGANIZATION],
+    )
+
+    assert resp.status_code == 403
