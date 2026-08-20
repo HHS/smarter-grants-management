@@ -7,17 +7,14 @@ locals {
   tags = merge(module.project_config.default_tags, {
     application      = module.app_config.app_name
     application_role = "build-repository"
+    environment      = var.environment_name
     description      = "Backend resources required for storing built release candidate artifacts to be used for deploying to environments."
   })
 
   build_repository_config = module.app_config.build_repository_config
 
-  # Get list of AWS account ids for the application environments that
-  # will need access to the build repository
-  network_names       = toset([for environment_config in values(module.app_config.environment_configs) : environment_config.network_name])
-  app_account_names   = [for network_name in local.network_names : module.project_config.network_configs[network_name].account_name]
-  account_ids_by_name = data.external.account_ids_by_name.result
-  app_account_ids     = [for account_name in local.app_account_names : local.account_ids_by_name[account_name] if contains(keys(local.account_ids_by_name), account_name)]
+  network_config = module.project_config.network_configs[var.environment_name]
+
 }
 
 terraform {
@@ -37,6 +34,8 @@ terraform {
 
 provider "aws" {
   region = local.build_repository_config.region
+  # Refuse to operate against the wrong account (covers plan/apply/destroy).
+  allowed_account_ids = [module.expected_account.account_id]
   default_tags {
     tags = local.tags
   }
@@ -50,13 +49,21 @@ module "app_config" {
   source = "../app-config"
 }
 
-data "external" "account_ids_by_name" {
-  program = ["${path.module}/../../../bin/account-ids-by-name"]
+
+module "expected_account" {
+  source       = "../../modules/account-id-by-name"
+  account_name = local.network_config.account_name
+  accounts_dir = "${path.module}/../../accounts"
+}
+
+module "account_guard" {
+  source              = "../../modules/aws-account-guard"
+  expected_account_id = module.expected_account.account_id
+  context             = "the ${var.environment_name} frontend build repository"
 }
 
 module "container_image_repository" {
   source               = "../../modules/container-image-repository"
   name                 = local.build_repository_config.name
   push_access_role_arn = data.aws_iam_role.github_actions.arn
-  app_account_ids      = local.app_account_ids
 }

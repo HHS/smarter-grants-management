@@ -4,9 +4,13 @@ from typing import Self
 
 import grants_shared.adapters.db as db
 from grants_shared.auth.api_jwt_auth import ApiJwtConfig
+from sqlalchemy import select
 
 import tests.db.models.factories as factories
 from src.auth.api_jwt_auth import create_jwt_for_user
+from src.auth.internal_resource import get_internal_resource
+from src.constants.lookup_constants import Privilege, ResourceType
+from src.db.models.resource_models import ResourceUser
 from src.db.models.user_models import User
 
 logger = logging.getLogger(__name__)
@@ -23,6 +27,7 @@ class UserBuilder:
         self.link_external_id = None
         self.api_key_id = None
         self.jwt_token = None
+        self.internal_privileges: list[Privilege] = []
 
     def with_oauth_login(self, external_user_id: str) -> Self:
         """Add an oauth login record that you can use to login as a user
@@ -75,6 +80,45 @@ class UserBuilder:
         self.api_key_id = key_id
         return self
 
+    def with_internal_privileges(
+        self, role_id: uuid.UUID, privileges: list[Privilege], role_name: str
+    ) -> Self:
+        """Grant the user a role on the internal resource carrying the given privileges."""
+        internal_resource = get_internal_resource(self.db_session)
+
+        role = self.db_session.merge(
+            factories.RoleFactory.build(
+                role_id=role_id,
+                role_name=role_name,
+                privileges=privileges,
+                resource_types=[ResourceType.INTERNAL],
+            ),
+            load=True,
+        )
+
+        # Reuse the user's existing connection to the internal resource if it has one -
+        # a user gets at most one per resource.
+        resource_user = self.db_session.execute(
+            select(ResourceUser).where(
+                ResourceUser.resource_id == internal_resource.get_resource_id(),
+                ResourceUser.user_id == self.user.user_id,
+            )
+        ).scalar_one_or_none()
+
+        if resource_user is None:
+            resource_user = factories.ResourceUserFactory.build(
+                resource=internal_resource.resource, user=self.user
+            )
+            self.db_session.add(resource_user)
+
+        if role not in resource_user.roles:
+            self.db_session.add(
+                factories.ResourceUserRoleFactory.build(resource_user=resource_user, role=role)
+            )
+
+        self.internal_privileges = privileges
+        return self
+
     def build(self) -> User:
         log_msg = f"Updating {self.scenario_name}:"
         if self.link_external_id:
@@ -83,5 +127,7 @@ class UserBuilder:
             log_msg += f" with X-MGMT-Token: '{self.jwt_token}'"
         if self.api_key_id:
             log_msg += f" with X-API-Key: '{self.api_key_id}'"
+        if self.internal_privileges:
+            log_msg += f" with internal privileges: {[p.value for p in self.internal_privileges]}"
         logger.info(log_msg)
         return self.user

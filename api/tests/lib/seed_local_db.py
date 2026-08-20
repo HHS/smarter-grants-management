@@ -8,6 +8,7 @@ from grants_shared.adapters.db import PostgresDBClient
 from grants_shared.util.local import error_if_not_local
 
 import tests.db.models.factories as f
+from src.constants.lookup_constants import Privilege
 from src.db.resource_automation.resource_automation import setup_resource_automation
 from tests.lib.seed_data_utils import UserBuilder
 
@@ -66,6 +67,20 @@ def create_users(db_session: db.Session) -> None:
         db_session=db_session,
         scenario_name="Another API Key User",
     ).with_oauth_login("another_api_key_user").with_api_key("local-dev-api-key-2").build()
+
+    # A user who can send workflow events. The event API refuses everyone else, so
+    # without this there's no way to drive a workflow by hand locally.
+    UserBuilder(
+        user_id=uuid.UUID("c3d4e5f6-a7b8-4c5d-9e0f-2a3b4c5d6e7f"),
+        db_session=db_session,
+        scenario_name="Workflow Event Sender",
+    ).with_oauth_login("workflow_event_sender").with_jwt_auth().with_api_key(
+        "local-dev-workflow-key"
+    ).with_internal_privileges(
+        role_id=uuid.UUID("d4e5f6a7-b8c9-4d5e-9f0a-3b4c5d6e7f80"),
+        privileges=[Privilege.INTERNAL_WORKFLOW_EVENT_SEND],
+        role_name="Local Workflow Event Sender",
+    ).build()
 
 
 def create_programs() -> None:

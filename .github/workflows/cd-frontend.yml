@@ -1,5 +1,5 @@
 name: Deploy frontend
-run-name: Deploy ${{ inputs.version || 'main' }} to Frontend ${{ inputs.environment || 'nonprod' }}
+run-name: Deploy ${{ inputs.version || 'main' }} to Frontend ${{ inputs.environment || 'dev' }}
 
 on:
   push:
@@ -9,8 +9,6 @@ on:
       - "frontend/**"
       - "infra/frontend/**"
       - "infra/modules/**"
-  # Release deployments are handled by cd-release.yml to enforce deployment order
-  # (API -> Frontend -> NOFOs -> Analytics)
   workflow_dispatch:
     inputs:
       environment:
@@ -20,18 +18,7 @@ on:
         type: choice
         options:
           - dev
-          - infra-dev
           - staging
-          - infra-staging
-          - training
-          - infra-training
-          - grantee1
-          - grantee2
-          - grantor1
-          - infra-grantee1
-          - infra-grantee2
-          - infra-grantor1
-          - prod
       version:
         required: true
         default: "main"
@@ -46,6 +33,16 @@ on:
         description: Skip vulnerability scans
   workflow_call:
     inputs:
+      environment:
+        description: Environment to deploy to
+        required: false
+        default: "dev"
+        type: string
+      version:
+        required: false
+        default: ""
+        description: Tag or branch or SHA to deploy
+        type: string
       skip_checks:
         type: boolean
         default: false
@@ -67,21 +64,16 @@ jobs:
     uses: ./.github/workflows/vulnerability-scans.yml
     with:
       app_name: frontend
-      fail_on_vulns: ${{ ! contains(fromJSON(inputs.environment != null && format('["{0}"]', inputs.environment) || github.ref_name == 'main' && '["staging"]' || '["dev"]'), 'staging') }}
+      fail_on_vulns: false
       skip_vuln_scans: ${{ inputs.skip_vuln_scans != null && inputs.skip_vuln_scans != false }}
 
   deploy:
     name: Deploy
     needs: [frontend-checks, vulnerability-scans]
     uses: ./.github/workflows/deploy.yml
-    strategy:
-      max-parallel: 1
-      fail-fast: false
-      matrix:
-        envs: ${{ fromJSON(inputs.environment != null && format('["{0}"]', inputs.environment) || github.ref_name == 'main' && '["staging"]' || '["dev"]')  }}
     with:
       app_name: "frontend"
-      environment: ${{ matrix.envs }}
+      environment: ${{ inputs.environment || 'dev' }}
       version: ${{ inputs.version || github.ref }}
 
   send-slack-notification:

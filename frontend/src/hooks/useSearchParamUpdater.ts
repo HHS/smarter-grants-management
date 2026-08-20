@@ -1,11 +1,6 @@
 "use client";
 
 import { sendGAEvent } from "@next/third-parties/google";
-import {
-  defaultFilterValues,
-  SEARCH_NO_STATUS_VALUE,
-} from "src/constants/search";
-import { FrontendFilterNames } from "src/types/search/searchFilterTypes";
 import { ValidSearchQueryParamData } from "src/types/search/searchQueryTypes";
 import { queryParamsToQueryString } from "src/utils/generalUtils";
 import { paramsToFormattedQuery } from "src/utils/search/searchUtils";
@@ -92,31 +87,6 @@ export function useSearchParamUpdater() {
     router.push(`${pathname}${paramsToFormattedQuery(params)}`);
   };
 
-  const removeQueryParamValue = (
-    queryParamKey: FrontendFilterNames,
-    queryParamValue: string,
-  ) => {
-    const paramToEdit = searchParams.get(queryParamKey);
-    const defaultValues = defaultFilterValues[queryParamKey];
-    // if no param value is present but default values are, we can remove a default value
-    // that is in place though not explicitly set in the query params
-    // ex. removing forecasted status from default /search state
-    if (!paramToEdit && !defaultValues) {
-      return;
-    }
-    // note that this default case will never be hit due to the early return
-    // but ts isn't quite smart enough to realize, so adding the [] to satisfy the compiler
-    const paramValues = paramToEdit
-      ? paramToEdit.split(",")
-      : [...(defaultValues || [])];
-    const indexOfValueToRemove = paramValues.indexOf(queryParamValue);
-    paramValues.splice(indexOfValueToRemove, 1);
-    if (!paramValues.length && defaultValues) {
-      return setQueryParam(queryParamKey, SEARCH_NO_STATUS_VALUE);
-    }
-    setQueryParam(queryParamKey, paramValues.join(","));
-  };
-
   return {
     searchParams,
     updateQueryParams,
@@ -125,6 +95,5 @@ export function useSearchParamUpdater() {
     setQueryParam,
     clearQueryParams,
     setQueryParams,
-    removeQueryParamValue,
   };
 }

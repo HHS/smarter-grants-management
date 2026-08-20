@@ -46,9 +46,9 @@ This project has two AWS environments, each in its own AWS account:
 | `dev` | `135002447353` | `dev` (`10.0.0.0/20`) | `smarter-grants-management-135002447353-us-east-1-tf` |
 | `staging` | `530702498822` | `staging` (`10.1.0.0/20`) | `smarter-grants-management-530702498822-us-east-1-tf` |
 
-The environments share the same root modules but have different configurations. Backend configuration is saved as [`.tfbackend`](https://developer.hashicorp.com/terraform/language/backend#file) files named after the environment, so each environment-scoped root module (`networks`, `api/build-repository`, `[app_name]/service`, `[app_name]/database`) has a `dev.s3.tfbackend` and a `staging.s3.tfbackend`.
+The environments share the same root modules but have different configurations. Backend configuration is saved as [`.tfbackend`](https://developer.hashicorp.com/terraform/language/backend#file) files named after the environment, so each environment-scoped root module (`networks`, `[app_name]/build-repository`, `[app_name]/service`, `[app_name]/database`) has a `dev.s3.tfbackend` and a `staging.s3.tfbackend`.
 
-`api` is fully self-contained per environment: `api/build-repository` has one ECR per environment, in that environment's own account, so nothing is shared across accounts and `api/app-config` has no `shared_network_name`. `frontend/build-repository` is still shared across environments — it uses `shared.s3.tfbackend` and lives in the **dev** account, since `shared_network_name = "dev"` in `frontend/app-config/main.tf`. Resources shared across an entire account (`/infra/accounts`) use `<account name>.<account id>.s3.tfbackend`:
+Both applications are fully self-contained per environment: `api/build-repository` and `frontend/build-repository` each have one ECR per environment, in that environment's own account, so nothing is shared across accounts and neither app-config has a `shared_network_name`. This matters for CD — [`configure-aws-credentials`](../.github/actions/configure-aws-credentials/action.yml) authenticates to the deploy environment's own account, so the account that publishes an image is always the account that pulls it. Resources shared across an entire account (`/infra/accounts`) use `<account name>.<account id>.s3.tfbackend`:
 
 ```text
 infra/accounts/dev.135002447353.s3.tfbackend
@@ -64,7 +64,7 @@ infra/api/database/<environment>.tfstate
 infra/api/service/<environment>.tfstate
 infra/api/build-repository/<environment>.tfstate
 infra/frontend/service/<environment>.tfstate
-infra/frontend/build-repository/shared.tfstate     # dev account
+infra/frontend/build-repository/<environment>.tfstate
 ```
 
 [`bin/create-tfbackend`](../bin/create-tfbackend) generates these from [`example.s3.tfbackend`](./example.s3.tfbackend).
@@ -96,7 +96,7 @@ Generally you should use the Make targets or the underlying bin scripts, but you
 
 Each environment maps to an AWS account: the network config in [`project-config/networks.tf`](./project-config/networks.tf) has an `account_name`, and that name resolves to an account id via the matching `infra/accounts/<account_name>.<account_id>.s3.tfbackend` file. When environments live in different accounts, it's easy to run an apply with the wrong AWS profile/SSO role active and target the wrong account.
 
-To prevent that, the environment-scoped root modules (`networks`, `[app_name]/service`, `[app_name]/database`) refuse to run against the wrong account, using two complementary guards:
+To prevent that, the environment-scoped root modules (`networks`, `[app_name]/build-repository`, `[app_name]/service`, `[app_name]/database`) refuse to run against the wrong account, using two complementary guards:
 
 1. **Provider `allowed_account_ids`** — each `provider "aws"` block is restricted to the account the environment/network is configured for. If the active credentials are for a different account, the AWS provider errors out before making any changes. This covers `plan`, `apply`, **and `destroy`**.
 2. **`aws-account-guard` module** ([`modules/aws-account-guard`](./modules/aws-account-guard)) — a `data.aws_caller_identity` postcondition that fails during `plan` with a clear, actionable message naming the target account.
@@ -105,7 +105,7 @@ Both resolve the expected account id from the same source of truth — the provi
 
 If you hit an error like `Wrong AWS account: the active credentials belong to account <X>, but <...> must be deployed to account <Y>`, switch to the correct AWS profile / SSO role for that environment's account (e.g. `export AWS_PROFILE=...`) and retry.
 
-> **Note:** the `build-repository` layer is intentionally **not** guarded this way — it can be deployed to more than one account from the same code, so it has no single expected account. Its backstop is that each account has its own state bucket (`smarter-grants-management-<account_id>-<region>-tf`), so a wrong-account run fails on the S3 backend.
+The `build-repository` layer is guarded too. It used to be exempt, because a single shared repository could legitimately be applied from more than one account and so had no single expected account. Now that each environment owns its own repository, the expected account is simply the one that environment's network lives in, resolved from the `environment_name` variable in `<environment>.tfvars`.
 
 ### 🚀 Deploys
 
@@ -114,8 +114,9 @@ CD lives in [`.github/workflows`](../.github/workflows). `dev` is kept current f
 | Workflow | Trigger | What it does |
 | --- | --- | --- |
 | `cd-api.yml` | push to `main` touching `api/**`, `infra/api/**`, or `infra/modules/**`; or manual dispatch | Runs API checks and vulnerability scans, then deploys to `dev` (scan findings report but don't block) |
-| `cd-release.yml` | a published GitHub **release**, or manual dispatch | Runs API checks and vulnerability scans, then deploys the release tag to `staging` (scan findings **do** block) |
-| `deploy.yml` | called by the two above | Runs database migrations, then applies the service module and waits for ECS to stabilize |
+| `cd-frontend.yml` | push to `main` touching `frontend/**`, `infra/frontend/**`, or `infra/modules/**`; or manual dispatch | Runs frontend checks and vulnerability scans, then deploys to `dev` (scan findings report but don't block) |
+| `cd-release.yml` | a published GitHub **release**, or manual dispatch | Runs both apps' checks and vulnerability scans, then deploys the release tag to `staging` — api first, then frontend (scan findings **do** block) |
+| `deploy.yml` | called by the three above | Runs database migrations, then applies the service module and waits for ECS to stabilize |
 | `database-migrations.yml` | called by `deploy.yml` | Builds/publishes the image, then runs `db-migrate` as a one-off ECS task |
 | `build-and-publish.yml` | called by `database-migrations.yml` | Builds the image and pushes it to ECR, skipping the build if that commit is already published |
 | `check-ci-cd-auth.yml` | manual dispatch | Verifies this repo's GitHub Actions OIDC role can be assumed |

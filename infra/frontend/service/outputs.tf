@@ -7,6 +7,11 @@ output "environment_name" {
 #   value       = module.service.cdn_endpoint
 # }
 
+output "cloudfront_distribution_id" {
+  description = "The CloudFront distribution id fronting the service."
+  value       = module.service.cloudfront_distribution_id
+}
+
 output "application_log_group" {
   value = module.service.application_log_group
 }

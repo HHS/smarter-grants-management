@@ -28,11 +28,14 @@ class Privilege(StrEnum):
     UPDATE_GRANTOR_ORGANIZATION = "update_grantor_organization"
     MANAGE_GRANTOR_ORGANIZATION_MEMBERS = "manage_grantor_organization_members"
 
+    # Internal-only privilege for sending workflow events directly to the event API.
+    # It exists so we can drive workflows ourselves for testing, not for real grantor users.
+    INTERNAL_WORKFLOW_EVENT_SEND = "internal_workflow_event_send"
+
     # NOTE - if you need to add any new privileges, you can
     # rename these ones first. Our lookup logic doesn't allow
     # for deleting lookup values, but does let you rename.
     # These haven't ever been used, so are safe to rename and reuse.
-    UNUSED_PRIVILEGE_101 = "unused_privilege_101"
     UNUSED_PRIVILEGE_102 = "unused_privilege_102"
     UNUSED_PRIVILEGE_103 = "unused_privilege_103"
 
@@ -148,7 +151,8 @@ ALLOWED_RESOURCES_FOR_PRIVILEGE: dict[Privilege, set[ResourceType]] = {
         ResourceType.PARTNER,
         ResourceType.GRANTOR_ORGANIZATION,
     },
-    Privilege.UNUSED_PRIVILEGE_101: set(),
+    # Internal-only
+    Privilege.INTERNAL_WORKFLOW_EVENT_SEND: {ResourceType.INTERNAL},
     Privilege.UNUSED_PRIVILEGE_102: set(),
     Privilege.UNUSED_PRIVILEGE_103: set(),
 }
