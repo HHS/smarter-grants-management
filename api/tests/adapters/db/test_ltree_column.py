@@ -253,6 +253,18 @@ def test_queries(isolated_db_session):
     )
 
 
+def test_dashes_in_path(isolated_db_session):
+    uuid1 = uuid.uuid4()
+    uuid2 = uuid.uuid4()
+    record = LtreeTestTable(path=Ltree(f"{uuid1}.{uuid2}"))
+    isolated_db_session.add(record)
+    isolated_db_session.commit()
+
+    validate_descendants(isolated_db_session, str(uuid1), [record])
+    validate_lquery(isolated_db_session, f"{uuid1}.*", [record])
+    validate_lquery(isolated_db_session, f"*.{uuid2}", [record])
+
+
 def test_null_path(isolated_db_session):
     """Test that null paths convert to/from the DB as expected"""
 
