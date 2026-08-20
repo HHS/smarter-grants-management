@@ -2,10 +2,6 @@ output "database_config" {
   value = local.database_config
 }
 
-output "feature_flags_config" {
-  value = local.feature_flags_config
-}
-
 output "scheduled_jobs" {
   value = local.scheduled_jobs
 }

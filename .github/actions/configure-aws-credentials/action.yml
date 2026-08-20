@@ -16,7 +16,7 @@ inputs:
     description: "Name of application folder under /infra"
     required: true
   environment:
-    description: 'Name of environment (e.g. dev, staging) that AWS resources live in, or "shared" for resources that are shared across environments'
+    description: "Name of environment (e.g. dev, staging) that AWS resources live in. Every app is self-contained per environment, so there is no cross-environment value."
 runs:
   using: "composite"
   steps:
@@ -29,14 +29,15 @@ runs:
         terraform -chdir="infra/${{ inputs.app_name }}/app-config" init > /dev/null
         terraform -chdir="infra/${{ inputs.app_name }}/app-config" apply -auto-approve > /dev/null
 
-        if [[ "${{ inputs.environment }}" == "shared" ]]; then
-          network_name=$(terraform -chdir="infra/${{ inputs.app_name }}/app-config" output -raw shared_network_name)
-        else
-          # Use --arg + .[$env] rather than ".${{ inputs.environment }}" so that
-          # environment names containing a hyphen are treated as a single key.
-          # A bare jq path like .my-env parses "-" as subtraction and fails.
-          network_name=$(terraform -chdir="infra/${{ inputs.app_name }}/app-config" output -json environment_configs | jq -r --arg env "${{ inputs.environment }}" '.[$env].network_name')
-        fi
+        # Every app is now self-contained per environment: no app publishes a
+        # shared_network_name output, so there is no "shared" environment to
+        # resolve. Passing environment=shared here fails on the jq lookup below,
+        # which is the correct outcome rather than a silent fallback.
+        #
+        # Use --arg + .[$env] rather than ".${{ inputs.environment }}" so that
+        # environment names containing a hyphen are treated as a single key.
+        # A bare jq path like .my-env parses "-" as subtraction and fails.
+        network_name=$(terraform -chdir="infra/${{ inputs.app_name }}/app-config" output -json environment_configs | jq -r --arg env "${{ inputs.environment }}" '.[$env].network_name')
 
         echo "Network name retrieved: ${network_name}"
         echo "network_name=${network_name}" >> "$GITHUB_OUTPUT"

@@ -6,11 +6,7 @@ run-name: Release Deploy ${{ inputs.version || github.ref_name }} to ${{ github.
 # On a published release the target is staging — dev is already kept current by
 # cd-api.yml on every push to main, so a release is the promotion step. Use
 # workflow_dispatch to target a specific environment.
-#
-# This project currently has one application (api). The structure is kept
-# deliberately close to simpler-grants-gov's cd-release.yml — CI checks and scans
-# run in parallel first, then deploys are serialized — so that adding the
-# frontend later is a matter of adding jobs rather than reshaping this file.
+
 #
 # The git ref that is built and deployed is determined as follows:
 #   - release event: the published release's tag (github.ref)
@@ -55,11 +51,20 @@ jobs:
       # Grype, per .grype.yml.
       fail_on_vulns: true
 
+  frontend-checks:
+    name: Frontend Checks
+    uses: ./.github/workflows/ci-frontend.yml
+
+  frontend-vulnerability-scans:
+    name: Frontend Vulnerability Scans
+    uses: ./.github/workflows/vulnerability-scans.yml
+    with:
+      app_name: frontend
+      fail_on_vulns: true
+
   # =====================================================
   # PHASE 2: Deploy
   #
-  # Deploy order matters once there is more than one app: the api goes first and
-  # everything else depends on it. Add `needs: [deploy-api]` to new app jobs.
   # =====================================================
   deploy-api:
     name: Deploy API
@@ -67,5 +72,14 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     with:
       app_name: "api"
+      environment: ${{ inputs.environment || 'staging' }}
+      version: ${{ inputs.version || github.ref }}
+
+  deploy-frontend:
+    name: Deploy Frontend
+    needs: [deploy-api, frontend-checks, frontend-vulnerability-scans]
+    uses: ./.github/workflows/deploy.yml
+    with:
+      app_name: "frontend"
       environment: ${{ inputs.environment || 'staging' }}
       version: ${{ inputs.version || github.ref }}
