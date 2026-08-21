@@ -6,10 +6,7 @@ from src.constants.lookup_constants import (
     PartnerAuditEvent,
     UserType,
 )
-from src.db.models.grantor_organization_models import (
-    GrantorOrganizationAudit,
-    PartnerAudit,
-)
+from src.db.models.grantor_organization_models import GrantorOrganizationAudit, PartnerAudit
 from src.db.models.user_models import User
 from tests.db.models.factories import (
     GrantorOrganizationAuditFactory,
@@ -102,7 +99,9 @@ def test_grantor_organization_audit_factory_build():
     assert audit.grantor_organization_audit_id is not None
     assert audit.grantor_organization_id is not None
     assert audit.user_id is not None
-    assert audit.grantor_organization_audit_event == GrantorOrganizationAuditEvent.USER_ROLES_MODIFIED
+    assert (
+        audit.grantor_organization_audit_event == GrantorOrganizationAuditEvent.USER_ROLES_MODIFIED
+    )
 
 
 def test_grantor_organization_audit_factory_create(enable_factory_create, db_session):
@@ -111,7 +110,9 @@ def test_grantor_organization_audit_factory_create(enable_factory_create, db_ses
     assert audit.grantor_organization_audit_id is not None
     assert audit.grantor_organization_id is not None
     assert audit.user_id is not None
-    assert audit.grantor_organization_audit_event == GrantorOrganizationAuditEvent.USER_ROLES_MODIFIED
+    assert (
+        audit.grantor_organization_audit_event == GrantorOrganizationAuditEvent.USER_ROLES_MODIFIED
+    )
 
     db_record = db_session.execute(
         select(GrantorOrganizationAudit).where(
@@ -120,4 +121,7 @@ def test_grantor_organization_audit_factory_create(enable_factory_create, db_ses
         )
     ).scalar()
     assert db_record is not None
-    assert db_record.grantor_organization_audit_event == GrantorOrganizationAuditEvent.USER_ROLES_MODIFIED
+    assert (
+        db_record.grantor_organization_audit_event
+        == GrantorOrganizationAuditEvent.USER_ROLES_MODIFIED
+    )

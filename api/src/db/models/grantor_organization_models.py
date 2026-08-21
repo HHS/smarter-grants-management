@@ -155,9 +155,7 @@ class SecondaryProgramPartner(GrantorSchemaTable, TimestampMixin):
 class PartnerAudit(GrantorSchemaTable, TimestampMixin):
     __tablename__ = "partner_audit"
 
-    partner_audit_id: Mapped[uuid.UUID] = mapped_column(
-        UUID, primary_key=True, default=uuid.uuid4
-    )
+    partner_audit_id: Mapped[uuid.UUID] = mapped_column(UUID, primary_key=True, default=uuid.uuid4)
 
     partner_id: Mapped[uuid.UUID] = mapped_column(UUID, ForeignKey(Partner.partner_id))
     partner: Mapped[Partner] = relationship(Partner)

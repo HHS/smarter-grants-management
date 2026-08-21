@@ -77,8 +77,8 @@ PARTNER_AUDIT_EVENT_CONFIG: LookupConfig[PartnerAuditEvent] = LookupConfig(
     [LookupStr(PartnerAuditEvent.USER_ROLES_MODIFIED, 1)]
 )
 
-GRANTOR_ORGANIZATION_AUDIT_EVENT_CONFIG: LookupConfig[GrantorOrganizationAuditEvent] = (
-    LookupConfig([LookupStr(GrantorOrganizationAuditEvent.USER_ROLES_MODIFIED, 1)])
+GRANTOR_ORGANIZATION_AUDIT_EVENT_CONFIG: LookupConfig[GrantorOrganizationAuditEvent] = LookupConfig(
+    [LookupStr(GrantorOrganizationAuditEvent.USER_ROLES_MODIFIED, 1)]
 )
 
 # Only the values the engine itself needs are seeded here. The find/apply workflow
