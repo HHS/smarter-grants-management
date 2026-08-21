@@ -65,7 +65,7 @@ def upgrade():
         sa.Column("partner_audit_id", sa.UUID(), nullable=False),
         sa.Column("partner_id", sa.UUID(), nullable=False),
         sa.Column("user_id", sa.UUID(), nullable=False),
-        sa.Column("partner_audit_event_id", sa.Integer(), nullable=False),
+        sa.Column("partner_audit_event", sa.Integer(), nullable=False),
         sa.Column("target_user_id", sa.UUID(), nullable=True),
         sa.Column("audit_metadata", postgresql.JSONB(astext_type=sa.Text()), nullable=True),
         sa.Column(
@@ -81,9 +81,9 @@ def upgrade():
             nullable=False,
         ),
         sa.ForeignKeyConstraint(
-            ["partner_audit_event_id"],
+            ["partner_audit_event"],
             ["grantor.lk_partner_audit_event.partner_audit_event_id"],
-            name=op.f("partner_audit_partner_audit_event_id_lk_partner_audit_event_fkey"),
+            name=op.f("partner_audit_partner_audit_event_lk_partner_audit_event_fkey"),
         ),
         sa.ForeignKeyConstraint(
             ["partner_id"],
@@ -106,7 +106,7 @@ def upgrade():
         sa.Column("grantor_organization_audit_id", sa.UUID(), nullable=False),
         sa.Column("grantor_organization_id", sa.UUID(), nullable=False),
         sa.Column("user_id", sa.UUID(), nullable=False),
-        sa.Column("grantor_organization_audit_event_id", sa.Integer(), nullable=False),
+        sa.Column("grantor_organization_audit_event", sa.Integer(), nullable=False),
         sa.Column("target_user_id", sa.UUID(), nullable=True),
         sa.Column("audit_metadata", postgresql.JSONB(astext_type=sa.Text()), nullable=True),
         sa.Column(
@@ -122,10 +122,10 @@ def upgrade():
             nullable=False,
         ),
         sa.ForeignKeyConstraint(
-            ["grantor_organization_audit_event_id"],
+            ["grantor_organization_audit_event"],
             ["grantor.lk_grantor_organization_audit_event.grantor_organization_audit_event_id"],
             name=op.f(
-                "grantor_organization_audit_grantor_organization_audit_event_id_lk_grantor_organization_audit_event_fkey"
+                "grantor_organization_audit_grantor_organization_audit_event_lk_grantor_organization_audit_event_fkey"
             ),
         ),
         sa.ForeignKeyConstraint(

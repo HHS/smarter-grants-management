@@ -164,7 +164,6 @@ class PartnerAudit(GrantorSchemaTable, TimestampMixin):
     user: Mapped[User] = relationship(User, foreign_keys=[user_id])
 
     partner_audit_event: Mapped[PartnerAuditEvent] = mapped_column(
-        "partner_audit_event_id",
         LookupColumn(LkPartnerAuditEvent),
         ForeignKey(LkPartnerAuditEvent.partner_audit_event_id),
     )
@@ -191,7 +190,6 @@ class GrantorOrganizationAudit(GrantorSchemaTable, TimestampMixin):
     user: Mapped[User] = relationship(User, foreign_keys=[user_id])
 
     grantor_organization_audit_event: Mapped[GrantorOrganizationAuditEvent] = mapped_column(
-        "grantor_organization_audit_event_id",
         LookupColumn(LkGrantorOrganizationAuditEvent),
         ForeignKey(LkGrantorOrganizationAuditEvent.grantor_organization_audit_event_id),
     )
