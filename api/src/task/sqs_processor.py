@@ -6,9 +6,9 @@ import time
 from types import FrameType
 from typing import Any
 
-from grants_shared.adapters.aws.sqs_adapter import SQSClient
-from grants_shared.api.maintenance_mode import is_maintenance_mode_enabled
-from grants_shared.util.env_config import PydanticBaseEnvConfig
+from src.adapters.aws.sqs_adapter import SQSClient
+from src.api.maintenance_mode import is_maintenance_mode_enabled
+from src.util.env_config import PydanticBaseEnvConfig
 
 logger = logging.getLogger(__name__)
 

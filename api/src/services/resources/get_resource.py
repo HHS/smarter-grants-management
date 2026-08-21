@@ -1,9 +1,8 @@
 import uuid
 from collections.abc import Container
 
-from grants_shared.adapters import db
-from grants_shared.api.route_utils import raise_flask_error
-
+from src.adapters import db
+from src.api.route_utils import raise_flask_error
 from src.constants.lookup_constants import ResourceType
 from src.db.models.resource_models import AbstractResourceTableMixin
 from src.db.resource_lookup import get_resource_model

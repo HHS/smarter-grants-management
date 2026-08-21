@@ -7,8 +7,7 @@ import json
 import uuid
 from typing import Any
 
-from grants_shared.adapters import db
-
+from src.adapters import db
 from src.constants.lookup_constants import (
     ExternalUserType,
     Privilege,

@@ -1,11 +1,11 @@
 import uuid
 
-from grants_shared.adapters.db.type_decorators.postgres_type_decorators import LookupColumn
-from grants_shared.db.models.base import TimestampMixin
 from sqlalchemy import UUID, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from src.adapters.db.lookup.lookup_column import LookupColumn
 from src.constants.lookup_constants import GrantorOrganizationType, ResourceType
+from src.db.models.base import TimestampMixin
 from src.db.models.grantor_schema_table import GrantorSchemaTable
 from src.db.models.lookup_models import LkGrantorOrganizationType
 from src.db.models.resource_models import AbstractResourceTableMixin, Resource

@@ -5,8 +5,7 @@ workflow logic.
 
 import logging
 
-from grants_shared.adapters.aws.ses_adapter import send_email
-
+from src.adapters.aws.ses_adapter import send_email
 from src.db.models.user_models import User
 from src.workflow.event.state_machine_event import StateMachineEvent
 from src.workflow.event.workflow_metric_context import WorkflowMetricContext

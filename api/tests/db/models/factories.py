@@ -4,11 +4,10 @@ from datetime import datetime
 import factory
 import factory.fuzzy
 import faker
-import grants_shared.adapters.db as db
 from faker.providers import BaseProvider
-from grants_shared.util import datetime_util
 from sqlalchemy.orm import scoped_session
 
+import src.adapters.db as db
 import src.db.models.grantor_organization_models as grantor_organization_models
 import src.db.models.resource_models as resource_models
 import src.db.models.user_models as user_models
@@ -22,6 +21,8 @@ from src.constants.lookup_constants import (
     UserType,
     WorkflowType,
 )
+from src.util import datetime_util
+from tests.db_test_models import db_test_models
 
 
 def sometimes_none(factory_value, none_chance: float = 0.5):
@@ -522,3 +523,36 @@ class WorkflowApprovalFactory(BaseFactory):
 
     event = factory.SubFactory(WorkflowEventHistoryFactory)
     workflow_event_history_id = factory.LazyAttribute(lambda a: a.event.workflow_event_history_id)
+
+
+class ExampleTableFactory(BaseFactory):
+    class Meta:
+        model = db_test_models.ExampleTable
+
+    example_id = Generators.UuidObj
+
+    description = factory.Faker("paragraph", nb_sentences=1)
+    my_count = factory.Faker("random_int", min=1, max=10)
+
+    friends = factory.RelatedFactoryList(
+        "tests.db.models.factories.FriendTableFactory",
+        factory_related_name="example",
+        size=lambda: random.randint(1, 3),
+    )
+
+
+class FriendTableFactory(BaseFactory):
+    class Meta:
+        model = db_test_models.FriendTable
+
+    friend_id = Generators.UuidObj
+
+    example = factory.SubFactory(ExampleTableFactory)
+    example_id = factory.LazyAttribute(lambda f: f.example.example_id)
+
+    friend_types = factory.Faker(
+        "random_elements",
+        length=random.randint(1, 3),
+        elements=[f for f in db_test_models.FriendType],
+        unique=True,
+    )

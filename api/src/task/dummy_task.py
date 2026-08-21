@@ -1,10 +1,10 @@
 import logging
 
-from grants_shared.adapters import db
-from grants_shared.adapters.db import flask_db
-from grants_shared.task.ecs_background_task import ecs_background_task
 from sqlalchemy import text
 
+from src.adapters import db
+from src.adapters.db import flask_db
+from src.task.ecs_background_task import ecs_background_task
 from src.task.task_blueprint import task_blueprint
 
 logger = logging.getLogger(__name__)

@@ -1,17 +1,17 @@
 from typing import Any
 
-from grants_shared.api.schemas.extension import (
+from marshmallow import ValidationError, validates_schema
+
+from src.api.schemas.extension import (
     MarshmallowErrorContainer,
     Schema,
     SchemaValidationError,
     fields,
 )
-from grants_shared.api.schemas.response_schema import AbstractResponseSchema, PaginationMixinSchema
-from grants_shared.api.schemas.search_schema import StrSearchSchemaBuilder
-from grants_shared.pagination.pagination_schema import generate_pagination_schema
-from marshmallow import ValidationError, validates_schema
-
+from src.api.schemas.response_schema import AbstractResponseSchema, PaginationMixinSchema
+from src.api.schemas.search_schema import StrSearchSchemaBuilder
 from src.constants.lookup_constants import Privilege, ResourceInheritance, ResourceType
+from src.pagination.pagination_schema import generate_pagination_schema
 
 
 class ListUserForResourceFilterSchema(Schema):
@@ -42,7 +42,7 @@ class ListUserForResourceFilterSchema(Schema):
         """Reject more than one inheritance value.
 
         Belongs on the builder as a maximum length rather than here - that needs a
-        grants-shared change, which is tracked separately.
+        schema builder change, which is tracked separately.
         """
         one_of = (data.get("inheritance") or {}).get("one_of") or []
         if len(one_of) > 1:
