@@ -129,7 +129,7 @@ def db_schema_prefix():
     return f"test_{uuid.uuid4().int}_"
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def db_client(monkeypatch_session, db_schema_prefix) -> db.DBClient:
     """
     Creates an isolated database for the test session.
@@ -158,7 +158,7 @@ def db_session(db_client: db.DBClient) -> db.Session:
         yield session
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def internal_resource(monkeypatch_session, db_client):
     """Create the statically defined internal resource for the test session.
 
@@ -267,7 +267,7 @@ def login_gov_config(public_rsa_key, private_rsa_key):
 
 # Make app session scoped so the database connection pool is only created once
 # for the test session. This speeds up the tests.
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def app(
     db_client,
     monkeypatch_session,
