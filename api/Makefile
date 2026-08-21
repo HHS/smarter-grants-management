@@ -23,6 +23,8 @@ ifdef CI
  # The perl command here modifies the output format to appear as a warning on the github action
  # See https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-commands#setting-a-warning-message
  MYPY_POSTPROC := | perl -pe "s/^(.+):(\d+):(\d+): error: (.*)/::warning file=$(APP_DIR)\/\1,line=\2,col=\3::\1:\2:\3 :error: \4/ or s/^/::warning ::/"
+ # XDIST runs our unit tests in parallel, grouped by file
+ XDIST := -n auto --dist=loadfile --max-worker-restart=0
 endif
 
 # By default, all python/uv commands will run inside of the docker container
@@ -131,7 +133,7 @@ test-audit: ## Run audit logging tests
 	$(PY_RUN_CMD) pytest -m "audit" $(args)
 
 test-coverage: ## Run tests and generate coverage report
-	$(PY_RUN_CMD) coverage run --branch --source=src -m pytest -m "not audit" $(args)
+	$(PY_RUN_CMD) coverage run --branch --source=src -m pytest -m "not audit" $(XDIST) $(args)
 	$(PY_RUN_CMD) coverage run --data-file=.coverage.audit --branch --source=src -m pytest -m "audit" $(args)
 	$(PY_RUN_CMD) coverage combine --data-file=.coverage --append
 	$(PY_RUN_CMD) coverage report

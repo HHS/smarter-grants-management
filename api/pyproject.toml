@@ -58,6 +58,7 @@ dev = [
     "types-requests>=2.31,<3",
     "eralchemy>=1.7.0",
     "graphviz>=0.21,<0.22",
+    "pytest-xdist>=3.8.0",
 ]
 
 [project.scripts]
