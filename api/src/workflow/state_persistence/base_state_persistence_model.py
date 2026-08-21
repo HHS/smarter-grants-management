@@ -1,8 +1,8 @@
 import abc
 
-import grants_shared.adapters.db as db
 import statemachine.state
 
+import src.adapters.db as db
 from src.constants.lookup_constants import ResourceType
 from src.db.models.workflow_models import Workflow
 

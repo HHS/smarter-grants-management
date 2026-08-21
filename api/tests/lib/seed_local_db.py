@@ -2,14 +2,14 @@ import logging
 import uuid
 
 import click
-import grants_shared.logs
-from grants_shared.adapters import db
-from grants_shared.adapters.db import PostgresDBClient
-from grants_shared.util.local import error_if_not_local
 
+import src.logs
 import tests.db.models.factories as f
+from src.adapters import db
+from src.adapters.db import PostgresDBClient
 from src.constants.lookup_constants import Privilege
 from src.db.resource_automation.resource_automation import setup_resource_automation
+from src.util.local import error_if_not_local
 from tests.lib.seed_data_utils import UserBuilder
 
 logger = logging.getLogger(__name__)
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 @click.command()
 def seed_local_db() -> None:
-    with grants_shared.logs.init("seed_local_db"):
+    with src.logs.init("seed_local_db"):
         logger.info("Running seed script for local DB")
         error_if_not_local()
 

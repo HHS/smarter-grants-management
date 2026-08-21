@@ -1,8 +1,8 @@
 import logging
 
-from grants_shared.adapters import db
 from statemachine.event_data import EventData
 
+from src.adapters import db
 from src.db.models.user_models import User
 from src.workflow.event.state_machine_event import StateMachineEvent
 from src.workflow.service.approval_service import get_approver_query

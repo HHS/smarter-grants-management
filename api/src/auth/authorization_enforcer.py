@@ -3,11 +3,11 @@ import uuid
 from collections import defaultdict
 from typing import Any
 
-from grants_shared.adapters import db
-from grants_shared.api.route_utils import raise_flask_error
 from sqlalchemy import Select, func, select
 from sqlalchemy.orm import selectinload
 
+from src.adapters import db
+from src.api.route_utils import raise_flask_error
 from src.constants.lookup_constants import Privilege, ResourceInheritance, ResourceType
 from src.db.models.grantor_organization_models import GrantorOrganization, Partner, Program
 from src.db.models.resource_models import (

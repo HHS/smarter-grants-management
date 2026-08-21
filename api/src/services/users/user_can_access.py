@@ -1,7 +1,6 @@
 import uuid
 
-from grants_shared.adapters import db
-
+from src.adapters import db
 from src.auth.authorization_enforcer import AuthorizationEnforcer
 from src.constants.lookup_constants import Privilege, ResourceType
 from src.db.models.user_models import User

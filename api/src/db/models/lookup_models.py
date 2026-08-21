@@ -1,13 +1,6 @@
-from grants_shared.db.models.base import TimestampMixin
-from grants_shared.db.models.lookup import (
-    Lookup,
-    LookupConfig,
-    LookupRegistry,
-    LookupStr,
-    LookupTable,
-)
 from sqlalchemy.orm import Mapped, mapped_column
 
+from src.adapters.db.lookup import Lookup, LookupConfig, LookupRegistry, LookupStr, LookupTable
 from src.constants.lookup_constants import (
     ApprovalResponseType,
     ApprovalType,
@@ -18,6 +11,7 @@ from src.constants.lookup_constants import (
     UserType,
     WorkflowType,
 )
+from src.db.models.base import TimestampMixin
 from src.db.models.grantor_schema_table import GrantorSchemaTable
 
 #######################################################

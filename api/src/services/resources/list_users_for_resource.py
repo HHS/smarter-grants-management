@@ -3,17 +3,17 @@ import logging
 import uuid
 from collections.abc import Sequence
 
-from grants_shared.adapters import db
-from grants_shared.pagination.pagination_models import PaginationInfo, PaginationParams
-from grants_shared.pagination.paginator import Paginator
-from grants_shared.pagination.sorting_util import apply_sorting
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import InstrumentedAttribute
 
+from src.adapters import db
 from src.auth.authorization_enforcer import AuthorizationEnforcer
 from src.constants.lookup_constants import Privilege, ResourceInheritance, ResourceType
 from src.db.models.resource_models import AbstractResourceTableMixin, Role
 from src.db.models.user_models import LinkExternalUser, User
+from src.pagination.pagination_models import PaginationInfo, PaginationParams
+from src.pagination.paginator import Paginator
+from src.pagination.sorting_util import apply_sorting
 from src.services.resources.get_resource import get_resource
 
 logger = logging.getLogger(__name__)
