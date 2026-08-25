@@ -16,6 +16,9 @@ from grants_shared.util.local import error_if_not_local
 from pydantic import Field
 
 from src.adapters.newrelic import init_newrelic
+from src.api.grantor_organizations.grantor_organization_blueprint import (
+    grantor_organization_blueprint,
+)
 from src.api.healthcheck.healthcheck_blueprint import healthcheck_blueprint
 from src.api.local import local_blueprint
 from src.api.partners.partner_blueprint import partner_blueprint
@@ -99,6 +102,7 @@ def register_blueprints(app: APIFlask) -> None:
     app.register_blueprint(proof_of_concept_blueprint)
     app.register_blueprint(workflow_blueprint)
     app.register_blueprint(partner_blueprint)
+    app.register_blueprint(grantor_organization_blueprint)
     app.register_blueprint(resource_blueprint)
 
     # Local endpoints for development, will error
