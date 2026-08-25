@@ -31,7 +31,7 @@ def grantor_organization_get(
     db_session: db.Session, grantor_organization_id: uuid.UUID
 ) -> response.ApiResponse:
     add_extra_data_to_current_request_logs({"grantor_organization_id": grantor_organization_id})
-    logger.info("GET /v1/grantor_organization/:grantor_organization_id")
+    logger.info("GET /v1/grantor-organizations/:grantor_organization_id")
 
     with db_session.begin():
         user = jwt_or_api_user_key_multi_auth.get_user()

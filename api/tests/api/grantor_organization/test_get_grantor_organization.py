@@ -16,7 +16,7 @@ def test_get_grantor_organization_with_api_key_200(client, db_session, enable_fa
     api_key = UserApiKeyFactory.create(user=user)
 
     resp = client.get(
-        f"/v1/grantor_organization/{grantor_organization.grantor_organization_id}",
+        f"/v1/grantor-organizations/{grantor_organization.grantor_organization_id}",
         headers={"X-API-Key": api_key.key_id},
     )
 
@@ -42,7 +42,7 @@ def test_get_grantor_organization_with_jwt_200(client, db_session, enable_factor
     db_session.commit()
 
     resp = client.get(
-        f"/v1/grantor_organization/{grantor_organization.grantor_organization_id}",
+        f"/v1/grantor-organizations/{grantor_organization.grantor_organization_id}",
         headers={"X-MGMT-Token": token},
     )
 
@@ -69,7 +69,7 @@ def test_get_grantor_organization_with_parent_200(client, db_session, enable_fac
     api_key = UserApiKeyFactory.create(user=user)
 
     resp = client.get(
-        f"/v1/grantor_organization/{grantor_organization.grantor_organization_id}",
+        f"/v1/grantor-organizations/{grantor_organization.grantor_organization_id}",
         headers={"X-API-Key": api_key.key_id},
     )
 
@@ -94,7 +94,7 @@ def test_get_grantor_organization_404(client, db_session, enable_factory_create)
     api_key = UserApiKeyFactory.create()
 
     resp = client.get(
-        f"/v1/grantor_organization/{uuid.uuid4()}", headers={"X-API-Key": api_key.key_id}
+        f"/v1/grantor-organizations/{uuid.uuid4()}", headers={"X-API-Key": api_key.key_id}
     )
 
     assert resp.status_code == 404
@@ -109,7 +109,7 @@ def test_get_grantor_organization_403(client, db_session, enable_factory_create)
     api_key = UserApiKeyFactory.create(user=user)
 
     resp = client.get(
-        f"/v1/grantor_organization/{grantor_organization.grantor_organization_id}",
+        f"/v1/grantor-organizations/{grantor_organization.grantor_organization_id}",
         headers={"X-API-Key": api_key.key_id},
     )
     assert resp.status_code == 403
@@ -119,7 +119,7 @@ def test_get_grantor_organization_403(client, db_session, enable_factory_create)
 def test_get_grantor_organization_invalid_auth_401(client, db_session, enable_factory_create):
     grantor_organization = GrantorOrganizationFactory.create()
     resp = client.get(
-        f"/v1/grantor_organization/{grantor_organization.grantor_organization_id}",
+        f"/v1/grantor-organizations/{grantor_organization.grantor_organization_id}",
         headers={"X-API-Key": "not-a-real-key"},
     )
     assert resp.status_code == 401
@@ -128,6 +128,6 @@ def test_get_grantor_organization_invalid_auth_401(client, db_session, enable_fa
 
 def test_get_grantor_organization_no_auth_401(client, db_session, enable_factory_create):
     grantor_organization = GrantorOrganizationFactory.create()
-    resp = client.get(f"/v1/grantor_organization/{grantor_organization.grantor_organization_id}")
+    resp = client.get(f"/v1/grantor-organizations/{grantor_organization.grantor_organization_id}")
     assert resp.status_code == 401
     assert resp.get_json()["message"] == "Unauthorized"
