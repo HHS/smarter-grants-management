@@ -1,4 +1,4 @@
-FROM ghcr.io/hhs/python-base-image:49895e8@sha256:ead026784cd26089903fbaadff28fb50e80c837cfe881f5eed2ede9dc2b301e8 AS base
+FROM ghcr.io/hhs/python-base-image:0e95573@sha256:5f09e8f9ac528c7a1f741c76e5bed3abf7857f966ee5e68c9d19c74af0f5ab7f AS base
 
 ARG RUN_UID
 ARG RUN_USER
@@ -63,12 +63,18 @@ RUN set -e && PY_MM=$(cat /tmp/py_version.txt) && \
 # stage and copy the resulting rootfs into the openapi-tools image below. This
 # keeps the dependency out of both the production release image and the
 # standard dev image. Only the docs-generation image carries it.
+
+# hadolint ignore=DL3029
 FROM --platform=linux/amd64 amazonlinux:2023 AS graphviz-downloader
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+WORKDIR /runtime/rootfs
+
+# hadolint ignore=DL3041
 RUN dnf -y install cpio && \
     dnf -y install --downloadonly --downloaddir=/tmp/rpms \
     graphviz-2.44.0-25.amzn2023.0.7 graphviz-gd cairo pango librsvg2 && \
-    mkdir -p /runtime/rootfs && cd /runtime/rootfs && \
     for rpm in /tmp/rpms/*.rpm; do rpm2cpio "$rpm" | cpio -idmv; done && \
     rm -rf /tmp/rpms
 

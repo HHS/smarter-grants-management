@@ -4,7 +4,14 @@ import pytest
 
 from src.auth.api_jwt_auth import create_jwt_for_user
 from src.constants.lookup_constants import Privilege, ResourceType
-from tests.db.models.factories import InternalResourceFactory, UserApiKeyFactory, UserFactory
+from tests.db.models.factories import (
+    GrantorOrganizationFactory,
+    InternalResourceFactory,
+    PartnerFactory,
+    ProgramFactory,
+    UserApiKeyFactory,
+    UserFactory,
+)
 from tests.test_utils.auth_test_utils import setup_user_with_roles
 
 
@@ -208,3 +215,130 @@ def test_can_access_no_token_401(client):
     )
 
     assert resp.status_code == 401
+
+
+def test_can_access_partner_resource_type_200(user_and_token, client, db_session):
+    """Test that a user with proper privileges can access a Partner resource."""
+    user, token = user_and_token
+    partner = PartnerFactory.create()
+    setup_user_with_roles(db_session, [partner], user=user, privileges=[Privilege.VIEW_PARTNER])
+
+    resp = _post(
+        client,
+        user.user_id,
+        token,
+        ResourceType.PARTNER,
+        partner.partner_id,
+        [Privilege.VIEW_PARTNER],
+    )
+
+    assert resp.status_code == 200
+
+
+def test_can_access_program_resource_type_200(user_and_token, client, db_session):
+    """Test that a user with proper privileges can access a Program resource.
+
+    Note: Users get access to programs through the Partner or Grantor Organization
+    that owns the program, not by assigning roles directly to the program.
+    """
+    user, token = user_and_token
+    program = ProgramFactory.create()
+    # Give user access to the program by assigning them a role on the partner that owns it
+    setup_user_with_roles(
+        db_session, [program.partner], user=user, privileges=[Privilege.VIEW_PROGRAM]
+    )
+
+    resp = _post(
+        client,
+        user.user_id,
+        token,
+        ResourceType.PROGRAM,
+        program.program_id,
+        [Privilege.VIEW_PROGRAM],
+    )
+
+    assert resp.status_code == 200
+
+
+def test_can_access_grantor_organization_resource_type_200(user_and_token, client, db_session):
+    """Test that a user with proper privileges can access a Grantor Organization resource."""
+    user, token = user_and_token
+    organization = GrantorOrganizationFactory.create()
+    setup_user_with_roles(
+        db_session,
+        [organization],
+        user=user,
+        privileges=[Privilege.VIEW_GRANTOR_ORGANIZATION],
+    )
+
+    resp = _post(
+        client,
+        user.user_id,
+        token,
+        ResourceType.GRANTOR_ORGANIZATION,
+        organization.grantor_organization_id,
+        [Privilege.VIEW_GRANTOR_ORGANIZATION],
+    )
+
+    assert resp.status_code == 200
+
+
+def test_can_access_partner_missing_privilege_403(user_and_token, client, db_session):
+    """Test that a user without the required privilege cannot access a Partner resource."""
+    user, token = user_and_token
+    partner = PartnerFactory.create()
+    setup_user_with_roles(db_session, [partner], user=user, privileges=[Privilege.VIEW_PARTNER])
+
+    resp = _post(
+        client,
+        user.user_id,
+        token,
+        ResourceType.PARTNER,
+        partner.partner_id,
+        [Privilege.UPDATE_PARTNER],
+    )
+
+    assert resp.status_code == 403
+
+
+def test_can_access_program_missing_privilege_403(user_and_token, client, db_session):
+    """Test that a user without the required privilege cannot access a Program resource."""
+    user, token = user_and_token
+    program = ProgramFactory.create()
+    setup_user_with_roles(
+        db_session, [program.partner], user=user, privileges=[Privilege.VIEW_PROGRAM]
+    )
+
+    resp = _post(
+        client,
+        user.user_id,
+        token,
+        ResourceType.PROGRAM,
+        program.program_id,
+        [Privilege.UPDATE_PROGRAM],
+    )
+
+    assert resp.status_code == 403
+
+
+def test_can_access_grantor_organization_missing_privilege_403(user_and_token, client, db_session):
+    """Test that a user without the required privilege cannot access a Grantor Organization resource."""
+    user, token = user_and_token
+    organization = GrantorOrganizationFactory.create()
+    setup_user_with_roles(
+        db_session,
+        [organization],
+        user=user,
+        privileges=[Privilege.VIEW_GRANTOR_ORGANIZATION],
+    )
+
+    resp = _post(
+        client,
+        user.user_id,
+        token,
+        ResourceType.GRANTOR_ORGANIZATION,
+        organization.grantor_organization_id,
+        [Privilege.UPDATE_GRANTOR_ORGANIZATION],
+    )
+
+    assert resp.status_code == 403

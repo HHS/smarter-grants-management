@@ -3,12 +3,23 @@ import uuid
 from grants_shared.adapters.db.type_decorators.postgres_type_decorators import LookupColumn
 from grants_shared.db.models.base import TimestampMixin
 from sqlalchemy import UUID, ForeignKey
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.constants.lookup_constants import GrantorOrganizationType, ResourceType
+from src.constants.lookup_constants import (
+    GrantorOrganizationAuditEvent,
+    GrantorOrganizationType,
+    PartnerAuditEvent,
+    ResourceType,
+)
 from src.db.models.grantor_schema_table import GrantorSchemaTable
-from src.db.models.lookup_models import LkGrantorOrganizationType
+from src.db.models.lookup_models import (
+    LkGrantorOrganizationAuditEvent,
+    LkGrantorOrganizationType,
+    LkPartnerAuditEvent,
+)
 from src.db.models.resource_models import AbstractResourceTableMixin, Resource
+from src.db.models.user_models import User
 
 
 class Partner(GrantorSchemaTable, TimestampMixin, AbstractResourceTableMixin):
@@ -139,3 +150,51 @@ class SecondaryProgramPartner(GrantorSchemaTable, TimestampMixin):
         UUID, ForeignKey(Partner.partner_id), primary_key=True
     )
     partner: Mapped[Partner] = relationship(Partner)
+
+
+class PartnerAudit(GrantorSchemaTable, TimestampMixin):
+    __tablename__ = "partner_audit"
+
+    partner_audit_id: Mapped[uuid.UUID] = mapped_column(UUID, primary_key=True, default=uuid.uuid4)
+
+    partner_id: Mapped[uuid.UUID] = mapped_column(UUID, ForeignKey(Partner.partner_id))
+    partner: Mapped[Partner] = relationship(Partner)
+
+    user_id: Mapped[uuid.UUID] = mapped_column(UUID, ForeignKey(User.user_id))
+    user: Mapped[User] = relationship(User, foreign_keys=[user_id])
+
+    partner_audit_event: Mapped[PartnerAuditEvent] = mapped_column(
+        LookupColumn(LkPartnerAuditEvent),
+        ForeignKey(LkPartnerAuditEvent.partner_audit_event_id),
+    )
+
+    target_user_id: Mapped[uuid.UUID | None] = mapped_column(UUID, ForeignKey(User.user_id))
+    target_user: Mapped[User | None] = relationship(User, foreign_keys=[target_user_id])
+
+    audit_metadata: Mapped[dict | None] = mapped_column(JSONB)
+
+
+class GrantorOrganizationAudit(GrantorSchemaTable, TimestampMixin):
+    __tablename__ = "grantor_organization_audit"
+
+    grantor_organization_audit_id: Mapped[uuid.UUID] = mapped_column(
+        UUID, primary_key=True, default=uuid.uuid4
+    )
+
+    grantor_organization_id: Mapped[uuid.UUID] = mapped_column(
+        UUID, ForeignKey(GrantorOrganization.grantor_organization_id)
+    )
+    grantor_organization: Mapped[GrantorOrganization] = relationship(GrantorOrganization)
+
+    user_id: Mapped[uuid.UUID] = mapped_column(UUID, ForeignKey(User.user_id))
+    user: Mapped[User] = relationship(User, foreign_keys=[user_id])
+
+    grantor_organization_audit_event: Mapped[GrantorOrganizationAuditEvent] = mapped_column(
+        LookupColumn(LkGrantorOrganizationAuditEvent),
+        ForeignKey(LkGrantorOrganizationAuditEvent.grantor_organization_audit_event_id),
+    )
+
+    target_user_id: Mapped[uuid.UUID | None] = mapped_column(UUID, ForeignKey(User.user_id))
+    target_user: Mapped[User | None] = relationship(User, foreign_keys=[target_user_id])
+
+    audit_metadata: Mapped[dict | None] = mapped_column(JSONB)

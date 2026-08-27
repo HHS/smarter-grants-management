@@ -17,7 +17,9 @@ from src.constants.lookup_constants import (
     ApprovalResponseType,
     ApprovalType,
     ExternalUserType,
+    GrantorOrganizationAuditEvent,
     GrantorOrganizationType,
+    PartnerAuditEvent,
     ResourceType,
     UserType,
     WorkflowType,
@@ -313,6 +315,52 @@ class GrantorOrganizationFactory(BaseFactory):
                 partner=factory.SelfAttribute("..partner"),
             ),
         )
+
+
+class PartnerAuditFactory(BaseFactory):
+    class Meta:
+        model = grantor_organization_models.PartnerAudit
+
+    partner_audit_id = Generators.UuidObj
+
+    partner = factory.SubFactory(PartnerFactory)
+    partner_id = factory.LazyAttribute(lambda a: a.partner.partner_id)
+
+    user = factory.SubFactory(UserFactory)
+    user_id = factory.LazyAttribute(lambda a: a.user.user_id)
+
+    partner_audit_event = PartnerAuditEvent.USER_ROLES_MODIFIED
+
+    target_user = sometimes_none(factory.SubFactory(UserFactory), none_chance=0.5)
+    target_user_id = factory.LazyAttribute(
+        lambda a: a.target_user.user_id if a.target_user else None
+    )
+
+    audit_metadata = sometimes_none(factory.LazyAttribute(lambda x: {}), none_chance=0.5)
+
+
+class GrantorOrganizationAuditFactory(BaseFactory):
+    class Meta:
+        model = grantor_organization_models.GrantorOrganizationAudit
+
+    grantor_organization_audit_id = Generators.UuidObj
+
+    grantor_organization = factory.SubFactory(GrantorOrganizationFactory)
+    grantor_organization_id = factory.LazyAttribute(
+        lambda a: a.grantor_organization.grantor_organization_id
+    )
+
+    user = factory.SubFactory(UserFactory)
+    user_id = factory.LazyAttribute(lambda a: a.user.user_id)
+
+    grantor_organization_audit_event = GrantorOrganizationAuditEvent.USER_ROLES_MODIFIED
+
+    target_user = sometimes_none(factory.SubFactory(UserFactory), none_chance=0.5)
+    target_user_id = factory.LazyAttribute(
+        lambda a: a.target_user.user_id if a.target_user else None
+    )
+
+    audit_metadata = sometimes_none(factory.LazyAttribute(lambda x: {}), none_chance=0.5)
 
 
 class ProgramFactory(BaseFactory):

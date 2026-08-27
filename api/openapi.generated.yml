@@ -119,6 +119,52 @@ paths:
       tags:
       - LOCAL ONLY
       summary: Local Users Get
+  /v1/workflows/events:
+    put:
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowEventResponseSchema'
+          description: Successful response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Validation error
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Not Found
+      tags:
+      - Workflow
+      summary: Send Workflow Event
+      description: Trigger a new workflow or progress an existing one.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowEventRequestSchema'
+      security:
+      - ApiJwtAuth: &id001 []
+      - ApiUserKeyAuth: *id001
   /v1/users/token/logout:
     post:
       parameters: []
@@ -204,8 +250,8 @@ paths:
       - Partners
       summary: Fetch a Partner
       security:
-      - ApiJwtAuth: &id001 []
-      - ApiUserKeyAuth: *id001
+      - ApiJwtAuth: &id002 []
+      - ApiUserKeyAuth: *id002
   /v1/users/{user_id}/can_access:
     post:
       parameters:
@@ -255,8 +301,8 @@ paths:
             schema:
               $ref: '#/components/schemas/UserCanAccessRequestSchema'
       security:
-      - ApiJwtAuth: &id002 []
-      - ApiUserKeyAuth: *id002
+      - ApiJwtAuth: &id003 []
+      - ApiUserKeyAuth: *id003
   /alpha/proof_of_concept/opportunities/{opportunity_id}:
     get:
       parameters:
@@ -291,8 +337,8 @@ paths:
         of cross-service data transfer. This endpoint requires JWT or API key authentication
         but has no authorization enforcement.
       security:
-      - ApiJwtAuth: &id003 []
-      - ApiUserKeyAuth: *id003
+      - ApiJwtAuth: &id004 []
+      - ApiUserKeyAuth: *id004
   /v1/resources/{resource_type}/{resource_id}/users/list:
     post:
       parameters:
@@ -348,8 +394,8 @@ paths:
             schema:
               $ref: '#/components/schemas/ListUserForResourceRequestSchema'
       security:
-      - ApiJwtAuth: &id004 []
-      - ApiUserKeyAuth: *id004
+      - ApiJwtAuth: &id005 []
+      - ApiUserKeyAuth: *id005
 openapi: 3.1.0
 components:
   schemas:
@@ -492,6 +538,99 @@ components:
           type: integer
           description: The HTTP status code
           example: 200
+    WorkflowEventResponseDataSchema:
+      type: object
+      properties:
+        event_id:
+          type: string
+          format: uuid
+          description: The tracking ID for the workflow event
+          example: 123e4567-e89b-12d3-a456-426614174000
+    WorkflowEventResponseSchema:
+      type: object
+      properties:
+        message:
+          type: string
+          description: The message to return
+          example: Success
+        data:
+          type:
+          - object
+          $ref: '#/components/schemas/WorkflowEventResponseDataSchema'
+        status_code:
+          type: integer
+          description: The HTTP status code
+          example: 200
+    StartWorkflowContextSchema:
+      type: object
+      properties:
+        workflow_type:
+          description: The type of workflow to initiate
+          enum:
+          - basic_test_workflow
+          - prototype_workflow
+          - approval_test_workflow
+          - limited_approval_test_workflow
+          type:
+          - string
+        resource_id:
+          type: string
+          format: uuid
+          description: The resource ID of the entity to associate with the workflow
+            - different workflows require different resource types.
+          example: 123e4567-e89b-12d3-a456-426614174000
+      required:
+      - resource_id
+      - workflow_type
+    ProcessWorkflowContextSchema:
+      type: object
+      properties:
+        workflow_id:
+          type: string
+          format: uuid
+          description: The ID of the existing workflow to progress
+          example: 123e4567-e89b-12d3-a456-426614174000
+        event_to_send:
+          type: string
+          minLength: 1
+          description: The specific event/action to trigger in the state machine
+          example: complete
+      required:
+      - event_to_send
+      - workflow_id
+    WorkflowEventRequestSchema:
+      type: object
+      properties:
+        event_type:
+          description: 'The category of event: either starting a new workflow or processing
+            an existing one'
+          enum:
+          - start_workflow
+          - process_workflow
+          type:
+          - string
+        start_workflow_context:
+          description: Context and entities required to initialize a new workflow.
+            Only allowed if event_type is 'start_workflow'.
+          type:
+          - object
+          $ref: '#/components/schemas/StartWorkflowContextSchema'
+        process_workflow_context:
+          description: Information required to progress an existing workflow state.
+            Only allowed if event_type is 'process_workflow'.
+          type:
+          - object
+          $ref: '#/components/schemas/ProcessWorkflowContextSchema'
+        metadata:
+          type: object
+          default: {}
+          description: A freeform JSON object for the particular event, if needed.
+          example:
+            source_system: grants_solutions
+            priority: high
+          additionalProperties: {}
+      required:
+      - event_type
     UserTokenLogoutResponseSchema:
       type: object
       properties:
@@ -591,7 +730,7 @@ components:
             - view_grantor_organization
             - update_grantor_organization
             - manage_grantor_organization_members
-            - unused_privilege_101
+            - internal_workflow_event_send
             - unused_privilege_102
             - unused_privilege_103
             type:
@@ -730,7 +869,7 @@ components:
             - view_grantor_organization
             - update_grantor_organization
             - manage_grantor_organization_members
-            - unused_privilege_101
+            - internal_workflow_event_send
             - unused_privilege_102
             - unused_privilege_103
             type:
@@ -810,7 +949,7 @@ components:
             - view_grantor_organization
             - update_grantor_organization
             - manage_grantor_organization_members
-            - unused_privilege_101
+            - internal_workflow_event_send
             - unused_privilege_102
             - unused_privilege_103
             type:
