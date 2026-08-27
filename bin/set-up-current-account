@@ -37,8 +37,12 @@ terraform -chdir="infra/project-config" apply -auto-approve > /dev/null
 project_name=$(terraform -chdir="infra/project-config" output --raw project_name)
 region=$(terraform -chdir="infra/project-config" output --raw default_region)
 
-# Must stay in sync with local.tf_state_bucket_name in infra/accounts/main.tf.
-tf_state_bucket_name="${project_name}-${account_id}-${region}-tf-state"
+tf_state_bucket_name=$(
+  terraform -chdir="infra/project-config" output --json tf_state_bucket_name_overrides |
+    jq -r --arg id "${account_id}" \
+      --arg derived "${project_name}-${account_id}-${region}-tf-state" \
+      '.[$id] // $derived'
+)
 tf_state_key="infra/account.tfstate"
 
 echo "=================="
