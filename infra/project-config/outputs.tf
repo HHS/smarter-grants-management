@@ -21,6 +21,11 @@ output "default_region" {
   value = local.default_region
 }
 
+output "tf_state_bucket_name_overrides" {
+  value       = local.tf_state_bucket_name_overrides
+  description = "s3 bucket name for tf state"
+}
+
 output "enable_newrelic" {
   value       = local.enable_newrelic
   description = "Whether to create the New Relic log forwarders. False while this project has no New Relic tenant."
