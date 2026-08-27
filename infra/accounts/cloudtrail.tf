@@ -2,26 +2,31 @@
 # CloudTrail
 #===================================
 
-# CloudTrail central logging architecture
+# CloudTrail per-account logging architecture
 #
-# Only the delegated-administrator account (local.admin_account_id, currently dev)
-# owns CloudTrail trails. The trails below write to the S3 log bucket and KMS key
-# created in this file, which live in that same account, so they are only created
-# there.
+# Every account owns its own trails, writing to the S3 log bucket and KMS key
+# created in this file. Both are scoped to the current account
+# (data.aws_caller_identity.current.account_id), so each account gets a
+# self-contained set: bucket, key, trails, and CloudWatch log groups.
 #
-# This follows the AWS multi-account best practice for centralized logging:
-#   - member accounts cannot tamper with logs stored in the admin account
-#   - security monitoring and alerting is centralized
-#   - a single set of trails avoids per-account cost and drift
+# This matches how the rest of this project is laid out — each environment is
+# self-contained in its own AWS account (see account_names_by_environment in
+# infra/api/app-config/main.tf) — and it means a new account gets an audit trail
+# from its first apply with no dependency on the AWS Organizations topology.
 #
-# SCOPE CAVEAT: these are single-account multi-region trails —
-# is_organization_trail is not set, so they capture the admin account's own events
-# only. staging therefore still has no trail of its own. Closing that needs either
-# is_organization_trail = true (which requires this account to be the AWS
+# The alternative considered was a single organization trail in the delegated
+# administrator account (is_organization_trail = true), which would centralize
+# logs so member accounts could not tamper with them and would avoid per-account
+# cost. It was not chosen because it requires this account to be the AWS
 # Organizations management account or a registered CloudTrail delegated
-# administrator, and the member accounts to be in that org) or a per-account trail.
+# administrator, with all member accounts in that org — none of which is
+# established for this project. Revisit if that changes: the tradeoff here is
+# that each account can modify its own logs.
+#
+# These are single-account multi-region trails; is_organization_trail is not set,
+# so each trail captures only its own account's events. That is the intent.
 locals {
-  create_cloudtrail = local.is_admin_account
+  create_cloudtrail = true
 
   # Bucket names are globally unique, so scope by account. 54 of the 63 characters
   # S3 allows, leaving room for the "-logs" suffix on the access-log bucket.
