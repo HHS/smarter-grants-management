@@ -63,9 +63,6 @@ export default function UserProvider({
           // Invoke the logout endpoint for explicit logout. This will ensure
           // the correlation_id cookie is properly removed since the correlation_id
           // cookie is httpOnly.
-
-          // await fetch("/api/auth/logout", { method: "POST" }).catch(noop);
-
           storeCurrentPage(location.pathname, location.search);
           redirect(LOGOUT_URL);
         }
