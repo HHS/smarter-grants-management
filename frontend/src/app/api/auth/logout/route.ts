@@ -1,9 +1,6 @@
 import { environment } from "src/constants/environments";
 import { getSession } from "src/services/auth/session";
-import {
-  logoutUrlWithToken,
-  setLogoutTokenCookie,
-} from "src/services/auth/sessionUtils";
+import { setLogoutTokenCookie } from "src/services/auth/sessionUtils";
 
 import { redirect } from "next/navigation";
 import { NextRequest, NextResponse } from "next/server";

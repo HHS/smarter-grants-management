@@ -61,5 +61,5 @@ export async function deleteSession() {
 
 export async function setLogoutTokenCookie(token: string) {
   const cookie = await cookies();
-  cookie.set("sgg_token", token);
+  cookie.set("mgmt_token", token);
 }
