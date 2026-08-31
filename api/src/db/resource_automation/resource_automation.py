@@ -1,8 +1,8 @@
 from typing import Any
 
-import grants_shared.adapters.db as db
 from sqlalchemy import event
 
+import src.adapters.db as db
 from src.db.models.resource_models import AbstractResourceTableMixin, Resource
 
 

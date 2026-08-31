@@ -1,9 +1,9 @@
 import uuid
 
-from grants_shared.adapters import db
-from grants_shared.api.route_utils import raise_flask_error
 from sqlalchemy import select
 
+from src.adapters import db
+from src.api.route_utils import raise_flask_error
 from src.auth.authorization_enforcer import AuthorizationEnforcer
 from src.constants.lookup_constants import Privilege
 from src.db.models.grantor_organization_models import GrantorOrganization

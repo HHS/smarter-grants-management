@@ -2,16 +2,15 @@ import logging
 import uuid
 from typing import Any, cast
 
-from grants_shared.adapters import db
-from grants_shared.api.route_utils import raise_flask_error
-from grants_shared.logs.flask_logger import add_extra_data_to_current_request_logs
-
 import src.workflow.state_machine  # ruff: ignore[unused-import]  # Import to register all state machines
+from src.adapters import db
+from src.api.route_utils import raise_flask_error
 from src.auth.authorization_enforcer import AuthorizationEnforcer
 from src.auth.internal_resource import get_internal_resource
 from src.constants.lookup_constants import Privilege, WorkflowEventType
 from src.db.models.user_models import User
 from src.db.models.workflow_models import Workflow
+from src.logs.flask_logger import add_extra_data_to_current_request_logs
 from src.services.workflows.send_workflow_event import send_workflow_event_to_queue
 from src.workflow.event.workflow_event import (
     ProcessWorkflowEventContext,

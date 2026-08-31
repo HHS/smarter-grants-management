@@ -6,17 +6,17 @@ from datetime import datetime
 from enum import StrEnum
 
 from flask import Flask, current_app
-from grants_shared.adapters import db
-from grants_shared.adapters.aws import SQSConfig
-from grants_shared.adapters.aws.sqs_adapter import SQSMessage
-from grants_shared.adapters.db import flask_db
-from grants_shared.util import datetime_util
 from pydantic import ValidationError
 from pydantic_settings import SettingsConfigDict
 
+from src.adapters import db
+from src.adapters.aws import SQSConfig
+from src.adapters.aws.sqs_adapter import SQSMessage
+from src.adapters.db import flask_db
 from src.constants.lookup_constants import WorkflowEventProcessingResult
 from src.db.models.workflow_models import WorkflowEventHistory
 from src.task.sqs_processor import BaseSqsProcessor, SqsProcessorConfig
+from src.util import datetime_util
 from src.workflow.event.sqs_message_container import SqsMessageContainer
 from src.workflow.event.workflow_event import WorkflowEvent
 from src.workflow.handler.event_handler import EventHandler

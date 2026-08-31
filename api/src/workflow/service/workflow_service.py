@@ -2,9 +2,9 @@ import logging
 import uuid
 from typing import Any
 
-from grants_shared.adapters import db
 from sqlalchemy import select
 
+from src.adapters import db
 from src.db.models.resource_models import AbstractResourceTableMixin, Resource
 from src.db.models.workflow_models import Workflow
 from src.db.resource_lookup import get_resource_model

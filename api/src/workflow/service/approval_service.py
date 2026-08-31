@@ -1,8 +1,8 @@
 import logging
 
-from grants_shared.adapters import db
 from sqlalchemy import Select, select
 
+from src.adapters import db
 from src.auth.authorization_enforcer import AuthorizationEnforcer
 from src.constants.lookup_constants import ApprovalResponseType, ApprovalType, ResourceInheritance
 from src.db.models.user_models import User

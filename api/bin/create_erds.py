@@ -2,10 +2,10 @@
 import logging
 import pathlib
 
-import grants_shared.logs
 from eralchemy import render_er
 from sqlalchemy import MetaData
 
+import src.logs
 from src.db.models.grantor_schema_table import GrantorSchemaTable
 
 logger = logging.getLogger(__name__)
@@ -27,7 +27,7 @@ def create_erds(metadata: MetaData, file_name: str) -> None:
 
 
 def main() -> None:
-    with grants_shared.logs.init(__package__):
+    with src.logs.init(__package__):
         logger.info("Generating ERD diagrams")
 
         create_erds(GRANTOR_BASE_METADATA, "grantor-schema")

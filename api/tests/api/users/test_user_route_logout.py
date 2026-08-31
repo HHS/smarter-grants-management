@@ -1,11 +1,9 @@
 import urllib
 from datetime import datetime
 
-from grants_shared.api.route_utils import raise_flask_error
-from grants_shared.auth import login_gov_jwt_auth
-from grants_shared.auth.api_jwt_auth import JwtAuth
-
-from src.auth.api_jwt_auth import create_jwt_for_user
+from src.api.route_utils import raise_flask_error
+from src.auth import login_gov_jwt_auth
+from src.auth.api_jwt_auth import JwtAuth, create_jwt_for_user
 from tests.db.models.factories import LinkExternalUserFactory
 
 

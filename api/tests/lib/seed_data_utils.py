@@ -2,12 +2,11 @@ import logging
 import uuid
 from typing import Self
 
-import grants_shared.adapters.db as db
-from grants_shared.auth.api_jwt_auth import ApiJwtConfig
 from sqlalchemy import select
 
+import src.adapters.db as db
 import tests.db.models.factories as factories
-from src.auth.api_jwt_auth import create_jwt_for_user
+from src.auth.api_jwt_auth import ApiJwtConfig, create_jwt_for_user
 from src.auth.internal_resource import get_internal_resource
 from src.constants.lookup_constants import Privilege, ResourceType
 from src.db.models.resource_models import ResourceUser

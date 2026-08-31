@@ -1,13 +1,13 @@
 import uuid
 from typing import TYPE_CHECKING
 
-from grants_shared.adapters.db.type_decorators.postgres_type_decorators import LookupColumn
-from grants_shared.db.models.base import TimestampMixin
 from sqlalchemy import UUID, ForeignKey
 from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from src.adapters.db.lookup.lookup_column import LookupColumn
 from src.constants.lookup_constants import Privilege, ResourceType
+from src.db.models.base import TimestampMixin
 from src.db.models.grantor_schema_table import GrantorSchemaTable
 from src.db.models.lookup_models import LkPrivilege, LkResourceType
 from src.db.models.user_models import User

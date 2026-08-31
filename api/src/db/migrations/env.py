@@ -2,13 +2,13 @@ import logging
 from typing import Any
 
 import alembic.context as context
-import grants_shared.adapters.db as db
 import sqlalchemy
 
+import src.adapters.db as db
 from src.constants.schema import Schemas
 from src.db.models import metadata
 
-from grants_shared.adapters.db.type_decorators.postgres_type_decorators import (  # isort:skip
+from src.adapters.db.lookup.lookup_column import (  # isort:skip
     LookupColumn,
 )
 

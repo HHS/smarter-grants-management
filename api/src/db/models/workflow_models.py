@@ -2,13 +2,13 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from grants_shared.adapters.db.type_decorators.postgres_type_decorators import LookupColumn
-from grants_shared.db.models.base import TimestampMixin
 from sqlalchemy import UUID, ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from src.adapters.db.lookup.lookup_column import LookupColumn
 from src.constants.lookup_constants import ApprovalResponseType, ApprovalType, WorkflowType
+from src.db.models.base import TimestampMixin
 from src.db.models.grantor_schema_table import GrantorSchemaTable
 from src.db.models.lookup_models import LkApprovalResponseType, LkApprovalType, LkWorkflowType
 from src.db.models.resource_models import Resource
