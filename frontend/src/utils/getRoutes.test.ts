@@ -22,6 +22,7 @@ describe("getNextRoutes", () => {
       "/dev/feature-flags",
       "/error",
       "/login",
+      "/logout",
       "/maintenance",
       "/opportunities/create",
       "/opportunities",
