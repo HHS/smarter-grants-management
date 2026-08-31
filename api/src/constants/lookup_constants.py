@@ -53,6 +53,14 @@ class GrantorOrganizationType(StrEnum):
     GRANT_OFFICE = "grant_office"
 
 
+class PartnerAuditEvent(StrEnum):
+    USER_ROLES_MODIFIED = "user_roles_modified"
+
+
+class GrantorOrganizationAuditEvent(StrEnum):
+    USER_ROLES_MODIFIED = "user_roles_modified"
+
+
 class WorkflowType(StrEnum):
     # Because of how we use the workflow type to find
     # the state machine and its configuration, we need

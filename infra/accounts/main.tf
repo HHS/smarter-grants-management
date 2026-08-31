@@ -18,12 +18,13 @@ locals {
   is_admin_account = data.aws_caller_identity.current.account_id == local.admin_account_id
 
   # Must match tf_state_bucket_name in bin/set-up-current-account, which creates
-  # this bucket via the AWS CLI before terraform can manage it.
   #
   # The terraform-backend-s3 module appends "-logs" for the access-log bucket,
-  # which puts that name at 62 of the 63 characters S3 allows — keep any further
-  # suffix short.
-  tf_state_bucket_name = "${module.project_config.project_name}-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}-tf-state"
+  tf_state_bucket_name = lookup(
+    module.project_config.tf_state_bucket_name_overrides,
+    data.aws_caller_identity.current.account_id,
+    "${module.project_config.project_name}-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}-tf-state"
+  )
 
   # Choose the region where this infrastructure should be deployed.
   region = module.project_config.default_region

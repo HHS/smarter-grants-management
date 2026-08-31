@@ -5,7 +5,9 @@ from src.constants.lookup_constants import (
     ApprovalResponseType,
     ApprovalType,
     ExternalUserType,
+    GrantorOrganizationAuditEvent,
     GrantorOrganizationType,
+    PartnerAuditEvent,
     Privilege,
     ResourceType,
     UserType,
@@ -63,6 +65,14 @@ GRANTOR_ORGANIZATION_TYPE_CONFIG: LookupConfig[GrantorOrganizationType] = Lookup
         LookupStr(GrantorOrganizationType.PROGRAM_OFFICE, 1),
         LookupStr(GrantorOrganizationType.GRANT_OFFICE, 2),
     ]
+)
+
+PARTNER_AUDIT_EVENT_CONFIG: LookupConfig[PartnerAuditEvent] = LookupConfig(
+    [LookupStr(PartnerAuditEvent.USER_ROLES_MODIFIED, 1)]
+)
+
+GRANTOR_ORGANIZATION_AUDIT_EVENT_CONFIG: LookupConfig[GrantorOrganizationAuditEvent] = LookupConfig(
+    [LookupStr(GrantorOrganizationAuditEvent.USER_ROLES_MODIFIED, 1)]
 )
 
 # Only the values the engine itself needs are seeded here. The find/apply workflow
@@ -179,6 +189,35 @@ class LkGrantorOrganizationType(GrantorLookupTable, TimestampMixin):
     def from_lookup(cls, lookup: Lookup) -> LkGrantorOrganizationType:
         return LkGrantorOrganizationType(
             grantor_organization_type_id=lookup.lookup_val, description=lookup.get_description()
+        )
+
+
+@LookupRegistry.register_lookup(PARTNER_AUDIT_EVENT_CONFIG)
+class LkPartnerAuditEvent(GrantorLookupTable, TimestampMixin):
+    __tablename__ = "lk_partner_audit_event"
+
+    partner_audit_event_id: Mapped[int] = mapped_column(primary_key=True)
+    description: Mapped[str]
+
+    @classmethod
+    def from_lookup(cls, lookup: Lookup) -> LkPartnerAuditEvent:
+        return LkPartnerAuditEvent(
+            partner_audit_event_id=lookup.lookup_val, description=lookup.get_description()
+        )
+
+
+@LookupRegistry.register_lookup(GRANTOR_ORGANIZATION_AUDIT_EVENT_CONFIG)
+class LkGrantorOrganizationAuditEvent(GrantorLookupTable, TimestampMixin):
+    __tablename__ = "lk_grantor_organization_audit_event"
+
+    grantor_organization_audit_event_id: Mapped[int] = mapped_column(primary_key=True)
+    description: Mapped[str]
+
+    @classmethod
+    def from_lookup(cls, lookup: Lookup) -> LkGrantorOrganizationAuditEvent:
+        return LkGrantorOrganizationAuditEvent(
+            grantor_organization_audit_event_id=lookup.lookup_val,
+            description=lookup.get_description(),
         )
 
 

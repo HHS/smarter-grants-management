@@ -1,4 +1,4 @@
-bucket       = "smarter-grants-management-530702498822-us-east-1-tf-state"
+bucket       = "smarter-grants-mgmt-530702498822-us-east-1-tf-state"
 key          = "infra/account.tfstate"
 region       = "us-east-1"
 use_lockfile = true
