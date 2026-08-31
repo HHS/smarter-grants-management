@@ -81,7 +81,12 @@ class GrantorOrganization(GrantorSchemaTable, TimestampMixin, AbstractResourceTa
     )
 
     path: Mapped[Ltree] = mapped_column(
-        LtreeType, index=True, server_default=FetchedValue(), server_onupdate=FetchedValue()
+        LtreeType,
+        index=True,
+        # Setting these to FetchedValue() makes it so
+        # SQLAlchemy won't try to populate them as null by default.
+        server_default=FetchedValue(),
+        server_onupdate=FetchedValue(),
     )
 
     def get_resource_id(self) -> uuid.UUID:

@@ -9,8 +9,10 @@ Create Date: 2026-08-31 14:20:20.628548
 import sqlalchemy as sa
 from alembic import op
 
-from src.db.migrations.db_functions import get_grantor_organization_insert_automation_sql, \
-    get_grantor_organization_update_automation_sql
+from src.db.migrations.db_functions import (
+    get_grantor_organization_insert_automation_sql,
+    get_grantor_organization_update_automation_sql,
+)
 
 # revision identifiers, used by Alembic.
 revision = "9998d48622ed"
