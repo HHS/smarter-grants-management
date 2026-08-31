@@ -1,10 +1,10 @@
 import logging
 import uuid
 
-import grants_shared.adapters.db as db
 import pytest
 from sqlalchemy import func, select
 
+import src.adapters.db as db
 import src.db.models as db_models
 from src.constants.lookup_constants import Privilege, ResourceType
 from src.constants.static_role_values import CORE_ROLES
@@ -68,7 +68,7 @@ def test_sync_roles_applies_updates(
         privileges={Privilege.VIEW_PARTNER},
         resource_types={ResourceType.PARTNER},
     )
-    monkeypatch.setattr("src.db.models.lookup.sync_lookup_values.CORE_ROLES", [role])
+    monkeypatch.setattr("src.constants.static_role_values.CORE_ROLES", [role])
     sync_lookup_values(schema_no_lookup)
 
     # Change the role and confirm the update is detected and persisted.

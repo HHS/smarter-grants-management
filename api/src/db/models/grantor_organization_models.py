@@ -1,17 +1,17 @@
 import uuid
 
-from grants_shared.adapters.db.type_decorators.postgres_type_decorators import LookupColumn
-from grants_shared.db.models.base import TimestampMixin
 from sqlalchemy import UUID, ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from src.adapters.db.lookup.lookup_column import LookupColumn
 from src.constants.lookup_constants import (
     GrantorOrganizationAuditEvent,
     GrantorOrganizationType,
     PartnerAuditEvent,
     ResourceType,
 )
+from src.db.models.base import TimestampMixin
 from src.db.models.grantor_schema_table import GrantorSchemaTable
 from src.db.models.lookup_models import (
     LkGrantorOrganizationAuditEvent,
@@ -164,6 +164,7 @@ class PartnerAudit(GrantorSchemaTable, TimestampMixin):
     user: Mapped[User] = relationship(User, foreign_keys=[user_id])
 
     partner_audit_event: Mapped[PartnerAuditEvent] = mapped_column(
+        "partner_audit_event_id",
         LookupColumn(LkPartnerAuditEvent),
         ForeignKey(LkPartnerAuditEvent.partner_audit_event_id),
     )
@@ -190,6 +191,7 @@ class GrantorOrganizationAudit(GrantorSchemaTable, TimestampMixin):
     user: Mapped[User] = relationship(User, foreign_keys=[user_id])
 
     grantor_organization_audit_event: Mapped[GrantorOrganizationAuditEvent] = mapped_column(
+        "grantor_organization_audit_event_id",
         LookupColumn(LkGrantorOrganizationAuditEvent),
         ForeignKey(LkGrantorOrganizationAuditEvent.grantor_organization_audit_event_id),
     )

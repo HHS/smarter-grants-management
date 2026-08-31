@@ -4,8 +4,8 @@ import threading
 
 import boto3
 import pytest
-from grants_shared.api.maintenance_mode import get_maintenance_mode_config
 
+from src.api.maintenance_mode import get_maintenance_mode_config
 from src.task.sqs_processor import BaseSqsProcessor, SqsProcessorConfig
 
 

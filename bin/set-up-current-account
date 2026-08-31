@@ -26,10 +26,10 @@ account_name="$1"
 
 account_id=$(./bin/current-account-id)
 
-# Must match local.admin_account_id in infra/accounts/main.tf. Neither of this
-# project's accounts is the delegated administrator, so the standards-subscription
-# cleanup below applies to both.
-security_hub_admin_account_id="315341936575"
+# Must match local.admin_account_id in infra/accounts/main.tf. dev is this
+# project's delegated administrator and manages the standards subscriptions, so
+# the cleanup below applies to every other account but not to dev.
+security_hub_admin_account_id="135002447353"
 
 # Get project name and region from project config
 # This ensures consistency with how terraform computes the bucket name
@@ -37,8 +37,12 @@ terraform -chdir="infra/project-config" apply -auto-approve > /dev/null
 project_name=$(terraform -chdir="infra/project-config" output --raw project_name)
 region=$(terraform -chdir="infra/project-config" output --raw default_region)
 
-# Must stay in sync with local.tf_state_bucket_name in infra/accounts/main.tf.
-tf_state_bucket_name="${project_name}-${account_id}-${region}-tf-state"
+tf_state_bucket_name=$(
+  terraform -chdir="infra/project-config" output --json tf_state_bucket_name_overrides |
+    jq -r --arg id "${account_id}" \
+      --arg derived "${project_name}-${account_id}-${region}-tf-state" \
+      '.[$id] // $derived'
+)
 tf_state_key="infra/account.tfstate"
 
 echo "=================="

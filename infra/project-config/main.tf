@@ -2,8 +2,11 @@ locals {
   # Machine readable project name (lower case letters, dashes, and underscores)
   # This will be used in names of AWS resources, including the terraform state
   # bucket that infra/accounts/main.tf derives as
-  # "${project_name}-${account_id}-${region}-tf-state".
   project_name = "smarter-grants-management"
+
+  tf_state_bucket_name_overrides = {
+    "530702498822" = "smarter-grants-mgmt-530702498822-us-east-1-tf-state"
+  }
 
   # Project owner (e.g. navapbc). Used for tagging infra resources.
   owner = "navapbc"
