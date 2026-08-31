@@ -5,6 +5,7 @@ from marshmallow import EXCLUDE
 
 from src.api.schemas.extension.schema_common import MarshmallowErrorContainer
 from src.api.schemas.extension.schema_validation_error import SchemaValidationError
+from src.api.schemas.extension.schema_validators import RelationalValidationMetadata
 
 
 class Schema(apiflask.Schema):  # ruff: ignore[banned-api]
@@ -28,6 +29,8 @@ class Schema(apiflask.Schema):  # ruff: ignore[banned-api]
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
+        self.relational_validations = self._get_relational_validations()
+
         # In order for the OpenAPI docs to display correctly
         # we need to set sub-schemas as partial=True, as the
         # apispec library doesn't handle recursively passing that down
@@ -44,6 +47,25 @@ class Schema(apiflask.Schema):  # ruff: ignore[banned-api]
                 if hasattr(field, "inner"):
                     if hasattr(field.inner, "nested"):
                         field.inner.nested.partial = True
+
+    def _get_relational_validations(
+        self,
+    ) -> list[RelationalValidationMetadata]:
+        validations: list[RelationalValidationMetadata] = []
+
+        for attribute_name in dir(self):
+            attribute = getattr(self, attribute_name)
+
+            metadata = getattr(
+                attribute,
+                "__relational_validation__",
+                None,
+            )
+
+            if metadata is not None:
+                validations.append(metadata)
+
+        return validations
 
     class Meta:
         # Ignore any extra fields
