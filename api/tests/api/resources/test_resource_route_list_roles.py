@@ -167,7 +167,7 @@ def test_list_roles_for_program_returns_empty_200(client, db_session, program, v
     assert response.json["pagination_info"]["total_pages"] == 0
 
 
-def test_list_roles_includes_multi_resource_roles(
+def test_list_roles_includes_multi_resource_roles_200(
     client, db_session, partner, viewer_token, partner_role, multi_resource_role
 ):
     """Roles applicable to multiple resource types are included when they match the requested type."""
@@ -182,7 +182,7 @@ def test_list_roles_includes_multi_resource_roles(
     assert role_names == {"Partner Admin", "Multi Resource Role"}
 
 
-def test_list_roles_excludes_non_core_roles(
+def test_list_roles_excludes_non_core_roles_200(
     client, db_session, partner, viewer_token, partner_role, enable_factory_create
 ):
     """Non-core roles are not included in the response."""
@@ -204,7 +204,7 @@ def test_list_roles_excludes_non_core_roles(
     assert str(non_core_role.role_id) not in role_ids
 
 
-def test_list_roles_excludes_wrong_resource_type(
+def test_list_roles_excludes_wrong_resource_type_200(
     client, db_session, partner, viewer_token, partner_role, org_role
 ):
     """Roles for other resource types are not included."""
@@ -224,7 +224,7 @@ def test_list_roles_excludes_wrong_resource_type(
 ####################################
 
 
-def test_list_roles_pagination(client, db_session, partner, enable_factory_create):
+def test_list_roles_pagination_200(client, db_session, partner, enable_factory_create):
     """Pagination works correctly with page size and offset."""
     # Create viewer user and token
     user = setup_user_with_roles(
@@ -293,7 +293,7 @@ def test_list_roles_pagination(client, db_session, partner, enable_factory_creat
     assert first_page_names != second_page_names
 
 
-def test_list_roles_sorting_by_name(
+def test_list_roles_sorting_by_name_200(
     client, db_session, partner, viewer_token, enable_factory_create
 ):
     """Sorting by role_name works in both directions."""
@@ -351,7 +351,9 @@ def test_list_roles_sorting_by_name(
     assert names[0] == "Zeta Role"
 
 
-def test_list_roles_sorting_by_id(client, db_session, partner, viewer_token, enable_factory_create):
+def test_list_roles_sorting_by_id_200(
+    client, db_session, partner, viewer_token, enable_factory_create
+):
     """Sorting by role_id works correctly."""
     role1 = RoleFactory.create(
         role_name="Role 1",
@@ -416,8 +418,8 @@ def test_list_roles_requires_view_privilege_403(client, db_session, partner):
 
 def test_list_roles_for_nonexistent_resource_404(client, viewer_token):
     """Request for a non-existent resource returns 404."""
-    fake_id = uuid.uuid4()
-    response = post_list(client, ResourceType.PARTNER, fake_id, viewer_token)
+    fake_partner_id = uuid.uuid4()
+    response = post_list(client, ResourceType.PARTNER, fake_partner_id, viewer_token)
     assert response.status_code == 404
 
 
@@ -438,7 +440,7 @@ def test_list_roles_requires_pagination_422(client, partner, viewer_token):
 
 
 def test_list_roles_invalid_sort_field_422(client, partner, viewer_token):
-    """Request with invalid sort field returns 422."""
+    """Request with invalid sort field (resource_id as sorting field) returns 422."""
     response = post_list(
         client,
         ResourceType.PARTNER,
@@ -448,7 +450,7 @@ def test_list_roles_invalid_sort_field_422(client, partner, viewer_token):
             "pagination": {
                 "page_offset": 1,
                 "page_size": 25,
-                "sort_order": [{"order_by": "invalid_field", "sort_direction": "ascending"}],
+                "sort_order": [{"order_by": "resource_id", "sort_direction": "ascending"}],
             }
         },
     )
