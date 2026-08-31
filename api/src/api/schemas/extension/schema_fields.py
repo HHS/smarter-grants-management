@@ -41,6 +41,35 @@ class MixinField(original_fields.Field):
     def __init__(self, **kwargs: typing.Any) -> None:
         super().__init__(**kwargs)
 
+        example = self.metadata.get("example")
+
+        if isinstance(example, enum.Enum):
+            self.metadata["example"] = example.value
+        elif isinstance(example, list):
+            self.metadata["example"] = [
+                item.value if isinstance(item, enum.Enum) else item for item in example
+            ]
+
+        for validator in self.validators:
+            get_openapi_metadata = getattr(
+                validator,
+                "get_openapi_metadata",
+                None,
+            )
+
+            if get_openapi_metadata is None:
+                continue
+
+            if not callable(get_openapi_metadata):
+                raise TypeError("get_openapi_metadata must be callable")
+
+            metadata = get_openapi_metadata()
+
+            if not isinstance(metadata, dict):
+                raise TypeError("get_openapi_metadata must return a dict")
+
+            self.metadata.update(metadata)
+
         # The actual error mapping used for a specific instance
         self._error_mapping: dict[str, MarshmallowErrorContainer] = {}
 
@@ -232,6 +261,12 @@ class Enum(MixinField):
         self.choices_text = ", ".join(possible_choices)
         # Set the enum metadata
         self.metadata["enum"] = possible_choices
+
+        # Enum defaults need to be represented by their serialized value in
+        # generated OpenAPI rather than by the Python Enum object.
+        if isinstance(self.load_default, enum.Enum):
+            self.metadata["default"] = self.load_default.value
+
         # Set the type so Swagger will know it's an enum-string
         if self.metadata.get("type") is None:
             type_values = ["string"]
