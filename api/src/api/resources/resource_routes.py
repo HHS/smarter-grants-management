@@ -13,8 +13,8 @@ from src.api.resources.resource_schemas import (
 )
 from src.auth.multi_auth import jwt_or_api_user_key_multi_auth
 from src.constants.lookup_constants import ResourceType
-from src.services.resources.list_roles_for_resource import list_roles_for_resource
 from src.logs.flask_logger import add_extra_data_to_current_request_logs
+from src.services.resources.list_roles_for_resource import list_roles_for_resource
 from src.services.resources.list_users_for_resource import list_users_for_resource
 
 logger = logging.getLogger(__name__)
