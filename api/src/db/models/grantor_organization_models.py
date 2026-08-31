@@ -1,10 +1,11 @@
 import uuid
 
-from sqlalchemy import UUID, ForeignKey
+from sqlalchemy import UUID, FetchedValue, ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.adapters.db.lookup.lookup_column import LookupColumn
+from src.adapters.db.ltree_column import Ltree, LtreeType
 from src.constants.lookup_constants import (
     GrantorOrganizationAuditEvent,
     GrantorOrganizationType,
@@ -77,6 +78,10 @@ class GrantorOrganization(GrantorSchemaTable, TimestampMixin, AbstractResourceTa
         "grantor_organization_type_id",
         LookupColumn(LkGrantorOrganizationType),
         ForeignKey(LkGrantorOrganizationType.grantor_organization_type_id),
+    )
+
+    path: Mapped[Ltree] = mapped_column(
+        LtreeType, index=True, server_default=FetchedValue(), server_onupdate=FetchedValue()
     )
 
     def get_resource_id(self) -> uuid.UUID:
