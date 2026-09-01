@@ -2,8 +2,8 @@ import uuid
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from grants_shared.adapters.aws.sqs_adapter import SQSClient
 
+from src.adapters.aws.sqs_adapter import SQSClient
 from src.auth.api_jwt_auth import create_jwt_for_user
 from src.auth.internal_resource import get_internal_resource
 from src.constants.lookup_constants import (

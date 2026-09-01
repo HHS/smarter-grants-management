@@ -1,11 +1,11 @@
 import uuid
 
 import pytest
-from grants_shared.adapters import db
 from sqlalchemy import UUID, select
 from sqlalchemy.exc import ProgrammingError, StatementError
 from sqlalchemy.orm import Mapped, mapped_column
 
+from src.adapters import db
 from src.adapters.db.ltree_column import Ltree, LtreeType
 from src.db.models import metadata
 from src.db.models.grantor_schema_table import GrantorSchemaTable

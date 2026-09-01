@@ -125,11 +125,15 @@ help: ## Prints the help documentation and info about each command
 ##################################################
 
 test: ## Run all tests
-	$(PY_RUN_CMD) pytest $(args)
+	$(PY_RUN_CMD) pytest -m "not audit" $(args)
 
+test-audit: ## Run audit logging tests
+	$(PY_RUN_CMD) pytest -m "audit" $(args)
 
 test-coverage: ## Run tests and generate coverage report
-	$(PY_RUN_CMD) coverage run --branch --source=src -m pytest $(args)
+	$(PY_RUN_CMD) coverage run --branch --source=src -m pytest -m "not audit" $(args)
+	$(PY_RUN_CMD) coverage run --data-file=.coverage.audit --branch --source=src -m pytest -m "audit" $(args)
+	$(PY_RUN_CMD) coverage combine --data-file=.coverage --append
 	$(PY_RUN_CMD) coverage report
 
 test-coverage-report: ## Open HTML test coverage report

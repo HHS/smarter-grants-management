@@ -15,7 +15,7 @@ __all__ = [
     "metadata",
     "lookup_models",
     "user_models",
-    "resource_models",
     "grantor_organization_models",
+    "resource_models",
     "workflow_models",
 ]

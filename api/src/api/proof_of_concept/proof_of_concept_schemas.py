@@ -1,6 +1,6 @@
 from enum import StrEnum
 
-from grants_shared.api.schemas.extension import Schema, fields
+from src.api.schemas.extension import Schema, fields
 
 
 class OpportunityStatus(StrEnum):

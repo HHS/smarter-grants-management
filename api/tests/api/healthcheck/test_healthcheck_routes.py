@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from grants_shared.adapters import db
+from src.adapters import db
 
 
 def test_get_healthcheck_200(client):

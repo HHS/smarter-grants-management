@@ -31,7 +31,8 @@ dependencies = [
     "PyYAML>=6.0.3,<7",
     "python-statemachine>=3.0.0,<4",
     "requests>=2.34.2,<3",
-    "grants-shared==0.3.1",
+    "jsonpath-ng>=1.8.0,<2",
+    "beautifulsoup4>=4.14.3,<5",
 ]
 
 [dependency-groups]
@@ -190,10 +191,10 @@ allowed-confusables = [
 [tool.ruff.lint.flake8-tidy-imports.banned-api]
 # For these libraries, we do use them, but have our own derived versions we want
 # to use instead as we've rewritten fundamental components like error messaging.
-"marshmallow.validate".msg = "Do not import marshmallow.validate directly - instead use grants_shared.api.schemas.extension.validators as we've rewritten the error messaging"
-"apiflask.validators".msg = "Do not import apiflask.validators directly - instead use grants_shared.api.schemas.extension.validators as we've rewritten the error messaging"
-"apiflask.fields".msg = "Do not import apiflask.fields directly - instead use grants_shared.api.schemas.extension.fields as we've rewritten the error messaging"
-"apiflask.Schema".msg = "Do not import apiflask.Schema directly - instead use grants_shared.api.schemas.extension"
+"marshmallow.validate".msg = "Do not import marshmallow.validate directly - instead use src.api.schemas.extension.validators as we've rewritten the error messaging"
+"apiflask.validators".msg = "Do not import apiflask.validators directly - instead use src.api.schemas.extension.validators as we've rewritten the error messaging"
+"apiflask.fields".msg = "Do not import apiflask.fields directly - instead use src.api.schemas.extension.fields as we've rewritten the error messaging"
+"apiflask.Schema".msg = "Do not import apiflask.Schema directly - instead use src.api.schemas.extension"
 
 [tool.mypy]
 # https://mypy.readthedocs.io/en/stable/config_file.html
@@ -220,6 +221,10 @@ warn_unused_ignores = true
 
 plugins = ["pydantic.mypy"]
 
+[tool.bandit]
+# Ignore audit logging test file since test audit logging requires a lot of operations that trigger bandit warnings
+exclude_dirs = ["./tests/logs/test_audit.py"]
+
 [[tool.mypy.overrides]]
 # Migrations are generated without "-> None"
 # for the returns. Rather than require manually
@@ -228,12 +233,21 @@ plugins = ["pydantic.mypy"]
 module = "src.db.migrations.versions.*"
 disallow_untyped_defs = false
 
+
+[tool.pytest.ini_options]
+
+markers = [
+  "audit: mark a test as a security audit log test, to be run isolated from other tests",
+]
+
 [tool.coverage.run]
 omit = [
   # app_config only runs via the gunicorn script which doesn't happen locally
   "src/app_config.py",
   # Migrations aren't run in tests
   "src/db/migrations/**",
+  # Decodelog is only used for formatting logs locally
+  "src/logs/decodelog.py"
 ]
 
 [tool.coverage.report]

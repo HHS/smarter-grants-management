@@ -235,7 +235,7 @@ module "service" {
   healthcheck_path = local.healthcheck_path
   healthcheck_command = [
     "CMD-SHELL",
-    "wget --no-verbose --tries=1 --spider http://localhost:8000${local.healthcheck_path} || exit 1"
+    "node -e \"fetch('http://localhost:8000${local.healthcheck_path}').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""
   ]
 
   ephemeral_write_volumes = local.service_config.ephemeral_write_volumes

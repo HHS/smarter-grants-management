@@ -1,15 +1,15 @@
 import logging
 
-from grants_shared.adapters import db
-from grants_shared.adapters.db import flask_db
-from grants_shared.api import response
-from grants_shared.api.route_utils import raise_flask_error
-from grants_shared.util.deploy_metadata import get_deploy_metadata_config
 from sqlalchemy import text
 from werkzeug.exceptions import ServiceUnavailable
 
 import src.api.healthcheck.healthcheck_schemas as healthcheck_schemas
+from src.adapters import db
+from src.adapters.db import flask_db
+from src.api import response
 from src.api.healthcheck.healthcheck_blueprint import healthcheck_blueprint
+from src.api.route_utils import raise_flask_error
+from src.util.deploy_metadata import get_deploy_metadata_config
 
 logger = logging.getLogger(__name__)
 

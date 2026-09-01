@@ -1,23 +1,23 @@
 import logging
 
-import grants_shared.adapters.db as db
-import grants_shared.logs
 import sqlalchemy
-from grants_shared.adapters.db import PostgresDBClient
-from grants_shared.util.local import error_if_not_local
 from sqlalchemy import select
 
+import src.adapters.db as db
+import src.logs
+from src.adapters.db import PostgresDBClient
 from src.auth.internal_resource import create_internal_resource
 from src.constants.schema import Schemas
 from src.db.models.user_models import User
 from src.db.resource_automation.resource_automation import setup_resource_automation
+from src.util.local import error_if_not_local
 from src.workflow.config.workflow_service_config import WorkflowServiceConfig
 
 logger = logging.getLogger(__name__)
 
 
 def setup_local_postgres_db() -> None:
-    with grants_shared.logs.init(__package__):
+    with src.logs.init(__package__):
         error_if_not_local()
 
         db_client = PostgresDBClient()
@@ -39,7 +39,7 @@ def setup_internal_resource() -> None:
     since it needs the resource tables to exist. It always runs as part of `make init-db`
     and is idempotent, so an existing record is left untouched.
     """
-    with grants_shared.logs.init(__package__):
+    with src.logs.init(__package__):
         error_if_not_local()
 
         db_client = PostgresDBClient()
@@ -56,7 +56,7 @@ def setup_internal_workflow_user() -> None:
     `make init-db` and is idempotent. Without it, any workflow that takes an automatic
     state transition fails at commit time on the audit record's user foreign key.
     """
-    with grants_shared.logs.init(__package__):
+    with src.logs.init(__package__):
         error_if_not_local()
 
         db_client = PostgresDBClient()

@@ -1,12 +1,12 @@
 import logging
 import uuid
 
-from grants_shared.adapters import db
-from grants_shared.util.env_config import PydanticBaseEnvConfig
 from pydantic import Field
 from sqlalchemy import select
 
+from src.adapters import db
 from src.db.models.resource_models import InternalResource
+from src.util.env_config import PydanticBaseEnvConfig
 
 logger = logging.getLogger(__name__)
 

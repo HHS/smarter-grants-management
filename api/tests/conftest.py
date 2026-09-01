@@ -4,28 +4,27 @@ import uuid
 import _pytest.monkeypatch
 import boto3
 import flask
-import grants_shared.auth.login_gov_jwt_auth as login_gov_jwt_auth
 import moto
 import pytest
 from apiflask import APIFlask
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
-from grants_shared.adapters import db
-from grants_shared.adapters.oauth.login_gov.mock_login_gov_oauth_client import (
-    MockLoginGovOauthClient,
-)
-from grants_shared.util.local import load_local_env_vars
 from moto.core import DEFAULT_ACCOUNT_ID
 from moto.ses.models import ses_backends
 
 import src.app as app_entry
+import src.auth.login_gov_jwt_auth as login_gov_jwt_auth
 import tests.db.models.factories as factories
+from src.adapters import db
+from src.adapters.aws import S3Config
+from src.adapters.oauth.login_gov.mock_login_gov_oauth_client import MockLoginGovOauthClient
 from src.adapters.simpler_grants import client as simpler_grants_client
 from src.adapters.simpler_grants.mock_client import MockSimplerGrantsClient
 from src.auth.internal_resource import create_internal_resource
 from src.db import models
 from src.db.models.lookup.sync_lookup_values import sync_lookup_values
 from src.db.resource_automation.resource_automation import setup_resource_automation
+from src.util.local import load_local_env_vars
 from tests.test_utils import db_testing
 from tests.test_utils.auth_test_utils import mock_oauth_endpoint, mock_oauth_logout_endpoint
 
@@ -79,6 +78,11 @@ def set_env_var_defaults(monkeypatch_session):
 
     # Stops the local file-scan watcher from spawning a thread per app fixture.
     monkeypatch_session.setenv("ENABLE_LOCAL_FILE_SCANNER", "FALSE")
+
+    # Add the dummy & other schema so they get created by test automation
+    # these schemas aren't needed for non-test development, so we just extend it here
+    configured_schemas = os.getenv("ALL_DB_SCHEMAS", "grantor")
+    monkeypatch_session.setenv("ALL_DB_SCHEMAS", configured_schemas + ",dummy,other")
 
 
 # From https://github.com/pytest-dev/pytest/issues/363
@@ -238,6 +242,24 @@ def setup_login_gov_auth(monkeypatch_session, public_rsa_key):
     monkeypatch_session.setattr(login_gov_jwt_auth, "_refresh_keys", override_method)
 
 
+@pytest.fixture
+def login_gov_config(public_rsa_key, private_rsa_key):
+    # Note this isn't session scoped so it gets remade
+    # for every test in the event of changes to it
+    return login_gov_jwt_auth.LoginGovConfig(
+        LOGIN_GOV_PUBLIC_KEY_MAP={"test-key-id": public_rsa_key},
+        LOGIN_GOV_JWK_ENDPOINT="not_used",
+        LOGIN_GOV_ENDPOINT="http://localhost:3000",
+        LOGIN_GOV_CLIENT_ID="urn:gov:unit-test",
+        LOGIN_GOV_CLIENT_ASSERTION_PRIVATE_KEY=private_rsa_key,
+        LOGIN_GOV_AUTH_ENDPOINT="http://localhost:3000/auth",
+        LOGIN_GOV_TOKEN_ENDPOINT="http://localhost:3000/token",
+        LOGIN_GOV_LOGOUT_ENDPOINT="http://localhost:3000/logout",
+        LOGIN_FINAL_DESTINATION="http://localhost:3000/final",
+        LOGOUT_FINAL_DESTINATION="http://localhost:3000/final-logout",
+    )
+
+
 ####################
 # Test App & Client
 ####################
@@ -303,7 +325,7 @@ def reset_aws_env_vars(monkeypatch):
     monkeypatch.delenv("AWS_SQS_ENDPOINT_URL", raising=False)
     monkeypatch.delenv("AWS_DYNAMODB_ENDPOINT_URL", raising=False)
     monkeypatch.delenv("CDN_URL", raising=False)
-    monkeypatch.setattr("grants_shared.adapters.aws.aws_session._aws_config", None)
+    monkeypatch.setattr("src.adapters.aws.aws_session._aws_config", None)
 
 
 @pytest.fixture
@@ -311,6 +333,15 @@ def mock_s3(reset_aws_env_vars):
     # https://docs.getmoto.org/en/stable/docs/configuration/index.html#whitelist-services
     with moto.mock_aws(config={"core": {"service_whitelist": ["s3"]}}):
         yield boto3.resource("s3")
+
+
+@pytest.fixture
+def s3_config(mock_s3_bucket, other_mock_s3_bucket, mock_file_scan_s3_bucket):
+    return S3Config(
+        PUBLIC_FILES_BUCKET=f"s3://{mock_s3_bucket}",
+        DRAFT_FILES_BUCKET=f"s3://{other_mock_s3_bucket}",
+        FILE_SCAN_BUCKET=f"s3://{mock_file_scan_s3_bucket}",
+    )
 
 
 @pytest.fixture
@@ -326,9 +357,59 @@ def mock_s3_bucket(mock_s3_bucket_resource):
 
 
 @pytest.fixture
+def other_mock_s3_bucket_resource(mock_s3):
+    # This second bucket exists for tests where we want there to be multiple buckets
+    # and/or test behavior when moving files between buckets.
+    bucket = mock_s3.Bucket("local-mock-draft-bucket")
+    bucket.create()
+    return bucket
+
+
+@pytest.fixture
+def mock_file_scan_s3_bucket_resource(mock_s3):
+    bucket = mock_s3.Bucket("local-mock-file-scan-bucket")
+    bucket.create()
+    return bucket
+
+
+@pytest.fixture
+def mock_file_scan_s3_bucket(mock_file_scan_s3_bucket_resource):
+    return mock_file_scan_s3_bucket_resource.name
+
+
+@pytest.fixture
+def other_mock_s3_bucket(other_mock_s3_bucket_resource):
+    return other_mock_s3_bucket_resource.name
+
+
+@pytest.fixture
 def mock_sqs(reset_aws_env_vars):
     with moto.mock_aws(config={"core": {"service_whitelist": ["sqs"]}}):
         yield
+
+
+@pytest.fixture
+def mock_dynamodb(reset_aws_env_vars):
+    with moto.mock_aws(config={"core": {"service_whitelist": ["dynamodb"]}}):
+        yield
+
+
+@pytest.fixture
+def file_scan_dynamodb_table(mock_dynamodb, monkeypatch):
+    dynamodb = boto3.client("dynamodb", region_name="us-east-1")
+    table_name = "test-local-virus-scan"
+    dynamodb.create_table(
+        TableName=table_name,
+        KeySchema=[
+            {"AttributeName": "file_id", "KeyType": "HASH"},
+        ],
+        AttributeDefinitions=[
+            {"AttributeName": "file_id", "AttributeType": "S"},
+        ],
+        BillingMode="PAY_PER_REQUEST",
+    )
+    monkeypatch.setenv("FILE_SCAN_CACHE_TABLE_NAME", table_name)
+    return table_name
 
 
 @pytest.fixture
