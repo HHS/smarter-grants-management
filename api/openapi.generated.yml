@@ -19,9 +19,9 @@ tags:
 - name: Proof of Concept - Alpha
 - name: Workflow
 - name: Partners
+- name: Grantor Organizations
 - name: Resources
 - name: LOCAL ONLY
-servers: .
 paths:
   /health:
     get:
@@ -303,6 +303,51 @@ paths:
       security:
       - ApiJwtAuth: &id003 []
       - ApiUserKeyAuth: *id003
+  /v1/grantor-organizations/{grantor_organization_id}:
+    get:
+      parameters:
+      - in: path
+        name: grantor_organization_id
+        schema:
+          type: string
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetGrantorOrganizationResponseSchema'
+          description: Successful response
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Not found
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Forbidden
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Unprocessable Entity
+      tags:
+      - Grantor Organizations
+      summary: Fetch a Grantor Organization
+      security:
+      - ApiJwtAuth: &id004 []
+      - ApiUserKeyAuth: *id004
   /alpha/proof_of_concept/opportunities/{opportunity_id}:
     get:
       parameters:
@@ -337,8 +382,8 @@ paths:
         of cross-service data transfer. This endpoint requires JWT or API key authentication
         but has no authorization enforcement.
       security:
-      - ApiJwtAuth: &id004 []
-      - ApiUserKeyAuth: *id004
+      - ApiJwtAuth: &id005 []
+      - ApiUserKeyAuth: *id005
   /v1/resources/{resource_type}/{resource_id}/users/list:
     post:
       parameters:
@@ -394,8 +439,8 @@ paths:
             schema:
               $ref: '#/components/schemas/ListUserForResourceRequestSchema'
       security:
-      - ApiJwtAuth: &id005 []
-      - ApiUserKeyAuth: *id005
+      - ApiJwtAuth: &id006 []
+      - ApiUserKeyAuth: *id006
 openapi: 3.1.0
 components:
   schemas:
@@ -739,6 +784,59 @@ components:
       - privileges
       - resource_id
       - resource_type
+    PartnerSchema1:
+      type: object
+      properties:
+        partner_id:
+          type: string
+          format: uuid
+          description: Unique ID of a partner
+          example: 123e4567-e89b-12d3-a456-426614174000
+        partner_name:
+          type: string
+          description: Name of the partner
+    GrantorOrganizationSchema:
+      type: object
+      properties:
+        grantor_organization_id:
+          type: string
+          format: uuid
+          description: Unique ID of a grantor organization
+          example: 123e4567-e89b-12d3-a456-426614174000
+        organization_name:
+          type: string
+          description: Name of the grantor organization
+          example: My example organization
+        grantor_organization_type:
+          type: string
+          description: Type of grantor organization
+          example: grant_office
+        partner:
+          type:
+          - object
+          $ref: '#/components/schemas/PartnerSchema1'
+        parent_organization:
+          type:
+          - object
+          - 'null'
+          anyOf:
+          - $ref: '#/components/schemas/GrantorOrganizationSchema'
+          - type: 'null'
+    GetGrantorOrganizationResponseSchema:
+      type: object
+      properties:
+        message:
+          type: string
+          description: The message to return
+          example: Success
+        data:
+          type:
+          - object
+          $ref: '#/components/schemas/GrantorOrganizationSchema'
+        status_code:
+          type: integer
+          description: The HTTP status code
+          example: 200
     OpportunitySummarySchema:
       type: object
       properties:
@@ -1045,12 +1143,12 @@ components:
       required:
       - pagination
   securitySchemes:
-    ApiUserKeyAuth:
-      type: apiKey
-      in: header
-      name: X-API-Key
     ApiJwtAuth:
       type: apiKey
       in: header
       name: X-MGMT-Token
+    ApiUserKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
 

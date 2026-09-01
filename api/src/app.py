@@ -49,6 +49,12 @@ class EndpointConfig(PydanticBaseEnvConfig):
     # want to exist for local development.
     enable_local_endpoints: bool = Field(False, alias="ENABLE_LOCAL_ENDPOINTS")
 
+    # APIFlask's server configuration is normally set to "." to hide the
+    # Swagger UI server dropdown due to accessibility issues. Client OpenAPI
+    # generation can disable this workaround because "servers: ." is not
+    # valid input for our client generation tooling.
+    disable_openapi_server: bool = Field(False, alias="DISABLE_OPENAPI_SERVER")
+
 
 def create_app() -> APIFlask:
     app = APIFlask(__name__, title=TITLE, version=API_OVERALL_VERSION)
@@ -114,6 +120,7 @@ def register_blueprints(app: APIFlask) -> None:
 
 def configure_app(app: APIFlask) -> None:
     app_config = AppConfig()
+    endpoint_config = EndpointConfig()
 
     # Set maximum file upload size (2 GB)
     app.config["MAX_CONTENT_LENGTH"] = app_config.max_file_upload_size_bytes
@@ -125,8 +132,11 @@ def configure_app(app: APIFlask) -> None:
     app.config["SWAGGER_UI_CONFIG"] = {
         "persistAuthorization": app_config.persist_authorization_openapi
     }
-    # Removing because the server dropdown has accessibility issues.
-    app.config["SERVERS"] = "."
+
+    if not endpoint_config.disable_openapi_server:
+        # Hide the Swagger UI server dropdown because of accessibility issues.
+        app.config["SERVERS"] = "."
+        
     app.config["DOCS_FAVICON"] = "https://simpler.grants.gov/img/favicon.ico"
 
     # Set a few values for the Swagger endpoint
