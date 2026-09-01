@@ -237,10 +237,6 @@ class WorkflowGetResponseDataSchema(Schema):
     )
     created_at = fields.DateTime(dump_only=True)
     updated_at = fields.DateTime(dump_only=True)
-    workflow_audit_events = fields.List(
-        fields.Nested(WorkflowAuditEventSchema),
-        metadata={"description": "The workflow's audit history, sorted oldest to newest"},
-    )
     workflow_approvals = fields.List(
         fields.Nested(WorkflowApprovalSchema),
         metadata={

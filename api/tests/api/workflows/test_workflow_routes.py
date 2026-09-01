@@ -23,7 +23,6 @@ from tests.db.models.factories import (
     UserApiKeyFactory,
     UserFactory,
     WorkflowApprovalFactory,
-    WorkflowAuditFactory,
     WorkflowEventHistoryFactory,
 )
 from tests.test_utils.auth_test_utils import setup_user_with_roles
@@ -408,15 +407,6 @@ class TestWorkflowGet:
         token, _ = create_jwt_for_user(approver, db_session)
 
         event = WorkflowEventHistoryFactory.create(workflow=workflow)
-        audit = WorkflowAuditFactory.create(
-            workflow=workflow,
-            acting_user=approver,
-            transition_event="middle_to_primary_approval",
-            source_state=ApprovalState.MIDDLE,
-            target_state=ApprovalState.PENDING_PRIMARY_APPROVAL,
-            event=event,
-            audit_metadata={"comment": "moving along"},
-        )
         approval = WorkflowApprovalFactory.create(
             workflow=workflow,
             approving_user=approver,
@@ -445,17 +435,6 @@ class TestWorkflowGet:
             "middle_to_primary_approval",
             "middle_to_secondary_approval",
         }
-
-        assert len(data["workflow_audit_events"]) == 1
-        audit_json = data["workflow_audit_events"][0]
-        assert audit_json["workflow_audit_id"] == str(audit.workflow_audit_id)
-        assert audit_json["acting_user"]["user_id"] == str(approver.user_id)
-        assert audit_json["acting_user"]["email"] == approver.email
-        assert audit_json["transition_event"] == "middle_to_primary_approval"
-        assert audit_json["source_state"] == ApprovalState.MIDDLE
-        assert audit_json["target_state"] == ApprovalState.PENDING_PRIMARY_APPROVAL
-        assert audit_json["event"]["event_id"] == str(event.workflow_event_history_id)
-        assert audit_json["audit_metadata"] == {"comment": "moving along"}
 
         assert len(data["workflow_approvals"]) == 1
         approval_json = data["workflow_approvals"][0]
@@ -505,10 +484,14 @@ class TestWorkflowGet:
 
         assert response.status_code == 200, response.json
 
-    def test_get_workflow_audit_events_and_approvals_sorted_by_created_at_200(
+    def test_get_workflow_approvals_sorted_by_created_at_200(
         self, client, db_session, enable_factory_create
     ):
-        """Embedded audit events and approvals are always sorted oldest to newest."""
+        """Embedded approvals are always sorted oldest to newest.
+
+        Audit history is deliberately not part of this payload - see the paginated
+        audit endpoint (test_workflow_audit_routes.py) for that.
+        """
         workflow = ProgramWorkflowFactory.create()
         approver = create_approver(
             db_session,
@@ -518,10 +501,6 @@ class TestWorkflowGet:
         token, _ = create_jwt_for_user(approver, db_session)
 
         now = datetime.now(UTC)
-        audits = [
-            WorkflowAuditFactory.create(workflow=workflow, created_at=created_at)
-            for created_at in (now + timedelta(hours=2), now, now + timedelta(hours=1))
-        ]
         approvals = [
             WorkflowApprovalFactory.create(workflow=workflow, created_at=created_at)
             for created_at in (now + timedelta(hours=2), now, now + timedelta(hours=1))
@@ -533,19 +512,12 @@ class TestWorkflowGet:
         assert response.status_code == 200, response.json
         data = response.json["data"]
 
-        expected_audit_order = sorted(audits, key=lambda a: a.created_at)
-        assert [a["workflow_audit_id"] for a in data["workflow_audit_events"]] == [
-            str(a.workflow_audit_id) for a in expected_audit_order
-        ]
-
         expected_approval_order = sorted(approvals, key=lambda a: a.created_at)
         assert [a["workflow_approval_id"] for a in data["workflow_approvals"]] == [
             str(a.workflow_approval_id) for a in expected_approval_order
         ]
 
-    def test_get_workflow_no_audits_or_approvals_200(
-        self, client, db_session, enable_factory_create
-    ):
+    def test_get_workflow_no_approvals_200(self, client, db_session, enable_factory_create):
         """A freshly-started workflow still returns its approval config."""
         workflow = ProgramWorkflowFactory.create(workflow_type=WorkflowType.APPROVAL_TEST_WORKFLOW)
         approver = create_approver(
@@ -560,7 +532,6 @@ class TestWorkflowGet:
 
         assert response.status_code == 200, response.json
         data = response.json["data"]
-        assert data["workflow_audit_events"] == []
         assert data["workflow_approvals"] == []
         assert set(data["workflow_approval_config"].keys()) == {
             "receive_primary_approval",

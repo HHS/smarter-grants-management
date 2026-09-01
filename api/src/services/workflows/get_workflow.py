@@ -95,7 +95,6 @@ class WorkflowDetail:
     resource_type: ResourceType
     created_at: datetime
     updated_at: datetime
-    workflow_audit_events: list[AuditEventRef]
     workflow_approvals: list[ApprovalRef]
     workflow_approval_config: dict[str, ApprovalConfigEntry]
     valid_events: list[str]
@@ -135,8 +134,6 @@ def _to_approval_ref(approval: WorkflowApproval) -> ApprovalRef:
 
 def _workflow_load_options() -> tuple[Any, ...]:
     return (
-        selectinload(Workflow.workflow_audits).selectinload(WorkflowAudit.acting_user),
-        selectinload(Workflow.workflow_audits).selectinload(WorkflowAudit.event),
         selectinload(Workflow.workflow_approvals).selectinload(WorkflowApproval.approving_user),
     )
 
@@ -213,7 +210,6 @@ def _to_workflow_detail(
     config: WorkflowConfig,
     state_machine_cls: type[BaseStateMachine],
 ) -> WorkflowDetail:
-    audit_events = sorted(workflow.workflow_audits, key=lambda a: a.created_at)
     approvals = sorted(workflow.workflow_approvals, key=lambda a: a.created_at)
 
     return WorkflowDetail(
@@ -225,7 +221,6 @@ def _to_workflow_detail(
         resource_type=workflow.resource.resource_type,
         created_at=workflow.created_at,
         updated_at=workflow.updated_at,
-        workflow_audit_events=[_to_audit_event_ref(a) for a in audit_events],
         workflow_approvals=[_to_approval_ref(a) for a in approvals],
         workflow_approval_config=_build_approval_config(db_session, workflow, config),
         valid_events=_get_valid_events(db_session, workflow, config, state_machine_cls),
