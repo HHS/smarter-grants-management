@@ -160,7 +160,7 @@ def _verify_workflow_read_access(
     if required_privilege is None:
         logger.info(
             "Workflow resource type is not readable through this endpoint",
-            extra=workflow.get_log_extra() | {"resource_type": resource_type},
+            extra=workflow.get_log_extra(include_joined_values=True),
         )
         raise_flask_error(403, "Forbidden")
 
