@@ -607,6 +607,9 @@ export const ExistingSchema = zod.object({
 });
 `;
 
+    // Jest provides this global at runtime, but ESLint does not recognize it
+    // in this JavaScript test file.
+    // eslint-disable-next-line no-undef
     const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
 
     const result = addRelationalValidations(source, [

@@ -136,7 +136,7 @@ def configure_app(app: APIFlask) -> None:
     if not endpoint_config.disable_openapi_server:
         # Hide the Swagger UI server dropdown because of accessibility issues.
         app.config["SERVERS"] = "."
-        
+
     app.config["DOCS_FAVICON"] = "https://simpler.grants.gov/img/favicon.ico"
 
     # Set a few values for the Swagger endpoint

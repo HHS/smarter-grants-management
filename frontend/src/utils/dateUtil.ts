@@ -36,7 +36,6 @@ export function normalizeDateString(value: string | null): string | null {
   return parsed.isValid() ? parsed.format("YYYY-MM-DD") : value;
 }
 
-
 // "2025-01-15 22:22:22" -> "Jan 15, 2025 10:22 PM"
 export function formatDateTime(dateStr: string | null): string {
   if (!dateStr || !dayjs(dateStr).isValid()) {
