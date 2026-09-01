@@ -1,5 +1,7 @@
+import dataclasses
 import uuid
 from collections.abc import Sequence
+from datetime import datetime
 
 from pydantic import BaseModel
 from sqlalchemy import select
@@ -11,11 +13,40 @@ from src.db.models.workflow_models import WorkflowAudit
 from src.pagination.pagination_models import PaginationInfo, PaginationParams
 from src.pagination.paginator import Paginator
 from src.pagination.sorting_util import apply_sorting
-from src.services.workflows.get_workflow import (
-    AuditEventRef,
-    _to_audit_event_ref,
-    get_workflow_and_verify_access,
-)
+from src.services.workflows.get_workflow import UserRef, get_workflow_and_verify_access, to_user_ref
+
+
+@dataclasses.dataclass
+class WorkflowEventRef:
+    event_id: uuid.UUID
+    sent_at: datetime
+
+
+@dataclasses.dataclass
+class AuditEventRef:
+    workflow_audit_id: uuid.UUID
+    acting_user: UserRef
+    transition_event: str
+    source_state: str
+    target_state: str
+    event: WorkflowEventRef
+    audit_metadata: dict | None
+    created_at: datetime
+
+
+def _to_audit_event_ref(audit: WorkflowAudit) -> AuditEventRef:
+    return AuditEventRef(
+        workflow_audit_id=audit.workflow_audit_id,
+        acting_user=to_user_ref(audit.acting_user),
+        transition_event=audit.transition_event,
+        source_state=audit.source_state,
+        target_state=audit.target_state,
+        event=WorkflowEventRef(
+            event_id=audit.event.workflow_event_history_id, sent_at=audit.event.sent_at
+        ),
+        audit_metadata=audit.audit_metadata,
+        created_at=audit.created_at,
+    )
 
 
 class WorkflowAuditRequest(BaseModel):

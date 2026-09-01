@@ -19,12 +19,7 @@ from src.constants.lookup_constants import (
     WorkflowType,
 )
 from src.db.models.user_models import User
-from src.db.models.workflow_models import (
-    Workflow,
-    WorkflowApproval,
-    WorkflowAudit,
-    WorkflowEventHistory,
-)
+from src.db.models.workflow_models import Workflow, WorkflowApproval, WorkflowEventHistory
 from src.workflow.base_state_machine import BaseStateMachine
 from src.workflow.registry.workflow_registry import WorkflowRegistry
 from src.workflow.service.approval_service import get_approver_query
@@ -45,24 +40,6 @@ logger = logging.getLogger(__name__)
 class UserRef:
     user_id: uuid.UUID
     email: str | None
-
-
-@dataclasses.dataclass
-class WorkflowEventRef:
-    event_id: uuid.UUID
-    sent_at: datetime
-
-
-@dataclasses.dataclass
-class AuditEventRef:
-    workflow_audit_id: uuid.UUID
-    acting_user: UserRef
-    transition_event: str
-    source_state: str
-    target_state: str
-    event: WorkflowEventRef
-    audit_metadata: dict | None
-    created_at: datetime
 
 
 @dataclasses.dataclass
@@ -100,29 +77,14 @@ class WorkflowDetail:
     valid_events: list[str]
 
 
-def _to_user_ref(user: User) -> UserRef:
+def to_user_ref(user: User) -> UserRef:
     return UserRef(user_id=user.user_id, email=user.email)
-
-
-def _to_audit_event_ref(audit: WorkflowAudit) -> AuditEventRef:
-    return AuditEventRef(
-        workflow_audit_id=audit.workflow_audit_id,
-        acting_user=_to_user_ref(audit.acting_user),
-        transition_event=audit.transition_event,
-        source_state=audit.source_state,
-        target_state=audit.target_state,
-        event=WorkflowEventRef(
-            event_id=audit.event.workflow_event_history_id, sent_at=audit.event.sent_at
-        ),
-        audit_metadata=audit.audit_metadata,
-        created_at=audit.created_at,
-    )
 
 
 def _to_approval_ref(approval: WorkflowApproval) -> ApprovalRef:
     return ApprovalRef(
         workflow_approval_id=approval.workflow_approval_id,
-        approving_user=_to_user_ref(approval.approving_user),
+        approving_user=to_user_ref(approval.approving_user),
         event_id=approval.workflow_event_history_id,
         is_still_valid=approval.is_still_valid,
         comment=approval.comment,
@@ -184,7 +146,7 @@ def _build_approval_config(
             approval_type=event_approval_config.approval_type,
             required_privileges=event_approval_config.required_privileges,
             allowed_approval_response_types=event_approval_config.allowed_approval_response_types,
-            possible_users=[_to_user_ref(u) for u in possible_users],
+            possible_users=[to_user_ref(u) for u in possible_users],
         )
 
     return approval_config
