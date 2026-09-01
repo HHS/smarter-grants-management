@@ -4,11 +4,11 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from grants_shared.adapters import db
-from grants_shared.api.route_utils import raise_flask_error
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
+from src.adapters import db
+from src.api.route_utils import raise_flask_error
 from src.auth.authorization_enforcer import AuthorizationEnforcer
 from src.constants.lookup_constants import (
     ApprovalResponseType,

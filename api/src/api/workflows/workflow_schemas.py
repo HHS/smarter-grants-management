@@ -10,9 +10,6 @@ from src.api.schemas.extension import (
     validators,
 )
 from src.api.schemas.response_schema import AbstractResponseSchema, PaginationMixinSchema
-from src.pagination.pagination_schema import generate_pagination_schema
-from marshmallow import ValidationError, validates_schema
-
 from src.constants.lookup_constants import (
     ApprovalResponseType,
     ApprovalType,
@@ -21,6 +18,7 @@ from src.constants.lookup_constants import (
     WorkflowEventType,
     WorkflowType,
 )
+from src.pagination.pagination_schema import generate_pagination_schema
 
 
 class StartWorkflowContextSchema(Schema):

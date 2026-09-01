@@ -13,12 +13,12 @@ from src.api.workflows.workflow_schemas import (
     WorkflowGetResponseSchema,
 )
 from src.auth.multi_auth import jwt_or_api_user_key_multi_auth
+from src.logs.flask_logger import add_extra_data_to_current_request_logs
 from src.services.workflows.get_workflow import (
     get_workflow_and_verify_access,
     get_workflow_by_event_id_and_verify_access,
 )
 from src.services.workflows.get_workflow_audits import get_workflow_audits
-from src.logs.flask_logger import add_extra_data_to_current_request_logs
 from src.services.workflows.ingest_workflow_event import ingest_workflow_event
 
 logger = logging.getLogger(__name__)
