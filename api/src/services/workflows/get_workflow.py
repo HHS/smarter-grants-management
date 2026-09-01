@@ -11,6 +11,7 @@ from src.adapters import db
 from src.api.route_utils import raise_flask_error
 from src.auth.authorization_enforcer import AuthorizationEnforcer
 from src.constants.lookup_constants import (
+    VIEW_PRIVILEGE_FOR_RESOURCE_TYPE,
     ApprovalResponseType,
     ApprovalType,
     Privilege,
@@ -30,17 +31,6 @@ from src.workflow.service.approval_service import get_approver_query
 from src.workflow.workflow_config import WorkflowConfig
 
 logger = logging.getLogger(__name__)
-
-# The privilege a caller needs to read a workflow, based on the resource type it's
-# attached to. Deliberately narrower than every ResourceType - internal and opportunity
-# resources have no view privilege today, so a workflow attached to either is 403 until
-# one exists, the same way an unsupported entity type is handled on the reference
-# implementation this was ported from.
-REQUIRED_PRIVILEGE_FOR_RESOURCE_TYPE = {
-    ResourceType.PARTNER: Privilege.VIEW_PARTNER,
-    ResourceType.GRANTOR_ORGANIZATION: Privilege.VIEW_GRANTOR_ORGANIZATION,
-    ResourceType.PROGRAM: Privilege.VIEW_PROGRAM,
-}
 
 
 ####################################
@@ -166,7 +156,7 @@ def _verify_workflow_read_access(
     """Verify the user can read the workflow, and return its config + state machine for reuse."""
     resource_type = workflow.resource.resource_type
 
-    required_privilege = REQUIRED_PRIVILEGE_FOR_RESOURCE_TYPE.get(resource_type)
+    required_privilege = VIEW_PRIVILEGE_FOR_RESOURCE_TYPE.get(resource_type)
     if required_privilege is None:
         logger.info(
             "Workflow resource type is not readable through this endpoint",

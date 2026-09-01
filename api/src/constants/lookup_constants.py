@@ -164,3 +164,14 @@ ALLOWED_RESOURCES_FOR_PRIVILEGE: dict[Privilege, set[ResourceType]] = {
     Privilege.UNUSED_PRIVILEGE_102: set(),
     Privilege.UNUSED_PRIVILEGE_103: set(),
 }
+
+# The privilege a caller needs to view a resource of a given type. Also defines which
+# resource types read access can be resolved for at all - deliberately narrower than
+# every ResourceType, with the others added as we need them. Shared by anything that
+# authorizes off a resource's type rather than an explicit privilege sent by the
+# caller (listing a resource's users, reading a workflow attached to a resource, ...).
+VIEW_PRIVILEGE_FOR_RESOURCE_TYPE: dict[ResourceType, Privilege] = {
+    ResourceType.PARTNER: Privilege.VIEW_PARTNER,
+    ResourceType.GRANTOR_ORGANIZATION: Privilege.VIEW_GRANTOR_ORGANIZATION,
+    ResourceType.PROGRAM: Privilege.VIEW_PROGRAM,
+}
