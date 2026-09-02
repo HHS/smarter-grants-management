@@ -5,6 +5,7 @@ from . import (
     resource_models,
     user_models,
     workflow_models,
+    task_models
 )
 
 # Re-export metadata
@@ -18,4 +19,5 @@ __all__ = [
     "grantor_organization_models",
     "resource_models",
     "workflow_models",
+    "task_models",
 ]

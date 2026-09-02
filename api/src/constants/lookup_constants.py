@@ -126,6 +126,10 @@ class ResourceInheritance(StrEnum):
     # (users are never attached to programs).
     DIRECT = "direct"
 
+class JobStatus(StrEnum):
+    STARTED = "started"
+    COMPLETED = "completed"
+    FAILED = "failed"
 
 # The resource types each privilege is allowed to be assigned at. A privilege may only be
 # included in a role when the role's resource types are a subset of the privilege's allowed
