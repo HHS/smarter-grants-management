@@ -62,14 +62,19 @@ class Workflow(GrantorSchemaTable, TimestampMixin):
         back_populates="workflow", uselist=True, cascade="all, delete-orphan"
     )
 
-    def get_log_extra(self) -> dict[str, Any]:
-        return {
+    def get_log_extra(self, include_joined_values: bool = False) -> dict[str, Any]:
+        log_extra = {
             "workflow_id": self.workflow_id,
             "workflow_type": self.workflow_type,
             "current_workflow_state": self.current_workflow_state,
             "is_active": self.is_active,
             "resource_id": self.resource_id,
         }
+
+        if include_joined_values:
+            log_extra |= {"resource_type": self.resource.resource_type}
+
+        return log_extra
 
 
 class WorkflowEventHistory(GrantorSchemaTable, TimestampMixin):

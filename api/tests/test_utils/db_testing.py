@@ -7,6 +7,10 @@ from sqlalchemy import text
 
 import src.adapters.db as db
 from src.adapters.db.clients.postgres_config import get_db_config
+from src.db.migrations.db_functions import (
+    get_grantor_organization_insert_automation_sql,
+    get_grantor_organization_update_automation_sql,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -58,3 +62,11 @@ def _drop_schema(conn: db.Connection, schema_name: str):
     with conn.begin():
         conn.execute(text(f"DROP SCHEMA {schema_name} CASCADE;"))
     logger.info("drop schema %s", schema_name)
+
+
+def setup_db_triggers(db_client: db.PostgresDBClient):
+    grantor_schema = db.PostgresDBConfig().get_schema_translate_map().get("grantor")
+
+    with db_client.get_connection() as conn, conn.begin():
+        conn.execute(text(get_grantor_organization_insert_automation_sql(grantor_schema)))
+        conn.execute(text(get_grantor_organization_update_automation_sql(grantor_schema)))
