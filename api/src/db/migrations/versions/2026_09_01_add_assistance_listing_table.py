@@ -1,7 +1,7 @@
 """add assistance listing table
 
 Revision ID: 959c311ac64d
-Revises: 74587e523544
+Revises: 9998d48622ed
 Create Date: 2026-09-01 21:27:14.320856
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "959c311ac64d"
-down_revision = "74587e523544"
+down_revision = "9998d48622ed"
 branch_labels = None
 depends_on = None
 
