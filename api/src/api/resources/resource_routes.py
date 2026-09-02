@@ -73,7 +73,7 @@ def list_roles_in_resource(
     json_data: dict,
 ) -> response.ApiResponse:
     add_extra_data_to_current_request_logs(
-        {"resource_type": resource_type, "resource_id": str(resource_id)}
+        {"resource_type": resource_type, "resource_id": resource_id}
     )
     logger.info("POST /v1/resources/:resource_type/:resource_id/roles/list")
 

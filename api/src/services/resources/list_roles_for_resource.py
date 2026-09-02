@@ -5,11 +5,10 @@ from collections.abc import Sequence
 
 from pydantic import BaseModel
 from sqlalchemy import select
-from sqlalchemy.orm import InstrumentedAttribute
 
 from src.adapters import db
 from src.auth.authorization_enforcer import AuthorizationEnforcer
-from src.constants.lookup_constants import Privilege, ResourceType
+from src.constants.lookup_constants import VIEW_PRIVILEGE_FOR_RESOURCE_TYPE, Privilege, ResourceType
 from src.db.models.resource_models import LinkRoleResourceType, Role
 from src.db.models.user_models import User
 from src.pagination.pagination_models import PaginationInfo, PaginationParams, SortOrder
@@ -18,19 +17,6 @@ from src.pagination.sorting_util import apply_sorting
 from src.services.resources.get_resource import get_resource
 
 logger = logging.getLogger(__name__)
-
-# The privilege a caller needs on the resource in order to list its roles.
-REQUIRED_PRIVILEGE_FOR_RESOURCE_TYPE = {
-    ResourceType.PARTNER: Privilege.VIEW_PARTNER,
-    ResourceType.GRANTOR_ORGANIZATION: Privilege.VIEW_GRANTOR_ORGANIZATION,
-    ResourceType.PROGRAM: Privilege.VIEW_PROGRAM,
-}
-
-# Mapping for sorting columns on the Role table
-SORT_COLUMN_MAP: dict[str, InstrumentedAttribute] = {
-    "role_id": Role.role_id,
-    "role_name": Role.role_name,
-}
 
 
 class ListRolesForResourceRequest(BaseModel):
@@ -61,8 +47,8 @@ def list_roles_for_resource(
     """List the roles associated with a resource.
 
     Raises:
-        404: If the resource doesn't exist, or isn't a type this endpoint supports
         403: If the acting user can't view the resource
+        404: If the resource doesn't exist, or isn't a type this endpoint supports
     """
     params = ListRolesForResourceRequest.model_validate(json_data)
 
@@ -70,13 +56,13 @@ def list_roles_for_resource(
         db_session,
         resource_type,
         resource_id,
-        supported_resource_types=REQUIRED_PRIVILEGE_FOR_RESOURCE_TYPE.keys(),
+        supported_resource_types=VIEW_PRIVILEGE_FOR_RESOURCE_TYPE.keys(),
     )
 
     enforcer = AuthorizationEnforcer(db_session)
     enforcer.verify_access(
         user=acting_user,
-        required_privileges={REQUIRED_PRIVILEGE_FOR_RESOURCE_TYPE[resource_type]},
+        required_privileges={VIEW_PRIVILEGE_FOR_RESOURCE_TYPE[resource_type]},
         resource=resource,
     )
 
@@ -109,17 +95,12 @@ def list_roles_for_resource(
     # Build query for core roles applicable to this resource type
     stmt = (
         select(Role)
+        .join(LinkRoleResourceType)
         .where(Role.is_core.is_(True))
-        .where(
-            Role.role_id.in_(
-                select(LinkRoleResourceType.role_id).where(
-                    LinkRoleResourceType.resource_type == resource_type
-                )
-            )
-        )
+        .where(LinkRoleResourceType.resource_type == resource_type)
     )
 
-    stmt = apply_sorting(stmt, params.pagination.sort_order, SORT_COLUMN_MAP)
+    stmt = apply_sorting(stmt, params.pagination.sort_order, Role)
 
     paginator: Paginator[Role] = Paginator(
         Role, stmt, db_session, page_size=params.pagination.page_size
