@@ -111,6 +111,21 @@ describe("Component", () => {
 
 Note that some globals, like `location` cannot be easily mocked due to implementations of Jest or JSDDOM. You may need to do some non-ideal workarounds in those situations, good luck.
 
+#### Partial mocking
+
+Sometimes you only want to mock one of the functions exported by a file. In this case you can use `requireActual` to keep most of the file's export's intact while mocking only what you want. For example:
+
+```
+jest.mock("react", () => ({
+  ...jest.requireActual<typeof import("react")>("react"),
+  use: jest.fn(() => ({
+    locale: "en",
+  })),
+}));
+```
+
+Typing can get tricky here, but as the example shows, you can use `<typeof import()>` to work around taht.
+
 ### Available utilities
 
 #### Translation
@@ -134,6 +149,33 @@ jest.mock("next-intl", () => ({
 ```
 
 ### Anti-patterns
+
+#### Importing components that should be mocked
+
+Running `jest.mock()` to mock an imported file has the benefit of not requiring the file or any of its imports to be run as part of testing. This is great because it means that by mocking one file, you get the added benefit of not having to worry about any of the file's dependencies.
+
+However, mocks can also be accomplished by doing something like this:
+
+```
+import {
+  createCompetitionForGrantor,
+} from "src/services/fetch/fetchers/grantorOpportunitiesFetcher";
+
+const mockCreateCompetitionForGrantor = jest.mocked(
+  createCompetitionForGrantor,
+);
+```
+
+or this
+
+```
+import SessionStorage from "src/services/sessionStorage/sessionStorage";
+const mockGetItem = jest.spyOn(SessionStorage, "getItem");
+```
+
+This is often fine, and there are valid use cases for doing things this way. The only problem with this method is that the file that we want to mock / spy on actually gets imported, which means you will have to deal with mocking any dependencies of the file that get in the way of your tests. This can get tricky and result in needing to do a lot of extra mocking to get things working.
+
+Sometimes this is worth it, but if it's not, just mock the whole import using `jest.mock()`.
 
 #### Building new components
 
