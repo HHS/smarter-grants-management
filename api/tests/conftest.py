@@ -146,6 +146,8 @@ def db_client(monkeypatch_session, db_schema_prefix) -> db.DBClient:
 
         sync_lookup_values(db_client)
         setup_resource_automation()
+        db_testing.setup_db_triggers(db_client)
+
         yield db_client
 
 
