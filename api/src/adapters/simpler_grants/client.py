@@ -7,7 +7,6 @@ from urllib.parse import urljoin
 from uuid import UUID
 
 import requests
-from grants_shared.api.response import ValidationErrorDetail
 from pydantic import BaseModel, ValidationError
 from tenacity import (
     retry,
@@ -19,6 +18,7 @@ from tenacity import (
 
 from src.adapters.simpler_grants.config import SimplerGrantsConfig
 from src.adapters.simpler_grants.models import SimplerOpportunityGetResponse
+from src.api.response import ValidationErrorDetail
 
 logger = logging.getLogger(__name__)
 

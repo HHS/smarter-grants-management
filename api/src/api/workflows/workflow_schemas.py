@@ -1,16 +1,24 @@
 from typing import Any
 
-from grants_shared.api.schemas.extension import (
+from marshmallow import ValidationError, validates_schema
+
+from src.api.schemas.extension import (
     MarshmallowErrorContainer,
     Schema,
     SchemaValidationError,
     fields,
     validators,
 )
-from grants_shared.api.schemas.response_schema import AbstractResponseSchema
-from marshmallow import ValidationError, validates_schema
-
-from src.constants.lookup_constants import WorkflowEventType, WorkflowType
+from src.api.schemas.response_schema import AbstractResponseSchema, PaginationMixinSchema
+from src.constants.lookup_constants import (
+    ApprovalResponseType,
+    ApprovalType,
+    Privilege,
+    ResourceType,
+    WorkflowEventType,
+    WorkflowType,
+)
+from src.pagination.pagination_schema import generate_pagination_schema
 
 
 class StartWorkflowContextSchema(Schema):
@@ -128,3 +136,144 @@ class WorkflowEventResponseDataSchema(Schema):
 
 class WorkflowEventResponseSchema(AbstractResponseSchema):
     data = fields.Nested(WorkflowEventResponseDataSchema)
+
+
+####################################
+# Workflow read schemas
+####################################
+
+
+class WorkflowUserSchema(Schema):
+    user_id = fields.UUID(metadata={"description": "The user's unique identifier"})
+    email = fields.String(
+        allow_none=True,
+        metadata={
+            "description": "The user's email address, null if they have no login",
+            "example": "user@example.com",
+        },
+    )
+
+
+class WorkflowEventRefSchema(Schema):
+    event_id = fields.UUID(
+        metadata={"description": "The ID of the event that produced this record"}
+    )
+    sent_at = fields.DateTime(metadata={"description": "When the event was sent"})
+
+
+class WorkflowAuditEventSchema(Schema):
+    workflow_audit_id = fields.UUID(
+        metadata={"description": "The audit record's unique identifier"}
+    )
+    acting_user = fields.Nested(
+        WorkflowUserSchema, metadata={"description": "The user who performed the transition"}
+    )
+    transition_event = fields.String(
+        metadata={"description": "The event that triggered the transition"}
+    )
+    source_state = fields.String(metadata={"description": "The state before the transition"})
+    target_state = fields.String(metadata={"description": "The state after the transition"})
+    event = fields.Nested(
+        WorkflowEventRefSchema,
+        metadata={"description": "The event that triggered this transition"},
+    )
+    audit_metadata = fields.Dict(
+        allow_none=True,
+        metadata={"description": "Additional metadata recorded with the transition"},
+    )
+    created_at = fields.DateTime(dump_only=True)
+
+
+class WorkflowApprovalSchema(Schema):
+    workflow_approval_id = fields.UUID(
+        metadata={"description": "The approval record's unique identifier"}
+    )
+    approving_user = fields.Nested(
+        WorkflowUserSchema, metadata={"description": "The user who gave this approval"}
+    )
+    event_id = fields.UUID(
+        metadata={"description": "The ID of the event that recorded this approval"}
+    )
+    is_still_valid = fields.Boolean(
+        metadata={"description": "Whether this approval is still in effect"}
+    )
+    comment = fields.String(
+        allow_none=True, metadata={"description": "An optional comment left with the approval"}
+    )
+    approval_type = fields.Enum(ApprovalType, metadata={"description": "The type of approval"})
+    approval_response_type = fields.Enum(
+        ApprovalResponseType, metadata={"description": "The response given for this approval"}
+    )
+    created_at = fields.DateTime(dump_only=True)
+
+
+class WorkflowApprovalConfigEntrySchema(Schema):
+    approval_type = fields.Enum(
+        ApprovalType, metadata={"description": "The type of approval this event represents"}
+    )
+    required_privileges = fields.List(
+        fields.Enum(Privilege),
+        metadata={"description": "The privileges required to give this approval"},
+    )
+    allowed_approval_response_types = fields.List(
+        fields.Enum(ApprovalResponseType),
+        metadata={"description": "The response types this approval accepts"},
+    )
+    possible_users = fields.List(
+        fields.Nested(WorkflowUserSchema),
+        metadata={"description": "The users eligible to give this approval"},
+    )
+
+
+class WorkflowGetResponseDataSchema(Schema):
+    workflow_id = fields.UUID(metadata={"description": "The workflow's unique identifier"})
+    workflow_type = fields.Enum(WorkflowType, metadata={"description": "The type of workflow"})
+    current_workflow_state = fields.String(metadata={"description": "The workflow's current state"})
+    is_active = fields.Boolean(metadata={"description": "Whether the workflow is still active"})
+    resource_id = fields.UUID(metadata={"description": "The resource the workflow is attached to"})
+    resource_type = fields.Enum(
+        ResourceType,
+        metadata={"description": "The type of resource the workflow is attached to"},
+    )
+    created_at = fields.DateTime(dump_only=True)
+    updated_at = fields.DateTime(dump_only=True)
+    workflow_approvals = fields.List(
+        fields.Nested(WorkflowApprovalSchema),
+        metadata={
+            "description": "The approvals recorded against the workflow, sorted oldest to newest"
+        },
+    )
+    workflow_approval_config = fields.Dict(
+        keys=fields.String(),
+        values=fields.Nested(WorkflowApprovalConfigEntrySchema),
+        metadata={
+            "description": "For each event that requires an approval, who can give it and how"
+        },
+    )
+    valid_events = fields.List(
+        fields.String(),
+        metadata={
+            "description": "The events that can legally be sent next, given the current state"
+        },
+    )
+
+
+class WorkflowGetResponseSchema(AbstractResponseSchema):
+    data = fields.Nested(WorkflowGetResponseDataSchema)
+
+
+class WorkflowAuditRequestSchema(Schema):
+    pagination = fields.Nested(
+        generate_pagination_schema(
+            cls_name="WorkflowAuditPaginationSchema",
+            order_by_fields=["created_at"],
+            default_sort_order=[{"order_by": "created_at", "sort_direction": "descending"}],
+            default_page_size=25,
+            default_page_offset=1,
+        ),
+        required=True,
+    )
+
+
+class WorkflowAuditResponseSchema(AbstractResponseSchema, PaginationMixinSchema):
+    data = fields.List(fields.Nested(WorkflowAuditEventSchema))

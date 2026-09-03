@@ -3,29 +3,25 @@ import logging
 import uuid
 from collections.abc import Sequence
 
-from grants_shared.adapters import db
-from grants_shared.pagination.pagination_models import PaginationInfo, PaginationParams
-from grants_shared.pagination.paginator import Paginator
-from grants_shared.pagination.sorting_util import apply_sorting
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import InstrumentedAttribute
 
+from src.adapters import db
 from src.auth.authorization_enforcer import AuthorizationEnforcer
-from src.constants.lookup_constants import Privilege, ResourceInheritance, ResourceType
+from src.constants.lookup_constants import (
+    VIEW_PRIVILEGE_FOR_RESOURCE_TYPE,
+    Privilege,
+    ResourceInheritance,
+    ResourceType,
+)
 from src.db.models.resource_models import AbstractResourceTableMixin, Role
 from src.db.models.user_models import LinkExternalUser, User
+from src.pagination.pagination_models import PaginationInfo, PaginationParams
+from src.pagination.paginator import Paginator
+from src.pagination.sorting_util import apply_sorting
 from src.services.resources.get_resource import get_resource
 
 logger = logging.getLogger(__name__)
-
-# The privilege a caller needs on the resource in order to list its users. This also
-# defines which resource types the endpoint supports at all - deliberately narrower than
-# what get_resource can fetch, with the others added as we need them.
-REQUIRED_PRIVILEGE_FOR_RESOURCE_TYPE = {
-    ResourceType.PARTNER: Privilege.VIEW_PARTNER,
-    ResourceType.GRANTOR_ORGANIZATION: Privilege.VIEW_GRANTOR_ORGANIZATION,
-    ResourceType.PROGRAM: Privilege.VIEW_PROGRAM,
-}
 
 # email lives on the login.gov link rather than the user, so it can't be resolved by
 # name off User - we join that table below and point sorting straight at its column.
@@ -120,13 +116,13 @@ def list_users_for_resource(
         db_session,
         resource_type,
         resource_id,
-        supported_resource_types=REQUIRED_PRIVILEGE_FOR_RESOURCE_TYPE.keys(),
+        supported_resource_types=VIEW_PRIVILEGE_FOR_RESOURCE_TYPE.keys(),
     )
 
     enforcer = AuthorizationEnforcer(db_session)
     enforcer.verify_access(
         user=acting_user,
-        required_privileges={REQUIRED_PRIVILEGE_FOR_RESOURCE_TYPE[resource_type]},
+        required_privileges={VIEW_PRIVILEGE_FOR_RESOURCE_TYPE[resource_type]},
         resource=resource,
     )
 

@@ -2,13 +2,13 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from grants_shared.adapters.db.type_decorators.postgres_type_decorators import LookupColumn
-from grants_shared.db.models.base import TimestampMixin
 from sqlalchemy import UUID, ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from src.adapters.db.lookup.lookup_column import LookupColumn
 from src.constants.lookup_constants import ApprovalResponseType, ApprovalType, WorkflowType
+from src.db.models.base import TimestampMixin
 from src.db.models.grantor_schema_table import GrantorSchemaTable
 from src.db.models.lookup_models import LkApprovalResponseType, LkApprovalType, LkWorkflowType
 from src.db.models.resource_models import Resource
@@ -62,14 +62,19 @@ class Workflow(GrantorSchemaTable, TimestampMixin):
         back_populates="workflow", uselist=True, cascade="all, delete-orphan"
     )
 
-    def get_log_extra(self) -> dict[str, Any]:
-        return {
+    def get_log_extra(self, include_joined_values: bool = False) -> dict[str, Any]:
+        log_extra = {
             "workflow_id": self.workflow_id,
             "workflow_type": self.workflow_type,
             "current_workflow_state": self.current_workflow_state,
             "is_active": self.is_active,
             "resource_id": self.resource_id,
         }
+
+        if include_joined_values:
+            log_extra |= {"resource_type": self.resource.resource_type}
+
+        return log_extra
 
 
 class WorkflowEventHistory(GrantorSchemaTable, TimestampMixin):

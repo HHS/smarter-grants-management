@@ -1,13 +1,16 @@
 import uuid
+from datetime import UTC, datetime, timedelta
 
 import pytest
-from grants_shared.adapters.aws.sqs_adapter import SQSClient
 
+from src.adapters.aws.sqs_adapter import SQSClient
 from src.auth.api_jwt_auth import create_jwt_for_user
 from src.auth.internal_resource import get_internal_resource
 from src.constants.lookup_constants import (
     ApprovalResponseType,
+    ApprovalType,
     Privilege,
+    ResourceType,
     WorkflowEventType,
     WorkflowType,
 )
@@ -19,6 +22,8 @@ from tests.db.models.factories import (
     ProgramWorkflowFactory,
     UserApiKeyFactory,
     UserFactory,
+    WorkflowApprovalFactory,
+    WorkflowEventHistoryFactory,
 )
 from tests.test_utils.auth_test_utils import setup_user_with_roles
 from tests.workflow.workflow_test_util import create_approver
@@ -364,3 +369,274 @@ def test_put_workflow_event_request_validation_422(
     error_fields = {error["field"] for error in response.json["errors"]}
     assert expected_error_field in error_fields
     assert get_queued_events(workflow_sqs_queue) == []
+
+
+#################################
+#
+# Tests for GET /v1/workflows/<workflow_id> and GET /v1/workflows/events/<event_id>.
+#
+#################################
+
+
+def get_workflow(client, workflow_id, headers: dict | None = None):
+    return client.get(f"/v1/workflows/{workflow_id}", headers=headers or {})
+
+
+def get_workflow_by_event_id(client, event_id, headers: dict | None = None):
+    return client.get(f"/v1/workflows/events/{event_id}", headers=headers or {})
+
+
+class TestWorkflowGet:
+
+    def test_get_workflow_200(self, client, db_session, enable_factory_create):
+        """A user with an inherited VIEW_PROGRAM role sees the full payload.
+
+        Program resources never carry a role directly (see AuthorizationEnforcer),
+        so this is also the parent-resource-inheritance case the acceptance criteria
+        calls out - there's no separate "direct" case for a program workflow.
+        """
+        workflow = ProgramWorkflowFactory.create(
+            workflow_type=WorkflowType.APPROVAL_TEST_WORKFLOW,
+            current_workflow_state=ApprovalState.MIDDLE,
+        )
+        approver = create_approver(
+            db_session,
+            workflow.resource.concrete_resource.grant_office,
+            privileges=[Privilege.VIEW_PROGRAM],
+        )
+        token, _ = create_jwt_for_user(approver, db_session)
+
+        event = WorkflowEventHistoryFactory.create(workflow=workflow)
+        approval = WorkflowApprovalFactory.create(
+            workflow=workflow,
+            approving_user=approver,
+            event=event,
+            approval_type=ApprovalType.BASIC_TEST_APPROVAL,
+            approval_response_type=ApprovalResponseType.APPROVED,
+            is_still_valid=True,
+            comment="looks good",
+        )
+        db_session.commit()
+
+        response = get_workflow(client, workflow.workflow_id, {"X-MGMT-Token": token})
+
+        assert response.status_code == 200, response.json
+        data = response.json["data"]
+
+        assert data["workflow_id"] == str(workflow.workflow_id)
+        assert data["workflow_type"] == WorkflowType.APPROVAL_TEST_WORKFLOW
+        assert data["current_workflow_state"] == ApprovalState.MIDDLE
+        assert data["is_active"] is True
+        assert data["resource_id"] == str(workflow.resource_id)
+        assert data["resource_type"] == ResourceType.PROGRAM
+
+        assert set(data["valid_events"]) == {
+            "middle_to_end",
+            "middle_to_primary_approval",
+            "middle_to_secondary_approval",
+        }
+
+        assert len(data["workflow_approvals"]) == 1
+        approval_json = data["workflow_approvals"][0]
+        assert approval_json["workflow_approval_id"] == str(approval.workflow_approval_id)
+        assert approval_json["approving_user"]["user_id"] == str(approver.user_id)
+        assert approval_json["event_id"] == str(event.workflow_event_history_id)
+        assert approval_json["is_still_valid"] is True
+        assert approval_json["comment"] == "looks good"
+        assert approval_json["approval_type"] == ApprovalType.BASIC_TEST_APPROVAL
+        assert approval_json["approval_response_type"] == ApprovalResponseType.APPROVED
+
+        approval_config = data["workflow_approval_config"]
+        assert set(approval_config.keys()) == {
+            "receive_primary_approval",
+            "receive_secondary_approval",
+        }
+
+        primary = approval_config["receive_primary_approval"]
+        assert primary["approval_type"] == ApprovalType.BASIC_TEST_APPROVAL
+        assert primary["required_privileges"] == [Privilege.UPDATE_PROGRAM]
+        # Our approver only holds VIEW_PROGRAM, so they aren't eligible for an
+        # approval that requires UPDATE_PROGRAM.
+        assert str(approver.user_id) not in {u["user_id"] for u in primary["possible_users"]}
+
+        secondary = approval_config["receive_secondary_approval"]
+        assert secondary["approval_type"] == ApprovalType.SECONDARY_TEST_APPROVAL
+        assert secondary["required_privileges"] == [Privilege.VIEW_PROGRAM]
+        assert str(approver.user_id) in {u["user_id"] for u in secondary["possible_users"]}
+
+    def test_get_workflow_via_program_office_privilege_200(
+        self, client, db_session, enable_factory_create
+    ):
+        """A role on the program office (the other office in the inheritance chain) also works."""
+        workflow = ProgramWorkflowFactory.create(
+            workflow_type=WorkflowType.APPROVAL_TEST_WORKFLOW,
+            current_workflow_state=ApprovalState.MIDDLE,
+        )
+        approver = create_approver(
+            db_session,
+            workflow.resource.concrete_resource.program_office,
+            privileges=[Privilege.VIEW_PROGRAM],
+        )
+        token, _ = create_jwt_for_user(approver, db_session)
+        db_session.commit()
+
+        response = get_workflow(client, workflow.workflow_id, {"X-MGMT-Token": token})
+
+        assert response.status_code == 200, response.json
+
+    def test_get_workflow_approvals_sorted_by_created_at_200(
+        self, client, db_session, enable_factory_create
+    ):
+        """Embedded approvals are always sorted oldest to newest.
+
+        Audit history is deliberately not part of this payload - see the paginated
+        audit endpoint (test_workflow_audit_routes.py) for that.
+        """
+        workflow = ProgramWorkflowFactory.create()
+        approver = create_approver(
+            db_session,
+            workflow.resource.concrete_resource.grant_office,
+            privileges=[Privilege.VIEW_PROGRAM],
+        )
+        token, _ = create_jwt_for_user(approver, db_session)
+
+        now = datetime.now(UTC)
+        approvals = [
+            WorkflowApprovalFactory.create(workflow=workflow, created_at=created_at)
+            for created_at in (now + timedelta(hours=2), now, now + timedelta(hours=1))
+        ]
+        db_session.commit()
+
+        response = get_workflow(client, workflow.workflow_id, {"X-MGMT-Token": token})
+
+        assert response.status_code == 200, response.json
+        data = response.json["data"]
+
+        expected_approval_order = sorted(approvals, key=lambda a: a.created_at)
+        assert [a["workflow_approval_id"] for a in data["workflow_approvals"]] == [
+            str(a.workflow_approval_id) for a in expected_approval_order
+        ]
+
+    def test_get_workflow_no_approvals_200(self, client, db_session, enable_factory_create):
+        """A freshly-started workflow still returns its approval config."""
+        workflow = ProgramWorkflowFactory.create(workflow_type=WorkflowType.APPROVAL_TEST_WORKFLOW)
+        approver = create_approver(
+            db_session,
+            workflow.resource.concrete_resource.grant_office,
+            privileges=[Privilege.VIEW_PROGRAM],
+        )
+        token, _ = create_jwt_for_user(approver, db_session)
+        db_session.commit()
+
+        response = get_workflow(client, workflow.workflow_id, {"X-MGMT-Token": token})
+
+        assert response.status_code == 200, response.json
+        data = response.json["data"]
+        assert data["workflow_approvals"] == []
+        assert set(data["workflow_approval_config"].keys()) == {
+            "receive_primary_approval",
+            "receive_secondary_approval",
+        }
+
+    def test_get_workflow_no_token_401(self, client, db_session, enable_factory_create):
+        workflow = ProgramWorkflowFactory.create()
+        db_session.commit()
+
+        response = get_workflow(client, workflow.workflow_id)
+
+        assert response.status_code == 401
+
+    def test_get_workflow_invalid_token_401(self, client, db_session, enable_factory_create):
+        workflow = ProgramWorkflowFactory.create()
+        db_session.commit()
+
+        response = get_workflow(client, workflow.workflow_id, {"X-MGMT-Token": "not-a-real-token"})
+
+        assert response.status_code == 401
+
+    def test_get_workflow_wrong_privilege_403(self, client, db_session, enable_factory_create):
+        """An authenticated user who lacks VIEW_PROGRAM is refused, even on the right office."""
+        workflow = ProgramWorkflowFactory.create()
+        user = create_approver(
+            db_session,
+            workflow.resource.concrete_resource.grant_office,
+            privileges=[Privilege.UPDATE_PROGRAM],
+        )
+        token, _ = create_jwt_for_user(user, db_session)
+        db_session.commit()
+
+        response = get_workflow(client, workflow.workflow_id, {"X-MGMT-Token": token})
+
+        assert response.status_code == 403
+        assert response.json["message"] == "Forbidden"
+
+    def test_get_workflow_not_found_404(self, client, internal_send_user_jwt):
+        non_existent_id = uuid.uuid4()
+
+        response = get_workflow(client, non_existent_id, {"X-MGMT-Token": internal_send_user_jwt})
+
+        assert response.status_code == 404
+        assert f"Could not find Workflow with ID {non_existent_id}" in response.json["message"]
+
+
+class TestWorkflowGetByEventId:
+
+    def test_get_workflow_by_event_id_200(self, client, db_session, enable_factory_create):
+        workflow = ProgramWorkflowFactory.create()
+        event = WorkflowEventHistoryFactory.create(workflow=workflow)
+        approver = create_approver(
+            db_session,
+            workflow.resource.concrete_resource.grant_office,
+            privileges=[Privilege.VIEW_PROGRAM],
+        )
+        token, _ = create_jwt_for_user(approver, db_session)
+        db_session.commit()
+
+        response = get_workflow_by_event_id(
+            client, event.workflow_event_history_id, {"X-MGMT-Token": token}
+        )
+
+        assert response.status_code == 200, response.json
+        assert response.json["data"]["workflow_id"] == str(workflow.workflow_id)
+
+    def test_get_workflow_by_event_id_wrong_privilege_403(
+        self, client, db_session, enable_factory_create
+    ):
+        workflow = ProgramWorkflowFactory.create()
+        event = WorkflowEventHistoryFactory.create(workflow=workflow)
+        user = UserFactory.create()
+        token, _ = create_jwt_for_user(user, db_session)
+        db_session.commit()
+
+        response = get_workflow_by_event_id(
+            client, event.workflow_event_history_id, {"X-MGMT-Token": token}
+        )
+
+        assert response.status_code == 403
+        assert response.json["message"] == "Forbidden"
+
+    def test_get_workflow_by_event_id_not_found_404(self, client, internal_send_user_jwt):
+        non_existent_id = uuid.uuid4()
+
+        response = get_workflow_by_event_id(
+            client, non_existent_id, {"X-MGMT-Token": internal_send_user_jwt}
+        )
+
+        assert response.status_code == 404
+        assert f"Could not find Event with ID {non_existent_id}" in response.json["message"]
+
+    def test_get_workflow_by_event_id_no_workflow_404(
+        self, client, db_session, enable_factory_create, internal_send_user_jwt
+    ):
+        event = WorkflowEventHistoryFactory.create(workflow=None)
+        db_session.commit()
+
+        response = get_workflow_by_event_id(
+            client, event.workflow_event_history_id, {"X-MGMT-Token": internal_send_user_jwt}
+        )
+
+        assert response.status_code == 404
+        assert (
+            f"Could not find Workflow for Event with ID {event.workflow_event_history_id}"
+            in response.json["message"]
+        )

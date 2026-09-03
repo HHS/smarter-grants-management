@@ -1,34 +1,37 @@
 import logging
 from typing import Any
 
-import grants_shared.adapters.db as db
-import grants_shared.adapters.db.flask_db as flask_db
-import grants_shared.logs
-import grants_shared.logs.flask_logger as flask_logger
 from apiflask import APIFlask, exceptions
 from flask_cors import CORS
-from grants_shared.api.response import restructure_error_response
-from grants_shared.api.schemas import response_schema
-from grants_shared.auth.api_jwt_auth import initialize_jwt_auth
-from grants_shared.auth.login_gov_jwt_auth import initialize_login_gov_config
-from grants_shared.util.env_config import PydanticBaseEnvConfig
-from grants_shared.util.local import error_if_not_local
 from pydantic import Field
 
+import src.adapters.db as db
+import src.adapters.db.flask_db as flask_db
+import src.logs
+import src.logs.flask_logger as flask_logger
 from src.adapters.newrelic import init_newrelic
+from src.api.grantor_organizations.grantor_organization_blueprint import (
+    grantor_organization_blueprint,
+)
 from src.api.healthcheck.healthcheck_blueprint import healthcheck_blueprint
 from src.api.local import local_blueprint
 from src.api.partners.partner_blueprint import partner_blueprint
 from src.api.proof_of_concept.proof_of_concept_blueprint import proof_of_concept_blueprint
 from src.api.resources import resource_blueprint
+from src.api.response import restructure_error_response
 from src.api.route_converters import build_enum_converter
+from src.api.schemas import response_schema
 from src.api.users.user_blueprint import user_blueprint
 from src.api.workflows import workflow_blueprint
 from src.app_config import AppConfig
+from src.auth.api_jwt_auth import initialize_jwt_auth
 from src.auth.auth_utils import get_app_security_scheme
+from src.auth.login_gov_jwt_auth import initialize_login_gov_config
 from src.constants.lookup_constants import ResourceType
 from src.db.resource_automation.resource_automation import setup_resource_automation
 from src.task.task_blueprint import task_blueprint
+from src.util.env_config import PydanticBaseEnvConfig
+from src.util.local import error_if_not_local
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +75,7 @@ def create_app() -> APIFlask:
 
 
 def setup_logging(app: APIFlask) -> None:
-    grants_shared.logs.init(__package__)
+    src.logs.init(__package__)
     flask_logger.init_app(logging.root, app, "grants-management")
 
 
@@ -99,6 +102,7 @@ def register_blueprints(app: APIFlask) -> None:
     app.register_blueprint(proof_of_concept_blueprint)
     app.register_blueprint(workflow_blueprint)
     app.register_blueprint(partner_blueprint)
+    app.register_blueprint(grantor_organization_blueprint)
     app.register_blueprint(resource_blueprint)
 
     # Local endpoints for development, will error

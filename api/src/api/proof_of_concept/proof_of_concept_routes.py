@@ -1,14 +1,13 @@
 import logging
 from uuid import UUID
 
-from grants_shared.adapters import db
-from grants_shared.adapters.db import flask_db
-from grants_shared.api import response
-from grants_shared.logs.flask_logger import add_extra_data_to_current_request_logs
-
+from src.adapters import db
+from src.adapters.db import flask_db
+from src.api import response
 from src.api.proof_of_concept.proof_of_concept_blueprint import proof_of_concept_blueprint
 from src.api.proof_of_concept.proof_of_concept_schemas import OpportunityGetResponseSchema
 from src.auth.multi_auth import jwt_or_api_user_key_multi_auth
+from src.logs.flask_logger import add_extra_data_to_current_request_logs
 from src.services.proof_of_concept_simpler_data.get_opportunity_simpler_min import (
     get_opportunity_simpler_min,
 )

@@ -7,10 +7,10 @@ from unittest.mock import patch
 
 import boto3
 import pytest
-from grants_shared.adapters.aws.sqs_adapter import SQSClient, SQSMessage
-from grants_shared.api.maintenance_mode import get_maintenance_mode_config
 from sqlalchemy import select
 
+from src.adapters.aws.sqs_adapter import SQSClient, SQSMessage
+from src.api.maintenance_mode import get_maintenance_mode_config
 from src.constants.lookup_constants import (
     WorkflowEventProcessingResult,
     WorkflowEventType,
