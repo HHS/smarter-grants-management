@@ -72,7 +72,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/hhs/python-base-image
+          images: ghcr.io/hhs/sgm-python-base-image
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -87,9 +87,7 @@ jobs:
           context: ./api
           file: ./api/docker-python-base
           push: ${{ github.event_name != 'pull_request' }}
-          tags: |
-            ${{ steps.meta.outputs.tags }}
-            ghcr.io/hhs/python-base-image:latest
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64
           cache-from: type=gha
@@ -106,5 +104,8 @@ jobs:
             echo ""
             echo "Digest: \`${{ steps.build.outputs.digest }}\`"
             echo ""
-            echo "Repoint \`api/Dockerfile\` at the short-sha tag + digest above."
+            echo "Repoint \`api/Dockerfile\` at the short-sha tag + digest above, e.g."
+            echo '```dockerfile'
+            echo "FROM ghcr.io/hhs/sgm-python-base-image:<short-sha>@${{ steps.build.outputs.digest }} AS base"
+            echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
