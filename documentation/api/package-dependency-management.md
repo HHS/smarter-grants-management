@@ -29,11 +29,13 @@ Some Python packages are installed both places, so they will both flag in the JS
 
 Changes to `api/docker-python-base` only take effect once the image is rebuilt and `api/Dockerfile` is repointed at the result. This is a two-step process, because you cannot pin a digest that does not exist yet:
 
-1. Merge the `api/docker-python-base` change to `main`. That triggers the [Build Python Base Image workflow](../../.github/workflows/cd-python-base-image.yml) automatically. (It also runs weekly on a schedule so the image keeps picking up Amazon Linux security updates, and can be run manually via `workflow_dispatch`.)
+1. Merge the `api/docker-python-base` change to `main`. That triggers the [Build Python Base Image workflow](../../.github/workflows/cd-python-base-image.yml) automatically. (It also runs weekly on a schedule so the image keeps picking up Amazon Linux security updates, and can be run manually via `workflow_dispatch`, which is only available once the workflow exists on `main`.)
 2. Once it succeeds, open a follow-up PR that repoints `api/Dockerfile` line 1 at the new tag and digest, following the steps below.
 
+> **One-time setup after the very first publish:** GHCR creates a brand-new package with **private** visibility. No workflow logs into `ghcr.io` before building `api/Dockerfile`, so the base image has to be anonymously pullable. Set the package to **Public** under Package settings → Danger Zone → Change visibility, otherwise every api build fails pulling the base image.
+
 ### Upgrading the Base Image Pin
-Upgrading the pin involves going to a newer (or the `latest`) tagged base image on the [Package/Container Repository page](https://github.com/HHS/smarter-grants-management/pkgs/container/python-base-image).
+Upgrading the pin involves going to a newer (or the `latest`) tagged base image on the [Package/Container Repository page](https://github.com/HHS/smarter-grants-management/pkgs/container/sgm-python-base-image).
 1. Find the version/tag you want to upgrade to (almost always just the top one tagged latest among other things) and click it
 2. Click into the "OS / Arch" tab to get the "linux/amd64" Commit SHA and validation hash, like `a586e45@sha256:22d2ff70c08fdd1ae7e029e7212a5ba29e377232995205f24dc7c64f6b6e66b0`
 3. Replace the commit hash and sha section on line 1 of [api/Dockerfile](../../api/Dockerfile) with those values from the latest version
@@ -192,7 +194,7 @@ To upgrade the Python version, make changes in the following places:
 1. Local Python version (see more about managing local Python versions in [development](./development.md))
 2. [Dockerfile](../../api/docker-python-base)
     search for the line `ARG PYTHON_VERSION` and `ARG PY_MM` - supported versions can be found on the official python: [releases page](https://www.python.org/downloads/) The PYTHON_VERSION should include the full version number <major.minor.patch> and the PY_MM should only include the <major.minor> format.
-3. Build the new python base image from [github actions](https://github.com/HHS/smarter-grants-management/actions/workflows/cd-python-base-image.yml) and retrieve the new image tag from the [github packages](https://github.com/HHS/smarter-grants-management/pkgs/container/python-base-image) The image tag should have the github branch name and the commit hash associated with it.
+3. Build the new python base image from [github actions](https://github.com/HHS/smarter-grants-management/actions/workflows/cd-python-base-image.yml) and retrieve the new image tag from the [github packages](https://github.com/HHS/smarter-grants-management/pkgs/container/sgm-python-base-image) The image tag should have the github branch name and the commit hash associated with it.
 4. Update the [Dockerfile](../../api/Dockerfile) base image tag on line #1.
 5. [pyproject.toml](../../api/pyproject.toml)
     search for the line

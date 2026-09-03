@@ -19,7 +19,7 @@ ignore:
   - fix-state: unknown
 
   # The entries below are CPython findings inherited from the shared
-  # ghcr.io/hhs/python-base-image base image (Python 3.14). None have a fix in
+  # ghcr.io/hhs/sgm-python-base-image base image (Python 3.14). None have a fix in
   # any GA 3.14.x release yet. The tracking issue links point at
   # HHS/simpler-grants-gov because that is where the base image findings are
   # triaged; re-check them there before removing an entry here.
