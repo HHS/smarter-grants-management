@@ -75,6 +75,7 @@ def test_successful_task_completion(db_session):
     db_session.begin()  # Start a new transaction
     assert db_session.is_active  # Session should be active with new transaction
 
+
 def test_task_log_metrics_small_count(db_session, caplog):
     caplog.set_level(logging.INFO)
 
@@ -94,6 +95,7 @@ def test_task_log_metrics_small_count(db_session, caplog):
     # Verify the number of metrics is what we passed in
     assert len([k for k in records[0].__dict__ if k.startswith("filler_metric_")]) == 35
     assert records[0].task_class == "SimpleTask"
+
 
 def test_task_log_metrics_large_count(db_session, caplog):
     caplog.set_level(logging.INFO)

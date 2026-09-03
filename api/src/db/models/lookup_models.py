@@ -7,11 +7,12 @@ from src.constants.lookup_constants import (
     ExternalUserType,
     GrantorOrganizationAuditEvent,
     GrantorOrganizationType,
+    JobStatus,
     PartnerAuditEvent,
     Privilege,
     ResourceType,
     UserType,
-    WorkflowType, JobStatus,
+    WorkflowType,
 )
 from src.db.models.base import TimestampMixin
 from src.db.models.grantor_schema_table import GrantorSchemaTable
