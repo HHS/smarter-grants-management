@@ -191,7 +191,7 @@ jobs:
       - name: Save API Docker image to file
         if: steps.restore-docker-image-cached.outputs.cache-matched-key == ''
         run: |
-          docker save api-grants-api > /tmp/docker-image.tar
+          docker save api-grants-management-api  > /tmp/docker-image.tar
 
       - name: Save API Docker image cache
         if: steps.restore-docker-image-cached.outputs.cache-matched-key == ''
