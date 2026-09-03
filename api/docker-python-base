@@ -1,0 +1,234 @@
+# Python base image for the API container.
+
+#==============================================
+# Stage 0: UV binary source
+#==============================================
+ARG UV_VERSION=0.11.33
+FROM ghcr.io/astral-sh/uv:${UV_VERSION} AS uv
+
+#==============================================
+# Stage 1: Build Python base from Amazon Linux
+#==============================================
+FROM public.ecr.aws/amazonlinux/amazonlinux:2023 AS amazonlinux-builder
+
+ARG PYTHON_VERSION=3.14.7
+ARG PY_MM=3.14
+ARG PIP_VERSION=26.0
+
+SHELL ["/bin/bash", "-eux", "-c"]
+
+# Create python-version.txt file to be used by downstream stages
+RUN echo "${PY_MM}" > /python-version.txt
+
+# Install build dependencies
+# These are toolchain packages that never ship in the final image (this is the
+# builder stage), so pinning each one buys nothing and would need constant churn.
+# hadolint ignore=DL3041
+RUN dnf install -y \
+      gcc \
+      gcc-c++ \
+      make \
+      wget \
+      tar \
+      gzip \
+      xz \
+      bzip2-devel \
+      zlib-devel \
+      openssl-devel \
+      libffi-devel \
+      sqlite-devel \
+      readline-devel \
+      ncurses-devel \
+      xz-devel \
+      gdbm-devel \
+      ca-certificates \
+      findutils \
+      shadow-utils \
+      libxml2-devel \
+      libxslt-devel && \
+    dnf clean all
+
+# Build Python from source
+WORKDIR /tmp
+RUN wget -q https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz && \
+    tar xzf Python-${PYTHON_VERSION}.tgz
+WORKDIR /tmp/Python-${PYTHON_VERSION}
+RUN ./configure \
+        --prefix=/usr/local \
+        --with-lto \
+        --enable-shared \
+        --with-ensurepip=install \
+        LDFLAGS="-Wl,-rpath=/usr/local/lib" && \
+    make -j"$(nproc)" && \
+    make install
+
+WORKDIR /tmp
+RUN rm -rf "Python-${PYTHON_VERSION}" "Python-${PYTHON_VERSION}.tgz" && \
+    python3 -m pip install --no-cache-dir --upgrade "pip==${PIP_VERSION}" && \
+    ln -sf /usr/local/bin/python3 /usr/local/bin/python && \
+    ln -sf /usr/local/bin/pip3 /usr/local/bin/pip
+
+# Ensure virtualenv embeds patched pip (25.3) for offline venv creation
+RUN python3 -m pip install --no-cache-dir --upgrade "virtualenv>=20.35.3"
+
+# Install UV
+# https://docs.astral.sh/uv/guides/integration/docker/#installing-uv
+# Version is pinned via the UV_VERSION build arg / uv stage at the top of this file.
+COPY --from=uv /uv /uvx /bin/
+
+# Upgrade urllib3 to fix security vulnerabilities (GHSA-2xpw-w6gg-jr37, GHSA-gm62-xv2j-4w53)
+RUN python3 -m pip install --no-cache-dir --upgrade "urllib3>=2.6.0"
+
+# Upgrade filelock to fix GHSA-w853-jp5j-5j7f
+RUN python3 -m pip install --no-cache-dir --upgrade "filelock>=3.20.1"
+
+# Upgrade cryptography to fix GHSA-m959-cc7f-wv43, GHSA-537c-gmf6-5ccf, and GHSA-g6cj-pr64-35w5
+RUN python3 -m pip install --no-cache-dir --upgrade "cryptography>=50.0.0"
+
+# Upgrade idna to fix GHSA-65pc-fj4g-8rjx
+RUN python3 -m pip install --no-cache-dir --upgrade "idna>=3.15"
+
+# List package versions to make it easier to tell if fixed versions of vulnerable packages have been updated in the latest base image
+RUN python3 -m pip list -v
+
+# Remove pip from runtime (keep UV)
+RUN rm -rf /usr/local/lib/python${PY_MM}/site-packages/pip* \
+    /usr/local/lib/python${PY_MM}/site-packages/setuptools* \
+    /usr/local/lib/python${PY_MM}/site-packages/_distutils_hack \
+    /usr/local/bin/pip* \
+    /usr/local/bin/easy_install* \
+    /root/.cache \
+    /root/.local/share/virtualenv || true
+
+# Prune stdlib
+RUN rm -rf \
+      /usr/local/lib/python${PY_MM}/test \
+      /usr/local/lib/python${PY_MM}/ensurepip \
+      /usr/local/lib/python${PY_MM}/idlelib \
+      /usr/local/lib/python${PY_MM}/tkinter \
+      /usr/local/lib/python${PY_MM}/turtledemo \
+      /usr/local/lib/python${PY_MM}/distutils \
+      /usr/local/lib/python${PY_MM}/lib2to3 \
+      /usr/local/lib/python${PY_MM}/venv
+
+# Compile stdlib to optimized bytecode
+RUN python3 -m compileall -f -o 1 /usr/local/lib/python${PY_MM}
+
+# Strip Python binary and extension modules
+RUN strip --strip-unneeded /usr/local/bin/python${PY_MM} || true; \
+    for f in /usr/local/lib/libpython${PY_MM}.so*; do strip --strip-unneeded "$f" || true; done; \
+    find /usr/local/lib/python${PY_MM}/lib-dynload -type f -name "*.so" -exec strip --strip-unneeded {} + 2>/dev/null || true
+
+#==============================================
+# Stage 2: Runtime base on Amazon Linux
+#==============================================
+FROM public.ecr.aws/amazonlinux/amazonlinux:2023 AS python-base
+ARG PY_MM=3.14
+LABEL org.opencontainers.image.source="https://github.com/HHS/smarter-grants-management"
+
+# Install runtime dependencies and build tools for compiling Python packages
+# Build tools are needed because Python 3.14 is new and many packages lack prebuilt wheels
+# Versions are not pinned here because the `dnf update` calls below pin the
+# specific builds we care about for CVE remediation.
+# hadolint ignore=DL3041
+RUN dnf install -y \
+      ca-certificates \
+      openssl \
+      libffi \
+      sqlite \
+      readline \
+      ncurses \
+      xz-libs \
+      gdbm \
+      bzip2-libs \
+      zlib \
+      shadow-utils \
+      findutils \
+      wget \
+      libxml2 \
+      libxslt \
+      gcc \
+      gcc-c++ \
+      make \
+      libxml2-devel \
+      libxslt-devel \
+      openssl-devel \
+      libffi-devel && \
+    # Update packages with security vulnerabilities
+    dnf update -y \
+      libcap-2.73-1.amzn2023.0.7 \
+      lz4-libs-1.9.4-1.amzn2023.0.3 \
+      binutils-2.41-50.amzn2023.0.5 \
+      curl-minimal-8.17.0-1.amzn2023.0.3 \
+      libcurl-minimal-8.17.0-1.amzn2023.0.3 \
+      glibc-2.34-231.amzn2023.0.4 \
+      glibc-common-2.34-231.amzn2023.0.4 \
+      glibc-devel-2.34-231.amzn2023.0.4 \
+      glibc-gconv-extra-2.34-231.amzn2023.0.4 \
+      glibc-headers-x86-2.34-231.amzn2023.0.4 \
+      glibc-minimal-langpack-2.34-231.amzn2023.0.4 \
+      libgcrypt-1.10.2-1.amzn2023.0.3 \
+      libsolv-0.7.22-1.amzn2023.0.4 \
+      gnutls-3.8.10-4.amzn2023.0.2 && \
+    dnf update -y --releasever=2023.12.20260706 \
+      sqlite-3.40.0-1.amzn2023.0.8 \
+      sqlite-libs-3.40.0-1.amzn2023.0.8 \
+      expat-2.6.3-1.amzn2023.0.6 \
+      gnupg2-minimal-2.3.7-1.amzn2023.0.9 \
+      libblkid-2.37.4-1.amzn2023.0.5 \
+      libmount-2.37.4-1.amzn2023.0.5 \
+      libsmartcols-2.37.4-1.amzn2023.0.5 \
+      libuuid-2.37.4-1.amzn2023.0.5 && \
+    # July ALAS batch: krb5-libs (1939), libacl (1986)
+    dnf update -y --releasever=2023.12.20260727 \
+      krb5-libs-1.21.3-8.amzn2023.0.1 \
+      libacl-2.4.0-1.amzn2023.0.1 && \
+    # August ALAS batch: gawk (ALAS2023-2026-2035), glib2 (2028), libxml2 (1992),
+    # rpm suite (1991)
+    dnf update -y --releasever=2023.12.20260803 \
+      gawk-5.1.0-3.amzn2023.0.4 \
+      glib2-2.82.2-771.amzn2023 \
+      libxml2-2.10.4-1.amzn2023.0.20 \
+      libxml2-devel-2.10.4-1.amzn2023.0.20 \
+      rpm-4.16.1.3-29.amzn2023.0.7 \
+      rpm-libs-4.16.1.3-29.amzn2023.0.7 \
+      rpm-build-libs-4.16.1.3-29.amzn2023.0.7 \
+      rpm-sign-libs-4.16.1.3-29.amzn2023.0.7 \
+      python3-rpm-4.16.1.3-29.amzn2023.0.7 && \
+    dnf update -y --releasever=2023.12.20260817 \
+      wget-1.21.3-1.amzn2023.0.5 \
+      rust-toolset-srpm-macros-1.97.0-2.amzn2023 && \
+    # September ALAS batch: openssl suite (ALAS2023-2026-2088), python3-pip-wheel (2092), kernel6.18-headers (2106)
+    dnf update -y --releasever=2023.12.20260831 \
+      openssl-3.5.7-2.amzn2023.0.2 \
+      openssl-libs-3.5.7-2.amzn2023.0.2 \
+      openssl-devel-3.5.7-2.amzn2023.0.2 \
+      openssl-fips-provider-latest-3.5.7-2.amzn2023.0.2 \
+      python3-pip-wheel-21.3.1-2.amzn2023.0.21 \
+      kernel6.18-headers-6.18.44-99.149.amzn2023 && \
+    dnf clean all && \
+    # Remove the system Python RPMs
+    (dnf remove -y python3 python3-libs || rpm -e --nodeps python3 python3-libs || true) && \
+    rm -rf /var/cache/dnf /var/cache/yum || true
+
+# Copy python-version.txt for downstream stages to use
+COPY --from=amazonlinux-builder /python-version.txt /python-version.txt
+
+# Copy Python runtime and development headers
+COPY --from=amazonlinux-builder /usr/local/bin/python${PY_MM} /usr/local/bin/python${PY_MM}
+COPY --from=amazonlinux-builder /usr/local/bin/python3 /usr/local/bin/python3
+COPY --from=amazonlinux-builder /usr/local/bin/python /usr/local/bin/python
+COPY --from=amazonlinux-builder /usr/bin/uv /usr/bin/uv
+COPY --from=amazonlinux-builder /usr/local/lib/python${PY_MM}/ /usr/local/lib/python${PY_MM}/
+COPY --from=amazonlinux-builder /usr/local/lib/libpython${PY_MM}.so* /usr/local/lib/
+COPY --from=amazonlinux-builder /usr/local/include/python${PY_MM}/ /usr/local/include/python${PY_MM}/
+
+ENV PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin" \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    LD_LIBRARY_PATH="/usr/local/lib:/lib64:/usr/lib64" \
+    SSL_CERT_FILE="/etc/pki/tls/certs/ca-bundle.crt" \
+    SSL_CERT_DIR="/etc/pki/tls/certs" \
+    TMPDIR="/tmp"
+
+SHELL ["/bin/bash", "-c"]

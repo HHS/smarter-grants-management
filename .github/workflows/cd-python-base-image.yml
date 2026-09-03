@@ -1,0 +1,110 @@
+name: Build Python Base Image
+
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      - "api/docker-python-base"
+      - ".github/workflows/cd-python-base-image.yml"
+  # Rebuild weekly so the image keeps picking up Amazon Linux security updates
+  # even when api/docker-python-base itself hasn't changed.
+  schedule:
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+    inputs:
+      version:
+        required: true
+        default: "main"
+        description: Tag or branch or SHA to deploy
+
+jobs:
+  lint:
+    name: Lint base Dockerfile
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.version || github.ref }}
+
+      # hadolint in vulnerability-scans.yml only covers <app>/Dockerfile, so the
+      # base image Dockerfile is linted here instead.
+      - name: Scan Dockerfile by hadolint
+        uses: hadolint/hadolint-action@v3.3.0
+        with:
+          dockerfile: api/docker-python-base
+          format: tty
+          failure-threshold: warning
+          output-file: hadolint-results.txt
+
+      - name: Save output to workflow summary
+        if: always() # Runs even if there is a failure
+        run: |
+          cat hadolint-results.txt >> "$GITHUB_STEP_SUMMARY"
+
+  build-and-push:
+    name: Build and push
+    runs-on: ubuntu-latest
+    needs: lint
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.version || github.ref }}
+
+      - name: Set up Docker Build
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/hhs/python-base-image
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=sha,format=short,prefix=
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: ./api
+          file: ./api/docker-python-base
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: |
+            ${{ steps.meta.outputs.tags }}
+            ghcr.io/hhs/python-base-image:latest
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Summarize published tags
+        run: |
+          {
+            echo "### Published tags"
+            echo ""
+            echo '```'
+            echo "${{ steps.meta.outputs.tags }}"
+            echo '```'
+            echo ""
+            echo "Digest: \`${{ steps.build.outputs.digest }}\`"
+            echo ""
+            echo "Repoint \`api/Dockerfile\` at the short-sha tag + digest above."
+          } >> "$GITHUB_STEP_SUMMARY"
