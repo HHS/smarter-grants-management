@@ -6,10 +6,11 @@ import {
 } from "src/services/fetch/fetchers/fetchers";
 import { PaginationInfo } from "src/types/apiResponseTypes";
 import {
+  CompetitionInstructionsApiResponse,
   CompetitionSaveApiResponse,
   CompetitionSaveRequest,
 } from "src/types/competitionsResponseTypes";
-import { CreateOpportunityRecord } from "src/types/createOpportunityTypes";
+import { CreateOpportunityRecord } from "src/types/grantor/createOpportunityTypes";
 import {
   GrantorOpportunityApiResponse,
   OpportunitySummaryCreateRequest,
@@ -88,6 +89,8 @@ export async function createOpportunitySummaryForGrantor({
   const response = await fetchGrantorOpportunityWithMethod("POST")({
     subPath: `${opportunityId}/summaries`,
     body,
+    // want to allow responses with failed validations through so we can properly handle displaying validation errors
+    allowedErrorStatuses: [422],
   });
 
   return (await response.json()) as OpportunitySummaryDetailApiResponse;
@@ -101,6 +104,8 @@ export async function updateOpportunitySummaryForGrantor({
   const response = await fetchGrantorOpportunityWithMethod("PUT")({
     subPath: `${opportunityId}/summaries/${opportunitySummaryId}`,
     body,
+    // want to allow responses with failed validations through so we can properly handle displaying validation errors
+    allowedErrorStatuses: [422],
   });
 
   return (await response.json()) as OpportunitySummaryDetailApiResponse;
@@ -137,4 +142,16 @@ export async function updateCompetitionForGrantor(
     body: data,
   });
   return (await response.json()) as CompetitionSaveApiResponse;
+}
+
+export async function saveCompetitionInstructions(
+  opportunityId: string,
+  competitionId: string,
+  pendingFileId: string,
+): Promise<CompetitionInstructionsApiResponse> {
+  const response = await fetchGrantorOpportunityWithMethod("POST")({
+    subPath: `${opportunityId}/competitions/${competitionId}/instructions`,
+    body: { pending_file_id: pendingFileId },
+  });
+  return (await response.json()) as CompetitionInstructionsApiResponse;
 }
