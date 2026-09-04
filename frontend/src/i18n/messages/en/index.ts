@@ -130,6 +130,8 @@ export const messages = {
       additionalInfoUrl: "Enter an additional information URL.",
       additionalInfoUrlText: "Enter additional information URL text.",
       grantorContactDetails: "Enter grantor contact details.",
+      expectedNumberOfAwardsInput:
+        "Expected number of awards must be greater than or equal to zero and less than 1,000,000,000,000,000.",
       awardMinCurrencyInput:
         "Award minimum must be greater than or equal to zero and less than $1,000,000,000,000,000.",
       awardMaxCurrencyInput:
@@ -145,12 +147,12 @@ export const messages = {
         "Award maximum cannot be less than Award minimum.",
     },
     attachments: {
-      removeButton: "Remove",
       uploadLabel: "Upload files",
-      errorHeading: "Upload error",
-      errorUploadFailed: "Failed to upload {fileName}.",
-      errorDeleteFailed: "Failed to delete {fileName}.",
-      errorFileTooLarge: "{fileName} exceeds the 2GB file size limit.",
+      uploading: "Uploading...",
+      success:
+        "Success: File scan complete. Save this form to attach the file.",
+      error:
+        "Processing failed due to a system error. Try uploading your file again.",
     },
   },
   ErrorPages: {
@@ -265,6 +267,12 @@ export const messages = {
     signInCTA: "Sign in first in order to view this page",
     unauthorizedExplanation: "This content is not available",
   },
+  CommonWordLimit: {
+    wordsAllowed: "words allowed",
+    wordsLeft: "{num, plural, =1 {1 word left} other {# words left}}",
+    wordsError:
+      "{num, plural, =1 {1 word over limit} other {# words over limit}}",
+  },
   Maintenance: {
     heading: "Simpler.Grants.gov Is Currently Undergoing Maintenance",
     body: "Our team is working to improve the site, and we'll have it back up as soon as possible.",
@@ -301,12 +309,22 @@ export const messages = {
       agency: "Agency",
       title: "Title",
       status: "Status",
-      actions: "Actions",
+      actions: "Action",
+      oppNumber: "Opp. Number",
+      fundingInstrumentType: "Funding Instrument Type",
+      lastUpdated: "Last Updated",
     },
     actionButtons: {
       edit: "Edit",
       copy: "Copy",
       delete: "Delete",
+    },
+    statusTag: {
+      draft: "Draft",
+      posted: "Open",
+      forecasted: "Forecasted",
+      archived: "Archived",
+      closed: "Closed",
     },
   },
   Organizations: {
@@ -496,6 +514,7 @@ export const messages = {
         recommendedWithoutFunding: "Recommended but not funded",
         notRecommended: "Not recommended",
       },
+      selectOnePlaceholder: "Select one",
       hasExceptionLabel: "Contains exceptions to selection method",
       commentsLabel: "Recommendation comments",
       commentsDescription:
@@ -510,6 +529,10 @@ export const messages = {
       amountRequestedLabel: "Amount Requested",
       amountRecommendedLabel: "Amount Recommended",
       totalLabel: "Total",
+      validationErrorHeading: "There is a problem with your recommendation",
+      recommendationRequired: "Select your recommendation",
+      exceptionDetailRequired: "Enter a reason for this exception",
+      amountRecommendedRequired: "Enter an amount recommended",
     },
     errorHeadingAwardRecommendation:
       "Error fetching award recommendation details",
@@ -645,6 +668,71 @@ export const messages = {
       showingRange: "Showing {start}-{end} of {total}",
       editButton: "Edit",
     },
+    reviewForm: {
+      pageTitle: "Submit for Review | Simpler.Grants.gov",
+      pageDescription: "Submit award recommendation for review",
+      header: "Submit for Review",
+      loading: "Loading...",
+      contentCreator: {
+        title: "Submit for Review",
+      },
+      reviewer: {
+        title: "Review Award Recommendation",
+        question:
+          "Do you concur on behalf of the Grants Office that this document meets applicable grants management requirements?",
+        yesConcur: "Yes, approval obtained (attachment required)",
+        noIssues: "No, issues identified, changes needed (attachment required)",
+        hold: "Hold, review in progress",
+      },
+      fmo: {
+        title: "FMO Review",
+        question:
+          "Do you certify the availability of funds to support the recommendation documented in this document?",
+        fundsAvailable: "Yes, funds are available",
+        fundsContingent: "Yes, funds are contingent upon availability by",
+        dateLabel: "Date",
+        noCertification: "No, certification cannot be provided, changes needed",
+        hold: "Hold, review in progress",
+      },
+      reviewComment: {
+        label: "Review comments",
+        description: "Shown on the award recommendation document",
+      },
+      internalComment: {
+        checkboxLabel: "Add internal comments for your team",
+        label: "Internal comments",
+        description: "Only visible in workflow history",
+      },
+      supplementalDocuments: {
+        label: "Supplemental review documents",
+        description: "Choose the documents you'd like to include",
+        uploading: "Uploading document...",
+        uploadSuccess: "Document uploaded successfully",
+        uploadError: "Error uploading document. Please try again.",
+      },
+      attestation: {
+        contentCreator:
+          "I attest that I am providing my recommendation of the recipients identified in this document for award consideration",
+        reviewer:
+          "I attest that I am providing my approval of the recipients identified in this document for award consideration",
+      },
+      buttons: {
+        submit: "Submit review",
+        submitting: "Submitting...",
+        cancel: "Cancel",
+      },
+      errors: {
+        submitFailed: "Failed to submit review. Please try again.",
+        insufficientPrivileges:
+          "You do not have the required privileges to review award recommendations.",
+        invalidReviewerType:
+          "You do not have permission to review at this stage of the workflow.",
+        authFailed:
+          "Failed to authenticate user. Please sign in and try again.",
+        loadingFailed: "Failed to load review form. Please try again.",
+        noWorkflow: "No workflow is associated with this award recommendation.",
+      },
+    },
   },
   CreateAwardRecommendation: {
     pageTitle: "Create recommendation",
@@ -712,6 +800,12 @@ export const messages = {
       opportunityTitle: "Opportunity title",
       opportunityTitleDesc:
         "Provide a concise, descriptive name that helps applicants identify the grant's purpose.",
+      tagline: "Tagline",
+      taglineDesc:
+        "A specific one-sentence purpose statement that summarizes the highest-level goal.",
+      purposeStatement: "Purpose statement",
+      purposeStatementDesc:
+        "Provide a one-line statement that helps applicants understand the grant's purpose.",
       agency: "Agency",
       category: "Grant selection method",
       categoryDesc: "Choose the evaluation process used to award these funds.",
@@ -752,8 +846,9 @@ export const messages = {
       header: "Submission set-up",
       subHeader:
         "A competition is one apply-window inside an opportunity. Most opportunities have only one.",
-      competitionId: "Competition ID",
-      competitionIdHint: "An ID if this opportunity has multiple competitions.",
+      publicCompetitionId: "Competition ID",
+      publicCompetitionIdHint:
+        "An ID if this opportunity has multiple competitions.",
       competitionTitle: "Competition title",
       competitionTitleHint: "Shown to applicants. Plain language is best.",
       whoCanApply: "Who can apply?",
@@ -766,17 +861,12 @@ export const messages = {
     sectionSubmissionWindow: {
       header: "Submission window",
       subHeader: "When applicants can submit through this package.",
-      submissionsOpen: "Submissions open",
-      submissionsOpenHint:
-        "First day applicants can submit. Defaults to publish date.",
-      submissionsClose: "Submissions close",
-      submissionsCloseHint:
-        "Final deadline for all applications. Defaults to the close date.",
-      howManyApplications: "How many applications do you expect?",
-      howManyApplicationsHint:
-        "We use it to plan capacity for your competition. You can change it later.",
-      expectedNumberOfApplicants: "Expected number of applicants",
-      expectedNumberOfApplicantsHint: "A best estimate is fine.",
+      submissionsOpen: "Open date",
+      submissionsOpenHint: "First day applicants can apply",
+      submissionsClose: "Public close date",
+      submissionsCloseHint: "Deadline listed on Grants.gov",
+      gracePeriod: "Extension period",
+      gracePeriodHint: "Number of days accepted past public close date",
     },
     sectionApplicationChecklist: {
       header: "Application checklist",
@@ -800,6 +890,27 @@ export const messages = {
         requiredEmail: "Email address is required.",
         invalidEmail:
           "Incorrect text format. Please ensure there are no spaces or missing characters.",
+      },
+    },
+    sectionRequiredForms: {
+      header: "Forms in this package",
+      subHeader: "Select the forms applicants must complete.",
+      selectFormsButton: "Select forms",
+      labelForm: "Item",
+      labelRequirement: "Requirement",
+    },
+    sectionApplicationInstructions: {
+      header: "Application instructions",
+      subHeader:
+        "Upload any supporting instructions needed for the application.",
+      uploadAFile: "Upload a file",
+      multipleFiles: "For multiple files, combine them into one zip file.",
+      uploadWidget: {
+        error:
+          "Processing failed due to a system error. Try uploading your file again.",
+        success:
+          "Success: File scan complete. “Save” this form to attach the file.",
+        uploading: "Uploading...",
       },
     },
   },
@@ -846,7 +957,8 @@ export const messages = {
     statusDisplay: {
       cancel: "Cancel",
       dismiss: "Dismiss",
-      queued: "Queued",
+      processing: "Processing file",
+      starting: "Starting upload",
       uploading: "Uploading...",
       startingScan: "Upload complete. Starting security scan",
       scanning: "Upload complete. Running security scan...",
@@ -859,6 +971,8 @@ export const messages = {
       missingFileId: "Error: missing file id",
       preUploadError: "Pre upload error",
       infected: "Security scan failed. File removed",
+      fileTooLarge:
+        "This file is too large. The maximum file size is {maxFileSize}.",
     },
     deleteModal: {
       titleText: "Delete",
