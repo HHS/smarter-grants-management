@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import OpportunityEditPage from "src/app/[locale]/opportunity/[id]/edit/page";
+import OpportunityEditPage from "src/app/[locale]/(base)/grantor/opportunity/[id]/edit/page";
 import { LocalizedPageProps } from "src/types/intl";
 import { GrantorOpportunityDetail } from "src/types/opportunity/opportunityResponseTypes";
 import { FeatureFlaggedPageWrapper } from "src/types/uiTypes";
@@ -68,6 +68,11 @@ const mockGetOpportunityForGrantor = jest.fn().mockResolvedValue({
 jest.mock("src/services/fetch/fetchers/grantorOpportunitiesFetcher", () => ({
   getOpportunityForGrantor: (arg: unknown): unknown =>
     mockGetOpportunityForGrantor(arg) as Promise<GrantorOpportunityDetail[]>,
+}));
+
+jest.mock("src/services/fetch/fetchers/opportunityAttachmentFetcher", () => ({
+  createOpportunityAttachment: jest.fn(),
+  deleteOpportunityAttachment: jest.fn(),
 }));
 
 const pageParams = new Promise<{ id: string; locale: string }>((resolve) => {

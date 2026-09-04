@@ -1,6 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
 import { axe } from "jest-axe";
-import OpportunityOverviewPage from "src/app/[locale]/opportunity/[id]/overview/page";
+import OpportunityOverviewPage from "src/app/[locale]/(base)/grantor/opportunity/[id]/overview/page";
 import { ForbiddenError, MissingAuthError, NotFoundError } from "src/errors";
 import { Competition } from "src/types/competitionsResponseTypes";
 import { GrantorOpportunityDetail } from "src/types/opportunity/opportunityResponseTypes";
@@ -26,6 +26,12 @@ const mockNotFound = jest.fn();
 jest.mock("next/navigation", () => ({
   notFound: (...args: unknown[]) => mockNotFound(...args) as unknown,
   redirect: jest.fn(),
+}));
+
+jest.mock("src/services/featureFlags/withFeatureFlag", () => ({
+  __esModule: true,
+  default: (WrappedComponent: React.FunctionComponent) => (props: unknown) =>
+    WrappedComponent(props as never),
 }));
 
 const mockGetOpportunityForGrantor = jest.fn();
@@ -84,7 +90,13 @@ function buildCompetitionFixture(
 ): DeepPartial<[Competition]> | null {
   if (status === "notStarted") return null;
   if (status === "inProgress") return [{ competition_id: "comp-1" }];
-  return [{ competition_id: "comp-1", open_to_applicants: ["individual"] }];
+  return [
+    {
+      competition_id: "comp-1",
+      open_to_applicants: ["individual"],
+      competition_title: "comp-1",
+    },
+  ];
 }
 
 const baseOpportunityData: DeepPartial<GrantorOpportunityDetail> = {

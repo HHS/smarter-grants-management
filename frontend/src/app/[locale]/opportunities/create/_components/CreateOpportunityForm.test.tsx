@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { noop } from "lodash";
-import { CreateOpportunityForm } from "src/app/[locale]/opportunities/create/_components/CreateOpportunityForm";
+import { CreateOpportunityForm } from "src/app/[locale]/(base)/grantor/opportunities/create/_components/CreateOpportunityForm";
 
 const mockUseActionState = jest.fn();
 
@@ -10,9 +10,12 @@ jest.mock("react", () => ({
   useActionState: () => mockUseActionState() as unknown,
 }));
 
-jest.mock("src/app/[locale]/opportunities/create/actions", () => ({
-  createOpportunityAction: noop,
-}));
+jest.mock(
+  "src/app/[locale]/(base)/grantor/opportunities/create/actions",
+  () => ({
+    createOpportunityAction: noop,
+  }),
+);
 
 jest.mock("next/navigation", () => ({
   useRouter: jest.fn().mockReturnValue({
@@ -165,7 +168,33 @@ describe("createOpportunityForm field change events", () => {
     // Save button should still be disabled
     expect(saveButton).toBeDisabled();
 
-    // 4. Enter an ALN
+    // 4. Fill in Opportunity Title
+    const textboxTagLine = screen.getByRole("textbox", {
+      name: "CreateOpportunityForm.tagline *",
+    });
+    expect(textboxTagLine).toBeInTheDocument();
+    expect(textboxTagLine).toHaveValue("");
+    fireEvent.change(textboxTagLine, {
+      target: { value: "Funding tagline" },
+    });
+    expect(textboxTagLine).toHaveValue("Funding tagline");
+    // Save button should still be disabled
+    expect(saveButton).toBeDisabled();
+
+    // 5. Fill in Opportunity Title
+    const textboxPurpose = screen.getByRole("textbox", {
+      name: "CreateOpportunityForm.purposeStatement *",
+    });
+    expect(textboxPurpose).toBeInTheDocument();
+    expect(textboxPurpose).toHaveValue("");
+    fireEvent.change(textboxPurpose, {
+      target: { value: "Funding purpose statement" },
+    });
+    expect(textboxPurpose).toHaveValue("Funding purpose statement");
+    // Save button should still be disabled
+    expect(saveButton).toBeDisabled();
+
+    // 6. Enter an ALN
     const assitListNbr = screen.getByRole("textbox", {
       name: "CreateOpportunityForm.assistanceListingNumber *",
     });
@@ -176,7 +205,7 @@ describe("createOpportunityForm field change events", () => {
     // Save button should still be disabled
     expect(saveButton).toBeDisabled();
 
-    // 5. Select a Category that is not "other"
+    // 7. Select a Category that is not "other"
     const selectCategory = screen.getByRole("combobox", {
       name: "CreateOpportunityForm.category *",
     });
@@ -192,7 +221,7 @@ describe("createOpportunityForm field change events", () => {
     });
     expect(testExplain).not.toBeInTheDocument();
 
-    // 6. Select "other" for the Category
+    // 8. Select "other" for the Category
     await userEvent.selectOptions(selectCategory, "other");
     expect(selectCategory).toHaveValue("other");
     // Save button should now be disabled
@@ -204,7 +233,7 @@ describe("createOpportunityForm field change events", () => {
     expect(textareaExplain).toBeInTheDocument();
     expect(textareaExplain).toHaveValue("");
 
-    // 7. Fill in the Category Explanation field
+    // 9. Fill in the Category Explanation field
     fireEvent.change(textareaExplain, {
       target: { value: "Sample Explanation" },
     });
@@ -212,7 +241,7 @@ describe("createOpportunityForm field change events", () => {
     // Save button should now be enabled
     expect(saveButton).toBeEnabled();
 
-    // 8. Remove/delete the text in Opportunity Title
+    // 10. Remove/delete the text in Opportunity Title
     fireEvent.change(textareaOppTitle, {
       target: { value: "" },
     });

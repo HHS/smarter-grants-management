@@ -28,6 +28,8 @@ import {
 export type OpportunityFieldValueKey =
   | "opportunityNumber"
   | "opportunityTitle"
+  | "tagline"
+  | "purposeStatement"
   | "grantSelectionMethod"
   | "assistanceListingNumber"
   | "fundingType"
@@ -103,6 +105,22 @@ export const CREATE_OPPORTUNITY_FIELD_DEFINITIONS: OpportunityPageFieldDefinitio
       characterLimitValidationMessage: "1 character over limit",
     },
     {
+      label: "Tagline",
+      type: "textarea",
+      valueKey: "tagline",
+      required: true,
+      maxLength: 255,
+      characterLimitValidationMessage: "1 character over limit",
+    },
+    {
+      label: "Purpose statement",
+      type: "textarea",
+      valueKey: "purposeStatement",
+      required: true,
+      maxLength: 255,
+      characterLimitValidationMessage: "1 character over limit",
+    },
+    {
       label: "Grant selection method",
       type: "select",
       valueKey: "grantSelectionMethod",
@@ -143,9 +161,8 @@ export const FUNDING_DETAILS_FIELD_DEFINITIONS: OpportunityPageFieldDefinition[]
       valueKey: "expectedNumberOfAwards",
       selector: "#expected_number_of_awards",
       required: false,
-      // Un-comment after bug fixed
-      // negativeNumberValidationMessage:
-      //   "Expected number of awards must be greater than or equal to zero.",
+      negativeNumberValidationMessage:
+        "Expected number of awards must be greater than or equal to zero and less than 1,000,000,000,000,000.",
     },
     {
       label: "Estimated total program funding",
@@ -186,6 +203,7 @@ export const FUNDING_DETAILS_FIELD_DEFINITIONS: OpportunityPageFieldDefinition[]
       label: "Close date",
       type: "date",
       valueKey: "closeDate",
+      selector: "#close_date",
       required: false,
     },
   ];
@@ -257,30 +275,35 @@ export const ELIGIBILITY_FIELD_DEFINITIONS: OpportunityPageFieldDefinition[] = [
     label: "Eligible applicants",
     type: "checkbox",
     valueKey: "eligibleApplicantSmallBusinesses",
+    selector: "#eligible-business-1",
     required: false,
   },
   {
     label: "Eligible applicants",
     type: "checkbox",
     valueKey: "eligibleApplicantOtherNativeAmericanTribalOrganizations",
+    selector: "#eligible-nonprofit-0",
     required: false,
   },
   {
     label: "Eligible applicants",
     type: "checkbox",
     valueKey: "eligibleApplicantIndependentSchoolDistricts",
+    selector: "#eligible-education-0",
     required: false,
   },
   {
     label: "Eligible applicants",
     type: "checkbox",
     valueKey: "eligibleApplicantIndividuals",
+    selector: "#eligible-misc-0",
     required: false,
   },
   {
     label: "Eligible applicants",
     type: "checkbox",
     valueKey: "eligibleApplicantStateGovernments",
+    selector: "#eligible-government-0",
     required: false,
   },
 ];
@@ -292,15 +315,17 @@ export const ADDITIONAL_INFORMATION_FIELD_DEFINITIONS: OpportunityPageFieldDefin
       label: "Description",
       type: "textarea",
       valueKey: "description",
+      selector: "#summary_description",
       required: false,
-      maxLength: 1800,
-      characterLimitValidationMessage: "1 character over limit",
+      wordLimit: 500,
+      wordLimitValidationMessage: "1 character over limit",
       exact: true,
     },
     {
       label: "Link to additional information",
       type: "text",
       valueKey: "linkToAdditionalInformation",
+      selector: "#additional_info_url",
       required: false,
       maxLength: 250,
       characterLimitValidationMessage: "1 character over limit",
@@ -309,6 +334,7 @@ export const ADDITIONAL_INFORMATION_FIELD_DEFINITIONS: OpportunityPageFieldDefin
       label: "Link display text",
       type: "text",
       valueKey: "linkDisplayText",
+      selector: "#additional_info_url_description",
       required: false,
       maxLength: 250,
       characterLimitValidationMessage: "1 character over limit",
@@ -317,6 +343,7 @@ export const ADDITIONAL_INFORMATION_FIELD_DEFINITIONS: OpportunityPageFieldDefin
       label: "Grantor contact details",
       type: "textarea",
       valueKey: "grantorContactDetails",
+      selector: "#agency_contact_description",
       required: false,
       maxLength: 1000,
       characterLimitValidationMessage: "1 character over limit",
@@ -335,6 +362,7 @@ export const ADDITIONAL_INFORMATION_FIELD_DEFINITIONS: OpportunityPageFieldDefin
       label: "Email display text",
       type: "text",
       valueKey: "emailDisplayText",
+      selector: "#agency_email_address_description",
       required: false,
       maxLength: 108,
       characterLimitValidationMessage: "1 character over limit",
