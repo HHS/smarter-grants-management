@@ -9,6 +9,13 @@ export interface EndpointConfig {
   requiresAuth?: boolean;
 }
 
+export const opportunitySearchEndpoint = {
+  basePath: environment.API_URL,
+  version: "v1",
+  namespace: "opportunities/search",
+  method: "POST" as ApiMethod,
+};
+
 export const fetchCompetitionEndpoint = {
   basePath: environment.API_URL,
   version: "alpha",
@@ -36,6 +43,35 @@ export const toDynamicAwardRecommendationEndpoint = (
   };
 };
 
+export const toDynamicApplicationsEndpointV1 = (type: "POST") => {
+  return {
+    basePath: environment.API_URL,
+    version: "v1",
+    namespace: "applications",
+    method: type as ApiMethod,
+    requiresAuth: true,
+  };
+};
+
+export const toDynamicApplicationsEndpoint = (
+  type: "POST" | "GET" | "PUT" | "DELETE",
+) => {
+  return {
+    basePath: environment.API_URL,
+    version: "alpha",
+    namespace: "applications",
+    method: type as ApiMethod,
+    requiresAuth: true,
+  };
+};
+
+export const fetchFormEndpoint = {
+  basePath: environment.API_URL,
+  version: "alpha",
+  namespace: "forms",
+  method: "GET" as ApiMethod,
+};
+
 export const fetchFormsEndpoint = {
   basePath: environment.API_URL,
   version: "v1",
@@ -49,6 +85,13 @@ export const fetchCompetitionFormsEndpoint = {
   namespace: "competitions",
   method: "PUT" as ApiMethod,
   requiresAuth: true,
+};
+
+export const fetchOpportunityEndpoint = {
+  basePath: environment.API_URL,
+  version: "v1",
+  namespace: "opportunities",
+  method: "GET" as ApiMethod,
 };
 
 export const userLogoutEndpoint = {
@@ -77,6 +120,25 @@ export const userRefreshEndpoint = {
   namespace: "users/token/refresh",
   method: "POST" as ApiMethod,
   requiresAuth: true,
+};
+
+export const searchAgenciesEndpoint = {
+  basePath: environment.API_URL,
+  version: "v1",
+  namespace: "agencies/search",
+  method: "POST" as ApiMethod,
+};
+
+export const toDynamicOrganizationsEndpoint = (
+  type: "POST" | "DELETE" | "PUT" | "GET",
+) => {
+  return {
+    basePath: environment.API_URL,
+    version: "v1",
+    namespace: "organizations",
+    method: type as ApiMethod,
+    requiresAuth: true,
+  };
 };
 
 export const toDynamicGrantorAgenciesEndpoint = (
@@ -110,6 +172,15 @@ export const getLocalUsersEndpoint = {
   method: "GET" as ApiMethod,
 };
 
+// opting out of traditional X-SGG based auth since these requests will use the
+// internal auth token instead
+export const getApplicationForPrintEndpoint = {
+  basePath: environment.API_URL,
+  version: "alpha",
+  namespace: "applications",
+  method: "GET" as ApiMethod,
+};
+
 export const toDynamicFilesEndpoint = (type: "POST" | "GET") => ({
   basePath: environment.API_URL,
   version: "v1",
@@ -117,3 +188,11 @@ export const toDynamicFilesEndpoint = (type: "POST" | "GET") => ({
   method: type as ApiMethod,
   requiresAuth: true,
 });
+
+export const fetchWorkflowEndpoint = {
+  basePath: environment.API_URL,
+  version: "v1",
+  namespace: "workflows",
+  method: "GET" as ApiMethod,
+  requiresAuth: true,
+};
