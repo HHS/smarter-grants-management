@@ -135,5 +135,9 @@ locals {
       manage_method     = "generated"
       secret_store_name = "/${var.app_name}/${var.environment}/session-secret"
     },
+    AUTH_LOGOUT_URL = {
+      manage_method     = "manual"
+      secret_store_name = "/${var.app_name}/${var.environment}/auth-logout-url"
+    },
   }
 }
