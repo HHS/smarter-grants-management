@@ -72,9 +72,7 @@ test.describe("Grantor opportunity overview happy path - initial state", () => {
       await createOpportunity(page, fillData);
 
       // And I should be redirected to the opportunity overview page.
-      await expect(page).toHaveURL(
-        /\/grantor\/opportunity\/([a-z0-9-]+?)\/overview/,
-      );
+      await expect(page).toHaveURL(/\/opportunity\/([a-z0-9-]+?)\/overview/);
 
       // Then I should see overview statuses for key sections.
       await assertOverviewSectionStatus(page, {

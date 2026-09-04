@@ -181,7 +181,7 @@ jest.mock("src/services/auth/session", () => ({
   getSession: () => mockGetSession() as Promise<UserSession>,
 }));
 
-jest.mock("src/app/[locale]/(base)/error/page", () => ({
+jest.mock("src/app/[locale]/error/page", () => ({
   TopLevelError: () => (
     <div>
       <span>Top Level Error</span>

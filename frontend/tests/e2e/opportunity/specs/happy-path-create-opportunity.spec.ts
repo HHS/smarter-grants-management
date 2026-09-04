@@ -62,13 +62,13 @@ test.describe("Grantor Opportunity Happy Path", () => {
       await page.goto("/opportunities");
 
       // And I should be on the "Opportunities List" page
-      await expect(page).toHaveURL(/\/grantor\/opportunities/);
+      await expect(page).toHaveURL(/\/opportunities/);
 
       // When I click "Create Opportunity"
       await page.getByRole("link", { name: "Create Opportunity" }).click();
 
       // And I should be on the "Create Opportunity" page
-      await expect(page).toHaveURL(/\/grantor\/opportunities\/create/);
+      await expect(page).toHaveURL(/\/opportunities\/create/);
 
       // And I enter the required create-opportunity fields.
       await fillPageFields(
