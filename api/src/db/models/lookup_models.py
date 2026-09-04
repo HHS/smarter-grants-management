@@ -7,6 +7,7 @@ from src.constants.lookup_constants import (
     ExternalUserType,
     GrantorOrganizationAuditEvent,
     GrantorOrganizationType,
+    JobStatus,
     PartnerAuditEvent,
     Privilege,
     ResourceType,
@@ -99,6 +100,14 @@ APPROVAL_RESPONSE_TYPE_CONFIG: LookupConfig[ApprovalResponseType] = LookupConfig
         LookupStr(ApprovalResponseType.APPROVED, 1),
         LookupStr(ApprovalResponseType.DECLINED, 2),
         LookupStr(ApprovalResponseType.REQUIRES_MODIFICATION, 3),
+    ]
+)
+
+JOB_STATUS_CONFIG: LookupConfig[JobStatus] = LookupConfig(
+    [
+        LookupStr(JobStatus.STARTED, 1),
+        LookupStr(JobStatus.COMPLETED, 2),
+        LookupStr(JobStatus.FAILED, 3),
     ]
 )
 
@@ -261,3 +270,15 @@ class LkApprovalResponseType(GrantorLookupTable, TimestampMixin):
         return LkApprovalResponseType(
             approval_response_type_id=lookup.lookup_val, description=lookup.get_description()
         )
+
+
+@LookupRegistry.register_lookup(JOB_STATUS_CONFIG)
+class LkJobStatus(GrantorLookupTable, TimestampMixin):
+    __tablename__ = "lk_job_status"
+
+    job_status_id: Mapped[int] = mapped_column(primary_key=True)
+    description: Mapped[str]
+
+    @classmethod
+    def from_lookup(cls, lookup: Lookup) -> LkJobStatus:
+        return LkJobStatus(job_status_id=lookup.lookup_val, description=lookup.get_description())
