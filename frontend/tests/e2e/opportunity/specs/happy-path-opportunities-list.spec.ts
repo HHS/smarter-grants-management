@@ -85,7 +85,7 @@ test.describe("Grantor opportunities list page happy path", () => {
       await page.goto("/opportunities");
 
       // Then I should be redirected to the Opportunities List page.
-      await expect(page).toHaveURL(/\/grantor\/opportunities/);
+      await expect(page).toHaveURL(/\/opportunities/);
 
       // And I should see the Opportunities List heading.
       await expect(
@@ -109,7 +109,7 @@ test.describe("Grantor opportunities list page happy path", () => {
       // And the Create Opportunity link should navigate to the create opportunity page.
       await expect(createOpportunityLink).toHaveAttribute(
         "href",
-        /grantor\/opportunities\/create\?agency=/,
+        /opportunities\/create\?agency=/,
       );
 
       // And I should see the Opportunities table.

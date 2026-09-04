@@ -257,7 +257,7 @@ export const CROSS_FIELD_VALIDATION_DEFINITIONS: CrossFieldValidationDefinition[
 
 /** Opportunity Summary edit page URL pattern (with optional query params). */
 export const EDIT_OPPORTUNITY_URL_PATTERN =
-  /\/grantor\/opportunity\/[0-9a-f-]{36}\/edit(?:\?.*)?$/i;
+  /\/opportunity\/[0-9a-f-]{36}\/edit(?:\?.*)?$/i;
 
 /** Shard 6: eligibility checkbox definitions for applicant categories. */
 export const ELIGIBILITY_FIELD_DEFINITIONS: OpportunityPageFieldDefinition[] = [

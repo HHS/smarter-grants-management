@@ -1,6 +1,6 @@
-import TopLevelError from "src/app/[locale]/(base)/error/page";
-import Unauthenticated from "src/app/[locale]/(base)/unauthenticated/page";
+import TopLevelError from "src/app/[locale]/error/page";
 import { AgencySelector } from "src/app/[locale]/opportunities/_components/AgencySelector";
+import Unauthenticated from "src/app/[locale]/unauthenticated/page";
 import { MissingAuthError, UnauthorizedError } from "src/errors";
 import { getSession } from "src/services/auth/session";
 import withFeatureFlag from "src/services/featureFlags/withFeatureFlag";

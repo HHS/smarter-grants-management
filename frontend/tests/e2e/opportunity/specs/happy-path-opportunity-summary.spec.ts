@@ -90,9 +90,7 @@ test.describe("Grantor Opportunity Summary Happy Path", () => {
       await page.getByRole("link", { name: "Opportunity Summary" }).click();
 
       // Then I should be on the "Opportunity Summary" page.
-      await expect(page).toHaveURL(
-        /\/grantor\/opportunity\/([a-z0-9-]+?)\/edit/,
-      );
+      await expect(page).toHaveURL(/\/opportunity\/([a-z0-9-]+?)\/edit/);
 
       // And I should see the "Save and exit", "Save and go back", and "Save and continue" buttons enabled.
       await assertButtonEnabledDisabledStates(page, {
@@ -136,9 +134,7 @@ test.describe("Grantor Opportunity Summary Happy Path", () => {
       await page.getByRole("button", { name: "Save and exit" }).click();
 
       // Then I should return to the "Opportunity Overview" page.
-      await expect(page).toHaveURL(
-        /\/grantor\/opportunity\/([a-z0-9-]+?)\/overview/,
-      );
+      await expect(page).toHaveURL(/\/opportunity\/([a-z0-9-]+?)\/overview/);
 
       // And I should see overview statuses for key sections.
       await assertOverviewSectionStatus(page, {

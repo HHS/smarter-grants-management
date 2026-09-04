@@ -32,7 +32,7 @@ const assertAgencyNotAuthorized = async (page: Page, agencyId: string) => {
   });
 
   // Then the browser should be on the expected agency URL.
-  await expect(page).toHaveURL(/\/grantor\/opportunities\?agency=/, {
+  await expect(page).toHaveURL(/\/opportunities\?agency=/, {
     timeout: 30000,
   });
 

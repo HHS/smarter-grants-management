@@ -42,9 +42,9 @@ const { targetEnv } = playwrightEnv;
 /** Resets create-opportunity state by canceling and reopening a fresh create page. */
 const openFreshCreateOpportunityForm = async (page: Page): Promise<void> => {
   await page.getByRole("button", { name: "Cancel" }).click();
-  await expect(page).toHaveURL(/\/grantor\/opportunities/);
+  await expect(page).toHaveURL(/\/opportunities/);
   await page.getByRole("link", { name: "Create Opportunity" }).click();
-  await expect(page).toHaveURL(/\/grantor\/opportunities\/create/);
+  await expect(page).toHaveURL(/\/opportunities\/create/);
 };
 
 test.describe("Opportunity failure path - create opportunity", () => {
@@ -84,9 +84,9 @@ test.describe("Opportunity failure path - create opportunity", () => {
       // Shard 2: rerun create flow with the same values and assert duplicate behavior.
       // When I start a second create flow with duplicate values.
       await page.goto("/opportunities");
-      await expect(page).toHaveURL(/\/grantor\/opportunities/);
+      await expect(page).toHaveURL(/\/opportunities/);
       await page.getByRole("link", { name: "Create Opportunity" }).click();
-      await expect(page).toHaveURL(/\/grantor\/opportunities\/create/);
+      await expect(page).toHaveURL(/\/opportunities\/create/);
       await fillPageFields(
         page,
         buildPageFieldsFromDefinitions(
@@ -106,7 +106,7 @@ test.describe("Opportunity failure path - create opportunity", () => {
       );
 
       // And I should remain on the create opportunity page
-      await expect(page).toHaveURL(/\/grantor\/opportunities\/create/);
+      await expect(page).toHaveURL(/\/opportunities\/create/);
 
       // And "Save and continue" button should be disabled, "Cancel" button should remain enabled
       await assertButtonEnabledDisabledStates(page, {
@@ -151,7 +151,7 @@ test.describe("Opportunity failure path - create opportunity", () => {
       await page.getByRole("button", { name: "Save and continue" }).click();
 
       // And I remain on the create opportunity page
-      await expect(page).toHaveURL(/\/grantor\/opportunities\/create/);
+      await expect(page).toHaveURL(/\/opportunities\/create/);
 
       // Then I verify that character limit validation messages still show up for all fields that have character limits
       await assertCharacterLimitMessageCount(
