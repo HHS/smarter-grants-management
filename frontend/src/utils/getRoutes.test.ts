@@ -16,6 +16,7 @@ describe("getNextRoutes", () => {
       "/award-recommendation/1/risks/[riskId]/edit",
       "/award-recommendation/1/risks/add",
       "/award-recommendation/1/risks",
+      "/award-recommendation/1/submit-for-review",
       "/award-recommendation/create",
       "/award-recommendation",
       "/award-recommendation/select-opportunity",

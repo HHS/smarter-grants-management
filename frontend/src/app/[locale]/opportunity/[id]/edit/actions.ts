@@ -5,6 +5,11 @@ import {
   createOpportunitySummaryForGrantor,
   updateOpportunitySummaryForGrantor,
 } from "src/services/fetch/fetchers/grantorOpportunitiesFetcher";
+import {
+  createOpportunityAttachment,
+  deleteOpportunityAttachment,
+} from "src/services/fetch/fetchers/opportunityAttachmentFetcher";
+import { FrontendErrorDetails } from "src/types/apiResponseTypes";
 import { OpportunitySummaryUpdateRawData } from "src/types/opportunity/opportunityResponseTypes";
 import { getConfiguredDayJs } from "src/utils/dateUtil";
 import { formDataToObject } from "src/utils/formData/formDataToJson";
@@ -68,6 +73,159 @@ const editOpportunityFormSchema = {
 
 function readStringValue(value: FormDataEntryValue | null): string {
   return typeof value === "string" ? value : "";
+}
+
+// held_pending_file_ids / deleted_attachment_ids are both JSON-stringified string arrays
+function parseIdList(value: FormDataEntryValue | null): string[] {
+  if (typeof value !== "string" || !value.trim()) {
+    return [];
+  }
+  try {
+    const parsed: unknown = JSON.parse(value);
+    return Array.isArray(parsed)
+      ? parsed.filter((item): item is string => typeof item === "string")
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+// Attachments follow their own persistence model ("nothing persists until Save"), so
+// creates/deletes are only ever sent to the backend as part of a successful Save - one
+// call per held/marked-for-deletion id, regardless of which of the 3 submit types fired.
+// A 422 from either endpoint has no form field of its own to attach to, so it always
+// surfaces as a top-level errorMessage rather than an inline validationErrors entry -
+// stops at the first failure rather than silently continuing through the rest of the list.
+async function processAttachmentChanges(
+  opportunityId: string,
+  formData: FormData,
+  genericMessage: string,
+): Promise<Pick<OpportunityEditActionState, "errorMessage"> | undefined> {
+  const heldPendingFileIds = parseIdList(formData.get("held_pending_file_ids"));
+  const deletedAttachmentIds = parseIdList(
+    formData.get("deleted_attachment_ids"),
+  );
+
+  for (const pendingFileId of heldPendingFileIds) {
+    const response = await createOpportunityAttachment(
+      opportunityId,
+      pendingFileId,
+    );
+    if (response.status_code === 422) {
+      console.error("API side validation errors:", response.errors);
+      const { errorMessage } = mapApiValidationErrors(response, genericMessage);
+      return { errorMessage: errorMessage ?? genericMessage };
+    }
+  }
+  for (const attachmentId of deletedAttachmentIds) {
+    const response = await deleteOpportunityAttachment(
+      opportunityId,
+      attachmentId,
+    );
+    if (response.status_code === 422) {
+      console.error("API side validation errors:", response.errors);
+      const { errorMessage } = mapApiValidationErrors(response, genericMessage);
+      return { errorMessage: errorMessage ?? genericMessage };
+    }
+  }
+  return undefined;
+}
+
+// These fields display comma-formatted (formatNumber() in OpportunityEditForm.tsx) but are
+// never stripped before submit, so the API's integer validation 422s on the raw comma string.
+const CURRENCY_FIELD_NAMES = [
+  "award_floor",
+  "award_ceiling",
+  "estimated_total_program_funding",
+  "expected_number_of_awards",
+] as const;
+
+function stripCurrencyFormatting(formData: FormData) {
+  for (const fieldName of CURRENCY_FIELD_NAMES) {
+    const rawValue = formData.get(fieldName);
+    if (typeof rawValue === "string") {
+      formData.set(fieldName, rawValue.replace(/[$,\s]/g, ""));
+    }
+  }
+}
+
+const EDIT_FORM_FIELD_NAMES = new Set<keyof OpportunityEditValidationErrors>([
+  "opportunity_title",
+  "category",
+  "summary_description",
+  "post_date",
+  "close_date",
+  "agency_email_address",
+  "agency_email_address_description",
+  "award_floor",
+  "award_ceiling",
+  "funding_instruments",
+  "funding_categories",
+  "expected_number_of_awards",
+  "estimated_total_program_funding",
+  "applicant_types",
+  "applicant_eligibility_description",
+  "additional_info_url",
+  "additional_info_url_description",
+  "agency_contact_description",
+]);
+
+// Maps a 422's errors[] to inline validationErrors by field, with a top-level errorMessage
+// fallback for field-less business-rule errors (which return an empty errors[] and put the
+// real text in the response's top-level message instead).
+function mapApiValidationErrors(
+  response: { errors?: unknown[] | null; message?: string },
+  genericMessage: string,
+): Pick<OpportunityEditActionState, "validationErrors" | "errorMessage"> {
+  const validationErrors: OpportunityEditValidationErrors = {};
+  const unmappedMessages: string[] = [];
+
+  for (const rawError of response.errors ?? []) {
+    const error = rawError as FrontendErrorDetails;
+    const message = error.message ?? genericMessage;
+    const field = error.field as
+      keyof OpportunityEditValidationErrors | undefined;
+
+    if (field && EDIT_FORM_FIELD_NAMES.has(field)) {
+      validationErrors[field] = [...(validationErrors[field] ?? []), message];
+    } else {
+      unmappedMessages.push(message);
+    }
+  }
+
+  const hasFieldErrors = Object.keys(validationErrors).length > 0;
+
+  return {
+    validationErrors: hasFieldErrors ? validationErrors : undefined,
+    errorMessage:
+      unmappedMessages.length > 0
+        ? unmappedMessages.join(" ")
+        : hasFieldErrors
+          ? undefined
+          : response.message || genericMessage,
+  };
+}
+
+// Shared by the outer catch and the create-path's local catch (see below) so a thrown
+// error is mapped identically either way - the only difference is whether the caller
+// still has a newOpportunitySummaryId to merge back in.
+function mapThrownError(
+  error: unknown,
+  alerts: (key: string) => string,
+): Pick<OpportunityEditActionState, "errorMessage"> {
+  const status =
+    error instanceof ApiRequestError ? parseErrorStatus(error) : null;
+
+  if (status === 401) {
+    return { errorMessage: alerts("unauthenticated") };
+  }
+  if (status === 403) {
+    return { errorMessage: alerts("forbidden") };
+  }
+  if (status === 404) {
+    return { errorMessage: alerts("notFound") };
+  }
+  return { errorMessage: alerts("genericError") };
 }
 
 async function validateOpportunityEditForm(formData: FormData) {
@@ -235,6 +393,8 @@ export async function saveOpportunityEditAction(
 ): Promise<OpportunityEditActionState> {
   const alerts = await getTranslations("OpportunityEdit.content.alerts");
 
+  stripCurrencyFormatting(formData);
+
   const opportunityId = readStringValue(formData.get("opportunity_id")).trim();
   const opportunitySummaryId = readStringValue(
     formData.get("opportunity_summary_id"),
@@ -277,6 +437,33 @@ export async function saveOpportunityEditAction(
         body: body,
       });
 
+      if (createResponse.status_code === 422) {
+        console.error("API side validation errors:", createResponse.errors);
+        return mapApiValidationErrors(createResponse, alerts("genericError"));
+      }
+
+      // caught locally (rather than by the outer catch below) because the summary itself
+      // was already created successfully - the frontend still needs its id so a retry
+      // after this error updates it instead of creating a duplicate, whether the failure
+      // came back as a 422 response or was thrown (401/403/404/network/500)
+      let attachmentError:
+        Pick<OpportunityEditActionState, "errorMessage"> | undefined;
+      try {
+        attachmentError = await processAttachmentChanges(
+          opportunityId,
+          formData,
+          alerts("genericError"),
+        );
+      } catch (error) {
+        attachmentError = mapThrownError(error, alerts);
+      }
+      if (attachmentError) {
+        return {
+          ...attachmentError,
+          newOpportunitySummaryId: createResponse.data.opportunity_summary_id,
+        };
+      }
+
       return {
         successMessage: alerts("success"),
         newOpportunitySummaryId: createResponse.data.opportunity_summary_id,
@@ -308,46 +495,23 @@ export async function saveOpportunityEditAction(
     });
     if (response.status_code === 422) {
       console.error("API side validation errors:", response.errors);
-      throw new ApiRequestError(
-        "API side validation errors",
-        "validation",
-        422,
-      );
+      return mapApiValidationErrors(response, alerts("genericError"));
     }
+
+    const attachmentError = await processAttachmentChanges(
+      opportunityId,
+      formData,
+      alerts("genericError"),
+    );
+    if (attachmentError) {
+      return attachmentError;
+    }
+
     return {
       successMessage: alerts("success"),
     };
   } catch (error) {
-    const status =
-      error instanceof ApiRequestError ? parseErrorStatus(error) : null;
-
-    if (status === 401) {
-      return {
-        errorMessage: alerts("unauthenticated"),
-      };
-    }
-
-    if (status === 403) {
-      return {
-        errorMessage: alerts("forbidden"),
-      };
-    }
-
-    if (status === 404) {
-      return {
-        errorMessage: alerts("notFound"),
-      };
-    }
-
-    if (status === 422) {
-      return {
-        errorMessage: alerts("draftOnly"),
-      };
-    }
-
-    return {
-      errorMessage: alerts("genericError"),
-    };
+    return mapThrownError(error, alerts);
   }
 }
 

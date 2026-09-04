@@ -23,12 +23,12 @@ import { assertButtonEnabledDisabledStates } from "tests/e2e/utils/common/index"
 import { waitForOpportunityRowByStatus } from "tests/e2e/utils/opportunities/table-row-utils";
 import { fillPageFields } from "tests/e2e/utils/pages/general-pages-filling";
 
-const { GRANTOR, CORE_REGRESSION } = VALID_TAGS;
+const { GRANTOR, OPPORTUNITY_MANAGEMENT, CORE_REGRESSION } = VALID_TAGS;
 const { targetEnv } = playwrightEnv;
 
 test.describe("Grantor Opportunity Happy Path", () => {
   test.beforeEach(({ page: _ }, testInfo) => {
-    if (targetEnv === "staging") {
+    if (targetEnv !== "local") {
       test.skip(
         testInfo.project.name !== "Chrome",
         "Staging MFA login is limited to Chrome to avoid OTP rate-limiting",
@@ -38,7 +38,7 @@ test.describe("Grantor Opportunity Happy Path", () => {
 
   test(
     "Create opportunity draft and verify draft status on list page",
-    { tag: [GRANTOR, CORE_REGRESSION] },
+    { tag: [GRANTOR, OPPORTUNITY_MANAGEMENT, CORE_REGRESSION] },
     async (
       { page, context }: { page: Page; context: BrowserContext },
       testInfo: TestInfo,
@@ -58,17 +58,17 @@ test.describe("Grantor Opportunity Happy Path", () => {
 
       //--------------Scenario steps start here----------------
 
-      // Given I use direct URL "/grantor/opportunities" to navigate to the "Opportunities List" page
-      await page.goto("/grantor/opportunities");
+      // Given I use direct URL "/opportunities" to navigate to the "Opportunities List" page
+      await page.goto("/opportunities");
 
       // And I should be on the "Opportunities List" page
-      await expect(page).toHaveURL(/\/grantor\/opportunities/);
+      await expect(page).toHaveURL(/\/opportunities/);
 
       // When I click "Create Opportunity"
       await page.getByRole("link", { name: "Create Opportunity" }).click();
 
       // And I should be on the "Create Opportunity" page
-      await expect(page).toHaveURL(/\/grantor\/opportunities\/create/);
+      await expect(page).toHaveURL(/\/opportunities\/create/);
 
       // And I enter the required create-opportunity fields.
       await fillPageFields(
@@ -102,7 +102,7 @@ test.describe("Grantor Opportunity Happy Path", () => {
       });
 
       // When I navigate directly to opportunity list page
-      await page.goto("/grantor/opportunities");
+      await page.goto("/opportunities");
 
       // Then I should see "Draft" status for the created opportunity row.
       const matchingRow = await waitForOpportunityRowByStatus(page, {

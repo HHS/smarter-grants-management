@@ -142,7 +142,7 @@ describe("SelectFundingOpportunityContent", () => {
 
     expect(createAwardRecommendationAction).toHaveBeenCalledWith("opp-1");
     expect(pushMock).toHaveBeenCalledWith(
-      "/grantor/award-recommendation/award-rec-1/edit",
+      "/award-recommendation/award-rec-1/edit",
     );
   });
 });

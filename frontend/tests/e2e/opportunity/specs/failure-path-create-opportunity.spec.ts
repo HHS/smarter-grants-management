@@ -36,22 +36,22 @@ import {
 import { createOpportunity } from "tests/e2e/utils/opportunity/create-opportunity-utils";
 import { fillPageFields } from "tests/e2e/utils/pages/general-pages-filling";
 
-const { GRANTOR, CORE_REGRESSION } = VALID_TAGS;
+const { GRANTOR, OPPORTUNITY_MANAGEMENT, CORE_REGRESSION } = VALID_TAGS;
 const { targetEnv } = playwrightEnv;
 
 /** Resets create-opportunity state by canceling and reopening a fresh create page. */
 const openFreshCreateOpportunityForm = async (page: Page): Promise<void> => {
   await page.getByRole("button", { name: "Cancel" }).click();
-  await expect(page).toHaveURL(/\/grantor\/opportunities/);
+  await expect(page).toHaveURL(/\/opportunities/);
   await page.getByRole("link", { name: "Create Opportunity" }).click();
-  await expect(page).toHaveURL(/\/grantor\/opportunities\/create/);
+  await expect(page).toHaveURL(/\/opportunities\/create/);
 };
 
 test.describe("Opportunity failure path - create opportunity", () => {
   //-----------------------Test setup-----------------
   // Skip non-Chrome browsers in staging.
   test.beforeEach(({ page: _ }, testInfo) => {
-    if (targetEnv === "staging") {
+    if (targetEnv !== "local") {
       test.skip(
         testInfo.project.name !== "Chrome",
         "Staging MFA login is limited to Chrome to avoid OTP rate-limiting",
@@ -61,7 +61,7 @@ test.describe("Opportunity failure path - create opportunity", () => {
 
   test(
     "Create opportunity failure path - required fields validation and button enable/disable states",
-    { tag: [GRANTOR, CORE_REGRESSION] },
+    { tag: [GRANTOR, OPPORTUNITY_MANAGEMENT, CORE_REGRESSION] },
     async (
       { page, context }: { page: Page; context: BrowserContext },
       testInfo: TestInfo,
@@ -83,10 +83,10 @@ test.describe("Opportunity failure path - create opportunity", () => {
 
       // Shard 2: rerun create flow with the same values and assert duplicate behavior.
       // When I start a second create flow with duplicate values.
-      await page.goto("/grantor/opportunities");
-      await expect(page).toHaveURL(/\/grantor\/opportunities/);
+      await page.goto("/opportunities");
+      await expect(page).toHaveURL(/\/opportunities/);
       await page.getByRole("link", { name: "Create Opportunity" }).click();
-      await expect(page).toHaveURL(/\/grantor\/opportunities\/create/);
+      await expect(page).toHaveURL(/\/opportunities\/create/);
       await fillPageFields(
         page,
         buildPageFieldsFromDefinitions(
@@ -106,7 +106,7 @@ test.describe("Opportunity failure path - create opportunity", () => {
       );
 
       // And I should remain on the create opportunity page
-      await expect(page).toHaveURL(/\/grantor\/opportunities\/create/);
+      await expect(page).toHaveURL(/\/opportunities\/create/);
 
       // And "Save and continue" button should be disabled, "Cancel" button should remain enabled
       await assertButtonEnabledDisabledStates(page, {
@@ -151,7 +151,7 @@ test.describe("Opportunity failure path - create opportunity", () => {
       await page.getByRole("button", { name: "Save and continue" }).click();
 
       // And I remain on the create opportunity page
-      await expect(page).toHaveURL(/\/grantor\/opportunities\/create/);
+      await expect(page).toHaveURL(/\/opportunities\/create/);
 
       // Then I verify that character limit validation messages still show up for all fields that have character limits
       await assertCharacterLimitMessageCount(

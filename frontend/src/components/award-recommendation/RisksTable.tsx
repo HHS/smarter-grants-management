@@ -179,7 +179,7 @@ export default function RisksTable({ awardRecommendationId }: RisksTableProps) {
               className="usa-button"
               onClick={() => {
                 router.push(
-                  `/grantor/award-recommendation/${awardRecommendationId}/risks/add`,
+                  `/award-recommendation/${awardRecommendationId}/risks/add`,
                 );
               }}
             >
@@ -242,7 +242,7 @@ export default function RisksTable({ awardRecommendationId }: RisksTableProps) {
                 <td>
                   {appSubmission.application_submission_number ? (
                     <Link
-                      href={`/grantor/award-recommendation/${awardRecommendationId}/application-submissions/${id}/edit`}
+                      href={`/award-recommendation/${awardRecommendationId}/application-submissions/${id}/edit`}
                       className="usa-link"
                     >
                       {appSubmission.application_submission_number}

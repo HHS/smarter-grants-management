@@ -3,7 +3,6 @@ import { identity } from "lodash";
 import {
   saveAwardRecommendation,
   saveAwardRecommendationSubmissionDetails,
-  submitAwardRecommendationForReview,
 } from "./actions";
 
 const mockUpdateAwardRecommendationSubmissionDetails = jest.fn();
@@ -75,15 +74,6 @@ describe("Award Recommendation Actions", () => {
     });
   });
 
-  describe("submitAwardRecommendationForReview", () => {
-    it("returns success", async () => {
-      const result = await submitAwardRecommendationForReview(new FormData());
-
-      expect(result.success).toBe(true);
-      expect(result.errorMessage).toBeUndefined();
-    });
-  });
-
   describe("saveAwardRecommendationSubmissionDetails", () => {
     const submissionId = "63588df8-f2d1-44ed-a201-5804abba696b";
 
@@ -127,7 +117,7 @@ describe("Award Recommendation Actions", () => {
         },
       });
       expect(mockRedirect).toHaveBeenCalledWith(
-        "/grantor/award-recommendation/ar-id-123/edit",
+        "/award-recommendation/ar-id-123/edit",
       );
     });
 

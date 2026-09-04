@@ -25,12 +25,12 @@ import { authenticateE2eUser } from "tests/e2e/utils/auth/authenticate-e2e-user-
 import { assertButtonEnabledDisabledStates } from "tests/e2e/utils/common/index";
 import { createOpportunity } from "tests/e2e/utils/opportunity/create-opportunity-utils";
 
-const { GRANTOR, CORE_REGRESSION } = VALID_TAGS;
+const { GRANTOR, OPPORTUNITY_MANAGEMENT, CORE_REGRESSION } = VALID_TAGS;
 const { targetEnv } = playwrightEnv;
 
 test.describe("Grantor opportunity overview failure path - initial state gating", () => {
   test.beforeEach(({ page: _ }, testInfo) => {
-    if (targetEnv === "staging") {
+    if (targetEnv !== "local") {
       test.skip(
         testInfo.project.name !== "Chrome",
         "Staging MFA login is limited to Chrome to avoid OTP rate-limiting",
@@ -40,7 +40,7 @@ test.describe("Grantor opportunity overview failure path - initial state gating"
 
   test(
     "Verifies bypass attempt fails and stays on the same overview page",
-    { tag: [GRANTOR, CORE_REGRESSION] },
+    { tag: [GRANTOR, OPPORTUNITY_MANAGEMENT, CORE_REGRESSION] },
     async (
       { page, context }: { page: Page; context: BrowserContext },
       testInfo: TestInfo,
@@ -59,9 +59,7 @@ test.describe("Grantor opportunity overview failure path - initial state gating"
       await createOpportunity(page, fillData);
 
       // Then I should land on the overview page.
-      await expect(page).toHaveURL(
-        /\/grantor\/opportunity\/([a-z0-9-]+?)\/overview/,
-      );
+      await expect(page).toHaveURL(/\/opportunity\/([a-z0-9-]+?)\/overview/);
 
       // And I should see the "Preview" and "Publish" buttons disabled.
       await assertButtonEnabledDisabledStates(page, {

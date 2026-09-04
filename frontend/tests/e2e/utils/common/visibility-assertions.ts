@@ -3,7 +3,9 @@
  * Usage: import { assertTextVisible, assertTextsVisibleOnPage, assertPageHeadingAndTextsVisible } from "tests/e2e/utils/common/visibility-assertions";
  */
 
-import { expect, type Page } from "@playwright/test";
+import { expect, Locator, type Page } from "@playwright/test";
+
+const DEFAULT_WAIT_TIMEOUT = 5000;
 
 /** Asserts that a single visible text value exists on the page. */
 export const assertTextVisible = async (page: Page, text: string) => {
@@ -30,3 +32,9 @@ export const assertPageHeadingAndTextsVisible = async (
 };
 
 export const assertPageDetailsVisible = assertPageHeadingAndTextsVisible;
+
+/** Waits for a locator to be visible and clicks it. */
+export async function waitForVisibleAndClick(locator: Locator): Promise<void> {
+  await locator.waitFor({ state: "visible", timeout: DEFAULT_WAIT_TIMEOUT });
+  await locator.click();
+}

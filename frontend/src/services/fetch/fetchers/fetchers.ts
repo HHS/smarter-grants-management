@@ -7,6 +7,7 @@ import {
   fetchCompetitionEndpoint,
   fetchCompetitionFormsEndpoint,
   fetchFormsEndpoint,
+  fetchWorkflowEndpoint,
   getLocalUsersEndpoint,
   toDynamicAwardRecommendationEndpoint,
   toDynamicFilesEndpoint,
@@ -155,3 +156,5 @@ export const fetchGrantorAgenciesWithMethod = (
 
 export const fetchFileUploadWithMethod = (type: "POST" | "GET") =>
   requesterForEndpoint(toDynamicFilesEndpoint(type));
+
+export const fetchWorkflow = cache(requesterForEndpoint(fetchWorkflowEndpoint));

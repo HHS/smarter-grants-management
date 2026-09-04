@@ -200,7 +200,7 @@ describe("EditRecommendationsForm", () => {
       await user.click(cancelButton);
 
       expect(mockPush).toHaveBeenCalledWith(
-        `/grantor/award-recommendation/${awardRecommendationId}/application-submissions/edit`,
+        `/award-recommendation/${awardRecommendationId}/application-submissions/edit`,
       );
     });
 
@@ -222,7 +222,7 @@ describe("EditRecommendationsForm", () => {
 
       await waitFor(() => {
         expect(mockPush).toHaveBeenCalledWith(
-          `/grantor/award-recommendation/${awardRecommendationId}/application-submissions/edit`,
+          `/award-recommendation/${awardRecommendationId}/application-submissions/edit`,
         );
       });
 

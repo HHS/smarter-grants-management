@@ -138,7 +138,7 @@ export async function saveAwardRecommendationSubmissionDetails(
     await updateAwardRecommendationSubmissionDetails(awardRecommendationId, {
       [submissionId]: buildSubmissionUpdate(formData, submissionId),
     });
-    redirect(`/grantor/award-recommendation/${awardRecommendationId}/edit`);
+    redirect(`/award-recommendation/${awardRecommendationId}/edit`);
   } catch (e) {
     if (isRedirectError(e)) {
       throw e;
@@ -149,25 +149,5 @@ export async function saveAwardRecommendationSubmissionDetails(
       `Error saving award recommendation submission details - ${error.message} ${error.cause?.toString() || ""}`,
     );
     throw error;
-  }
-}
-
-// eslint-disable-next-line @typescript-eslint/require-await
-export async function submitAwardRecommendationForReview(
-  _formData: FormData,
-): Promise<AwardRecommendationActionResponse> {
-  try {
-    // TODO: Implement submit for review functionality when endpoint is available
-    return {
-      success: true,
-    };
-  } catch (e) {
-    const error = e as Error;
-    console.error(
-      `Error submitting award recommendation - ${error.message} ${error.cause?.toString() || ""}`,
-    );
-    return {
-      errorMessage: error.message,
-    };
   }
 }

@@ -2,7 +2,7 @@
 
 import { getSession } from "src/services/auth/session";
 import { createOpportunity } from "src/services/fetch/fetchers/grantorOpportunitiesFetcher";
-import { CreateOpportunityResponse } from "src/types/grantor/createOpportunityTypes";
+import { CreateOpportunityResponse } from "src/types/createOpportunityTypes";
 
 // Future: Apply any field level validations before submitting to the backend.
 //    These will be validations that have not been taken care of client-side.
@@ -24,6 +24,8 @@ export const createOpportunityAction = async (
     agency_id: formData.get("agencyId") as string,
     opportunity_number: formData.get("opportunityNumber") as string,
     opportunity_title: formData.get("opportunityTitle") as string,
+    tagline: formData.get("tagline") as string,
+    purpose_statement: formData.get("purposeStatement") as string,
     category: formData.get("category") as string,
     category_explanation: formData.get("categoryExplanation") as string,
     assistance_listing_number: formData.get(
