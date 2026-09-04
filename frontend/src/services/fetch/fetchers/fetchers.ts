@@ -6,21 +6,13 @@ import {
   fetchAwardRecommendationEndpoint,
   fetchCompetitionEndpoint,
   fetchCompetitionFormsEndpoint,
-  fetchFormEndpoint,
   fetchFormsEndpoint,
-  fetchOpportunityEndpoint,
   fetchWorkflowEndpoint,
-  getApplicationForPrintEndpoint,
   getLocalUsersEndpoint,
-  opportunitySearchEndpoint,
-  searchAgenciesEndpoint,
-  toDynamicApplicationsEndpoint,
-  toDynamicApplicationsEndpointV1,
   toDynamicAwardRecommendationEndpoint,
   toDynamicFilesEndpoint,
   toDynamicGrantorAgenciesEndpoint,
   toDynamicGrantorOpportunityEndpoint,
-  toDynamicOrganizationsEndpoint,
   toDynamicUsersEndpoint,
   userLogoutEndpoint,
   userRefreshEndpoint,
@@ -126,11 +118,6 @@ export function requesterForEndpoint({
     return response;
   };
 }
-export const fetchOpportunity = cache(
-  requesterForEndpoint(fetchOpportunityEndpoint),
-);
-
-export const fetchForm = cache(requesterForEndpoint(fetchFormEndpoint));
 
 export const fetchForms = cache(requesterForEndpoint(fetchFormsEndpoint));
 
@@ -140,17 +127,6 @@ export const fetchCompetition = cache(
 
 export const fetchCompetitionForms = cache(
   requesterForEndpoint(fetchCompetitionFormsEndpoint),
-);
-
-export const fetchApplicationWithMethod = (
-  type: "POST" | "GET" | "PUT" | "DELETE",
-) => requesterForEndpoint(toDynamicApplicationsEndpoint(type));
-
-export const fetchApplicationWithMethodV1 = (type: "POST") =>
-  requesterForEndpoint(toDynamicApplicationsEndpointV1(type));
-
-export const fetchOpportunitySearch = requesterForEndpoint(
-  opportunitySearchEndpoint,
 );
 
 export const fetchAwardRecommendation = cache(
@@ -168,12 +144,6 @@ export const fetchUserWithMethod = (type: "POST" | "DELETE" | "PUT" | "GET") =>
 
 export const postTokenRefresh = requesterForEndpoint(userRefreshEndpoint);
 
-export const searchAgencies = requesterForEndpoint(searchAgenciesEndpoint);
-
-export const fetchOrganizationWithMethod = (
-  type: "POST" | "DELETE" | "PUT" | "GET",
-) => requesterForEndpoint(toDynamicOrganizationsEndpoint(type));
-
 export const fetchLocalUsers = requesterForEndpoint(getLocalUsersEndpoint);
 
 export const fetchGrantorOpportunityWithMethod = (
@@ -186,9 +156,5 @@ export const fetchGrantorAgenciesWithMethod = (
 
 export const fetchFileUploadWithMethod = (type: "POST" | "GET") =>
   requesterForEndpoint(toDynamicFilesEndpoint(type));
-
-export const getApplicationForPrint = requesterForEndpoint(
-  getApplicationForPrintEndpoint,
-);
 
 export const fetchWorkflow = cache(requesterForEndpoint(fetchWorkflowEndpoint));
