@@ -19,6 +19,7 @@ tags:
 - name: Proof of Concept - Alpha
 - name: Workflow
 - name: Partners
+- name: Grantor Organizations
 - name: Resources
 - name: LOCAL ONLY
 servers: .
@@ -252,6 +253,47 @@ paths:
       security:
       - ApiJwtAuth: &id002 []
       - ApiUserKeyAuth: *id002
+  /v1/workflows/{workflow_id}:
+    get:
+      parameters:
+      - in: path
+        name: workflow_id
+        schema:
+          type: string
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowGetResponseSchema'
+          description: Successful response
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Not found
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Forbidden
+      tags:
+      - Workflow
+      summary: Get Workflow
+      description: Get a workflow's current state, audit history, approvals, and approval
+        configuration.
+      security:
+      - ApiJwtAuth: &id003 []
+      - ApiUserKeyAuth: *id003
   /v1/users/{user_id}/can_access:
     post:
       parameters:
@@ -301,8 +343,145 @@ paths:
             schema:
               $ref: '#/components/schemas/UserCanAccessRequestSchema'
       security:
-      - ApiJwtAuth: &id003 []
-      - ApiUserKeyAuth: *id003
+      - ApiJwtAuth: &id004 []
+      - ApiUserKeyAuth: *id004
+  /v1/workflows/events/{event_id}:
+    get:
+      parameters:
+      - in: path
+        name: event_id
+        schema:
+          type: string
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowGetResponseSchema'
+          description: Successful response
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Not found
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Forbidden
+      tags:
+      - Workflow
+      summary: Get Workflow By Event ID
+      description: Get the same payload as Get Workflow, resolved from one of its
+        event IDs.
+      security:
+      - ApiJwtAuth: &id005 []
+      - ApiUserKeyAuth: *id005
+  /v1/workflows/{workflow_id}/audit:
+    post:
+      parameters:
+      - in: path
+        name: workflow_id
+        schema:
+          type: string
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowAuditResponseSchema'
+          description: Successful response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Validation error
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Not found
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Forbidden
+      tags:
+      - Workflow
+      summary: Get Workflow Audit History
+      description: Get a workflow's audit history, paginated.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowAuditRequestSchema'
+      security:
+      - ApiJwtAuth: &id006 []
+      - ApiUserKeyAuth: *id006
+  /v1/grantor-organizations/{grantor_organization_id}:
+    get:
+      parameters:
+      - in: path
+        name: grantor_organization_id
+        schema:
+          type: string
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetGrantorOrganizationResponseSchema'
+          description: Successful response
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Not found
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Forbidden
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Unprocessable Entity
+      tags:
+      - Grantor Organizations
+      summary: Fetch a Grantor Organization
+      security:
+      - ApiJwtAuth: &id007 []
+      - ApiUserKeyAuth: *id007
   /alpha/proof_of_concept/opportunities/{opportunity_id}:
     get:
       parameters:
@@ -337,8 +516,8 @@ paths:
         of cross-service data transfer. This endpoint requires JWT or API key authentication
         but has no authorization enforcement.
       security:
-      - ApiJwtAuth: &id004 []
-      - ApiUserKeyAuth: *id004
+      - ApiJwtAuth: &id008 []
+      - ApiUserKeyAuth: *id008
   /v1/resources/{resource_type}/{resource_id}/users/list:
     post:
       parameters:
@@ -394,8 +573,8 @@ paths:
             schema:
               $ref: '#/components/schemas/ListUserForResourceRequestSchema'
       security:
-      - ApiJwtAuth: &id005 []
-      - ApiUserKeyAuth: *id005
+      - ApiJwtAuth: &id009 []
+      - ApiUserKeyAuth: *id009
 openapi: 3.1.0
 components:
   schemas:
@@ -684,6 +863,193 @@ components:
           type: integer
           description: The HTTP status code
           example: 200
+    WorkflowUserSchema:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+          description: The user's unique identifier
+          example: 123e4567-e89b-12d3-a456-426614174000
+        email:
+          type:
+          - string
+          - 'null'
+          description: The user's email address, null if they have no login
+          example: user@example.com
+    WorkflowApprovalSchema:
+      type: object
+      properties:
+        workflow_approval_id:
+          type: string
+          format: uuid
+          description: The approval record's unique identifier
+          example: 123e4567-e89b-12d3-a456-426614174000
+        approving_user:
+          description: The user who gave this approval
+          type:
+          - object
+          $ref: '#/components/schemas/WorkflowUserSchema'
+        event_id:
+          type: string
+          format: uuid
+          description: The ID of the event that recorded this approval
+          example: 123e4567-e89b-12d3-a456-426614174000
+        is_still_valid:
+          type: boolean
+          description: Whether this approval is still in effect
+        comment:
+          type:
+          - string
+          - 'null'
+          description: An optional comment left with the approval
+        approval_type:
+          description: The type of approval
+          enum:
+          - basic_test_approval
+          - secondary_test_approval
+          type:
+          - string
+        approval_response_type:
+          description: The response given for this approval
+          enum:
+          - approved
+          - declined
+          - requires_modification
+          type:
+          - string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    WorkflowApprovalConfigEntrySchema:
+      type: object
+      properties:
+        approval_type:
+          description: The type of approval this event represents
+          enum:
+          - basic_test_approval
+          - secondary_test_approval
+          type:
+          - string
+        required_privileges:
+          type: array
+          description: The privileges required to give this approval
+          items:
+            enum:
+            - view_partner
+            - update_partner
+            - manage_partner_members
+            - view_program
+            - update_program
+            - view_grantor_organization
+            - update_grantor_organization
+            - manage_grantor_organization_members
+            - internal_workflow_event_send
+            - unused_privilege_102
+            - unused_privilege_103
+            type:
+            - string
+        allowed_approval_response_types:
+          type: array
+          description: The response types this approval accepts
+          items:
+            enum:
+            - approved
+            - declined
+            - requires_modification
+            type:
+            - string
+        possible_users:
+          type: array
+          description: The users eligible to give this approval
+          items:
+            type:
+            - object
+            $ref: '#/components/schemas/WorkflowUserSchema'
+    WorkflowGetResponseDataSchema:
+      type: object
+      properties:
+        workflow_id:
+          type: string
+          format: uuid
+          description: The workflow's unique identifier
+          example: 123e4567-e89b-12d3-a456-426614174000
+        workflow_type:
+          description: The type of workflow
+          enum:
+          - basic_test_workflow
+          - prototype_workflow
+          - approval_test_workflow
+          - limited_approval_test_workflow
+          type:
+          - string
+        current_workflow_state:
+          type: string
+          description: The workflow's current state
+        is_active:
+          type: boolean
+          description: Whether the workflow is still active
+        resource_id:
+          type: string
+          format: uuid
+          description: The resource the workflow is attached to
+          example: 123e4567-e89b-12d3-a456-426614174000
+        resource_type:
+          description: The type of resource the workflow is attached to
+          enum:
+          - internal
+          - partner
+          - program
+          - grantor_organization
+          - opportunity
+          type:
+          - string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        workflow_approvals:
+          type: array
+          description: The approvals recorded against the workflow, sorted oldest
+            to newest
+          items:
+            type:
+            - object
+            $ref: '#/components/schemas/WorkflowApprovalSchema'
+        workflow_approval_config:
+          type: object
+          description: For each event that requires an approval, who can give it and
+            how
+          additionalProperties:
+            type:
+            - object
+            $ref: '#/components/schemas/WorkflowApprovalConfigEntrySchema'
+        valid_events:
+          type: array
+          description: The events that can legally be sent next, given the current
+            state
+          items:
+            type: string
+    WorkflowGetResponseSchema:
+      type: object
+      properties:
+        message:
+          type: string
+          description: The message to return
+          example: Success
+        data:
+          type:
+          - object
+          $ref: '#/components/schemas/WorkflowGetResponseDataSchema'
+        status_code:
+          type: integer
+          description: The HTTP status code
+          example: 200
     UserCanAccessResponseSchema:
       type: object
       properties:
@@ -739,6 +1105,214 @@ components:
       - privileges
       - resource_id
       - resource_type
+    SortOrderSchema:
+      type: object
+      properties:
+        order_by:
+          type: string
+          description: The field that the records were sorted by
+          example: id
+        sort_direction:
+          description: The direction the records are sorted
+          enum:
+          - ascending
+          - descending
+          type:
+          - string
+    PaginationInfoSchema:
+      type: object
+      properties:
+        page_offset:
+          type: integer
+          description: The page number that was fetched
+          example: 1
+        page_size:
+          type: integer
+          description: The size of the page fetched
+          example: 25
+        total_records:
+          type: integer
+          description: The total number of records fetchable
+          example: 42
+        total_pages:
+          type: integer
+          description: The total number of pages that can be fetched
+          example: 2
+        sort_order:
+          type: array
+          description: The sort order passed in originally
+          items:
+            type:
+            - object
+            $ref: '#/components/schemas/SortOrderSchema'
+    WorkflowEventRefSchema:
+      type: object
+      properties:
+        event_id:
+          type: string
+          format: uuid
+          description: The ID of the event that produced this record
+          example: 123e4567-e89b-12d3-a456-426614174000
+        sent_at:
+          type: string
+          format: date-time
+          description: When the event was sent
+    WorkflowAuditEventSchema:
+      type: object
+      properties:
+        workflow_audit_id:
+          type: string
+          format: uuid
+          description: The audit record's unique identifier
+          example: 123e4567-e89b-12d3-a456-426614174000
+        acting_user:
+          description: The user who performed the transition
+          type:
+          - object
+          $ref: '#/components/schemas/WorkflowUserSchema'
+        transition_event:
+          type: string
+          description: The event that triggered the transition
+        source_state:
+          type: string
+          description: The state before the transition
+        target_state:
+          type: string
+          description: The state after the transition
+        event:
+          description: The event that triggered this transition
+          type:
+          - object
+          $ref: '#/components/schemas/WorkflowEventRefSchema'
+        audit_metadata:
+          type:
+          - object
+          - 'null'
+          description: Additional metadata recorded with the transition
+          additionalProperties: {}
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    WorkflowAuditResponseSchema:
+      type: object
+      properties:
+        pagination_info:
+          description: The pagination information for paginated endpoints
+          type: &id010
+          - object
+          $ref: '#/components/schemas/PaginationInfoSchema'
+        message:
+          type: string
+          description: The message to return
+          example: Success
+        data:
+          type: array
+          items:
+            type:
+            - object
+            $ref: '#/components/schemas/WorkflowAuditEventSchema'
+        status_code:
+          type: integer
+          description: The HTTP status code
+          example: 200
+    SortOrderWorkflowAuditPaginationSchema:
+      type: object
+      properties:
+        order_by:
+          type: string
+          enum:
+          - created_at
+          description: The field to sort the response by
+        sort_direction:
+          description: Whether to sort the response ascending or descending
+          enum:
+          - ascending
+          - descending
+          type:
+          - string
+      required:
+      - order_by
+      - sort_direction
+    WorkflowAuditPaginationSchema:
+      type: object
+      properties:
+        sort_order:
+          type: array
+          default:
+          - order_by: created_at
+            sort_direction: descending
+          minItems: 1
+          maxItems: 5
+          description: The list of sorting rules
+          items:
+            type:
+            - object
+            $ref: '#/components/schemas/SortOrderWorkflowAuditPaginationSchema'
+        page_size:
+          type: integer
+          default: 25
+          minimum: 1
+          maximum: 5000
+          description: The size of the page to fetch
+          example: 25
+        page_offset:
+          type: integer
+          default: 1
+          minimum: 1
+          description: The page number to fetch, starts counting from 1
+          example: 1
+    WorkflowAuditRequestSchema:
+      type: object
+      properties:
+        pagination:
+          type:
+          - object
+          $ref: '#/components/schemas/WorkflowAuditPaginationSchema'
+      required:
+      - pagination
+    GrantorOrganizationSchema:
+      type: object
+      properties:
+        grantor_organization_id:
+          type: string
+          format: uuid
+          description: Unique ID of a grantor organization
+          example: 123e4567-e89b-12d3-a456-426614174000
+        organization_name:
+          type: string
+          description: Name of the grantor organization
+          example: My example organization
+        grantor_organization_type:
+          type: string
+          description: Type of grantor organization
+          example: grant_office
+        partner:
+          type:
+          - object
+          $ref: '#/components/schemas/PartnerSchema'
+        parent_organization:
+          type:
+          - object
+          - 'null'
+          anyOf:
+          - $ref: '#/components/schemas/GrantorOrganizationSchema'
+          - type: 'null'
+    GetGrantorOrganizationResponseSchema:
+      type: object
+      properties:
+        message:
+          type: string
+          description: The message to return
+          example: Success
+        data:
+          type:
+          - object
+          $ref: '#/components/schemas/GrantorOrganizationSchema'
+        status_code:
+          type: integer
+          description: The HTTP status code
+          example: 200
     OpportunitySummarySchema:
       type: object
       properties:
@@ -790,46 +1364,6 @@ components:
           type:
           - object
           $ref: '#/components/schemas/OpportunityDataSchema'
-    SortOrderSchema:
-      type: object
-      properties:
-        order_by:
-          type: string
-          description: The field that the records were sorted by
-          example: id
-        sort_direction:
-          description: The direction the records are sorted
-          enum:
-          - ascending
-          - descending
-          type:
-          - string
-    PaginationInfoSchema:
-      type: object
-      properties:
-        page_offset:
-          type: integer
-          description: The page number that was fetched
-          example: 1
-        page_size:
-          type: integer
-          description: The size of the page fetched
-          example: 25
-        total_records:
-          type: integer
-          description: The total number of records fetchable
-          example: 42
-        total_pages:
-          type: integer
-          description: The total number of pages that can be fetched
-          example: 2
-        sort_order:
-          type: array
-          description: The sort order passed in originally
-          items:
-            type:
-            - object
-            $ref: '#/components/schemas/SortOrderSchema'
     ResourceForRoleSchema:
       type: object
       properties:
@@ -915,8 +1449,7 @@ components:
       properties:
         pagination_info:
           description: The pagination information for paginated endpoints
-          type:
-          - object
+          type: *id010
           $ref: '#/components/schemas/PaginationInfoSchema'
         message:
           type: string
@@ -1045,12 +1578,12 @@ components:
       required:
       - pagination
   securitySchemes:
-    ApiUserKeyAuth:
-      type: apiKey
-      in: header
-      name: X-API-Key
     ApiJwtAuth:
       type: apiKey
       in: header
       name: X-MGMT-Token
+    ApiUserKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
 
