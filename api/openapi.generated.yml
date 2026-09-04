@@ -1271,17 +1271,6 @@ components:
           $ref: '#/components/schemas/WorkflowAuditPaginationSchema'
       required:
       - pagination
-    PartnerSchema1:
-      type: object
-      properties:
-        partner_id:
-          type: string
-          format: uuid
-          description: Unique ID of a partner
-          example: 123e4567-e89b-12d3-a456-426614174000
-        partner_name:
-          type: string
-          description: Name of the partner
     GrantorOrganizationSchema:
       type: object
       properties:
@@ -1301,7 +1290,7 @@ components:
         partner:
           type:
           - object
-          $ref: '#/components/schemas/PartnerSchema1'
+          $ref: '#/components/schemas/PartnerSchema'
         parent_organization:
           type:
           - object
@@ -1589,12 +1578,12 @@ components:
       required:
       - pagination
   securitySchemes:
-    ApiUserKeyAuth:
-      type: apiKey
-      in: header
-      name: X-API-Key
     ApiJwtAuth:
       type: apiKey
       in: header
       name: X-MGMT-Token
+    ApiUserKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
 
