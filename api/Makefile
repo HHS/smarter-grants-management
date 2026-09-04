@@ -262,7 +262,11 @@ cmd: ## Run Flask app CLI command (Run `make cli args="--help"` to see list of C
 	$(FLASK_CMD) $(args)
 
 openapi-spec: ## Generate OpenAPI spec
-	docker compose run --rm -e DB_CHECK_CONNECTION_ON_INIT=false mgmt-openapi-tools flask --app src.app spec --format yaml --output openapi.generated.yml
+	docker compose run --rm -e DB_CHECK_CONNECTION_ON_INIT=false -e DISABLE_OPENAPI_SERVER=false mgmt-openapi-tools flask --app src.app spec --format yaml --output openapi.generated.yml
+
+openapi-spec-client: ## Generate OpenAPI spec for client side validations
+	docker compose run --rm -e DB_CHECK_CONNECTION_ON_INIT=false -e DISABLE_OPENAPI_SERVER=true mgmt-openapi-tools flask --app src.app spec --format yaml --output openapi.generated.yml
+
 
 ##################################################
 # ERD Diagrams
