@@ -125,4 +125,3 @@ export const fetchWorkflowEndpoint = {
   method: "GET" as ApiMethod,
   requiresAuth: true,
 };
-as;

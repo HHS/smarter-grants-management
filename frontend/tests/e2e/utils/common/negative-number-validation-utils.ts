@@ -15,9 +15,9 @@
  */
 
 import { expect, Page } from "@playwright/test";
-import { waitForVisibleAndClick } from "tests/e2e/utils/opportunities/interaction-utils";
 
 import { resolveTextLocator } from "./text-locator-utils";
+import { waitForVisibleAndClick } from "./visibility-assertions";
 
 export type NegativeValidationFieldDefinition = {
   valueKey: string;
