@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { axe } from "jest-axe";
 import { identity } from "lodash";
-import OpportunitiesListPage from "src/app/[locale]/(base)/grantor/opportunities/page";
+import OpportunitiesListPage from "src/app/[locale]/opportunities/page";
 import { UnauthorizedError } from "src/errors";
 import { UserSession } from "src/types/authTypes";
 import { LocalizedPageProps } from "src/types/intl";
@@ -78,42 +78,36 @@ const redirectMock = jest.fn();
 jest.mock("next/navigation", () => ({
   redirect: (location: string) => redirectMock(location) as unknown,
   useRouter: () => ({ push: jest.fn() }),
-  usePathname: () => "/grantor/opportunities",
+  usePathname: () => "/opportunities",
   useSearchParams: () => new URLSearchParams("page=1"),
 }));
 
-jest.mock(
-  "src/app/[locale]/(base)/grantor/opportunities/_components/AgencySelector",
-  () => ({
-    AgencySelector: ({
-      agencies,
-      className,
-    }: {
-      agencies: UserAgency[];
-      className?: string;
-    }) => (
-      <div>
-        <label
-          htmlFor="agency-selector-mock"
-          data-testid="agency-selector-label"
-        >
-          Select Agency
-        </label>
-        <select
-          id="agency-selector-mock"
-          data-testid="agency-selector"
-          data-classname={className}
-        >
-          {agencies.map((a) => (
-            <option key={a.agency_id} value={a.agency_id}>
-              {a.agency_name}
-            </option>
-          ))}
-        </select>
-      </div>
-    ),
-  }),
-);
+jest.mock("src/app/[locale]/opportunities/_components/AgencySelector", () => ({
+  AgencySelector: ({
+    agencies,
+    className,
+  }: {
+    agencies: UserAgency[];
+    className?: string;
+  }) => (
+    <div>
+      <label htmlFor="agency-selector-mock" data-testid="agency-selector-label">
+        Select Agency
+      </label>
+      <select
+        id="agency-selector-mock"
+        data-testid="agency-selector"
+        data-classname={className}
+      >
+        {agencies.map((a) => (
+          <option key={a.agency_id} value={a.agency_id}>
+            {a.agency_name}
+          </option>
+        ))}
+      </select>
+    </div>
+  ),
+}));
 
 const userSession: UserSession = {
   token: "fake token",
@@ -392,7 +386,7 @@ describe("Opportunities", () => {
       expect(createOpportunityLink).toBeVisible();
       expect(createOpportunityLink).toHaveAttribute(
         "href",
-        "/grantor/opportunities/create?agency=agency-uuid-1",
+        "/opportunities/create?agency=agency-uuid-1",
       );
     });
 
@@ -566,7 +560,7 @@ describe("Opportunities", () => {
       expect(createOpportunityLink).toBeVisible();
       expect(createOpportunityLink).toHaveAttribute(
         "href",
-        "/grantor/opportunities/create?agency=agency-uuid-1",
+        "/opportunities/create?agency=agency-uuid-1",
       );
     });
 
@@ -619,7 +613,7 @@ describe("Opportunities", () => {
       ).toBeVisible();
 
       const editLink =
-        "/grantor/opportunity/" + basicOpportunity.opportunity_id + "/edit";
+        "/opportunity/" + basicOpportunity.opportunity_id + "/edit";
       const oppTitlelink = screen.getByRole("link", {
         name: "Test Opportunity",
       });

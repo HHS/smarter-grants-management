@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { identity } from "lodash";
-import { submitReviewForAwardRecommendation } from "src/app/[locale]/(base)/grantor/award-recommendation/[id]/submit-for-review/actions";
+import { submitReviewForAwardRecommendation } from "src/app/[locale]/award-recommendation/[id]/submit-for-review/actions";
 import * as useClientFetchModule from "src/hooks/useClientFetch";
 
 import { useRouter } from "next/navigation";
@@ -43,7 +43,7 @@ jest.mock("src/components/core/Spinner", () => ({
 }));
 
 jest.mock(
-  "src/app/[locale]/(base)/grantor/award-recommendation/[id]/submit-for-review/actions",
+  "src/app/[locale]/award-recommendation/[id]/submit-for-review/actions",
   () => ({
     submitReviewForAwardRecommendation: jest.fn(),
   }),
@@ -423,9 +423,7 @@ describe("ReviewSubmissionFormContainer", () => {
           "ar-123",
           { review_comment: "test" },
         );
-        expect(mockPush).toHaveBeenCalledWith(
-          "/grantor/award-recommendation/ar-123",
-        );
+        expect(mockPush).toHaveBeenCalledWith("/award-recommendation/ar-123");
       });
     });
 
@@ -487,7 +485,7 @@ describe("ReviewSubmissionFormContainer", () => {
       await userEvent.click(cancelButton);
 
       expect(mockPush).toHaveBeenCalledWith(
-        "/grantor/award-recommendation/ar-123/edit",
+        "/award-recommendation/ar-123/edit",
       );
     });
   });

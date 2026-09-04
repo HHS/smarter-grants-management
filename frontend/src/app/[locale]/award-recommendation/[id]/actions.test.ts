@@ -117,7 +117,7 @@ describe("Award Recommendation Actions", () => {
         },
       });
       expect(mockRedirect).toHaveBeenCalledWith(
-        "/grantor/award-recommendation/ar-id-123/edit",
+        "/award-recommendation/ar-id-123/edit",
       );
     });
 

@@ -138,7 +138,7 @@ export async function saveAwardRecommendationSubmissionDetails(
     await updateAwardRecommendationSubmissionDetails(awardRecommendationId, {
       [submissionId]: buildSubmissionUpdate(formData, submissionId),
     });
-    redirect(`/grantor/award-recommendation/${awardRecommendationId}/edit`);
+    redirect(`/award-recommendation/${awardRecommendationId}/edit`);
   } catch (e) {
     if (isRedirectError(e)) {
       throw e;

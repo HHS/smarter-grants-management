@@ -1,6 +1,6 @@
 "use client";
 
-import { createOpportunityAction } from "src/app/[locale]/(base)/grantor/opportunities/create/actions";
+import { createOpportunityAction } from "src/app/[locale]/opportunities/create/actions";
 
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -57,7 +57,7 @@ export function CreateOpportunityForm({
     // If success, redirect to the edit page (Part 2 of create)
     if (response?.success && response.data?.opportunity_id) {
       router.push(
-        `/grantor/opportunity/${response.data.opportunity_id}/overview?fromCreate=true`,
+        `/opportunity/${response.data.opportunity_id}/overview?fromCreate=true`,
       );
     } else if (response?.errorMessage) {
       // Scroll to top to show the error message
@@ -261,7 +261,7 @@ export function CreateOpportunityForm({
         </div>
 
         <div className="display-flex flex-left margin-top-5">
-          <Link href="/grantor/opportunities">
+          <Link href="/opportunities">
             <Button
               type="button"
               name="cancel_button"

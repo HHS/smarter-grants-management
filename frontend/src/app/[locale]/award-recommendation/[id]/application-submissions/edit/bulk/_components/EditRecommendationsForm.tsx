@@ -3,7 +3,7 @@
 import {
   RecommendationDetailForm,
   RecommendationDetailFormHandle,
-} from "src/app/[locale]/(base)/grantor/award-recommendation/[id]/application-submissions/[applicationSubmissionId]/edit/_components/RecommendationDetailsSection";
+} from "src/app/[locale]/award-recommendation/[id]/application-submissions/[applicationSubmissionId]/edit/_components/RecommendationDetailsSection";
 import { useSelectedSubmissions } from "src/hooks/useSelectedSubmissions";
 
 import { useTranslations } from "next-intl";
@@ -36,7 +36,7 @@ export default function EditRecommendationsForm({
 
   const handleCancel = () => {
     router.push(
-      `/grantor/award-recommendation/${awardRecommendationId}/application-submissions/edit`,
+      `/award-recommendation/${awardRecommendationId}/application-submissions/edit`,
     );
   };
 
@@ -52,7 +52,7 @@ export default function EditRecommendationsForm({
     // For now, just navigate back
     setTimeout(() => {
       router.push(
-        `/grantor/award-recommendation/${awardRecommendationId}/application-submissions/edit`,
+        `/award-recommendation/${awardRecommendationId}/application-submissions/edit`,
       );
     }, 500);
   };
@@ -62,7 +62,7 @@ export default function EditRecommendationsForm({
       <SimplerAlert
         alertClick={() =>
           router.push(
-            `/grantor/award-recommendation/${awardRecommendationId}/application-submissions/edit`,
+            `/award-recommendation/${awardRecommendationId}/application-submissions/edit`,
           )
         }
         buttonId="no-selections-alert"

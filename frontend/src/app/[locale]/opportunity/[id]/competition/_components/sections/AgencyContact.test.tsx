@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { AgencyContact } from "src/app/[locale]/(base)/grantor/opportunity/[id]/competition/_components/sections/AgencyContact";
+import { AgencyContact } from "src/app/[locale]/opportunity/[id]/competition/_components/sections/AgencyContact";
 
 jest.mock("next/navigation", () => ({
   useRouter: jest.fn().mockReturnValue({

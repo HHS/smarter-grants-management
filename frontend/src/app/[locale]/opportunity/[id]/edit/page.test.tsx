@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import OpportunityEditPage from "src/app/[locale]/(base)/grantor/opportunity/[id]/edit/page";
+import OpportunityEditPage from "src/app/[locale]/opportunity/[id]/edit/page";
 import { LocalizedPageProps } from "src/types/intl";
 import { GrantorOpportunityDetail } from "src/types/opportunity/opportunityResponseTypes";
 import { FeatureFlaggedPageWrapper } from "src/types/uiTypes";
@@ -50,7 +50,7 @@ jest.mock("src/services/featureFlags/withFeatureFlag", () => ({
 jest.mock("next/navigation", () => ({
   redirect: (location: string) => redirectMock(location) as unknown,
   useRouter: () => ({ push: jest.fn() }),
-  usePathname: () => "/grantor/opportunities",
+  usePathname: () => "/opportunities",
   useSearchParams: () => new URLSearchParams("page=1"),
 }));
 

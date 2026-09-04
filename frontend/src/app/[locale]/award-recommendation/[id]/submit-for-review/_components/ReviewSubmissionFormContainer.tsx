@@ -1,6 +1,6 @@
 "use client";
 
-import { submitReviewForAwardRecommendation } from "src/app/[locale]/(base)/grantor/award-recommendation/[id]/submit-for-review/actions";
+import { submitReviewForAwardRecommendation } from "src/app/[locale]/award-recommendation/[id]/submit-for-review/actions";
 import { useClientFetch } from "src/hooks/useClientFetch";
 import { UserPrivilegesResponse } from "src/types/userTypes";
 import { WorkflowState } from "src/types/workflowTypes";
@@ -170,7 +170,7 @@ export const ReviewSubmissionFormContainer: React.FC<
       );
 
       if (result.success) {
-        router.push(`/grantor/award-recommendation/${awardRecommendationId}`);
+        router.push(`/award-recommendation/${awardRecommendationId}`);
       } else if (result.errorMessage) {
         setErrorMessage(result.errorMessage);
       }
@@ -184,7 +184,7 @@ export const ReviewSubmissionFormContainer: React.FC<
   // Currently always routes to /edit page regardless of user privileges
   // Consider routing based on user's actual permissions (edit vs view)
   const handleCancel = () => {
-    router.push(`/grantor/award-recommendation/${awardRecommendationId}/edit`);
+    router.push(`/award-recommendation/${awardRecommendationId}/edit`);
   };
 
   if (isLoading) {

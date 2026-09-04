@@ -50,7 +50,7 @@ const getSubmissionDetailHref = (
   awardRecommendationId: string,
   submissionId: string,
 ) =>
-  `/grantor/award-recommendation/${awardRecommendationId}/application-submissions/${submissionId}/edit`;
+  `/award-recommendation/${awardRecommendationId}/application-submissions/${submissionId}/edit`;
 
 const formatCellValue = (value?: string) => {
   if (!value) {
@@ -353,7 +353,7 @@ export const RecommendationSubmissionsSection = ({
             {showRecommended && (
               <Link
                 className="text-bold text-underline"
-                href={`/grantor/award-recommendation/${awardRecommendationId}/application-submissions/edit`}
+                href={`/award-recommendation/${awardRecommendationId}/application-submissions/edit`}
               >
                 {t("recommendedAwards.editLink")}
               </Link>
@@ -371,7 +371,7 @@ export const RecommendationSubmissionsSection = ({
             <div className="bg-base-lighter radius-md padding-y-2 padding-x-3">
               <Link
                 className="text-bold text-left display-block width-full text-underline"
-                href={`/grantor/award-recommendation/${awardRecommendationId}/application-submissions/edit`}
+                href={`/award-recommendation/${awardRecommendationId}/application-submissions/edit`}
               >
                 {t("recommendedAwards.editLink")}
               </Link>

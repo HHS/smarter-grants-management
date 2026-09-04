@@ -9,7 +9,7 @@ import {
   CompetitionSaveApiResponse,
   CompetitionSaveRequest,
 } from "src/types/competitionsResponseTypes";
-import { CreateOpportunityRecord } from "src/types/grantor/createOpportunityTypes";
+import { CreateOpportunityRecord } from "src/types/createOpportunityTypes";
 import {
   GrantorOpportunityApiResponse,
   OpportunitySummaryCreateRequest,

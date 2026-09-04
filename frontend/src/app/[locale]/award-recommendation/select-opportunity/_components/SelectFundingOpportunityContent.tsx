@@ -40,9 +40,7 @@ export const SelectFundingOpportunityContent = ({
       const { awardRecommendationId } =
         await createAwardRecommendationAction(fundingOpportunityId);
 
-      router.push(
-        `/grantor/award-recommendation/${awardRecommendationId}/edit`,
-      );
+      router.push(`/award-recommendation/${awardRecommendationId}/edit`);
     } finally {
       setCreatingOpportunityId(null);
     }

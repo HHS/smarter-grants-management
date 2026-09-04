@@ -1,6 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
 import { axe } from "jest-axe";
-import OpportunityOverviewPage from "src/app/[locale]/(base)/grantor/opportunity/[id]/overview/page";
+import OpportunityOverviewPage from "src/app/[locale]/opportunity/[id]/overview/page";
 import { ForbiddenError, MissingAuthError, NotFoundError } from "src/errors";
 import { Competition } from "src/types/competitionsResponseTypes";
 import { GrantorOpportunityDetail } from "src/types/opportunity/opportunityResponseTypes";

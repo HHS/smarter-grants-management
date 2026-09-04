@@ -1,6 +1,6 @@
 import { Metadata } from "next";
-import { saveAwardRecommendationSubmissionDetails } from "src/app/[locale]/(base)/grantor/award-recommendation/[id]/actions";
-import RecommendationSubmissionEditForm from "src/app/[locale]/(base)/grantor/award-recommendation/[id]/application-submissions/[applicationSubmissionId]/edit/_components/RecommendationSubmissionEditForm";
+import { saveAwardRecommendationSubmissionDetails } from "src/app/[locale]/award-recommendation/[id]/actions";
+import RecommendationSubmissionEditForm from "src/app/[locale]/award-recommendation/[id]/application-submissions/[applicationSubmissionId]/edit/_components/RecommendationSubmissionEditForm";
 import { ApiRequestError, parseErrorStatus } from "src/errors";
 import withFeatureFlag from "src/services/featureFlags/withFeatureFlag";
 import {
@@ -112,7 +112,7 @@ async function AwardRecommendationSubmissionEditPageContent({
     applicationSubmission.application_submission_number || "";
   const applicationId = applicationSubmission.application?.application_id ?? "";
 
-  const editPageHref = `/grantor/award-recommendation/${awardRecommendationId}/edit`;
+  const editPageHref = `/award-recommendation/${awardRecommendationId}/edit`;
   const editTitle = t("submissionEdit.editTitle", {
     applicationSubmissionNumber,
   });

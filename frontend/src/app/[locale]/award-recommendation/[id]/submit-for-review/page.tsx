@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { ReviewSubmissionFormContainer } from "src/app/[locale]/(base)/grantor/award-recommendation/[id]/submit-for-review/_components/ReviewSubmissionFormContainer";
+import { ReviewSubmissionFormContainer } from "src/app/[locale]/award-recommendation/[id]/submit-for-review/_components/ReviewSubmissionFormContainer";
 import withFeatureFlag from "src/services/featureFlags/withFeatureFlag";
 import { getAwardRecommendationDetails } from "src/services/fetch/fetchers/awardRecommendationFetcher";
 import { AwardRecommendationDetails } from "src/types/awardRecommendationTypes";
@@ -44,11 +44,11 @@ async function SubmitForReviewPageContent({
     );
   } catch (error) {
     console.error("Failed to fetch award recommendation details", error);
-    redirect(`/grantor/award-recommendation/${awardRecommendationId}/edit`);
+    redirect(`/award-recommendation/${awardRecommendationId}/edit`);
   }
 
   if (!awardRecommendationDetails) {
-    redirect(`/grantor/award-recommendation/${awardRecommendationId}/edit`);
+    redirect(`/award-recommendation/${awardRecommendationId}/edit`);
   }
 
   return (

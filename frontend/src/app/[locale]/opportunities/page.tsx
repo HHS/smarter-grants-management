@@ -1,6 +1,6 @@
 import TopLevelError from "src/app/[locale]/(base)/error/page";
-import { AgencySelector } from "src/app/[locale]/(base)/grantor/opportunities/_components/AgencySelector";
 import Unauthenticated from "src/app/[locale]/(base)/unauthenticated/page";
+import { AgencySelector } from "src/app/[locale]/opportunities/_components/AgencySelector";
 import { MissingAuthError, UnauthorizedError } from "src/errors";
 import { getSession } from "src/services/auth/session";
 import withFeatureFlag from "src/services/featureFlags/withFeatureFlag";
@@ -146,7 +146,7 @@ const ActionMenu = ({
   return (
     <PopoverMenu>
       <a
-        href={`/grantor/opportunity/${opportunityId}/overview`}
+        href={`/opportunity/${opportunityId}/overview`}
         className="usa-button usa-button--unstyled width-full text-left padding-y-1 padding-x-2 hover:bg-base-lighter display-block text-no-underline"
       >
         {t("actionButtons.edit")}
@@ -168,7 +168,7 @@ const transformTableRowData = (
       : (opportunity.opportunity_status ?? "");
     const opportunityTitleUrl = opportunity.is_draft
       ? canUpdate
-        ? `/grantor/opportunity/${opportunity.opportunity_id}/edit`
+        ? `/opportunity/${opportunity.opportunity_id}/edit`
         : ``
       : `/opportunity/${opportunity.opportunity_id}`;
 
@@ -262,7 +262,7 @@ const OpportunitiesHeader = ({
         </div>
         {canCreate && (
           <Link
-            href={`/grantor/opportunities/create?agency=${currentAgencyId}`}
+            href={`/opportunities/create?agency=${currentAgencyId}`}
             className="usa-button margin-left-auto"
           >
             {t("createOpportunityButton")}

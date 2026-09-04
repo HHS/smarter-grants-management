@@ -14,7 +14,7 @@ export async function createOpportunity(
   fillData: Record<OpportunityFieldValueKey, string>,
 ): Promise<void> {
   // Given I navigate to the opportunities list.
-  await page.goto("/grantor/opportunities");
+  await page.goto("/opportunities");
   await expect(page).toHaveURL(/\/grantor\/opportunities/);
 
   // When I start creating a new opportunity.

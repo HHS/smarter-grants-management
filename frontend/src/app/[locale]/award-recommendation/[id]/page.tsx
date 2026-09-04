@@ -119,13 +119,13 @@ async function AwardRecommendationPageContent({
     {
       type: "navigation",
       label: t("heroButtons.edit"),
-      href: `/grantor/award-recommendation/${awardRecommendationId}/edit`,
+      href: `/award-recommendation/${awardRecommendationId}/edit`,
       outline: true,
     },
     {
       type: "navigation",
       label: t("heroButtons.submitForReview"),
-      href: `/grantor/award-recommendation/${awardRecommendationId}/submit-for-review`,
+      href: `/award-recommendation/${awardRecommendationId}/submit-for-review`,
     },
   ];
 

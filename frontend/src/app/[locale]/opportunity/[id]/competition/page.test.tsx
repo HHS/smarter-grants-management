@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { axe } from "jest-axe";
-import OpportunityCompetitionPage from "src/app/[locale]/(base)/grantor/opportunity/[id]/competition/page";
+import OpportunityCompetitionPage from "src/app/[locale]/opportunity/[id]/competition/page";
 import { MissingAuthError } from "src/errors";
 import { GrantorOpportunityDetail } from "src/types/opportunity/opportunityResponseTypes";
 import { DeepPartial } from "src/utils/testing/commonTestUtils";
@@ -38,7 +38,7 @@ jest.mock(
 );
 
 jest.mock(
-  "src/app/[locale]/(base)/grantor/opportunity/[id]/competition/_components/CompetitionForm",
+  "src/app/[locale]/opportunity/[id]/competition/_components/CompetitionForm",
   () => ({
     CompetitionForm: ({
       competition,

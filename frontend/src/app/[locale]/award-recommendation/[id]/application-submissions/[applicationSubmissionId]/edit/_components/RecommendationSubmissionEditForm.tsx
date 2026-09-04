@@ -3,7 +3,7 @@
 import {
   RecommendationDetailsSection,
   type RecommendationDetailFormHandle,
-} from "src/app/[locale]/(base)/grantor/award-recommendation/[id]/application-submissions/[applicationSubmissionId]/edit/_components/RecommendationDetailsSection";
+} from "src/app/[locale]/award-recommendation/[id]/application-submissions/[applicationSubmissionId]/edit/_components/RecommendationDetailsSection";
 import { AwardRecommendationSubmission } from "src/types/awardRecommendationTypes";
 
 import { FormEvent, ReactNode, useRef } from "react";
