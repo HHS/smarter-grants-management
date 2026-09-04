@@ -83,7 +83,7 @@ jest.mock("./_components/ReviewSubmissionFormContainer", () => ({
 }));
 
 jest.mock(
-  "src/app/[locale]/(base)/grantor/award-recommendation/[id]/submit-for-review/actions",
+  "src/app/[locale]/award-recommendation/[id]/submit-for-review/actions",
   () => ({
     submitReviewForAwardRecommendation: jest.fn(),
   }),
@@ -170,7 +170,7 @@ describe("SubmitForReviewPage", () => {
     ).rejects.toThrow("NEXT_REDIRECT");
 
     expect(redirect).toHaveBeenCalledWith(
-      "/grantor/award-recommendation/test-id-123/edit",
+      "/award-recommendation/test-id-123/edit",
     );
   });
 
@@ -185,7 +185,7 @@ describe("SubmitForReviewPage", () => {
     ).rejects.toThrow("NEXT_REDIRECT");
 
     expect(redirect).toHaveBeenCalledWith(
-      "/grantor/award-recommendation/test-id-123/edit",
+      "/award-recommendation/test-id-123/edit",
     );
   });
 

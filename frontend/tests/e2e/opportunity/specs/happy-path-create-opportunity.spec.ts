@@ -58,8 +58,8 @@ test.describe("Grantor Opportunity Happy Path", () => {
 
       //--------------Scenario steps start here----------------
 
-      // Given I use direct URL "/grantor/opportunities" to navigate to the "Opportunities List" page
-      await page.goto("/grantor/opportunities");
+      // Given I use direct URL "/opportunities" to navigate to the "Opportunities List" page
+      await page.goto("/opportunities");
 
       // And I should be on the "Opportunities List" page
       await expect(page).toHaveURL(/\/grantor\/opportunities/);
@@ -102,7 +102,7 @@ test.describe("Grantor Opportunity Happy Path", () => {
       });
 
       // When I navigate directly to opportunity list page
-      await page.goto("/grantor/opportunities");
+      await page.goto("/opportunities");
 
       // Then I should see "Draft" status for the created opportunity row.
       const matchingRow = await waitForOpportunityRowByStatus(page, {

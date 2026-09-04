@@ -83,7 +83,7 @@ test.describe("Opportunity failure path - create opportunity", () => {
 
       // Shard 2: rerun create flow with the same values and assert duplicate behavior.
       // When I start a second create flow with duplicate values.
-      await page.goto("/grantor/opportunities");
+      await page.goto("/opportunities");
       await expect(page).toHaveURL(/\/grantor\/opportunities/);
       await page.getByRole("link", { name: "Create Opportunity" }).click();
       await expect(page).toHaveURL(/\/grantor\/opportunities\/create/);

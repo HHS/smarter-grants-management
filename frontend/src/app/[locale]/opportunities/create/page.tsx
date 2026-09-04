@@ -45,11 +45,11 @@ const PageHeader = () => {
           { title: "home", path: "/" },
           {
             title: "Opportunities",
-            path: `/grantor/opportunities`,
+            path: `/opportunities`,
           },
           {
             title: "Create",
-            path: `/grantor/opportunities/create`,
+            path: `/opportunities/create`,
           },
         ]}
       />

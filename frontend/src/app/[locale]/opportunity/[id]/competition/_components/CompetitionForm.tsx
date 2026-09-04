@@ -1,14 +1,14 @@
 "use client";
 
-import { AgencyContact } from "src/app/[locale]/(base)/grantor/opportunity/[id]/competition/_components/sections/AgencyContact";
-import { ApplicationInstructions } from "src/app/[locale]/(base)/grantor/opportunity/[id]/competition/_components/sections/ApplicationInstructions";
-import { RequiredForms } from "src/app/[locale]/(base)/grantor/opportunity/[id]/competition/_components/sections/RequiredForms";
-import { SubmissionSetUp } from "src/app/[locale]/(base)/grantor/opportunity/[id]/competition/_components/sections/SubmissionSetUp";
-import { SubmissionWindow } from "src/app/[locale]/(base)/grantor/opportunity/[id]/competition/_components/sections/SubmissionWindow";
+import { AgencyContact } from "src/app/[locale]/opportunity/[id]/competition/_components/sections/AgencyContact";
+import { ApplicationInstructions } from "src/app/[locale]/opportunity/[id]/competition/_components/sections/ApplicationInstructions";
+import { RequiredForms } from "src/app/[locale]/opportunity/[id]/competition/_components/sections/RequiredForms";
+import { SubmissionSetUp } from "src/app/[locale]/opportunity/[id]/competition/_components/sections/SubmissionSetUp";
+import { SubmissionWindow } from "src/app/[locale]/opportunity/[id]/competition/_components/sections/SubmissionWindow";
 import {
   CompetitionActionState,
   competitionFormAction,
-} from "src/app/[locale]/(base)/grantor/opportunity/[id]/competition/actions";
+} from "src/app/[locale]/opportunity/[id]/competition/actions";
 import { FormType } from "src/types/allFormsResponseTypes";
 import {
   Competition,

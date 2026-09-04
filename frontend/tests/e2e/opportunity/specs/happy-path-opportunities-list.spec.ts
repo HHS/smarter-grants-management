@@ -82,7 +82,7 @@ test.describe("Grantor opportunities list page happy path", () => {
       //--------------Scenario steps start here----------------
 
       // Given I navigate to the Grantor Opportunities List page.
-      await page.goto("/grantor/opportunities");
+      await page.goto("/opportunities");
 
       // Then I should be redirected to the Opportunities List page.
       await expect(page).toHaveURL(/\/grantor\/opportunities/);

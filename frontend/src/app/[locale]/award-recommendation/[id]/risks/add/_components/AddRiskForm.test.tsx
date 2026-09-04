@@ -160,7 +160,7 @@ describe("AddRiskForm", () => {
     const link = screen.getByRole("link", { name: "APP-001" });
     expect(link).toHaveAttribute(
       "href",
-      "/grantor/award-recommendation/test-award-id/application-submissions/sub-1/edit",
+      "/award-recommendation/test-award-id/application-submissions/sub-1/edit",
     );
   });
 
@@ -259,7 +259,7 @@ describe("AddRiskForm", () => {
 
     await waitFor(() => {
       expect(mockPush).toHaveBeenCalledWith(
-        "/grantor/award-recommendation/test-award-id/edit",
+        "/award-recommendation/test-award-id/edit",
       );
     });
   });
@@ -328,7 +328,7 @@ describe("AddRiskForm", () => {
     await user.click(cancelButton);
 
     expect(mockPush).toHaveBeenCalledWith(
-      "/grantor/award-recommendation/test-award-id/edit",
+      "/award-recommendation/test-award-id/edit",
     );
   });
 

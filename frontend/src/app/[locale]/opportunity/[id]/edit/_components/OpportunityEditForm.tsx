@@ -1,10 +1,10 @@
 "use client";
 
-import { OpportunityAttachmentUploadInput } from "src/app/[locale]/(base)/grantor/opportunity/[id]/edit/_components/OpportunityAttachmentUploadInput";
+import { OpportunityAttachmentUploadInput } from "src/app/[locale]/opportunity/[id]/edit/_components/OpportunityAttachmentUploadInput";
 import {
   opportunityEditFormAction,
   type OpportunityEditValidationErrors,
-} from "src/app/[locale]/(base)/grantor/opportunity/[id]/edit/actions";
+} from "src/app/[locale]/opportunity/[id]/edit/actions";
 import {
   categoryOptions,
   eligbilityValueToGroup,

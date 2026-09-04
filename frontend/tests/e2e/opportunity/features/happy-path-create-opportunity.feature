@@ -16,7 +16,7 @@ Feature: Opportunity happy path draft creation
   @GRANTOR
   Scenario: Happy path create opportunity draft
     Given I am authenticated as a grantor user
-    And I use direct URL "/grantor/opportunities" to navigate to the "Opportunities List" page
+    And I use direct URL "/opportunities" to navigate to the "Opportunities List" page
     And I should be on the "Opportunities List" page
 
     When I click "Create Opportunity"
@@ -36,6 +36,6 @@ Feature: Opportunity happy path draft creation
     And the "Preview" button should be disabled
     And the "Publish" button should be disabled
 
-    When I navigate directly to "/grantor/opportunities"
+    When I navigate directly to "/opportunities"
     Then I should see "Draft" status for "Title-mm-dd-yyyy-hh-mm-sec"
     And the matching "Draft" opportunity row should be visible

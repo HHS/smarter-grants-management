@@ -1,4 +1,4 @@
-import { CompetitionForm } from "src/app/[locale]/(base)/grantor/opportunity/[id]/competition/_components/CompetitionForm";
+import { CompetitionForm } from "src/app/[locale]/opportunity/[id]/competition/_components/CompetitionForm";
 import {
   ApiRequestError,
   MissingAuthError,

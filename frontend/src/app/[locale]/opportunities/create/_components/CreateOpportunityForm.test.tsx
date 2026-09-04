@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { noop } from "lodash";
-import { CreateOpportunityForm } from "src/app/[locale]/(base)/grantor/opportunities/create/_components/CreateOpportunityForm";
+import { CreateOpportunityForm } from "src/app/[locale]/opportunities/create/_components/CreateOpportunityForm";
 
 const mockUseActionState = jest.fn();
 
@@ -10,12 +10,9 @@ jest.mock("react", () => ({
   useActionState: () => mockUseActionState() as unknown,
 }));
 
-jest.mock(
-  "src/app/[locale]/(base)/grantor/opportunities/create/actions",
-  () => ({
-    createOpportunityAction: noop,
-  }),
-);
+jest.mock("src/app/[locale]/opportunities/create/actions", () => ({
+  createOpportunityAction: noop,
+}));
 
 jest.mock("next/navigation", () => ({
   useRouter: jest.fn().mockReturnValue({

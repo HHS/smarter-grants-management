@@ -48,7 +48,7 @@ async function BulkEditRecommendationsPageContent({
     {
       type: "navigation",
       label: t("heroButtons.backToSubmissions"),
-      href: `/grantor/award-recommendation/${awardRecommendationId}/application-submissions/edit`,
+      href: `/award-recommendation/${awardRecommendationId}/application-submissions/edit`,
       outline: true,
     },
   ];
@@ -123,11 +123,11 @@ async function BulkEditRecommendationsPageContent({
           additionalBreadcrumbs={[
             {
               title: t("editRecommendations.heading"),
-              path: `/grantor/award-recommendation/${awardRecommendationId}/application-submissions/edit`,
+              path: `/award-recommendation/${awardRecommendationId}/application-submissions/edit`,
             },
             {
               title: heroHeading,
-              path: `/grantor/award-recommendation/${awardRecommendationId}/application-submissions/edit/bulk`,
+              path: `/award-recommendation/${awardRecommendationId}/application-submissions/edit/bulk`,
             },
           ]}
         />

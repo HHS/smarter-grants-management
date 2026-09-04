@@ -34,7 +34,7 @@ export default function EditRiskForm({
   const [riskSummaryError, setRiskSummaryError] = useState<string | null>(null);
 
   const handleCancel = () => {
-    router.push(`/grantor/award-recommendation/${awardRecommendationId}/edit`);
+    router.push(`/award-recommendation/${awardRecommendationId}/edit`);
   };
 
   const handleRiskSummaryBlur = () => {
@@ -72,9 +72,7 @@ export default function EditRiskForm({
     );
 
     if (result.success) {
-      router.push(
-        `/grantor/award-recommendation/${awardRecommendationId}/edit`,
-      );
+      router.push(`/award-recommendation/${awardRecommendationId}/edit`);
     } else {
       setError(result.errorMessage || t("saveError"));
       setIsSubmitting(false);

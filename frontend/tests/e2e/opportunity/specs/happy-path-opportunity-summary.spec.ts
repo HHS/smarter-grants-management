@@ -80,8 +80,8 @@ test.describe("Grantor Opportunity Summary Happy Path", () => {
 
       //--------------Scenario steps start here----------------
 
-      // Given I use direct URL "/grantor/opportunities" to navigate to the "Opportunities List" page
-      await page.goto("/grantor/opportunities");
+      // Given I use direct URL "/opportunities" to navigate to the "Opportunities List" page
+      await page.goto("/opportunities");
 
       // And I create a new opportunity with happy-path data.
       await createOpportunity(page, fillData);
@@ -147,7 +147,7 @@ test.describe("Grantor Opportunity Summary Happy Path", () => {
       });
 
       // When I navigate directly to opportunity list page
-      await page.goto("/grantor/opportunities");
+      await page.goto("/opportunities");
 
       // Then I should see "Draft" status for the created opportunity row.
       const matchingRow = await waitForOpportunityRowByStatus(page, {

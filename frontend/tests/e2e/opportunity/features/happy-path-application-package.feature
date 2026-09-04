@@ -37,6 +37,6 @@ Feature: Opportunity application package happy path draft completion
     And I should see "Opportunity Summary" status as "Not started"
     And I should see "Application Package" status as "Complete"
 
-    When I navigate directly to "/grantor/opportunities"
+    When I navigate directly to "/opportunities"
     Then I should see "Draft" status for the created opportunity row
     And the matching row should be visible

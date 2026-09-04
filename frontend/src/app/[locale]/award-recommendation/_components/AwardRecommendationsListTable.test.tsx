@@ -93,7 +93,7 @@ describe("AwardRecommendationsListTable", () => {
         }),
       ).toHaveAttribute(
         "href",
-        `/grantor/award-recommendation/${mockAwardRecommendationListItem.award_recommendation_id}`,
+        `/award-recommendation/${mockAwardRecommendationListItem.award_recommendation_id}`,
       );
     });
 
@@ -148,7 +148,7 @@ describe("AwardRecommendationsListTable", () => {
         }),
       ).toHaveAttribute(
         "href",
-        `/grantor/award-recommendation/${mockDraftAwardRecommendationListItem.award_recommendation_id}/edit`,
+        `/award-recommendation/${mockDraftAwardRecommendationListItem.award_recommendation_id}/edit`,
       );
     });
 

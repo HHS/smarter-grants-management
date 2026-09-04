@@ -27,5 +27,5 @@ export async function publishFromOverview(opportunityId: string) {
     return { errorMessage: alerts("genericError") };
   }
 
-  redirect("/grantor/opportunities");
+  redirect("/opportunities");
 }

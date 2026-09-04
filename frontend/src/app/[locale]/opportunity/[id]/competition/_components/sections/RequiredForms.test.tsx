@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { axe } from "jest-axe";
-import { RequiredForms } from "src/app/[locale]/(base)/grantor/opportunity/[id]/competition/_components/sections/RequiredForms";
+import { RequiredForms } from "src/app/[locale]/opportunity/[id]/competition/_components/sections/RequiredForms";
 import { FormType } from "src/types/allFormsResponseTypes";
 
 jest.mock("next-intl", () => ({

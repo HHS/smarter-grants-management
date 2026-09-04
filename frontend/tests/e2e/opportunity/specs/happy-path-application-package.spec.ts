@@ -144,7 +144,7 @@ test.describe("Grantor Opportunity Competition Happy Path", () => {
       });
 
       // When I navigate directly to opportunity list page.
-      await page.goto("/grantor/opportunities");
+      await page.goto("/opportunities");
 
       // Then I should see "Draft" status for the created opportunity row.
       const matchingRow = await waitForOpportunityRowByStatus(page, {

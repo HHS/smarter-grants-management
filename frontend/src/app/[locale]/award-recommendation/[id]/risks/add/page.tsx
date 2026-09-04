@@ -44,7 +44,7 @@ async function AddRiskPageContent({ params }: AddRiskPageProps) {
     {
       type: "navigation",
       label: t("heroButtons.backToSubmissions"),
-      href: `/grantor/award-recommendation/${awardRecommendationId}/risks`,
+      href: `/award-recommendation/${awardRecommendationId}/risks`,
       outline: true,
     },
   ];
@@ -119,11 +119,11 @@ async function AddRiskPageContent({ params }: AddRiskPageProps) {
           additionalBreadcrumbs={[
             {
               title: t("risks.editTitle"),
-              path: `/grantor/award-recommendation/${awardRecommendationId}/risks`,
+              path: `/award-recommendation/${awardRecommendationId}/risks`,
             },
             {
               title: heroHeading,
-              path: `/grantor/award-recommendation/${awardRecommendationId}/risks/add`,
+              path: `/award-recommendation/${awardRecommendationId}/risks/add`,
             },
           ]}
         />

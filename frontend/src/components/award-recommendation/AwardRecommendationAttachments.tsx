@@ -97,7 +97,7 @@ export const AwardRecommendationAttachments = ({
       {
         cellData: (
           <Link
-            href={`/grantor/award-recommendation/${awardRecommendationId}/risks/${risk.award_recommendation_risk_id}/edit`}
+            href={`/award-recommendation/${awardRecommendationId}/risks/${risk.award_recommendation_risk_id}/edit`}
             className="usa-link"
           >
             {risk.risk_number || risk.award_recommendation_risk_number}
@@ -205,7 +205,7 @@ export const AwardRecommendationAttachments = ({
         <h3 className="margin-y-0">{t("risksHeading")}</h3>
         {mode === "edit" && risks.length > 0 && (
           <Link
-            href={`/grantor/award-recommendation/${awardRecommendationId}/risks`}
+            href={`/award-recommendation/${awardRecommendationId}/risks`}
             className="text-bold"
             style={{ textDecoration: "underline" }}
           >
@@ -228,7 +228,7 @@ export const AwardRecommendationAttachments = ({
       ) : mode === "edit" && risks.length === 0 ? (
         <div className="bg-base-lighter radius-md padding-y-2 padding-x-3 margin-bottom-2">
           <Link
-            href={`/grantor/award-recommendation/${awardRecommendationId}/risks`}
+            href={`/award-recommendation/${awardRecommendationId}/risks`}
             className="text-bold text-left display-block width-full"
             style={{ textDecoration: "underline" }}
           >
