@@ -1,352 +1,26 @@
 "use client";
 
 import clsx from "clsx";
-import GrantsLogo from "public/img/grants-logo.svg";
-import { applicationTestUserId, LOGIN_URL } from "src/constants/auth";
-import { ExternalRoutes } from "src/constants/routes";
+import { applicationTestUserId } from "src/constants/auth";
+// import GrantsLogo from "public/img/grants-logo.svg";
 import { useSnackbar } from "src/hooks/useSnackbar";
 import { useUser } from "src/services/auth/useUser";
-import { IndexType } from "src/types/generalTypes";
 import { TestUser } from "src/types/userTypes";
-import { isCurrentPath, isExternalLink } from "src/utils/generalUtils";
-import { storeCurrentPage } from "src/utils/userUtils";
 
 import { useTranslations } from "next-intl";
-import Image from "next/image";
+// import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import {
   GovBanner,
   NavMenuButton,
-  PrimaryNav,
   Title,
   Header as USWDSHeader,
 } from "@trussworks/react-uswds";
 
-import NavDropdown from "src/components/core/header/NavDropdown";
 import { RouteChangeWatcher } from "src/components/core/header/RouteChangeWatcher";
 import { TestUserSelect } from "src/components/core/header/TestUserSelect";
-import { USWDSIcon } from "src/components/core/USWDSIcon";
-import { SignOutNavLink } from "./SignOutNavLink";
-import { TestApplicationLink } from "./TestApplicationLink";
-
-type PrimaryLink = {
-  text?: string;
-  href?: string;
-  children?: PrimaryLink[];
-};
-
-const homeRegexp = /^\/(?:e[ns])?$/;
-
-/*
-  nav links going to external sites need to:
-  - not be preloaded
-  - include an "external link" icon
-  - open in a new tab
-*/
-const ExternalNavLink = ({
-  href = "",
-  classes,
-  onClick,
-  text,
-}: {
-  href?: string;
-  classes?: string;
-  onClick: () => void;
-  text: string;
-}) => {
-  return (
-    <a
-      href={href}
-      key={href}
-      className={classes}
-      target="_blank"
-      onClick={onClick}
-    >
-      <span className="icon-btn">
-        {text}
-        <USWDSIcon name="launch" className="usa-icon--size-2" />
-      </span>
-    </a>
-  );
-};
-
-const NavLink = ({
-  href = "",
-  classes,
-  onClick,
-  text,
-}: {
-  href?: string;
-  classes?: string;
-  onClick: () => void;
-  text: string;
-}) => {
-  if (isExternalLink(href)) {
-    return (
-      <ExternalNavLink
-        href={href}
-        classes={classes}
-        onClick={onClick}
-        text={text}
-      />
-    );
-  }
-
-  return (
-    <Link href={href} key={href} className={classes} onClick={onClick}>
-      {text}
-    </Link>
-  );
-};
-
-const NavLinks = ({
-  mobileExpanded,
-  onToggleMobileNav,
-  localDev = false,
-}: {
-  mobileExpanded: boolean;
-  onToggleMobileNav: () => void;
-  localDev: boolean;
-}) => {
-  const t = useTranslations("Header.navLinks");
-  const path = usePathname();
-  const getSearchLink = useCallback(
-    (onSearch: boolean) => {
-      return {
-        text: t("search"),
-        href: onSearch ? "/search?refresh=true" : "/search",
-      };
-    },
-    [t],
-  );
-  const { user } = useUser();
-
-  const navLinkList = useMemo(() => {
-    const anonymousNavLinks: PrimaryLink[] = [
-      { text: t("home"), href: "/" },
-      getSearchLink(path.includes("/search")),
-      {
-        text: t("about"),
-        children: [
-          { text: t("vision"), href: "/vision" },
-          { text: t("roadmap"), href: "/roadmap" },
-        ],
-      },
-      {
-        text: t("community"),
-        children: [
-          { text: t("newsletter"), href: "/newsletter" },
-          { text: t("events"), href: "/events" },
-          { text: t("developers"), href: "/developers" },
-          { text: t("wiki"), href: ExternalRoutes.WIKI },
-          { text: t("forum"), href: ExternalRoutes.FORUM },
-        ],
-      },
-    ];
-    if (!user?.token) {
-      return anonymousNavLinks;
-    }
-
-    const workspaceSubNavs = [];
-
-    workspaceSubNavs.push({
-      text: t("workspaceDashboard"),
-      href: "/workspace",
-    });
-
-    workspaceSubNavs.push({
-      text: t("applications"),
-      href: "/workspace/applications",
-    });
-    workspaceSubNavs.push({
-      text: t("organizations"),
-      href: "/workspace/organizations",
-    });
-
-    workspaceSubNavs.push({
-      text: t("savedOpportunities"),
-      href: "/workspace/saved-opportunities",
-    });
-
-    workspaceSubNavs.push({
-      text: t("savedSearches"),
-      href: "/workspace/saved-search-queries",
-    });
-
-    return anonymousNavLinks.toSpliced(anonymousNavLinks.length, 0, {
-      text: t("workspace"),
-      children: workspaceSubNavs,
-    });
-  }, [t, path, getSearchLink, user]);
-
-  const getCurrentNavItemIndex = useCallback(
-    (currentPath: string): number => {
-      // handle base case of home page separately
-      if (currentPath.match(homeRegexp)) {
-        return 0;
-      }
-      const index = navLinkList.slice(1).findIndex(({ href, children }) => {
-        if (!href) {
-          if (!children?.length) {
-            return false;
-          }
-          // mark as current if any child page is active
-          return children.some((child) => {
-            return child?.href && isCurrentPath(child.href, currentPath);
-          });
-        } else {
-          return isCurrentPath(href, currentPath);
-        }
-      });
-      // account for home path as default / not found
-      return index === -1 ? index : index + 1;
-    },
-    [navLinkList],
-  );
-
-  const [currentNavItemIndex, setCurrentNavItemIndex] = useState<number>(
-    getCurrentNavItemIndex(path),
-  );
-  const [activeNavDropdownIndex, setActiveNavDropdownIndex] =
-    useState<IndexType>(null);
-
-  useEffect(() => {
-    // TODO #9633
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setCurrentNavItemIndex(getCurrentNavItemIndex(path));
-  }, [path, getCurrentNavItemIndex]);
-
-  const closeMobileNav = useCallback(() => {
-    if (mobileExpanded) {
-      onToggleMobileNav();
-    }
-  }, [mobileExpanded, onToggleMobileNav]);
-
-  const closeDropdownAndMobileNav = useCallback(() => {
-    setActiveNavDropdownIndex(null);
-    closeMobileNav();
-  }, [closeMobileNav]);
-
-  const navItems = useMemo(() => {
-    const items = navLinkList.map((link: PrimaryLink, index: number) => {
-      if (!link.text) {
-        return <></>;
-      }
-      if (link.children) {
-        const childItems = link.children.map((childLink) => {
-          if (!childLink.text) {
-            return <></>;
-          }
-          return (
-            <NavLink
-              href={childLink.href}
-              key={childLink.href}
-              onClick={closeDropdownAndMobileNav}
-              text={childLink.text}
-            />
-          );
-        });
-        return (
-          <NavDropdown
-            key={link.href}
-            activeNavDropdownIndex={activeNavDropdownIndex}
-            index={index}
-            isCurrent={currentNavItemIndex === index}
-            linkText={link.text}
-            menuItems={childItems}
-            setActiveNavDropdownIndex={setActiveNavDropdownIndex}
-          />
-        );
-      }
-      return (
-        <NavLink
-          href={link.href}
-          key={link.href}
-          onClick={closeDropdownAndMobileNav}
-          text={link.text}
-          classes={clsx({
-            "usa-nav__link": true,
-            "usa-current": currentNavItemIndex === index,
-            "text-bold": true,
-          })}
-        />
-      );
-    });
-
-    // add user account nav depending on login status
-    if (!user?.token) {
-      items.push(
-        <a
-          href={LOGIN_URL}
-          key="sign-in"
-          className={clsx({
-            "usa-nav__link": true,
-            "text-normal": true,
-          })}
-          onClick={() => {
-            storeCurrentPage(location.pathname, location.search);
-            closeDropdownAndMobileNav();
-          }}
-        >
-          {t("login")}
-        </a>,
-      );
-    } else {
-      const accountIndex = navLinkList.length;
-      const isApplicationTestUser =
-        localDev && user?.user_id === applicationTestUserId;
-      items.push(
-        <NavDropdown
-          key="account"
-          activeNavDropdownIndex={activeNavDropdownIndex}
-          index={accountIndex}
-          isCurrent={false}
-          linkText={t("account")}
-          menuItems={[
-            <NavLink
-              href="/settings"
-              key="settings"
-              onClick={closeDropdownAndMobileNav}
-              text={t("settings")}
-            />,
-            <NavLink
-              href="/notifications"
-              key="notifications"
-              onClick={closeDropdownAndMobileNav}
-              text={t("notifications")}
-            />,
-            isApplicationTestUser && <TestApplicationLink />,
-            <SignOutNavLink key="logout" onClick={closeDropdownAndMobileNav} />,
-          ]}
-          setActiveNavDropdownIndex={setActiveNavDropdownIndex}
-        />,
-      );
-    }
-
-    return items;
-  }, [
-    activeNavDropdownIndex,
-    closeDropdownAndMobileNav,
-    currentNavItemIndex,
-    navLinkList,
-    setActiveNavDropdownIndex,
-    t,
-    user?.token,
-    user?.user_id,
-    localDev,
-  ]);
-
-  return (
-    <PrimaryNav
-      items={navItems}
-      mobileExpanded={mobileExpanded}
-      onToggleMobileNav={onToggleMobileNav}
-      className="padding-bottom-05"
-    ></PrimaryNav>
-  );
-};
+import { NavLinks } from "./NavLinks";
 
 const Header = ({
   locale,
@@ -361,7 +35,7 @@ const Header = ({
   const [isMobileNavExpanded, setIsMobileNavExpanded] =
     useState<boolean>(false);
 
-  const { hasBeenLoggedOut, resetHasBeenLoggedOut } = useUser();
+  const { hasBeenLoggedOut, resetHasBeenLoggedOut, user } = useUser();
   const { showSnackbar, Snackbar, hideSnackbar, snackbarIsVisible } =
     useSnackbar();
 
@@ -420,19 +94,25 @@ const Header = ({
             <Title className="margin-y-2">
               <div className="display-flex flex-align-center">
                 <Link href="/" className="position-relative">
-                  <Image
+                  Smarter Grants
+                  {/* <Image
                     alt={t("title")}
                     src={GrantsLogo as string}
                     className="height-4 display-block position-relative desktop:height-auto"
                     unoptimized
                     priority
                     fill
-                  />
+                  /> */}
                 </Link>
               </div>
             </Title>
           </div>
-          {localDev && testUsers && <TestUserSelect testUsers={testUsers} />}
+          {localDev && testUsers && (
+            <TestUserSelect
+              testUsers={testUsers}
+              isApplicationTestUser={user?.user_id === applicationTestUserId}
+            />
+          )}
           <div className="usa-navbar order-last desktop:display-none">
             <NavMenuButton
               onClick={handleMobileNavToggle}
@@ -443,7 +123,13 @@ const Header = ({
           <NavLinks
             mobileExpanded={isMobileNavExpanded}
             onToggleMobileNav={handleMobileNavToggle}
-            localDev={localDev}
+            loggedInNavConfig={{
+              items: [
+                { link: "/notifications", displayText: "Notifications" },
+                { link: "/settings", displayText: "Settings" },
+              ],
+              name: "Account",
+            }}
           />
         </div>
       </USWDSHeader>
