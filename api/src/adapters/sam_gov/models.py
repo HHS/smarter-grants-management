@@ -1,5 +1,6 @@
 """Models for SAM.gov API client."""
 
+from datetime import datetime
 from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -77,3 +78,37 @@ class SamExtractResponse(BaseModel):
     """Response metadata for a successful SAM.gov extract download."""
 
     file_name: str = Field(..., description="The name of the downloaded file")
+
+
+class SamAssistanceListingRequest(BaseModel):
+
+    page_size: int = 100
+    page_number: int = 1
+
+
+class SamAssistanceListingData(BaseModel):
+
+    assistance_listing_id: str = Field(..., alias="assistanceListingId")
+
+    title: str
+
+    status: str
+
+    published_date: datetime = Field(..., alias="publishedDate")
+
+
+class SamAssistanceListingResponse(BaseModel):
+    """
+    Response metadata for SAM.gov Assistance Listing API.
+
+    https://open.gsa.gov/api/assistance-listings-api/
+    """
+
+    assistance_listings_data: list[SamAssistanceListingData] = Field(
+        ..., alias="assistanceListingsData"
+    )
+
+    page_number: int = Field(..., alias="pageNumber")
+    page_size: int = Field(..., alias="pageSize")
+    total_pages: int = Field(..., alias="totalPages")
+    total_records: int = Field(..., alias="totalRecords")

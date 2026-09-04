@@ -20,6 +20,10 @@ class SamGovConfig(PydanticBaseEnvConfig):
     mock_data_file: str | None = Field(default=None, alias="SAM_GOV_MOCK_DATA_FILE")
     mock_extract_dir: str | None = Field(default=None, alias="SAM_GOV_MOCK_EXTRACT_DIR")
 
+    # Whether to include a few default mock ALNs in the data from sam.gov when using
+    # the mock client. If not using the mock client, is unused.
+    include_mock_alns: bool = Field(default=False, alias="SAM_GOV_INCLUDE_MOCK_ALNS")
+
 
 def get_config() -> SamGovConfig:
     """Get the SAM.gov configuration from environment variables."""

@@ -5,6 +5,7 @@ class JobType(StrEnum):
     MIGRATE_UP = "migrate-up"
     MIGRATE_DOWN = "migrate-down"
     MIGRATE_DOWNALL = "migrate-downall"
+    FETCH_ASSISTANCE_LISTING = "fetch-assistance-listing"
 
 
 class UserType(StrEnum):
