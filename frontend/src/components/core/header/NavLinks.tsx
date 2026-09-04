@@ -35,6 +35,39 @@ export type LoggedInNavConfig = {
 
 const homeRegexp = /^\/(?:e[ns])?$/;
 
+/*
+  nav links going to external sites need to:
+  - not be preloaded
+  - include an "external link" icon
+  - open in a new tab
+*/
+const ExternalNavLink = ({
+  href = "",
+  classes,
+  onClick,
+  text,
+}: {
+  href?: string;
+  classes?: string;
+  onClick: () => void;
+  text: string;
+}) => {
+  return (
+    <a
+      href={href}
+      key={href}
+      className={classes}
+      target="_blank"
+      onClick={onClick}
+    >
+      <span className="icon-btn">
+        {text}
+        <USWDSIcon name="launch" className="usa-icon--size-2" />
+      </span>
+    </a>
+  );
+};
+
 const NavLink = ({
   href = "",
   classes,
@@ -49,8 +82,14 @@ const NavLink = ({
   let iconBtnClass, linkTarget;
 
   if (isExternalLink(href)) {
-    iconBtnClass = "icon-btn";
-    linkTarget = "_blank";
+    return (
+      <ExternalNavLink
+        href={href}
+        classes={classes}
+        onClick={onClick}
+        text={text}
+      />
+    );
   }
 
   return (
@@ -221,19 +260,20 @@ export const NavLinks = ({
     // add user account nav depending on login status
     if (!user?.token) {
       items.push(
-        <NavLink
-          key="sign-in"
+        <a
           href={LOGIN_URL}
+          key="sign-in"
+          className={clsx({
+            "usa-nav__link": true,
+            "text-normal": true,
+          })}
           onClick={() => {
             storeCurrentPage(location.pathname, location.search);
             closeDropdownAndMobileNav();
           }}
-          text={t("login")}
-          classes={clsx({
-            "usa-nav__link": true,
-            "text-normal": true,
-          })}
-        />,
+        >
+          {t("login")}
+        </a>,
       );
     } else if (loggedInNavConfig) {
       const accountIndex = navLinkList.length;
