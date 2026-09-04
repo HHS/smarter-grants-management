@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { axe } from "jest-axe";
-import OpportunityCompetitionPage from "src/app/[locale]/opportunity/[id]/competition/page";
+import OpportunityCompetitionPage from "src/app/[locale]/(base)/grantor/opportunity/[id]/competition/page";
 import { MissingAuthError } from "src/errors";
 import { GrantorOpportunityDetail } from "src/types/opportunity/opportunityResponseTypes";
 import { DeepPartial } from "src/utils/testing/commonTestUtils";
@@ -38,10 +38,17 @@ jest.mock(
 );
 
 jest.mock(
-  "src/app/[locale]/opportunity/[id]/competition/_components/CompetitionForm",
+  "src/app/[locale]/(base)/grantor/opportunity/[id]/competition/_components/CompetitionForm",
   () => ({
-    CompetitionForm: ({ competitionId }: { competitionId: string }) => (
-      <div data-testid="competition-form" data-competition-id={competitionId} />
+    CompetitionForm: ({
+      competition,
+    }: {
+      competition?: { competition_id?: string };
+    }) => (
+      <div
+        data-testid="competition-form"
+        data-competition-id={competition?.competition_id ?? ""}
+      />
     ),
   }),
 );
@@ -58,11 +65,6 @@ jest.mock("src/services/fetch/fetchers/grantorOpportunitiesFetcher", () => ({
 
 jest.mock("src/services/fetch/fetchers/allFormsFetcher", () => ({
   getForms: (...args: unknown[]) => mockAllForms(...args) as unknown,
-}));
-
-jest.mock("src/services/fetch/fetchers/competitionFormsFetcher", () => ({
-  updateCompetitionForms: (...args: unknown[]) =>
-    mockAllForms(...args) as unknown,
 }));
 
 const baseOpportunityData: DeepPartial<GrantorOpportunityDetail> = {
