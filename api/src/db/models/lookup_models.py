@@ -5,6 +5,7 @@ from src.constants.lookup_constants import (
     ApprovalResponseType,
     ApprovalType,
     ExternalUserType,
+    FileScanStatus,
     GrantorOrganizationAuditEvent,
     GrantorOrganizationType,
     PartnerAuditEvent,
@@ -99,6 +100,16 @@ APPROVAL_RESPONSE_TYPE_CONFIG: LookupConfig[ApprovalResponseType] = LookupConfig
         LookupStr(ApprovalResponseType.APPROVED, 1),
         LookupStr(ApprovalResponseType.DECLINED, 2),
         LookupStr(ApprovalResponseType.REQUIRES_MODIFICATION, 3),
+    ]
+)
+
+FILE_SCAN_STATUS_CONFIG: LookupConfig[FileScanStatus] = LookupConfig(
+    [
+        LookupStr(FileScanStatus.PENDING, 1),
+        LookupStr(FileScanStatus.IN_PROGRESS, 2),
+        LookupStr(FileScanStatus.COMPLETE, 3),
+        LookupStr(FileScanStatus.INFECTED, 4),
+        LookupStr(FileScanStatus.PROCESSED, 5),
     ]
 )
 
@@ -260,4 +271,18 @@ class LkApprovalResponseType(GrantorLookupTable, TimestampMixin):
     def from_lookup(cls, lookup: Lookup) -> LkApprovalResponseType:
         return LkApprovalResponseType(
             approval_response_type_id=lookup.lookup_val, description=lookup.get_description()
+        )
+
+
+@LookupRegistry.register_lookup(FILE_SCAN_STATUS_CONFIG)
+class LkFileScanStatus(GrantorLookupTable, TimestampMixin):
+    __tablename__ = "lk_file_scan_status"
+
+    file_scan_status_id: Mapped[int] = mapped_column(primary_key=True)
+    description: Mapped[str]
+
+    @classmethod
+    def from_lookup(cls, lookup: Lookup) -> LkFileScanStatus:
+        return LkFileScanStatus(
+            file_scan_status_id=lookup.lookup_val, description=lookup.get_description()
         )

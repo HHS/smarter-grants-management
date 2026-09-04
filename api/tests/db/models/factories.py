@@ -8,6 +8,7 @@ from faker.providers import BaseProvider
 from sqlalchemy.orm import scoped_session
 
 import src.adapters.db as db
+import src.db.models.file_upload_models as file_upload_models
 import src.db.models.grantor_organization_models as grantor_organization_models
 import src.db.models.resource_models as resource_models
 import src.db.models.user_models as user_models
@@ -16,6 +17,7 @@ from src.constants.lookup_constants import (
     ApprovalResponseType,
     ApprovalType,
     ExternalUserType,
+    FileScanStatus,
     GrantorOrganizationAuditEvent,
     GrantorOrganizationType,
     PartnerAuditEvent,
@@ -604,3 +606,23 @@ class FriendTableFactory(BaseFactory):
         elements=[f for f in db_test_models.FriendType],
         unique=True,
     )
+
+
+###################
+# Extract Factories
+###################
+
+
+class PendingFileFactory(BaseFactory):
+    class Meta:
+        model = file_upload_models.PendingFile
+
+    pending_file_id = Generators.UuidObj
+
+    user = factory.SubFactory(UserFactory)
+    user_id = factory.LazyAttribute(lambda p: p.user.user_id)
+
+    file_name = factory.Faker("file_name")
+    file_location = factory.Faker("file_path")
+    mime_type = "plain/text"
+    file_scan_status = FileScanStatus.PENDING
