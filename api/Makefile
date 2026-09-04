@@ -91,7 +91,7 @@ start: ## Start the API for CI/CD or local Dev work
 run-logs: start ## Start the API and follow the logs
 	docker compose logs --follow --no-color $(APP_NAME)
 
-init-components: init-db init-sqsmock
+init-components: init-db init-s3mock init-sqsmock init-dynamodb
 
 init: setup-env-override-file build init-components ## Run all of the init tasks (including build) to set up DB and other services. To do this "from scratch" use remake-backend instead
 
@@ -253,6 +253,29 @@ init-sqsmock: start-sqsmock
 
 start-sqsmock:
 	docker compose up --detach mgmt-sqsmock
+
+##################################################
+# S3 Mock
+##################################################
+
+init-s3mock: start-s3mock
+
+start-s3mock:
+	docker compose up --detach s3mock
+
+##################################################
+# DynamoDB Local
+##################################################
+
+init-dynamodb: start-dynamodb setup-dynamodb
+
+start-dynamodb:
+	docker compose up --detach dynamodb-local
+	./bin/wait-for-local-dynamodb.sh
+
+setup-dynamodb: ## Create local DynamoDB tables
+	$(PY_RUN_CMD) setup-local-dynamodb
+
 
 ##################################################
 # CLI Commands
