@@ -56,7 +56,7 @@ def get_workflow_entity(
         logger.warning("Resource type does not match workflow configuration", extra=log_extra)
         raise InvalidEntityForWorkflow("Resource type does not match workflow configuration")
 
-    # A resource type with no table behind it (opportunity, today) errors rather than
+    # A resource type with no table behind it errors rather than
     # silently resolving to nothing.
     entity_cls = get_resource_model(resource.resource_type)
     if entity_cls is None:

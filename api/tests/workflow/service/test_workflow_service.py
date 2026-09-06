@@ -14,13 +14,13 @@ from src.workflow.state_machine.prototype_state_machine import PrototypeStateMac
 from src.workflow.workflow_errors import (
     ConcurrentWorkflowError,
     EntityNotFound,
-    ImplementationMissingError,
     InactiveWorkflowError,
     InvalidEntityForWorkflow,
     WorkflowDoesNotExistError,
 )
 from tests.db.models.factories import (
     GrantorOrganizationFactory,
+    OpportunityFactory,
     PartnerFactory,
     ProgramWorkflowFactory,
 )
@@ -104,21 +104,30 @@ def test_get_workflow_entity_wrong_resource_type(db_session, enable_factory_crea
         )
 
 
-def test_get_workflow_entity_unsupported_resource_type(db_session, enable_factory_create):
-    """A resource type with no table backing it in mgmt errors rather than resolving to nothing.
-
-    OPPORTUNITY is a real resource type but has no mgmt table yet, so it's the case
-    this covers - a workflow can't be configured against it until one exists.
-    """
+def test_get_workflow_entity_missing_concrete_resource(db_session, enable_factory_create):
+    """A resource without its corresponding concrete row errors."""
     config = build_workflow_config(persistence_model_cls=OpportunityTestPersistenceModel)
     resource = _create_bare_resource(db_session, ResourceType.OPPORTUNITY)
 
-    with pytest.raises(ImplementationMissingError, match="Resource type is not supported"):
+    with pytest.raises(EntityNotFound, match="Resource has no corresponding entity"):
         get_workflow_entity(
             db_session,
             resource_id=resource.resource_id,
             config=config,
         )
+
+
+def test_get_workflow_entity_opportunity(db_session, enable_factory_create):
+    opportunity = OpportunityFactory.create()
+    config = build_workflow_config(persistence_model_cls=OpportunityTestPersistenceModel)
+
+    entity = get_workflow_entity(
+        db_session,
+        resource_id=opportunity.opportunity_id,
+        config=config,
+    )
+
+    assert entity == opportunity
 
 
 def test_get_workflow_entity_resource_without_entity(db_session, enable_factory_create):
