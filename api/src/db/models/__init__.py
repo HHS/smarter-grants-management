@@ -3,6 +3,7 @@ from . import (
     grantor_organization_models,
     grantor_schema_table,
     lookup_models,
+    opportunity_models,
     resource_models,
     user_models,
     workflow_models,
@@ -18,6 +19,7 @@ __all__ = [
     "lookup_models",
     "user_models",
     "grantor_organization_models",
+    "opportunity_models",
     "resource_models",
     "workflow_models",
 ]
