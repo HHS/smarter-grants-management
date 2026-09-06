@@ -10,6 +10,9 @@ from src.api.opportunities.opportunity_schemas import (
     OpportunityListRequestSchema,
     OpportunityListResponseSchema,
     OpportunityResponseSchema,
+    OpportunitySummaryCreateRequestSchema,
+    OpportunitySummaryResponseSchema,
+    OpportunitySummaryUpdateRequestSchema,
     OpportunityUpdateRequestSchema,
 )
 from src.auth.multi_auth import jwt_or_api_user_key_multi_auth
@@ -20,6 +23,10 @@ from src.services.opportunities.get_opportunity import (
     get_opportunity_and_verify_access,
 )
 from src.services.opportunities.list_opportunities import list_opportunities
+from src.services.opportunities.opportunity_summaries import (
+    create_opportunity_summary,
+    update_opportunity_summary,
+)
 from src.services.opportunities.update_opportunity import update_opportunity
 
 logger = logging.getLogger(__name__)
@@ -121,3 +128,70 @@ def opportunity_list(db_session: db.Session, json_data: dict) -> response.ApiRes
         data=opportunities,
         pagination_info=pagination_info,
     )
+
+
+@opportunity_blueprint.post("/<uuid:opportunity_id>/summaries")
+@opportunity_blueprint.input(OpportunitySummaryCreateRequestSchema, location="json")
+@opportunity_blueprint.output(OpportunitySummaryResponseSchema)
+@opportunity_blueprint.doc(
+    summary="Create an Opportunity Summary",
+    responses=[200, 401, 403, 404, 422],
+)
+@opportunity_blueprint.auth_required(jwt_or_api_user_key_multi_auth)
+@flask_db.with_db_session()
+def opportunity_summary_create(
+    db_session: db.Session,
+    opportunity_id: uuid.UUID,
+    json_data: dict,
+) -> response.ApiResponse:
+    add_extra_data_to_current_request_logs({"opportunity_id": opportunity_id})
+    logger.info("POST /v1/opportunities/:opportunity_id/summaries")
+
+    with db_session.begin():
+        user = jwt_or_api_user_key_multi_auth.get_user()
+        db_session.add(user)
+        opportunity_summary = create_opportunity_summary(
+            db_session,
+            opportunity_id,
+            json_data,
+            user,
+        )
+
+    return response.ApiResponse(message="Success", data=opportunity_summary)
+
+
+@opportunity_blueprint.put("/<uuid:opportunity_id>/summaries/<uuid:opportunity_summary_id>")
+@opportunity_blueprint.input(OpportunitySummaryUpdateRequestSchema, location="json")
+@opportunity_blueprint.output(OpportunitySummaryResponseSchema)
+@opportunity_blueprint.doc(
+    summary="Update an Opportunity Summary",
+    responses=[200, 401, 403, 404, 422],
+)
+@opportunity_blueprint.auth_required(jwt_or_api_user_key_multi_auth)
+@flask_db.with_db_session()
+def opportunity_summary_update(
+    db_session: db.Session,
+    opportunity_id: uuid.UUID,
+    opportunity_summary_id: uuid.UUID,
+    json_data: dict,
+) -> response.ApiResponse:
+    add_extra_data_to_current_request_logs(
+        {
+            "opportunity_id": opportunity_id,
+            "opportunity_summary_id": opportunity_summary_id,
+        }
+    )
+    logger.info("PUT /v1/opportunities/:opportunity_id/summaries/:opportunity_summary_id")
+
+    with db_session.begin():
+        user = jwt_or_api_user_key_multi_auth.get_user()
+        db_session.add(user)
+        opportunity_summary = update_opportunity_summary(
+            db_session,
+            opportunity_id,
+            opportunity_summary_id,
+            json_data,
+            user,
+        )
+
+    return response.ApiResponse(message="Success", data=opportunity_summary)

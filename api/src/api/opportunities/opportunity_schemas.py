@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from marshmallow import ValidationError, validates_schema
 
 from src.api.schemas.extension import (
@@ -86,6 +88,145 @@ class OpportunitySummarySchema(Schema):
 
     created_at = fields.DateTime()
     updated_at = fields.DateTime()
+
+
+class OpportunitySummaryBaseRequestSchema(Schema):
+    summary_description = fields.String(
+        required=True,
+        validate=validators.WordLimit(max=500),
+    )
+    is_cost_sharing = fields.Boolean(required=True)
+
+    post_timestamp = fields.DateTime(required=True)
+    close_timestamp = fields.DateTime(allow_none=True)
+    close_timestamp_description = fields.String(allow_none=True)
+    archive_timestamp = fields.DateTime(allow_none=True)
+
+    expected_number_of_awards = fields.Integer(
+        allow_none=True,
+        validate=validators.Range(min=0, max=999_999_999_999_999),
+    )
+    estimated_total_program_funding = fields.Integer(
+        allow_none=True,
+        validate=validators.Range(min=0, max=999_999_999_999_999),
+    )
+    award_floor = fields.Integer(
+        required=True,
+        allow_none=True,
+        validate=validators.Range(min=0, max=999_999_999_999_999),
+    )
+    award_ceiling = fields.Integer(
+        required=True,
+        allow_none=True,
+        validate=validators.Range(min=0, max=999_999_999_999_999),
+    )
+
+    additional_info_url = fields.String(
+        allow_none=True,
+        validate=validators.Length(max=250),
+    )
+    additional_info_url_description = fields.String(
+        allow_none=True,
+        validate=validators.Length(max=250),
+    )
+
+    forecasted_post_timestamp = fields.DateTime(allow_none=True)
+    forecasted_close_timestamp = fields.DateTime(allow_none=True)
+    forecasted_close_timestamp_description = fields.String(
+        allow_none=True,
+        validate=validators.Length(max=255),
+    )
+    forecasted_award_timestamp = fields.DateTime(allow_none=True)
+    forecasted_project_start_timestamp = fields.DateTime(allow_none=True)
+    fiscal_year = fields.Integer(
+        allow_none=True,
+        validate=validators.Range(min=1900, max=2100),
+    )
+
+    funding_categories = fields.List(
+        fields.Enum(FundingCategory),
+        required=True,
+        validate=validators.Length(min=1),
+    )
+    funding_category_description = fields.String(
+        allow_none=True,
+        validate=validators.Length(max=2500),
+    )
+    funding_instruments = fields.List(
+        fields.Enum(FundingInstrument),
+        required=True,
+        validate=validators.Length(min=1),
+    )
+    applicant_types = fields.List(
+        fields.Enum(ApplicantType),
+        required=True,
+        validate=validators.Length(min=1),
+    )
+    applicant_eligibility_description = fields.String(
+        allow_none=True,
+        validate=validators.Length(max=4000),
+    )
+
+    agency_contact_description = fields.String(
+        required=True,
+        allow_none=True,
+        validate=validators.Length(max=1000),
+    )
+    agency_email_address = fields.String(
+        required=True,
+        allow_none=True,
+        validate=validators.Length(max=130),
+    )
+    agency_email_address_description = fields.String(
+        required=True,
+        allow_none=True,
+        validate=validators.Length(max=108),
+    )
+
+    @validates_schema
+    def validate_award_values(self, data: dict, **kwargs: dict) -> None:
+        if data.get("award_floor") is not None and data.get("award_ceiling") is not None:
+            if data["award_floor"] > data["award_ceiling"]:
+                raise ValidationError(
+                    [
+                        MarshmallowErrorContainer(
+                            SchemaValidationError.INVALID,
+                            "Award floor must be less than or equal to award ceiling",
+                        )
+                    ]
+                )
+
+    @validates_schema
+    def validate_timestamps(self, data: dict, **kwargs: dict) -> None:
+        if data.get("post_timestamp") is not None and data.get("close_timestamp") is not None:
+            if data["post_timestamp"] > data["close_timestamp"]:
+                raise ValidationError(
+                    [
+                        MarshmallowErrorContainer(
+                            SchemaValidationError.INVALID,
+                            "Post timestamp must be less than or equal to close timestamp",
+                        )
+                    ]
+                )
+
+    @validates_schema
+    def set_archive_timestamp(self, data: dict, **kwargs: dict) -> None:
+        if data.get("close_timestamp") is not None and (
+            "archive_timestamp" not in data or data["archive_timestamp"] is None
+        ):
+            data["archive_timestamp"] = data["close_timestamp"] + timedelta(days=30)
+
+
+class OpportunitySummaryCreateRequestSchema(OpportunitySummaryBaseRequestSchema):
+    is_forecast = fields.Boolean(required=True)
+
+
+class OpportunitySummaryUpdateRequestSchema(OpportunitySummaryBaseRequestSchema):
+    pass
+
+
+class OpportunitySummaryResponseSchema(AbstractResponseSchema):
+    data = fields.Nested(OpportunitySummarySchema)
 
 
 class CompetitionFormSchema(Schema):
