@@ -14,9 +14,12 @@ import src.db.models.resource_models as resource_models
 import src.db.models.user_models as user_models
 import src.db.models.workflow_models as workflow_models
 from src.constants.lookup_constants import (
+    ApplicantType,
     ApprovalResponseType,
     ApprovalType,
     ExternalUserType,
+    FundingCategory,
+    FundingInstrument,
     GrantorOrganizationAuditEvent,
     GrantorOrganizationType,
     OpportunityCategory,
@@ -436,6 +439,57 @@ class OpportunityFactory(BaseFactory):
 
     category = factory.fuzzy.FuzzyChoice(OpportunityCategory)
     category_explanation = sometimes_none(factory.Faker("sentence"), none_chance=0.5)
+
+
+class OpportunitySummaryFactory(BaseFactory):
+    class Meta:
+        model = opportunity_models.OpportunitySummary
+
+    opportunity_summary_id = Generators.UuidObj
+
+    opportunity = factory.SubFactory(OpportunityFactory)
+    opportunity_id = factory.LazyAttribute(lambda s: s.opportunity.opportunity_id)
+
+    summary_description = factory.Faker("paragraph")
+    is_cost_sharing = factory.Faker("boolean")
+    is_forecast = False
+    post_timestamp = Generators.UtcNow
+
+
+class LinkOpportunitySummaryFundingInstrumentFactory(BaseFactory):
+    class Meta:
+        model = opportunity_models.LinkOpportunitySummaryFundingInstrument
+
+    opportunity_summary = factory.SubFactory(OpportunitySummaryFactory)
+    opportunity_summary_id = factory.LazyAttribute(
+        lambda f: f.opportunity_summary.opportunity_summary_id
+    )
+
+    funding_instrument = factory.fuzzy.FuzzyChoice(FundingInstrument)
+
+
+class LinkOpportunitySummaryFundingCategoryFactory(BaseFactory):
+    class Meta:
+        model = opportunity_models.LinkOpportunitySummaryFundingCategory
+
+    opportunity_summary = factory.SubFactory(OpportunitySummaryFactory)
+    opportunity_summary_id = factory.LazyAttribute(
+        lambda f: f.opportunity_summary.opportunity_summary_id
+    )
+
+    funding_category = factory.fuzzy.FuzzyChoice(FundingCategory)
+
+
+class LinkOpportunitySummaryApplicantTypeFactory(BaseFactory):
+    class Meta:
+        model = opportunity_models.LinkOpportunitySummaryApplicantType
+
+    opportunity_summary = factory.SubFactory(OpportunitySummaryFactory)
+    opportunity_summary_id = factory.LazyAttribute(
+        lambda a: a.opportunity_summary.opportunity_summary_id
+    )
+
+    applicant_type = factory.fuzzy.FuzzyChoice(ApplicantType)
 
 
 class RoleFactory(BaseFactory):
