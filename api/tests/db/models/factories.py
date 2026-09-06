@@ -8,6 +8,7 @@ from faker.providers import BaseProvider
 from sqlalchemy.orm import scoped_session
 
 import src.adapters.db as db
+import src.db.models.competition_models as competition_models
 import src.db.models.file_attachment_models as file_attachment_models
 import src.db.models.grantor_organization_models as grantor_organization_models
 import src.db.models.opportunity_models as opportunity_models
@@ -18,6 +19,7 @@ from src.constants.lookup_constants import (
     ApplicantType,
     ApprovalResponseType,
     ApprovalType,
+    CompetitionOpenToApplicant,
     ExternalUserType,
     FundingCategory,
     FundingInstrument,
@@ -468,6 +470,57 @@ class OpportunityAttachmentFactory(BaseFactory):
 
     file_attachment = factory.SubFactory(FileAttachmentFactory)
     file_attachment_id = factory.LazyAttribute(lambda a: a.file_attachment.file_attachment_id)
+
+
+class CompetitionFactory(BaseFactory):
+    class Meta:
+        model = competition_models.Competition
+
+    competition_id = Generators.UuidObj
+
+    opportunity = factory.SubFactory(OpportunityFactory)
+    opportunity_id = factory.LazyAttribute(lambda c: c.opportunity.opportunity_id)
+
+    public_competition_id = factory.Sequence(lambda n: f"COMP-{n:05}")
+    competition_title = factory.Faker("sentence", nb_words=6)
+    grace_period = sometimes_none(factory.Faker("random_int", min=0, max=5), none_chance=0.5)
+    contact_info = sometimes_none(factory.Faker("sentence"), none_chance=0.5)
+
+
+class CompetitionFormFactory(BaseFactory):
+    class Meta:
+        model = competition_models.CompetitionForm
+
+    competition_form_id = Generators.UuidObj
+
+    competition = factory.SubFactory(CompetitionFactory)
+    competition_id = factory.LazyAttribute(lambda f: f.competition.competition_id)
+
+    form_id = Generators.UuidObj
+    is_required = factory.Faker("boolean")
+
+
+class LinkCompetitionOpenToApplicantFactory(BaseFactory):
+    class Meta:
+        model = competition_models.LinkCompetitionOpenToApplicant
+
+    competition = factory.SubFactory(CompetitionFactory)
+    competition_id = factory.LazyAttribute(lambda a: a.competition.competition_id)
+
+    competition_open_to_applicant = factory.fuzzy.FuzzyChoice(CompetitionOpenToApplicant)
+
+
+class CompetitionInstructionFactory(BaseFactory):
+    class Meta:
+        model = competition_models.CompetitionInstruction
+
+    competition_instruction_id = Generators.UuidObj
+
+    competition = factory.SubFactory(CompetitionFactory)
+    competition_id = factory.LazyAttribute(lambda i: i.competition.competition_id)
+
+    file_attachment = factory.SubFactory(FileAttachmentFactory)
+    file_attachment_id = factory.LazyAttribute(lambda i: i.file_attachment.file_attachment_id)
 
 
 class OpportunitySummaryFactory(BaseFactory):

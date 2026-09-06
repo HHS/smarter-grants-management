@@ -119,7 +119,6 @@ class OpportunityAssistanceListing(GrantorSchemaTable, TimestampMixin):
     assistance_listing: Mapped[AssistanceListing] = relationship(AssistanceListing)
 
 
-
 class OpportunityAttachment(GrantorSchemaTable, TimestampMixin):
     __tablename__ = "opportunity_attachment"
 
