@@ -2,11 +2,17 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from src.adapters.db.lookup import Lookup, LookupConfig, LookupRegistry, LookupStr, LookupTable
 from src.constants.lookup_constants import (
+    ApplicantType,
     ApprovalResponseType,
     ApprovalType,
+    CompetitionOpenToApplicant,
     ExternalUserType,
+    FundingCategory,
+    FundingInstrument,
     GrantorOrganizationAuditEvent,
     GrantorOrganizationType,
+    OpportunityAuditEvent,
+    OpportunityCategory,
     PartnerAuditEvent,
     Privilege,
     ResourceType,
@@ -69,6 +75,109 @@ GRANTOR_ORGANIZATION_TYPE_CONFIG: LookupConfig[GrantorOrganizationType] = Lookup
 
 PARTNER_AUDIT_EVENT_CONFIG: LookupConfig[PartnerAuditEvent] = LookupConfig(
     [LookupStr(PartnerAuditEvent.USER_ROLES_MODIFIED, 1)]
+)
+
+
+OPPORTUNITY_CATEGORY_CONFIG: LookupConfig[OpportunityCategory] = LookupConfig(
+    [
+        LookupStr(OpportunityCategory.DISCRETIONARY, 1),
+        LookupStr(OpportunityCategory.MANDATORY, 2),
+        LookupStr(OpportunityCategory.CONTINUATION, 3),
+        LookupStr(OpportunityCategory.EARMARK, 4),
+        LookupStr(OpportunityCategory.OTHER, 5),
+    ]
+)
+
+APPLICANT_TYPE_CONFIG: LookupConfig[ApplicantType] = LookupConfig(
+    [
+        LookupStr(ApplicantType.STATE_GOVERNMENTS, 1),
+        LookupStr(ApplicantType.COUNTY_GOVERNMENTS, 2),
+        LookupStr(ApplicantType.CITY_OR_TOWNSHIP_GOVERNMENTS, 3),
+        LookupStr(ApplicantType.SPECIAL_DISTRICT_GOVERNMENTS, 4),
+        LookupStr(ApplicantType.INDEPENDENT_SCHOOL_DISTRICTS, 5),
+        LookupStr(ApplicantType.PUBLIC_AND_STATE_INSTITUTIONS_OF_HIGHER_EDUCATION, 6),
+        LookupStr(ApplicantType.PRIVATE_INSTITUTIONS_OF_HIGHER_EDUCATION, 7),
+        LookupStr(
+            ApplicantType.FEDERALLY_RECOGNIZED_NATIVE_AMERICAN_TRIBAL_GOVERNMENTS, 8
+        ),
+        LookupStr(ApplicantType.OTHER_NATIVE_AMERICAN_TRIBAL_ORGANIZATIONS, 9),
+        LookupStr(ApplicantType.PUBLIC_AND_INDIAN_HOUSING_AUTHORITIES, 10),
+        LookupStr(ApplicantType.NONPROFITS_NON_HIGHER_EDUCATION_WITH_501C3, 11),
+        LookupStr(ApplicantType.NONPROFITS_NON_HIGHER_EDUCATION_WITHOUT_501C3, 12),
+        LookupStr(ApplicantType.INDIVIDUALS, 13),
+        LookupStr(
+            ApplicantType.FOR_PROFIT_ORGANIZATIONS_OTHER_THAN_SMALL_BUSINESSES, 14
+        ),
+        LookupStr(ApplicantType.SMALL_BUSINESSES, 15),
+        LookupStr(ApplicantType.OTHER, 16),
+        LookupStr(ApplicantType.UNRESTRICTED, 17),
+    ]
+)
+
+FUNDING_CATEGORY_CONFIG: LookupConfig[FundingCategory] = LookupConfig(
+    [
+        LookupStr(FundingCategory.RECOVERY_ACT, 1),
+        LookupStr(FundingCategory.AGRICULTURE, 2),
+        LookupStr(FundingCategory.ARTS, 3),
+        LookupStr(FundingCategory.BUSINESS_AND_COMMERCE, 4),
+        LookupStr(FundingCategory.COMMUNITY_DEVELOPMENT, 5),
+        LookupStr(FundingCategory.CONSUMER_PROTECTION, 6),
+        LookupStr(FundingCategory.DISASTER_PREVENTION_AND_RELIEF, 7),
+        LookupStr(FundingCategory.EDUCATION, 8),
+        LookupStr(FundingCategory.EMPLOYMENT_LABOR_AND_TRAINING, 9),
+        LookupStr(FundingCategory.ENERGY, 10),
+        LookupStr(FundingCategory.ENVIRONMENT, 11),
+        LookupStr(FundingCategory.FOOD_AND_NUTRITION, 12),
+        LookupStr(FundingCategory.HEALTH, 13),
+        LookupStr(FundingCategory.HOUSING, 14),
+        LookupStr(FundingCategory.HUMANITIES, 15),
+        LookupStr(FundingCategory.INFRASTRUCTURE_INVESTMENT_AND_JOBS_ACT, 16),
+        LookupStr(FundingCategory.INFORMATION_AND_STATISTICS, 17),
+        LookupStr(FundingCategory.INCOME_SECURITY_AND_SOCIAL_SERVICES, 18),
+        LookupStr(FundingCategory.LAW_JUSTICE_AND_LEGAL_SERVICES, 19),
+        LookupStr(FundingCategory.NATURAL_RESOURCES, 20),
+        LookupStr(FundingCategory.OPPORTUNITY_ZONE_BENEFITS, 21),
+        LookupStr(FundingCategory.REGIONAL_DEVELOPMENT, 22),
+        LookupStr(
+            FundingCategory.SCIENCE_TECHNOLOGY_AND_OTHER_RESEARCH_AND_DEVELOPMENT, 23
+        ),
+        LookupStr(FundingCategory.TRANSPORTATION, 24),
+        LookupStr(FundingCategory.AFFORDABLE_CARE_ACT, 25),
+        LookupStr(FundingCategory.OTHER, 26),
+        LookupStr(
+            FundingCategory.ENERGY_INFRASTRUCTURE_AND_CRITICAL_MINERAL_AND_MATERIALS, 27
+        ),
+        LookupStr(FundingCategory.RECREATION_AND_TOURISM, 28),
+    ]
+)
+
+FUNDING_INSTRUMENT_CONFIG: LookupConfig[FundingInstrument] = LookupConfig(
+    [
+        LookupStr(FundingInstrument.COOPERATIVE_AGREEMENT, 1),
+        LookupStr(FundingInstrument.GRANT, 2),
+        LookupStr(FundingInstrument.PROCUREMENT_CONTRACT, 3),
+        LookupStr(FundingInstrument.OTHER, 4),
+    ]
+)
+
+COMPETITION_OPEN_TO_APPLICANT_CONFIG: LookupConfig[
+    CompetitionOpenToApplicant
+] = LookupConfig(
+    [
+        LookupStr(CompetitionOpenToApplicant.INDIVIDUAL, 1),
+        LookupStr(CompetitionOpenToApplicant.ORGANIZATION, 2),
+    ]
+)
+
+OPPORTUNITY_AUDIT_EVENT_CONFIG: LookupConfig[OpportunityAuditEvent] = LookupConfig(
+    [
+        LookupStr(OpportunityAuditEvent.OPPORTUNITY_CREATED, 1),
+        LookupStr(OpportunityAuditEvent.OPPORTUNITY_UPDATED, 2),
+        LookupStr(OpportunityAuditEvent.OPPORTUNITY_SUMMARY_CREATED, 3),
+        LookupStr(OpportunityAuditEvent.OPPORTUNITY_SUMMARY_UPDATED, 4),
+        LookupStr(OpportunityAuditEvent.COMPETITION_CREATED, 5),
+        LookupStr(OpportunityAuditEvent.COMPETITION_UPDATED, 6),
+    ]
 )
 
 GRANTOR_ORGANIZATION_AUDIT_EVENT_CONFIG: LookupConfig[GrantorOrganizationAuditEvent] = LookupConfig(
