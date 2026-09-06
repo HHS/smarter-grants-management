@@ -11,6 +11,7 @@ import src.adapters.db as db
 import src.db.models.competition_models as competition_models
 import src.db.models.file_attachment_models as file_attachment_models
 import src.db.models.grantor_organization_models as grantor_organization_models
+import src.db.models.opportunity_group_audit_models as opportunity_group_audit_models
 import src.db.models.opportunity_models as opportunity_models
 import src.db.models.resource_models as resource_models
 import src.db.models.user_models as user_models
@@ -25,6 +26,7 @@ from src.constants.lookup_constants import (
     FundingInstrument,
     GrantorOrganizationAuditEvent,
     GrantorOrganizationType,
+    OpportunityAuditEvent,
     OpportunityCategory,
     PartnerAuditEvent,
     ResourceType,
@@ -521,6 +523,38 @@ class CompetitionInstructionFactory(BaseFactory):
 
     file_attachment = factory.SubFactory(FileAttachmentFactory)
     file_attachment_id = factory.LazyAttribute(lambda i: i.file_attachment.file_attachment_id)
+
+
+class OpportunityGroupAuditFactory(BaseFactory):
+    class Meta:
+        model = opportunity_group_audit_models.OpportunityGroupAudit
+
+    opportunity_group_audit_id = Generators.UuidObj
+
+    opportunity_group = factory.SubFactory(OpportunityGroupFactory)
+    opportunity_group_id = factory.LazyAttribute(lambda a: a.opportunity_group.opportunity_group_id)
+
+    opportunity_audit_event = factory.fuzzy.FuzzyChoice(OpportunityAuditEvent)
+
+    user = factory.SubFactory(UserFactory)
+    user_id = factory.LazyAttribute(lambda a: a.user.user_id)
+
+    opportunity = None
+    opportunity_id = factory.LazyAttribute(
+        lambda a: a.opportunity.opportunity_id if a.opportunity else None
+    )
+
+    opportunity_summary = None
+    opportunity_summary_id = factory.LazyAttribute(
+        lambda a: a.opportunity_summary.opportunity_summary_id if a.opportunity_summary else None
+    )
+
+    competition = None
+    competition_id = factory.LazyAttribute(
+        lambda a: a.competition.competition_id if a.competition else None
+    )
+
+    audit_metadata = sometimes_none(factory.LazyAttribute(lambda x: {}), none_chance=0.5)
 
 
 class OpportunitySummaryFactory(BaseFactory):
