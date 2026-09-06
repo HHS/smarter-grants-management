@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import UUID, BigInteger, ForeignKey, UniqueConstraint
 from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
@@ -24,6 +25,9 @@ from src.db.models.lookup_models import (
     LkOpportunityCategory,
 )
 from src.db.models.resource_models import AbstractResourceTableMixin, Resource
+
+if TYPE_CHECKING:
+    from src.db.models.competition_models import Competition
 
 
 class OpportunityGroup(GrantorSchemaTable, TimestampMixin, AbstractResourceTableMixin):
@@ -87,6 +91,11 @@ class Opportunity(GrantorSchemaTable, TimestampMixin, AbstractResourceTableMixin
     opportunity_attachments: Mapped[list[OpportunityAttachment]] = relationship(
         back_populates="opportunity", uselist=True, cascade="all, delete-orphan"
     )
+    competitions: Mapped[list[Competition]] = relationship(
+        "Competition",
+        back_populates="opportunity",
+        uselist=True,
+    )
 
     def get_resource_id(self) -> uuid.UUID:
         return self.opportunity_id
@@ -97,6 +106,20 @@ class Opportunity(GrantorSchemaTable, TimestampMixin, AbstractResourceTableMixin
     @property
     def resource_name(self) -> str | None:
         return self.opportunity_title
+
+    @property
+    def forecast_summary(self) -> OpportunitySummary | None:
+        return next(
+            (summary for summary in self.opportunity_summaries if summary.is_forecast),
+            None,
+        )
+
+    @property
+    def non_forecast_summary(self) -> OpportunitySummary | None:
+        return next(
+            (summary for summary in self.opportunity_summaries if not summary.is_forecast),
+            None,
+        )
 
 
 class OpportunityAssistanceListing(GrantorSchemaTable, TimestampMixin):

@@ -22,7 +22,7 @@ class Competition(GrantorSchemaTable, TimestampMixin):
     opportunity_id: Mapped[uuid.UUID] = mapped_column(
         UUID, ForeignKey(Opportunity.opportunity_id), index=True
     )
-    opportunity: Mapped[Opportunity] = relationship(Opportunity)
+    opportunity: Mapped[Opportunity] = relationship(Opportunity, back_populates="competitions")
 
     public_competition_id: Mapped[str | None]
     competition_title: Mapped[str | None]
