@@ -8,6 +8,7 @@ from faker.providers import BaseProvider
 from sqlalchemy.orm import scoped_session
 
 import src.adapters.db as db
+import src.db.models.file_attachment_models as file_attachment_models
 import src.db.models.grantor_organization_models as grantor_organization_models
 import src.db.models.opportunity_models as opportunity_models
 import src.db.models.resource_models as resource_models
@@ -439,6 +440,34 @@ class OpportunityFactory(BaseFactory):
 
     category = factory.fuzzy.FuzzyChoice(OpportunityCategory)
     category_explanation = sometimes_none(factory.Faker("sentence"), none_chance=0.5)
+
+
+class FileAttachmentFactory(BaseFactory):
+    class Meta:
+        model = file_attachment_models.FileAttachment
+
+    file_attachment_id = Generators.UuidObj
+
+    file_location = factory.LazyAttribute(
+        lambda f: f"s3://local-mock-public-bucket/files/{f.file_attachment_id}/{f.file_name}"
+    )
+    file_name = factory.Faker("file_name")
+    mime_type = factory.Faker("mime_type")
+    file_description = sometimes_none(factory.Faker("sentence"), none_chance=0.5)
+    file_size_bytes = factory.Faker("random_int", min=1000, max=10000000)
+
+
+class OpportunityAttachmentFactory(BaseFactory):
+    class Meta:
+        model = opportunity_models.OpportunityAttachment
+
+    opportunity_attachment_id = Generators.UuidObj
+
+    opportunity = factory.SubFactory(OpportunityFactory)
+    opportunity_id = factory.LazyAttribute(lambda a: a.opportunity.opportunity_id)
+
+    file_attachment = factory.SubFactory(FileAttachmentFactory)
+    file_attachment_id = factory.LazyAttribute(lambda a: a.file_attachment.file_attachment_id)
 
 
 class OpportunitySummaryFactory(BaseFactory):

@@ -1,5 +1,6 @@
 from . import (
     assistance_listing_models,
+    file_attachment_models,
     grantor_organization_models,
     grantor_schema_table,
     lookup_models,
@@ -16,6 +17,7 @@ metadata = grantor_schema_table.metadata
 __all__ = [
     "metadata",
     "assistance_listing_models",
+    "file_attachment_models",
     "lookup_models",
     "user_models",
     "grantor_organization_models",

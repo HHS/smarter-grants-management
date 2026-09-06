@@ -15,6 +15,7 @@ from src.constants.lookup_constants import (
 )
 from src.db.models.assistance_listing_models import AssistanceListing
 from src.db.models.base import TimestampMixin
+from src.db.models.file_attachment_models import FileAttachment
 from src.db.models.grantor_schema_table import GrantorSchemaTable
 from src.db.models.lookup_models import (
     LkApplicantType,
@@ -83,6 +84,9 @@ class Opportunity(GrantorSchemaTable, TimestampMixin, AbstractResourceTableMixin
     opportunity_summaries: Mapped[list[OpportunitySummary]] = relationship(
         back_populates="opportunity", uselist=True, cascade="all, delete-orphan"
     )
+    opportunity_attachments: Mapped[list[OpportunityAttachment]] = relationship(
+        back_populates="opportunity", uselist=True, cascade="all, delete-orphan"
+    )
 
     def get_resource_id(self) -> uuid.UUID:
         return self.opportunity_id
@@ -113,6 +117,27 @@ class OpportunityAssistanceListing(GrantorSchemaTable, TimestampMixin):
         UUID, ForeignKey(AssistanceListing.assistance_listing_id), index=True
     )
     assistance_listing: Mapped[AssistanceListing] = relationship(AssistanceListing)
+
+
+
+class OpportunityAttachment(GrantorSchemaTable, TimestampMixin):
+    __tablename__ = "opportunity_attachment"
+
+    opportunity_attachment_id: Mapped[uuid.UUID] = mapped_column(
+        UUID, primary_key=True, default=uuid.uuid4
+    )
+
+    opportunity_id: Mapped[uuid.UUID] = mapped_column(
+        UUID, ForeignKey(Opportunity.opportunity_id), index=True
+    )
+    opportunity: Mapped[Opportunity] = relationship(
+        Opportunity, back_populates="opportunity_attachments"
+    )
+
+    file_attachment_id: Mapped[uuid.UUID] = mapped_column(
+        UUID, ForeignKey(FileAttachment.file_attachment_id), index=True
+    )
+    file_attachment: Mapped[FileAttachment] = relationship(FileAttachment)
 
 
 class OpportunitySummary(GrantorSchemaTable, TimestampMixin):
