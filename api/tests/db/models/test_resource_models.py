@@ -4,6 +4,7 @@ from src.constants.lookup_constants import ResourceType
 from tests.db.models.factories import (
     GrantorOrganizationFactory,
     InternalResourceFactory,
+    OpportunityFactory,
     PartnerFactory,
     ProgramFactory,
     ResourceFactory,
@@ -25,12 +26,10 @@ def test_concrete_resource(enable_factory_create, factory_cls):
     assert concrete_resource.get_resource_type() == entity.resource.resource_type
 
 
-def test_concrete_resource_type_without_a_table(enable_factory_create):
-    """A resource type that has no table yet errors rather than resolving to nothing."""
-    resource = ResourceFactory.create(resource_type=ResourceType.OPPORTUNITY)
+def test_concrete_resource_opportunity(enable_factory_create):
+    opportunity = OpportunityFactory.create()
 
-    with pytest.raises(ValueError, match="has no table behind it"):
-        assert resource.concrete_resource
+    assert opportunity.resource.concrete_resource == opportunity
 
 
 def test_concrete_resource_missing_row(enable_factory_create):

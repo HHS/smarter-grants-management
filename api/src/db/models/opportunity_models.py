@@ -22,7 +22,7 @@ class OpportunityGroup(GrantorSchemaTable, TimestampMixin, AbstractResourceTable
         Resource, single_parent=True, cascade="all, delete-orphan"
     )
 
-    opportunities: Mapped[list["Opportunity"]] = relationship(
+    opportunities: Mapped[list[Opportunity]] = relationship(
         back_populates="opportunity_group", uselist=True
     )
 
@@ -64,7 +64,7 @@ class Opportunity(GrantorSchemaTable, TimestampMixin, AbstractResourceTableMixin
     )
     category_explanation: Mapped[str | None]
 
-    opportunity_assistance_listings: Mapped[list["OpportunityAssistanceListing"]] = relationship(
+    opportunity_assistance_listings: Mapped[list[OpportunityAssistanceListing]] = relationship(
         back_populates="opportunity", uselist=True, cascade="all, delete-orphan"
     )
 

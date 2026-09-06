@@ -9,6 +9,7 @@ from sqlalchemy.orm import scoped_session
 
 import src.adapters.db as db
 import src.db.models.grantor_organization_models as grantor_organization_models
+import src.db.models.opportunity_models as opportunity_models
 import src.db.models.resource_models as resource_models
 import src.db.models.user_models as user_models
 import src.db.models.workflow_models as workflow_models
@@ -18,6 +19,7 @@ from src.constants.lookup_constants import (
     ExternalUserType,
     GrantorOrganizationAuditEvent,
     GrantorOrganizationType,
+    OpportunityCategory,
     PartnerAuditEvent,
     ResourceType,
     UserType,
@@ -408,6 +410,32 @@ class SecondaryProgramPartnerFactory(BaseFactory):
 
     program = factory.SubFactory(ProgramFactory)
     program_id = factory.LazyAttribute(lambda s: s.program.program_id)
+
+
+class OpportunityGroupFactory(BaseFactory):
+    class Meta:
+        model = opportunity_models.OpportunityGroup
+
+    opportunity_group_id = Generators.UuidObj
+
+
+class OpportunityFactory(BaseFactory):
+    class Meta:
+        model = opportunity_models.Opportunity
+
+    opportunity_id = Generators.UuidObj
+
+    opportunity_group = factory.SubFactory(OpportunityGroupFactory)
+    opportunity_group_id = factory.LazyAttribute(lambda o: o.opportunity_group.opportunity_group_id)
+
+    opportunity_number = factory.Sequence(lambda n: f"TEST-OPP-{n:05}")
+    opportunity_title = factory.Faker("sentence", nb_words=6)
+
+    tagline = factory.Faker("sentence", nb_words=8)
+    purpose_statement = factory.Faker("paragraph")
+
+    category = factory.fuzzy.FuzzyChoice(OpportunityCategory)
+    category_explanation = sometimes_none(factory.Faker("sentence"), none_chance=0.5)
 
 
 class RoleFactory(BaseFactory):
