@@ -69,16 +69,10 @@ class ApplicantType(StrEnum):
     FEDERALLY_RECOGNIZED_NATIVE_AMERICAN_TRIBAL_GOVERNMENTS = (
         "federally_recognized_native_american_tribal_governments"
     )
-    OTHER_NATIVE_AMERICAN_TRIBAL_ORGANIZATIONS = (
-        "other_native_american_tribal_organizations"
-    )
+    OTHER_NATIVE_AMERICAN_TRIBAL_ORGANIZATIONS = "other_native_american_tribal_organizations"
     PUBLIC_AND_INDIAN_HOUSING_AUTHORITIES = "public_and_indian_housing_authorities"
-    NONPROFITS_NON_HIGHER_EDUCATION_WITH_501C3 = (
-        "nonprofits_non_higher_education_with_501c3"
-    )
-    NONPROFITS_NON_HIGHER_EDUCATION_WITHOUT_501C3 = (
-        "nonprofits_non_higher_education_without_501c3"
-    )
+    NONPROFITS_NON_HIGHER_EDUCATION_WITH_501C3 = "nonprofits_non_higher_education_with_501c3"
+    NONPROFITS_NON_HIGHER_EDUCATION_WITHOUT_501C3 = "nonprofits_non_higher_education_without_501c3"
     INDIVIDUALS = "individuals"
     FOR_PROFIT_ORGANIZATIONS_OTHER_THAN_SMALL_BUSINESSES = (
         "for_profit_organizations_other_than_small_businesses"

@@ -97,17 +97,13 @@ APPLICANT_TYPE_CONFIG: LookupConfig[ApplicantType] = LookupConfig(
         LookupStr(ApplicantType.INDEPENDENT_SCHOOL_DISTRICTS, 5),
         LookupStr(ApplicantType.PUBLIC_AND_STATE_INSTITUTIONS_OF_HIGHER_EDUCATION, 6),
         LookupStr(ApplicantType.PRIVATE_INSTITUTIONS_OF_HIGHER_EDUCATION, 7),
-        LookupStr(
-            ApplicantType.FEDERALLY_RECOGNIZED_NATIVE_AMERICAN_TRIBAL_GOVERNMENTS, 8
-        ),
+        LookupStr(ApplicantType.FEDERALLY_RECOGNIZED_NATIVE_AMERICAN_TRIBAL_GOVERNMENTS, 8),
         LookupStr(ApplicantType.OTHER_NATIVE_AMERICAN_TRIBAL_ORGANIZATIONS, 9),
         LookupStr(ApplicantType.PUBLIC_AND_INDIAN_HOUSING_AUTHORITIES, 10),
         LookupStr(ApplicantType.NONPROFITS_NON_HIGHER_EDUCATION_WITH_501C3, 11),
         LookupStr(ApplicantType.NONPROFITS_NON_HIGHER_EDUCATION_WITHOUT_501C3, 12),
         LookupStr(ApplicantType.INDIVIDUALS, 13),
-        LookupStr(
-            ApplicantType.FOR_PROFIT_ORGANIZATIONS_OTHER_THAN_SMALL_BUSINESSES, 14
-        ),
+        LookupStr(ApplicantType.FOR_PROFIT_ORGANIZATIONS_OTHER_THAN_SMALL_BUSINESSES, 14),
         LookupStr(ApplicantType.SMALL_BUSINESSES, 15),
         LookupStr(ApplicantType.OTHER, 16),
         LookupStr(ApplicantType.UNRESTRICTED, 17),
@@ -138,15 +134,11 @@ FUNDING_CATEGORY_CONFIG: LookupConfig[FundingCategory] = LookupConfig(
         LookupStr(FundingCategory.NATURAL_RESOURCES, 20),
         LookupStr(FundingCategory.OPPORTUNITY_ZONE_BENEFITS, 21),
         LookupStr(FundingCategory.REGIONAL_DEVELOPMENT, 22),
-        LookupStr(
-            FundingCategory.SCIENCE_TECHNOLOGY_AND_OTHER_RESEARCH_AND_DEVELOPMENT, 23
-        ),
+        LookupStr(FundingCategory.SCIENCE_TECHNOLOGY_AND_OTHER_RESEARCH_AND_DEVELOPMENT, 23),
         LookupStr(FundingCategory.TRANSPORTATION, 24),
         LookupStr(FundingCategory.AFFORDABLE_CARE_ACT, 25),
         LookupStr(FundingCategory.OTHER, 26),
-        LookupStr(
-            FundingCategory.ENERGY_INFRASTRUCTURE_AND_CRITICAL_MINERAL_AND_MATERIALS, 27
-        ),
+        LookupStr(FundingCategory.ENERGY_INFRASTRUCTURE_AND_CRITICAL_MINERAL_AND_MATERIALS, 27),
         LookupStr(FundingCategory.RECREATION_AND_TOURISM, 28),
     ]
 )
@@ -160,9 +152,7 @@ FUNDING_INSTRUMENT_CONFIG: LookupConfig[FundingInstrument] = LookupConfig(
     ]
 )
 
-COMPETITION_OPEN_TO_APPLICANT_CONFIG: LookupConfig[
-    CompetitionOpenToApplicant
-] = LookupConfig(
+COMPETITION_OPEN_TO_APPLICANT_CONFIG: LookupConfig[CompetitionOpenToApplicant] = LookupConfig(
     [
         LookupStr(CompetitionOpenToApplicant.INDIVIDUAL, 1),
         LookupStr(CompetitionOpenToApplicant.ORGANIZATION, 2),
@@ -298,6 +288,90 @@ class LkGrantorOrganizationType(GrantorLookupTable, TimestampMixin):
     def from_lookup(cls, lookup: Lookup) -> LkGrantorOrganizationType:
         return LkGrantorOrganizationType(
             grantor_organization_type_id=lookup.lookup_val, description=lookup.get_description()
+        )
+
+
+@LookupRegistry.register_lookup(OPPORTUNITY_CATEGORY_CONFIG)
+class LkOpportunityCategory(GrantorLookupTable, TimestampMixin):
+    __tablename__ = "lk_opportunity_category"
+    opportunity_category_id: Mapped[int] = mapped_column(primary_key=True)
+    description: Mapped[str]
+
+    @classmethod
+    def from_lookup(cls, lookup: Lookup) -> LkOpportunityCategory:
+        return LkOpportunityCategory(
+            opportunity_category_id=lookup.lookup_val,
+            description=lookup.get_description(),
+        )
+
+
+@LookupRegistry.register_lookup(APPLICANT_TYPE_CONFIG)
+class LkApplicantType(GrantorLookupTable, TimestampMixin):
+    __tablename__ = "lk_applicant_type"
+    applicant_type_id: Mapped[int] = mapped_column(primary_key=True)
+    description: Mapped[str]
+
+    @classmethod
+    def from_lookup(cls, lookup: Lookup) -> LkApplicantType:
+        return LkApplicantType(
+            applicant_type_id=lookup.lookup_val,
+            description=lookup.get_description(),
+        )
+
+
+@LookupRegistry.register_lookup(FUNDING_CATEGORY_CONFIG)
+class LkFundingCategory(GrantorLookupTable, TimestampMixin):
+    __tablename__ = "lk_funding_category"
+    funding_category_id: Mapped[int] = mapped_column(primary_key=True)
+    description: Mapped[str]
+
+    @classmethod
+    def from_lookup(cls, lookup: Lookup) -> LkFundingCategory:
+        return LkFundingCategory(
+            funding_category_id=lookup.lookup_val,
+            description=lookup.get_description(),
+        )
+
+
+@LookupRegistry.register_lookup(FUNDING_INSTRUMENT_CONFIG)
+class LkFundingInstrument(GrantorLookupTable, TimestampMixin):
+    __tablename__ = "lk_funding_instrument"
+    funding_instrument_id: Mapped[int] = mapped_column(primary_key=True)
+    description: Mapped[str]
+
+    @classmethod
+    def from_lookup(cls, lookup: Lookup) -> LkFundingInstrument:
+        return LkFundingInstrument(
+            funding_instrument_id=lookup.lookup_val,
+            description=lookup.get_description(),
+        )
+
+
+@LookupRegistry.register_lookup(COMPETITION_OPEN_TO_APPLICANT_CONFIG)
+class LkCompetitionOpenToApplicant(GrantorLookupTable, TimestampMixin):
+    __tablename__ = "lk_competition_open_to_applicant"
+    competition_open_to_applicant_id: Mapped[int] = mapped_column(primary_key=True)
+    description: Mapped[str]
+
+    @classmethod
+    def from_lookup(cls, lookup: Lookup) -> LkCompetitionOpenToApplicant:
+        return LkCompetitionOpenToApplicant(
+            competition_open_to_applicant_id=lookup.lookup_val,
+            description=lookup.get_description(),
+        )
+
+
+@LookupRegistry.register_lookup(OPPORTUNITY_AUDIT_EVENT_CONFIG)
+class LkOpportunityAuditEvent(GrantorLookupTable, TimestampMixin):
+    __tablename__ = "lk_opportunity_audit_event"
+    opportunity_audit_event_id: Mapped[int] = mapped_column(primary_key=True)
+    description: Mapped[str]
+
+    @classmethod
+    def from_lookup(cls, lookup: Lookup) -> LkOpportunityAuditEvent:
+        return LkOpportunityAuditEvent(
+            opportunity_audit_event_id=lookup.lookup_val,
+            description=lookup.get_description(),
         )
 
 
