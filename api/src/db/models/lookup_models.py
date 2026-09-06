@@ -64,6 +64,7 @@ RESOURCE_TYPE_CONFIG: LookupConfig[ResourceType] = LookupConfig(
         LookupStr(ResourceType.PROGRAM, 3),
         LookupStr(ResourceType.GRANTOR_ORGANIZATION, 4),
         LookupStr(ResourceType.OPPORTUNITY, 5),
+        LookupStr(ResourceType.OPPORTUNITY_GROUP, 6),
     ]
 )
 

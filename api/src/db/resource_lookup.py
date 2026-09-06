@@ -11,6 +11,7 @@ context - so this deliberately exposes the mapping rather than a fetch-and-raise
 
 from src.constants.lookup_constants import ResourceType
 from src.db.models.grantor_organization_models import GrantorOrganization, Partner, Program
+from src.db.models.opportunity_models import Opportunity, OpportunityGroup
 from src.db.models.resource_models import AbstractResourceTableMixin, InternalResource
 
 # A resource type absent from here has no table yet and isn't fetchable at all.
@@ -25,6 +26,8 @@ RESOURCE_TYPE_TO_MODEL: dict[ResourceType, type[AbstractResourceTableMixin]] = {
     ResourceType.PARTNER: Partner,
     ResourceType.GRANTOR_ORGANIZATION: GrantorOrganization,
     ResourceType.PROGRAM: Program,
+    ResourceType.OPPORTUNITY: Opportunity,
+    ResourceType.OPPORTUNITY_GROUP: OpportunityGroup,
 }
 
 
