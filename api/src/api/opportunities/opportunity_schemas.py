@@ -61,6 +61,54 @@ class OpportunityAttachmentDeleteResponseSchema(AbstractResponseSchema):
     pass
 
 
+class CompetitionRequestBaseSchema(Schema):
+    competition_title = fields.String(required=True, validate=validators.Length(max=255))
+    public_competition_id = fields.String(allow_none=True, validate=validators.Length(max=255))
+    opening_timestamp = fields.DateTime(required=True)
+    closing_timestamp = fields.DateTime(required=True)
+    grace_period = fields.Integer(allow_none=True, validate=validators.Range(min=0))
+    contact_info = fields.String(required=True, validate=validators.Length(max=4000))
+    open_to_applicants = fields.List(
+        fields.Enum(CompetitionOpenToApplicant), required=True, validate=validators.Length(min=1)
+    )
+
+    @validates_schema
+    def validate_timestamps(self, data: dict, **kwargs: dict) -> None:
+        if data["opening_timestamp"] > data["closing_timestamp"]:
+            raise ValidationError(
+                [
+                    MarshmallowErrorContainer(
+                        SchemaValidationError.INVALID,
+                        "Opening timestamp must be less than or equal to closing timestamp",
+                    )
+                ]
+            )
+
+
+class CompetitionCreateRequestSchema(CompetitionRequestBaseSchema):
+    pass
+
+
+class CompetitionUpdateRequestSchema(CompetitionRequestBaseSchema):
+    pass
+
+
+class CompetitionResponseSchema(AbstractResponseSchema):
+    data = fields.Nested("CompetitionSchema")
+
+
+class CompetitionInstructionCreateRequestSchema(Schema):
+    pending_file_id = fields.UUID(required=True)
+
+
+class CompetitionInstructionResponseSchema(AbstractResponseSchema):
+    data = fields.Nested("CompetitionInstructionSchema")
+
+
+class CompetitionInstructionDeleteResponseSchema(AbstractResponseSchema):
+    pass
+
+
 class OpportunitySummarySchema(Schema):
     opportunity_summary_id = fields.UUID()
     summary_description = fields.String()
