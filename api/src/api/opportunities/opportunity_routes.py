@@ -15,6 +15,8 @@ from src.api.opportunities.opportunity_schemas import (
     OpportunityAttachmentCreateRequestSchema,
     OpportunityAttachmentDeleteResponseSchema,
     OpportunityAttachmentResponseSchema,
+    OpportunityAuditRequestSchema,
+    OpportunityAuditResponseSchema,
     OpportunityCreateRequestSchema,
     OpportunityListRequestSchema,
     OpportunityListResponseSchema,
@@ -37,6 +39,7 @@ from src.services.opportunities.get_opportunity import (
     get_opportunity_and_verify_access,
 )
 from src.services.opportunities.list_opportunities import list_opportunities
+from src.services.opportunities.list_opportunity_audit import list_opportunity_audit
 from src.services.opportunities.opportunity_attachments import (
     create_opportunity_attachment_from_pending_file,
     delete_opportunity_attachment,
@@ -379,3 +382,37 @@ def competition_instruction_delete(
             db_session, user, opportunity_id, competition_id, competition_instruction_id
         )
     return response.ApiResponse(message="Instruction successfully deleted")
+
+
+@opportunity_blueprint.post("/<uuid:opportunity_id>/audit_history")
+@opportunity_blueprint.input(OpportunityAuditRequestSchema, location="json")
+@opportunity_blueprint.output(OpportunityAuditResponseSchema)
+@opportunity_blueprint.doc(
+    summary="List Opportunity Audit History",
+    responses=[200, 401, 403, 404, 422],
+)
+@opportunity_blueprint.auth_required(jwt_or_api_user_key_multi_auth)
+@flask_db.with_db_session()
+def opportunity_audit_list(
+    db_session: db.Session,
+    opportunity_id: uuid.UUID,
+    json_data: dict,
+) -> response.ApiResponse:
+    add_extra_data_to_current_request_logs({"opportunity_id": opportunity_id})
+    logger.info("POST /v1/opportunities/:opportunity_id/audit_history")
+
+    with db_session.begin():
+        user = jwt_or_api_user_key_multi_auth.get_user()
+        db_session.add(user)
+        audit_events, pagination_info = list_opportunity_audit(
+            db_session,
+            user,
+            opportunity_id,
+            json_data,
+        )
+
+    return response.ApiResponse(
+        message="Success",
+        data=audit_events,
+        pagination_info=pagination_info,
+    )

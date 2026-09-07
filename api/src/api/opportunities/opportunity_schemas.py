@@ -15,6 +15,7 @@ from src.constants.lookup_constants import (
     CompetitionOpenToApplicant,
     FundingCategory,
     FundingInstrument,
+    OpportunityAuditEvent,
     OpportunityCategory,
 )
 from src.pagination.pagination_schema import generate_pagination_schema
@@ -107,6 +108,44 @@ class CompetitionInstructionResponseSchema(AbstractResponseSchema):
 
 class CompetitionInstructionDeleteResponseSchema(AbstractResponseSchema):
     pass
+
+
+class OpportunityAuditFilterSchema(Schema):
+    opportunity_audit_event = fields.List(fields.Enum(OpportunityAuditEvent), allow_none=True)
+
+
+class OpportunityAuditRequestSchema(Schema):
+    filters = fields.Nested(OpportunityAuditFilterSchema(), allow_none=True)
+    pagination = fields.Nested(
+        generate_pagination_schema(
+            "OpportunityAuditPaginationSchema",
+            [
+                "created_at",
+                "opportunity_group_audit_id",
+            ],
+            default_sort_order=[{"order_by": "created_at", "sort_direction": "descending"}],
+            default_page_size=25,
+            default_page_offset=1,
+        ),
+        required=True,
+    )
+
+
+class OpportunityAuditSchema(Schema):
+    opportunity_group_audit_id = fields.UUID()
+    opportunity_group_id = fields.UUID()
+    opportunity_audit_event = fields.Enum(OpportunityAuditEvent)
+    user_id = fields.UUID()
+    opportunity_id = fields.UUID(allow_none=True)
+    opportunity_summary_id = fields.UUID(allow_none=True)
+    competition_id = fields.UUID(allow_none=True)
+    audit_metadata = fields.Dict(allow_none=True)
+    created_at = fields.DateTime()
+    updated_at = fields.DateTime()
+
+
+class OpportunityAuditResponseSchema(AbstractResponseSchema, PaginationMixinSchema):
+    data = fields.List(fields.Nested(OpportunityAuditSchema))
 
 
 class OpportunitySummarySchema(Schema):
