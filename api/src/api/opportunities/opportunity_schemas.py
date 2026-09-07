@@ -49,6 +49,18 @@ class OpportunityAttachmentSchema(Schema):
     updated_at = fields.DateTime()
 
 
+class OpportunityAttachmentCreateRequestSchema(Schema):
+    pending_file_id = fields.UUID(required=True)
+
+
+class OpportunityAttachmentResponseSchema(AbstractResponseSchema):
+    data = fields.Nested(OpportunityAttachmentSchema)
+
+
+class OpportunityAttachmentDeleteResponseSchema(AbstractResponseSchema):
+    pass
+
+
 class OpportunitySummarySchema(Schema):
     opportunity_summary_id = fields.UUID()
     summary_description = fields.String()

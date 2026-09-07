@@ -51,4 +51,7 @@ def opportunity_request(opportunity_group, assistance_listing):
 
 @pytest.fixture
 def opportunity(enable_factory_create):
-    return OpportunityFactory.create()
+    return OpportunityFactory.create(
+        category=OpportunityCategory.DISCRETIONARY,
+        category_explanation=None,
+    )

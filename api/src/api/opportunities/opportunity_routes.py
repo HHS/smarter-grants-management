@@ -6,6 +6,9 @@ from src.adapters.db import flask_db
 from src.api import response
 from src.api.opportunities.opportunity_blueprint import opportunity_blueprint
 from src.api.opportunities.opportunity_schemas import (
+    OpportunityAttachmentCreateRequestSchema,
+    OpportunityAttachmentDeleteResponseSchema,
+    OpportunityAttachmentResponseSchema,
     OpportunityCreateRequestSchema,
     OpportunityListRequestSchema,
     OpportunityListResponseSchema,
@@ -23,6 +26,10 @@ from src.services.opportunities.get_opportunity import (
     get_opportunity_and_verify_access,
 )
 from src.services.opportunities.list_opportunities import list_opportunities
+from src.services.opportunities.opportunity_attachments import (
+    create_opportunity_attachment_from_pending_file,
+    delete_opportunity_attachment,
+)
 from src.services.opportunities.opportunity_summaries import (
     create_opportunity_summary,
     update_opportunity_summary,
@@ -195,3 +202,69 @@ def opportunity_summary_update(
         )
 
     return response.ApiResponse(message="Success", data=opportunity_summary)
+
+
+@opportunity_blueprint.post("/<uuid:opportunity_id>/attachments")
+@opportunity_blueprint.input(OpportunityAttachmentCreateRequestSchema, location="json")
+@opportunity_blueprint.output(OpportunityAttachmentResponseSchema)
+@opportunity_blueprint.doc(
+    summary="Create an Opportunity Attachment",
+    responses=[200, 401, 403, 404, 422],
+)
+@opportunity_blueprint.auth_required(jwt_or_api_user_key_multi_auth)
+@flask_db.with_db_session()
+def opportunity_attachment_create(
+    db_session: db.Session,
+    opportunity_id: uuid.UUID,
+    json_data: dict,
+) -> response.ApiResponse:
+    add_extra_data_to_current_request_logs({"opportunity_id": opportunity_id})
+    logger.info("POST /v1/opportunities/:opportunity_id/attachments")
+
+    with db_session.begin():
+        user = jwt_or_api_user_key_multi_auth.get_user()
+        db_session.add(user)
+
+        attachment = create_opportunity_attachment_from_pending_file(
+            db_session,
+            user,
+            opportunity_id,
+            json_data["pending_file_id"],
+        )
+
+    return response.ApiResponse(message="Success", data=attachment)
+
+
+@opportunity_blueprint.delete("/<uuid:opportunity_id>/attachments/<uuid:opportunity_attachment_id>")
+@opportunity_blueprint.output(OpportunityAttachmentDeleteResponseSchema)
+@opportunity_blueprint.doc(
+    summary="Delete an Opportunity Attachment",
+    responses=[200, 401, 403, 404],
+)
+@opportunity_blueprint.auth_required(jwt_or_api_user_key_multi_auth)
+@flask_db.with_db_session()
+def opportunity_attachment_delete(
+    db_session: db.Session,
+    opportunity_id: uuid.UUID,
+    opportunity_attachment_id: uuid.UUID,
+) -> response.ApiResponse:
+    add_extra_data_to_current_request_logs(
+        {
+            "opportunity_id": opportunity_id,
+            "opportunity_attachment_id": opportunity_attachment_id,
+        }
+    )
+    logger.info("DELETE /v1/opportunities/:opportunity_id/attachments/:opportunity_attachment_id")
+
+    with db_session.begin():
+        user = jwt_or_api_user_key_multi_auth.get_user()
+        db_session.add(user)
+
+        delete_opportunity_attachment(
+            db_session,
+            user,
+            opportunity_id,
+            opportunity_attachment_id,
+        )
+
+    return response.ApiResponse(message="Attachment successfully deleted")
