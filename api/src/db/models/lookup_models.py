@@ -7,6 +7,7 @@ from src.constants.lookup_constants import (
     ApprovalType,
     CompetitionOpenToApplicant,
     ExternalUserType,
+    FileScanStatus,
     FundingCategory,
     FundingInstrument,
     GrantorOrganizationAuditEvent,
@@ -24,9 +25,6 @@ from src.db.models.grantor_schema_table import GrantorSchemaTable
 
 #######################################################
 # LookupConfig mappings
-#
-# Put all mappings of lookup values to their DB integer
-# representations in this section
 #######################################################
 
 USER_TYPE_CONFIG: LookupConfig[UserType] = LookupConfig(
@@ -51,7 +49,7 @@ PRIVILEGE_CONFIG: LookupConfig[Privilege] = LookupConfig(
         LookupStr(Privilege.VIEW_GRANTOR_ORGANIZATION, 7),
         LookupStr(Privilege.UPDATE_GRANTOR_ORGANIZATION, 8),
         LookupStr(Privilege.MANAGE_GRANTOR_ORGANIZATION_MEMBERS, 9),
-        LookupStr(Privilege.UNUSED_PRIVILEGE_102, 10),
+        LookupStr(Privilege.INTERNAL_S3_SCAN, 10),
         LookupStr(Privilege.UNUSED_PRIVILEGE_103, 11),
     ]
 )
@@ -77,7 +75,6 @@ GRANTOR_ORGANIZATION_TYPE_CONFIG: LookupConfig[GrantorOrganizationType] = Lookup
 PARTNER_AUDIT_EVENT_CONFIG: LookupConfig[PartnerAuditEvent] = LookupConfig(
     [LookupStr(PartnerAuditEvent.USER_ROLES_MODIFIED, 1)]
 )
-
 
 OPPORTUNITY_CATEGORY_CONFIG: LookupConfig[OpportunityCategory] = LookupConfig(
     [
@@ -171,13 +168,20 @@ OPPORTUNITY_AUDIT_EVENT_CONFIG: LookupConfig[OpportunityAuditEvent] = LookupConf
     ]
 )
 
+FILE_SCAN_STATUS_CONFIG: LookupConfig[FileScanStatus] = LookupConfig(
+    [
+        LookupStr(FileScanStatus.PENDING, 1),
+        LookupStr(FileScanStatus.IN_PROGRESS, 2),
+        LookupStr(FileScanStatus.COMPLETE, 3),
+        LookupStr(FileScanStatus.INFECTED, 4),
+        LookupStr(FileScanStatus.PROCESSED, 5),
+    ]
+)
+
 GRANTOR_ORGANIZATION_AUDIT_EVENT_CONFIG: LookupConfig[GrantorOrganizationAuditEvent] = LookupConfig(
     [LookupStr(GrantorOrganizationAuditEvent.USER_ROLES_MODIFIED, 1)]
 )
 
-# Only the values the engine itself needs are seeded here. The find/apply workflow
-# and approval types (opportunity_publish, award recommendation review, and so on)
-# are deliberately not ported - teams add values as they build real  workflows.
 WORKFLOW_TYPE_CONFIG: LookupConfig[WorkflowType] = LookupConfig(
     [
         LookupStr(WorkflowType.BASIC_TEST_WORKFLOW, 1),
@@ -202,34 +206,16 @@ APPROVAL_RESPONSE_TYPE_CONFIG: LookupConfig[ApprovalResponseType] = LookupConfig
     ]
 )
 
-#######################################################
-# GrantorLookupTable
-#
-# Base table that all lookup tables are derived from
-#######################################################
-
 
 class GrantorLookupTable(LookupTable, GrantorSchemaTable):
-    """
-    Base lookup table class that includes the GrantorSchemasTable as well
-    so that the tables end up in the grantor schema.
-    """
+    """Base table for lookup tables in the grantor schema."""
 
     __abstract__ = True
-
-
-#######################################################
-# Lookup Tables
-#
-# Put all lookup table definitions in this section and
-# connect them to the lookup configurations defined above
-#######################################################
 
 
 @LookupRegistry.register_lookup(USER_TYPE_CONFIG)
 class LkUserType(GrantorLookupTable, TimestampMixin):
     __tablename__ = "lk_user_type"
-
     user_type_id: Mapped[int] = mapped_column(primary_key=True)
     description: Mapped[str]
 
@@ -241,7 +227,6 @@ class LkUserType(GrantorLookupTable, TimestampMixin):
 @LookupRegistry.register_lookup(EXTERNAL_USER_TYPE_CONFIG)
 class LkExternalUserType(GrantorLookupTable, TimestampMixin):
     __tablename__ = "lk_external_user_type"
-
     external_user_type_id: Mapped[int] = mapped_column(primary_key=True)
     description: Mapped[str]
 
@@ -255,7 +240,6 @@ class LkExternalUserType(GrantorLookupTable, TimestampMixin):
 @LookupRegistry.register_lookup(PRIVILEGE_CONFIG)
 class LkPrivilege(GrantorLookupTable, TimestampMixin):
     __tablename__ = "lk_privilege"
-
     privilege_id: Mapped[int] = mapped_column(primary_key=True)
     description: Mapped[str]
 
@@ -267,7 +251,6 @@ class LkPrivilege(GrantorLookupTable, TimestampMixin):
 @LookupRegistry.register_lookup(RESOURCE_TYPE_CONFIG)
 class LkResourceType(GrantorLookupTable, TimestampMixin):
     __tablename__ = "lk_resource_type"
-
     resource_type_id: Mapped[int] = mapped_column(primary_key=True)
     description: Mapped[str]
 
@@ -281,14 +264,14 @@ class LkResourceType(GrantorLookupTable, TimestampMixin):
 @LookupRegistry.register_lookup(GRANTOR_ORGANIZATION_TYPE_CONFIG)
 class LkGrantorOrganizationType(GrantorLookupTable, TimestampMixin):
     __tablename__ = "lk_grantor_organization_type"
-
     grantor_organization_type_id: Mapped[int] = mapped_column(primary_key=True)
     description: Mapped[str]
 
     @classmethod
     def from_lookup(cls, lookup: Lookup) -> LkGrantorOrganizationType:
         return LkGrantorOrganizationType(
-            grantor_organization_type_id=lookup.lookup_val, description=lookup.get_description()
+            grantor_organization_type_id=lookup.lookup_val,
+            description=lookup.get_description(),
         )
 
 
@@ -376,10 +359,23 @@ class LkOpportunityAuditEvent(GrantorLookupTable, TimestampMixin):
         )
 
 
+@LookupRegistry.register_lookup(FILE_SCAN_STATUS_CONFIG)
+class LkFileScanStatus(GrantorLookupTable, TimestampMixin):
+    __tablename__ = "lk_file_scan_status"
+    file_scan_status_id: Mapped[int] = mapped_column(primary_key=True)
+    description: Mapped[str]
+
+    @classmethod
+    def from_lookup(cls, lookup: Lookup) -> LkFileScanStatus:
+        return LkFileScanStatus(
+            file_scan_status_id=lookup.lookup_val,
+            description=lookup.get_description(),
+        )
+
+
 @LookupRegistry.register_lookup(PARTNER_AUDIT_EVENT_CONFIG)
 class LkPartnerAuditEvent(GrantorLookupTable, TimestampMixin):
     __tablename__ = "lk_partner_audit_event"
-
     partner_audit_event_id: Mapped[int] = mapped_column(primary_key=True)
     description: Mapped[str]
 
@@ -393,7 +389,6 @@ class LkPartnerAuditEvent(GrantorLookupTable, TimestampMixin):
 @LookupRegistry.register_lookup(GRANTOR_ORGANIZATION_AUDIT_EVENT_CONFIG)
 class LkGrantorOrganizationAuditEvent(GrantorLookupTable, TimestampMixin):
     __tablename__ = "lk_grantor_organization_audit_event"
-
     grantor_organization_audit_event_id: Mapped[int] = mapped_column(primary_key=True)
     description: Mapped[str]
 
@@ -408,7 +403,6 @@ class LkGrantorOrganizationAuditEvent(GrantorLookupTable, TimestampMixin):
 @LookupRegistry.register_lookup(WORKFLOW_TYPE_CONFIG)
 class LkWorkflowType(GrantorLookupTable, TimestampMixin):
     __tablename__ = "lk_workflow_type"
-
     workflow_type_id: Mapped[int] = mapped_column(primary_key=True)
     description: Mapped[str]
 
@@ -422,7 +416,6 @@ class LkWorkflowType(GrantorLookupTable, TimestampMixin):
 @LookupRegistry.register_lookup(APPROVAL_TYPE_CONFIG)
 class LkApprovalType(GrantorLookupTable, TimestampMixin):
     __tablename__ = "lk_approval_type"
-
     approval_type_id: Mapped[int] = mapped_column(primary_key=True)
     description: Mapped[str]
 
@@ -436,7 +429,6 @@ class LkApprovalType(GrantorLookupTable, TimestampMixin):
 @LookupRegistry.register_lookup(APPROVAL_RESPONSE_TYPE_CONFIG)
 class LkApprovalResponseType(GrantorLookupTable, TimestampMixin):
     __tablename__ = "lk_approval_response_type"
-
     approval_response_type_id: Mapped[int] = mapped_column(primary_key=True)
     description: Mapped[str]
 

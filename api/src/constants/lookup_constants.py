@@ -30,8 +30,8 @@ class Privilege(StrEnum):
     MANAGE_GRANTOR_ORGANIZATION_MEMBERS = "manage_grantor_organization_members"
 
     INTERNAL_WORKFLOW_EVENT_SEND = "internal_workflow_event_send"
+    INTERNAL_S3_SCAN = "internal_s3_scan"
 
-    UNUSED_PRIVILEGE_102 = "unused_privilege_102"
     UNUSED_PRIVILEGE_103 = "unused_privilege_103"
 
 
@@ -139,6 +139,14 @@ class OpportunityAuditEvent(StrEnum):
     COMPETITION_UPDATED = "competition_updated"
 
 
+class FileScanStatus(StrEnum):
+    PENDING = "pending"
+    IN_PROGRESS = "in_progress"
+    COMPLETE = "complete"
+    INFECTED = "infected"
+    PROCESSED = "processed"
+
+
 class PartnerAuditEvent(StrEnum):
     USER_ROLES_MODIFIED = "user_roles_modified"
 
@@ -219,7 +227,7 @@ ALLOWED_RESOURCES_FOR_PRIVILEGE: dict[Privilege, set[ResourceType]] = {
         ResourceType.GRANTOR_ORGANIZATION,
     },
     Privilege.INTERNAL_WORKFLOW_EVENT_SEND: {ResourceType.INTERNAL},
-    Privilege.UNUSED_PRIVILEGE_102: set(),
+    Privilege.INTERNAL_S3_SCAN: {ResourceType.INTERNAL},
     Privilege.UNUSED_PRIVILEGE_103: set(),
 }
 

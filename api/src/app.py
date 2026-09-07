@@ -10,6 +10,7 @@ import src.adapters.db.flask_db as flask_db
 import src.logs
 import src.logs.flask_logger as flask_logger
 from src.adapters.newrelic import init_newrelic
+from src.api.files import file_blueprint
 from src.api.grantor_organizations.grantor_organization_blueprint import (
     grantor_organization_blueprint,
 )
@@ -46,8 +47,6 @@ This API is in early development, and is not yet ready for public use.
 
 
 class EndpointConfig(PydanticBaseEnvConfig):
-    # Do not ever change this to True, this controls endpoints we only
-    # want to exist for local development.
     enable_local_endpoints: bool = Field(False, alias="ENABLE_LOCAL_ENDPOINTS")
 
 
@@ -64,7 +63,6 @@ def create_app() -> APIFlask:
     register_url_converters(app)
     register_blueprints(app)
 
-    # Initialize auth
     initialize_login_gov_config()
     initialize_jwt_auth()
 
@@ -83,13 +81,10 @@ def setup_logging(app: APIFlask) -> None:
 def register_db_client(app: APIFlask) -> None:
     db_client = db.PostgresDBClient()
     flask_db.register_db_client(db_client, app)
-
-    # Setup automation for the DB to create resource rows.
     setup_resource_automation()
 
 
 def register_url_converters(app: APIFlask) -> None:
-    """Register custom path parameter converters used by our route rules."""
     app.url_map.converters["resource_type"] = build_enum_converter(ResourceType)
 
 
@@ -106,9 +101,8 @@ def register_blueprints(app: APIFlask) -> None:
     app.register_blueprint(grantor_organization_blueprint)
     app.register_blueprint(resource_blueprint)
     app.register_blueprint(opportunity_blueprint)
+    app.register_blueprint(file_blueprint)
 
-    # Local endpoints for development, will error
-    # if this is ever enabled non-locally.
     if endpoint_config.enable_local_endpoints:
         error_if_not_local()
         app.register_blueprint(local_blueprint)
@@ -117,7 +111,6 @@ def register_blueprints(app: APIFlask) -> None:
 def configure_app(app: APIFlask) -> None:
     app_config = AppConfig()
 
-    # Set maximum file upload size (2 GB)
     app.config["MAX_CONTENT_LENGTH"] = app_config.max_file_upload_size_bytes
     app.config["HTTP_ERROR_SCHEMA"] = response_schema.ErrorResponseSchema
     app.config["VALIDATION_ERROR_SCHEMA"] = response_schema.ErrorResponseSchema
@@ -127,16 +120,13 @@ def configure_app(app: APIFlask) -> None:
     app.config["SWAGGER_UI_CONFIG"] = {
         "persistAuthorization": app_config.persist_authorization_openapi
     }
-    # Removing because the server dropdown has accessibility issues.
     app.config["SERVERS"] = "."
     app.config["DOCS_FAVICON"] = "https://simpler.grants.gov/img/favicon.ico"
 
-    # Set a few values for the Swagger endpoint
     app.config["OPENAPI_VERSION"] = "3.1.0"
 
     app.json.compact = False  # type: ignore
 
-    # Set various general OpenAPI config values
     app.info = {
         "description": API_DESCRIPTION,
         "contact": {
@@ -146,9 +136,6 @@ def configure_app(app: APIFlask) -> None:
         },
     }
 
-    # Set the security schema and define the header param
-    # where we expect the API token to reside.
-    # See: https://apiflask.com/authentication/#use-external-authentication-library
     app.security_schemes = get_app_security_scheme()
 
     @app.error_processor

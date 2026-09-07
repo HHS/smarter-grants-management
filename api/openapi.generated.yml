@@ -19,7 +19,10 @@ tags:
 - name: Proof of Concept - Alpha
 - name: Workflow
 - name: Partners
+- name: Grantor Organizations
 - name: Resources
+- name: Opportunities
+- name: Files
 - name: LOCAL ONLY
 servers: .
 paths:
@@ -43,6 +46,45 @@ paths:
       - Health
       summary: Healthcheck endpoint - verifies database can be connected to and returns
         deploy metadata.
+  /v1/files:
+    post:
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatePresignedUploadResponseSchema'
+          description: Successful response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Validation error
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Too Many Requests
+      tags:
+      - Files
+      summary: Create a presigned upload URL
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePresignedUploadRequestSchema'
+      security:
+      - ApiJwtAuth: &id001 []
+      - ApiUserKeyAuth: *id001
   /v1/users/login:
     get:
       parameters:
@@ -106,6 +148,51 @@ paths:
         the OAuth system.
 
         '
+  /v1/opportunities:
+    post:
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpportunityResponseSchema'
+          description: Successful response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Validation error
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Not Found
+      tags:
+      - Opportunities
+      summary: Create an Opportunity
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpportunityCreateRequestSchema'
+      security:
+      - ApiJwtAuth: &id002 []
+      - ApiUserKeyAuth: *id002
   /local/local-users:
     get:
       parameters: []
@@ -163,8 +250,8 @@ paths:
             schema:
               $ref: '#/components/schemas/WorkflowEventRequestSchema'
       security:
-      - ApiJwtAuth: &id001 []
-      - ApiUserKeyAuth: *id001
+      - ApiJwtAuth: &id003 []
+      - ApiUserKeyAuth: *id003
   /v1/users/token/logout:
     post:
       parameters: []
@@ -186,6 +273,45 @@ paths:
       summary: User Token Logout
       security:
       - ApiJwtAuth: []
+  /v1/opportunities/list:
+    post:
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpportunityListResponseSchema'
+          description: Successful response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Validation error
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Forbidden
+      tags:
+      - Opportunities
+      summary: List Opportunities
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpportunityListRequestSchema'
+      security:
+      - ApiJwtAuth: &id004 []
+      - ApiUserKeyAuth: *id004
   /v1/users/token/refresh:
     post:
       parameters: []
@@ -250,8 +376,49 @@ paths:
       - Partners
       summary: Fetch a Partner
       security:
-      - ApiJwtAuth: &id002 []
-      - ApiUserKeyAuth: *id002
+      - ApiJwtAuth: &id005 []
+      - ApiUserKeyAuth: *id005
+  /v1/workflows/{workflow_id}:
+    get:
+      parameters:
+      - in: path
+        name: workflow_id
+        schema:
+          type: string
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowGetResponseSchema'
+          description: Successful response
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Not found
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Forbidden
+      tags:
+      - Workflow
+      summary: Get Workflow
+      description: Get a workflow's current state, audit history, approvals, and approval
+        configuration.
+      security:
+      - ApiJwtAuth: &id006 []
+      - ApiUserKeyAuth: *id006
   /v1/users/{user_id}/can_access:
     post:
       parameters:
@@ -301,8 +468,283 @@ paths:
             schema:
               $ref: '#/components/schemas/UserCanAccessRequestSchema'
       security:
-      - ApiJwtAuth: &id003 []
-      - ApiUserKeyAuth: *id003
+      - ApiJwtAuth: &id007 []
+      - ApiUserKeyAuth: *id007
+  /v1/workflows/events/{event_id}:
+    get:
+      parameters:
+      - in: path
+        name: event_id
+        schema:
+          type: string
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowGetResponseSchema'
+          description: Successful response
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Not found
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Forbidden
+      tags:
+      - Workflow
+      summary: Get Workflow By Event ID
+      description: Get the same payload as Get Workflow, resolved from one of its
+        event IDs.
+      security:
+      - ApiJwtAuth: &id008 []
+      - ApiUserKeyAuth: *id008
+  /v1/workflows/{workflow_id}/audit:
+    post:
+      parameters:
+      - in: path
+        name: workflow_id
+        schema:
+          type: string
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowAuditResponseSchema'
+          description: Successful response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Validation error
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Not found
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Forbidden
+      tags:
+      - Workflow
+      summary: Get Workflow Audit History
+      description: Get a workflow's audit history, paginated.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowAuditRequestSchema'
+      security:
+      - ApiJwtAuth: &id009 []
+      - ApiUserKeyAuth: *id009
+  /v1/opportunities/{opportunity_id}:
+    get:
+      parameters:
+      - in: path
+        name: opportunity_id
+        schema:
+          type: string
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpportunityResponseSchema'
+          description: Successful response
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Not found
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Forbidden
+      tags:
+      - Opportunities
+      summary: Fetch an Opportunity
+      security:
+      - ApiJwtAuth: &id010 []
+      - ApiUserKeyAuth: *id010
+    put:
+      parameters:
+      - in: path
+        name: opportunity_id
+        schema:
+          type: string
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpportunityResponseSchema'
+          description: Successful response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Validation error
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Not found
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Forbidden
+      tags:
+      - Opportunities
+      summary: Update an Opportunity
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpportunityUpdateRequestSchema'
+      security:
+      - ApiJwtAuth: &id011 []
+      - ApiUserKeyAuth: *id011
+  /v1/opportunities/{opportunity_id}/summaries:
+    post:
+      parameters:
+      - in: path
+        name: opportunity_id
+        schema:
+          type: string
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpportunitySummaryResponseSchema'
+          description: Successful response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Validation error
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Not found
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Forbidden
+      tags:
+      - Opportunities
+      summary: Create an Opportunity Summary
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpportunitySummaryCreateRequestSchema'
+      security:
+      - ApiJwtAuth: &id012 []
+      - ApiUserKeyAuth: *id012
+  /v1/grantor-organizations/{grantor_organization_id}:
+    get:
+      parameters:
+      - in: path
+        name: grantor_organization_id
+        schema:
+          type: string
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetGrantorOrganizationResponseSchema'
+          description: Successful response
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Not found
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Forbidden
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Unprocessable Entity
+      tags:
+      - Grantor Organizations
+      summary: Fetch a Grantor Organization
+      security:
+      - ApiJwtAuth: &id013 []
+      - ApiUserKeyAuth: *id013
   /alpha/proof_of_concept/opportunities/{opportunity_id}:
     get:
       parameters:
@@ -337,8 +779,8 @@ paths:
         of cross-service data transfer. This endpoint requires JWT or API key authentication
         but has no authorization enforcement.
       security:
-      - ApiJwtAuth: &id004 []
-      - ApiUserKeyAuth: *id004
+      - ApiJwtAuth: &id014 []
+      - ApiUserKeyAuth: *id014
   /v1/resources/{resource_type}/{resource_id}/users/list:
     post:
       parameters:
@@ -394,8 +836,63 @@ paths:
             schema:
               $ref: '#/components/schemas/ListUserForResourceRequestSchema'
       security:
-      - ApiJwtAuth: &id005 []
-      - ApiUserKeyAuth: *id005
+      - ApiJwtAuth: &id015 []
+      - ApiUserKeyAuth: *id015
+  /v1/opportunities/{opportunity_id}/summaries/{opportunity_summary_id}:
+    put:
+      parameters:
+      - in: path
+        name: opportunity_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: opportunity_summary_id
+        schema:
+          type: string
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpportunitySummaryResponseSchema'
+          description: Successful response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Validation error
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Not found
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Forbidden
+      tags:
+      - Opportunities
+      summary: Update an Opportunity Summary
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpportunitySummaryUpdateRequestSchema'
+      security:
+      - ApiJwtAuth: &id016 []
+      - ApiUserKeyAuth: *id016
 openapi: 3.1.0
 components:
   schemas:
@@ -482,6 +979,516 @@ components:
           type: string
           description: An internal tracking ID
           example: 550e8400-e29b-41d4-a716-446655440000
+    PresignedUploadDataSchema:
+      type: object
+      properties:
+        url:
+          type: string
+        body:
+          type: object
+          additionalProperties: {}
+        pending_file_id:
+          type: string
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+    CreatePresignedUploadResponseSchema:
+      type: object
+      properties:
+        message:
+          type: string
+          description: The message to return
+          example: Success
+        data:
+          type:
+          - object
+          $ref: '#/components/schemas/PresignedUploadDataSchema'
+        status_code:
+          type: integer
+          description: The HTTP status code
+          example: 200
+    CreatePresignedUploadRequestSchema:
+      type: object
+      properties:
+        file_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        mime_type:
+          type: string
+      required:
+      - file_name
+      - mime_type
+    AssistanceListingSchema:
+      type: object
+      properties:
+        assistance_listing_id:
+          type: string
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        assistance_listing_number:
+          type: string
+        program_title:
+          type: string
+    OpportunityAssistanceListingSchema:
+      type: object
+      properties:
+        opportunity_assistance_listing_id:
+          type: string
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        assistance_listing:
+          type:
+          - object
+          $ref: '#/components/schemas/AssistanceListingSchema'
+    OpportunitySummarySchema:
+      type: object
+      properties:
+        opportunity_summary_id:
+          type: string
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        summary_description:
+          type: string
+        is_cost_sharing:
+          type: boolean
+        is_forecast:
+          type: boolean
+        post_timestamp:
+          type: string
+          format: date-time
+        close_timestamp:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        close_timestamp_description:
+          type:
+          - string
+          - 'null'
+        archive_timestamp:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        expected_number_of_awards:
+          type:
+          - integer
+          - 'null'
+        estimated_total_program_funding:
+          type:
+          - integer
+          - 'null'
+        award_floor:
+          type:
+          - integer
+          - 'null'
+        award_ceiling:
+          type:
+          - integer
+          - 'null'
+        additional_info_url:
+          type:
+          - string
+          - 'null'
+        additional_info_url_description:
+          type:
+          - string
+          - 'null'
+        forecasted_post_timestamp:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        forecasted_close_timestamp:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        forecasted_close_timestamp_description:
+          type:
+          - string
+          - 'null'
+        forecasted_award_timestamp:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        forecasted_project_start_timestamp:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        fiscal_year:
+          type:
+          - integer
+          - 'null'
+        funding_instruments:
+          type: array
+          items:
+            enum:
+            - cooperative_agreement
+            - grant
+            - procurement_contract
+            - other
+            type:
+            - string
+        funding_categories:
+          type: array
+          items:
+            enum:
+            - recovery_act
+            - agriculture
+            - arts
+            - business_and_commerce
+            - community_development
+            - consumer_protection
+            - disaster_prevention_and_relief
+            - education
+            - employment_labor_and_training
+            - energy
+            - environment
+            - food_and_nutrition
+            - health
+            - housing
+            - humanities
+            - infrastructure_investment_and_jobs_act
+            - information_and_statistics
+            - income_security_and_social_services
+            - law_justice_and_legal_services
+            - natural_resources
+            - opportunity_zone_benefits
+            - regional_development
+            - science_technology_and_other_research_and_development
+            - transportation
+            - affordable_care_act
+            - other
+            - energy_infrastructure_and_critical_mineral_and_materials
+            - recreation_and_tourism
+            type:
+            - string
+        applicant_types:
+          type: array
+          items:
+            enum:
+            - state_governments
+            - county_governments
+            - city_or_township_governments
+            - special_district_governments
+            - independent_school_districts
+            - public_and_state_institutions_of_higher_education
+            - private_institutions_of_higher_education
+            - federally_recognized_native_american_tribal_governments
+            - other_native_american_tribal_organizations
+            - public_and_indian_housing_authorities
+            - nonprofits_non_higher_education_with_501c3
+            - nonprofits_non_higher_education_without_501c3
+            - individuals
+            - for_profit_organizations_other_than_small_businesses
+            - small_businesses
+            - other
+            - unrestricted
+            type:
+            - string
+        funding_category_description:
+          type:
+          - string
+          - 'null'
+        applicant_eligibility_description:
+          type:
+          - string
+          - 'null'
+        agency_contact_description:
+          type:
+          - string
+          - 'null'
+        agency_email_address:
+          type:
+          - string
+          - 'null'
+        agency_email_address_description:
+          type:
+          - string
+          - 'null'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    FileAttachmentSchema:
+      type: object
+      properties:
+        file_attachment_id:
+          type: string
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        file_location:
+          type: string
+        file_name:
+          type: string
+        mime_type:
+          type: string
+        file_description:
+          type:
+          - string
+          - 'null'
+        file_size_bytes:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    OpportunityAttachmentSchema:
+      type: object
+      properties:
+        opportunity_attachment_id:
+          type: string
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        file_attachment:
+          type:
+          - object
+          $ref: '#/components/schemas/FileAttachmentSchema'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    CompetitionFormSchema:
+      type: object
+      properties:
+        competition_form_id:
+          type: string
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        form_id:
+          type: string
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        is_required:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    CompetitionInstructionSchema:
+      type: object
+      properties:
+        competition_instruction_id:
+          type: string
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        file_attachment:
+          type:
+          - object
+          $ref: '#/components/schemas/FileAttachmentSchema'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    CompetitionSchema:
+      type: object
+      properties:
+        competition_id:
+          type: string
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        public_competition_id:
+          type:
+          - string
+          - 'null'
+        competition_title:
+          type:
+          - string
+          - 'null'
+        opening_timestamp:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        closing_timestamp:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        grace_period:
+          type:
+          - integer
+          - 'null'
+        contact_info:
+          type:
+          - string
+          - 'null'
+        opportunity_assistance_listing_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        open_to_applicants:
+          type: array
+          items:
+            enum:
+            - individual
+            - organization
+            type:
+            - string
+        competition_forms:
+          type: array
+          items:
+            type:
+            - object
+            $ref: '#/components/schemas/CompetitionFormSchema'
+        competition_instructions:
+          type: array
+          items:
+            type:
+            - object
+            $ref: '#/components/schemas/CompetitionInstructionSchema'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    OpportunitySchema:
+      type: object
+      properties:
+        opportunity_id:
+          type: string
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        opportunity_group_id:
+          type: string
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        opportunity_number:
+          type: string
+        opportunity_title:
+          type: string
+        tagline:
+          type: string
+        purpose_statement:
+          type: string
+        category:
+          enum:
+          - discretionary
+          - mandatory
+          - continuation
+          - earmark
+          - other
+          type:
+          - string
+          - 'null'
+          - 'null'
+        category_explanation:
+          type:
+          - string
+          - 'null'
+        opportunity_assistance_listings:
+          type: array
+          items:
+            type:
+            - object
+            $ref: '#/components/schemas/OpportunityAssistanceListingSchema'
+        forecast_summary:
+          type:
+          - object
+          - 'null'
+          anyOf:
+          - $ref: '#/components/schemas/OpportunitySummarySchema'
+          - type: 'null'
+        non_forecast_summary:
+          type:
+          - object
+          - 'null'
+          anyOf:
+          - $ref: '#/components/schemas/OpportunitySummarySchema'
+          - type: 'null'
+        attachments:
+          type: array
+          items:
+            type:
+            - object
+            $ref: '#/components/schemas/OpportunityAttachmentSchema'
+        competitions:
+          type: array
+          items:
+            type:
+            - object
+            $ref: '#/components/schemas/CompetitionSchema'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    OpportunityResponseSchema:
+      type: object
+      properties:
+        message:
+          type: string
+          description: The message to return
+          example: Success
+        data:
+          type:
+          - object
+          $ref: '#/components/schemas/OpportunitySchema'
+        status_code:
+          type: integer
+          description: The HTTP status code
+          example: 200
+    OpportunityCreateRequestSchema:
+      type: object
+      properties:
+        opportunity_group_id:
+          type: string
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        opportunity_number:
+          type: string
+          maxLength: 40
+        opportunity_title:
+          type: string
+          maxLength: 255
+        tagline:
+          type: string
+          maxLength: 255
+        purpose_statement:
+          type: string
+          maxLength: 255
+        category:
+          enum:
+          - discretionary
+          - mandatory
+          - continuation
+          - earmark
+          - other
+          type:
+          - string
+        category_explanation:
+          type:
+          - string
+          - 'null'
+          maxLength: 255
+        assistance_listing_number:
+          type: string
+          maxLength: 6
+      required:
+      - assistance_listing_number
+      - category
+      - opportunity_group_id
+      - opportunity_number
+      - opportunity_title
+      - purpose_statement
+      - tagline
     LocalUserTokenSchema:
       type: object
       properties:
@@ -644,152 +1651,6 @@ components:
           type: integer
           description: The HTTP status code
           example: 200
-    UserTokenRefreshResponseSchema:
-      type: object
-      properties:
-        message:
-          type: string
-          description: The message to return
-          example: Success
-        data:
-          example: null
-        status_code:
-          type: integer
-          description: The HTTP status code
-          example: 200
-    PartnerSchema:
-      type: object
-      properties:
-        partner_id:
-          type: string
-          format: uuid
-          description: Unique ID of a partner
-          example: 123e4567-e89b-12d3-a456-426614174000
-        partner_name:
-          type: string
-          description: Name of the partner
-          example: Department of Examples
-    GetPartnerResponseSchema:
-      type: object
-      properties:
-        message:
-          type: string
-          description: The message to return
-          example: Success
-        data:
-          type:
-          - object
-          $ref: '#/components/schemas/PartnerSchema'
-        status_code:
-          type: integer
-          description: The HTTP status code
-          example: 200
-    UserCanAccessResponseSchema:
-      type: object
-      properties:
-        message:
-          type: string
-          description: The message to return
-          example: Success
-        data:
-          example: null
-        status_code:
-          type: integer
-          description: The HTTP status code
-          example: 200
-    UserCanAccessRequestSchema:
-      type: object
-      properties:
-        resource_id:
-          type: string
-          format: uuid
-          description: The ID of the resource to check access against
-          example: 123e4567-e89b-12d3-a456-426614174000
-        resource_type:
-          description: The type of the resource to check access against
-          enum:
-          - internal
-          - partner
-          - program
-          - grantor_organization
-          - opportunity
-          type:
-          - string
-        privileges:
-          type: array
-          minItems: 1
-          description: The privileges the user must have against the resource. The
-            user must have all of them.
-          items:
-            enum:
-            - view_partner
-            - update_partner
-            - manage_partner_members
-            - view_program
-            - update_program
-            - view_grantor_organization
-            - update_grantor_organization
-            - manage_grantor_organization_members
-            - internal_workflow_event_send
-            - unused_privilege_102
-            - unused_privilege_103
-            type:
-            - string
-      required:
-      - privileges
-      - resource_id
-      - resource_type
-    OpportunitySummarySchema:
-      type: object
-      properties:
-        post_date:
-          type:
-          - string
-          - 'null'
-          format: date
-          description: The date the opportunity was posted
-    OpportunityDataSchema:
-      type: object
-      properties:
-        opportunity_id:
-          type: string
-          format: uuid
-          description: The unique identifier for the opportunity
-          example: 123e4567-e89b-12d3-a456-426614174000
-        opportunity_title:
-          type:
-          - string
-          - 'null'
-          description: The title of the opportunity
-        opportunity_status:
-          description: The current status of the opportunity
-          enum:
-          - forecasted
-          - posted
-          - closed
-          - archived
-          type:
-          - string
-          - 'null'
-          - 'null'
-        summary:
-          description: Summary information about the opportunity
-          type:
-          - object
-          - 'null'
-          anyOf:
-          - $ref: '#/components/schemas/OpportunitySummarySchema'
-          - type: 'null'
-      required:
-      - opportunity_id
-    OpportunityGetResponseSchema:
-      type: object
-      properties:
-        data:
-          description: The opportunity data
-          type:
-          - object
-          $ref: '#/components/schemas/OpportunityDataSchema'
     SortOrderSchema:
       type: object
       properties:
@@ -830,6 +1691,853 @@ components:
             type:
             - object
             $ref: '#/components/schemas/SortOrderSchema'
+    OpportunityListResponseSchema:
+      type: object
+      properties:
+        pagination_info:
+          description: The pagination information for paginated endpoints
+          type: &id017
+          - object
+          $ref: '#/components/schemas/PaginationInfoSchema'
+        message:
+          type: string
+          description: The message to return
+          example: Success
+        data:
+          type: array
+          items:
+            type:
+            - object
+            $ref: '#/components/schemas/OpportunitySchema'
+        status_code:
+          type: integer
+          description: The HTTP status code
+          example: 200
+    OpportunityListFilterSchema:
+      type: object
+      properties:
+        opportunity_group_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        query:
+          type:
+          - string
+          - 'null'
+          description: Case-insensitive search across opportunity number and title
+    SortOrderOpportunityListPaginationSchema:
+      type: object
+      properties:
+        order_by:
+          type: string
+          enum:
+          - opportunity_id
+          - opportunity_number
+          - opportunity_title
+          - created_at
+          description: The field to sort the response by
+        sort_direction:
+          description: Whether to sort the response ascending or descending
+          enum:
+          - ascending
+          - descending
+          type:
+          - string
+      required:
+      - order_by
+      - sort_direction
+    OpportunityListPaginationSchema:
+      type: object
+      properties:
+        sort_order:
+          type: array
+          default:
+          - order_by: created_at
+            sort_direction: descending
+          minItems: 1
+          maxItems: 5
+          description: The list of sorting rules
+          items:
+            type:
+            - object
+            $ref: '#/components/schemas/SortOrderOpportunityListPaginationSchema'
+        page_size:
+          type: integer
+          default: 25
+          minimum: 1
+          maximum: 5000
+          description: The size of the page to fetch
+          example: 25
+        page_offset:
+          type: integer
+          default: 1
+          minimum: 1
+          description: The page number to fetch, starts counting from 1
+          example: 1
+    OpportunityListRequestSchema:
+      type: object
+      properties:
+        filters:
+          type:
+          - object
+          $ref: '#/components/schemas/OpportunityListFilterSchema'
+        pagination:
+          type:
+          - object
+          $ref: '#/components/schemas/OpportunityListPaginationSchema'
+      required:
+      - pagination
+    UserTokenRefreshResponseSchema:
+      type: object
+      properties:
+        message:
+          type: string
+          description: The message to return
+          example: Success
+        data:
+          example: null
+        status_code:
+          type: integer
+          description: The HTTP status code
+          example: 200
+    PartnerSchema:
+      type: object
+      properties:
+        partner_id:
+          type: string
+          format: uuid
+          description: Unique ID of a partner
+          example: 123e4567-e89b-12d3-a456-426614174000
+        partner_name:
+          type: string
+          description: Name of the partner
+          example: Department of Examples
+    GetPartnerResponseSchema:
+      type: object
+      properties:
+        message:
+          type: string
+          description: The message to return
+          example: Success
+        data:
+          type:
+          - object
+          $ref: '#/components/schemas/PartnerSchema'
+        status_code:
+          type: integer
+          description: The HTTP status code
+          example: 200
+    WorkflowUserSchema:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+          description: The user's unique identifier
+          example: 123e4567-e89b-12d3-a456-426614174000
+        email:
+          type:
+          - string
+          - 'null'
+          description: The user's email address, null if they have no login
+          example: user@example.com
+    WorkflowApprovalSchema:
+      type: object
+      properties:
+        workflow_approval_id:
+          type: string
+          format: uuid
+          description: The approval record's unique identifier
+          example: 123e4567-e89b-12d3-a456-426614174000
+        approving_user:
+          description: The user who gave this approval
+          type:
+          - object
+          $ref: '#/components/schemas/WorkflowUserSchema'
+        event_id:
+          type: string
+          format: uuid
+          description: The ID of the event that recorded this approval
+          example: 123e4567-e89b-12d3-a456-426614174000
+        is_still_valid:
+          type: boolean
+          description: Whether this approval is still in effect
+        comment:
+          type:
+          - string
+          - 'null'
+          description: An optional comment left with the approval
+        approval_type:
+          description: The type of approval
+          enum:
+          - basic_test_approval
+          - secondary_test_approval
+          type:
+          - string
+        approval_response_type:
+          description: The response given for this approval
+          enum:
+          - approved
+          - declined
+          - requires_modification
+          type:
+          - string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    WorkflowApprovalConfigEntrySchema:
+      type: object
+      properties:
+        approval_type:
+          description: The type of approval this event represents
+          enum:
+          - basic_test_approval
+          - secondary_test_approval
+          type:
+          - string
+        required_privileges:
+          type: array
+          description: The privileges required to give this approval
+          items:
+            enum:
+            - view_partner
+            - update_partner
+            - manage_partner_members
+            - view_program
+            - update_program
+            - view_grantor_organization
+            - update_grantor_organization
+            - manage_grantor_organization_members
+            - internal_workflow_event_send
+            - internal_s3_scan
+            - unused_privilege_103
+            type:
+            - string
+        allowed_approval_response_types:
+          type: array
+          description: The response types this approval accepts
+          items:
+            enum:
+            - approved
+            - declined
+            - requires_modification
+            type:
+            - string
+        possible_users:
+          type: array
+          description: The users eligible to give this approval
+          items:
+            type:
+            - object
+            $ref: '#/components/schemas/WorkflowUserSchema'
+    WorkflowGetResponseDataSchema:
+      type: object
+      properties:
+        workflow_id:
+          type: string
+          format: uuid
+          description: The workflow's unique identifier
+          example: 123e4567-e89b-12d3-a456-426614174000
+        workflow_type:
+          description: The type of workflow
+          enum:
+          - basic_test_workflow
+          - prototype_workflow
+          - approval_test_workflow
+          - limited_approval_test_workflow
+          type:
+          - string
+        current_workflow_state:
+          type: string
+          description: The workflow's current state
+        is_active:
+          type: boolean
+          description: Whether the workflow is still active
+        resource_id:
+          type: string
+          format: uuid
+          description: The resource the workflow is attached to
+          example: 123e4567-e89b-12d3-a456-426614174000
+        resource_type:
+          description: The type of resource the workflow is attached to
+          enum:
+          - internal
+          - partner
+          - program
+          - grantor_organization
+          - opportunity
+          - opportunity_group
+          type:
+          - string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        workflow_approvals:
+          type: array
+          description: The approvals recorded against the workflow, sorted oldest
+            to newest
+          items:
+            type:
+            - object
+            $ref: '#/components/schemas/WorkflowApprovalSchema'
+        workflow_approval_config:
+          type: object
+          description: For each event that requires an approval, who can give it and
+            how
+          additionalProperties:
+            type:
+            - object
+            $ref: '#/components/schemas/WorkflowApprovalConfigEntrySchema'
+        valid_events:
+          type: array
+          description: The events that can legally be sent next, given the current
+            state
+          items:
+            type: string
+    WorkflowGetResponseSchema:
+      type: object
+      properties:
+        message:
+          type: string
+          description: The message to return
+          example: Success
+        data:
+          type:
+          - object
+          $ref: '#/components/schemas/WorkflowGetResponseDataSchema'
+        status_code:
+          type: integer
+          description: The HTTP status code
+          example: 200
+    UserCanAccessResponseSchema:
+      type: object
+      properties:
+        message:
+          type: string
+          description: The message to return
+          example: Success
+        data:
+          example: null
+        status_code:
+          type: integer
+          description: The HTTP status code
+          example: 200
+    UserCanAccessRequestSchema:
+      type: object
+      properties:
+        resource_id:
+          type: string
+          format: uuid
+          description: The ID of the resource to check access against
+          example: 123e4567-e89b-12d3-a456-426614174000
+        resource_type:
+          description: The type of the resource to check access against
+          enum:
+          - internal
+          - partner
+          - program
+          - grantor_organization
+          - opportunity
+          - opportunity_group
+          type:
+          - string
+        privileges:
+          type: array
+          minItems: 1
+          description: The privileges the user must have against the resource. The
+            user must have all of them.
+          items:
+            enum:
+            - view_partner
+            - update_partner
+            - manage_partner_members
+            - view_program
+            - update_program
+            - view_grantor_organization
+            - update_grantor_organization
+            - manage_grantor_organization_members
+            - internal_workflow_event_send
+            - internal_s3_scan
+            - unused_privilege_103
+            type:
+            - string
+      required:
+      - privileges
+      - resource_id
+      - resource_type
+    WorkflowEventRefSchema:
+      type: object
+      properties:
+        event_id:
+          type: string
+          format: uuid
+          description: The ID of the event that produced this record
+          example: 123e4567-e89b-12d3-a456-426614174000
+        sent_at:
+          type: string
+          format: date-time
+          description: When the event was sent
+    WorkflowAuditEventSchema:
+      type: object
+      properties:
+        workflow_audit_id:
+          type: string
+          format: uuid
+          description: The audit record's unique identifier
+          example: 123e4567-e89b-12d3-a456-426614174000
+        acting_user:
+          description: The user who performed the transition
+          type:
+          - object
+          $ref: '#/components/schemas/WorkflowUserSchema'
+        transition_event:
+          type: string
+          description: The event that triggered the transition
+        source_state:
+          type: string
+          description: The state before the transition
+        target_state:
+          type: string
+          description: The state after the transition
+        event:
+          description: The event that triggered this transition
+          type:
+          - object
+          $ref: '#/components/schemas/WorkflowEventRefSchema'
+        audit_metadata:
+          type:
+          - object
+          - 'null'
+          description: Additional metadata recorded with the transition
+          additionalProperties: {}
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    WorkflowAuditResponseSchema:
+      type: object
+      properties:
+        pagination_info:
+          description: The pagination information for paginated endpoints
+          type: *id017
+          $ref: '#/components/schemas/PaginationInfoSchema'
+        message:
+          type: string
+          description: The message to return
+          example: Success
+        data:
+          type: array
+          items:
+            type:
+            - object
+            $ref: '#/components/schemas/WorkflowAuditEventSchema'
+        status_code:
+          type: integer
+          description: The HTTP status code
+          example: 200
+    SortOrderWorkflowAuditPaginationSchema:
+      type: object
+      properties:
+        order_by:
+          type: string
+          enum:
+          - created_at
+          description: The field to sort the response by
+        sort_direction:
+          description: Whether to sort the response ascending or descending
+          enum:
+          - ascending
+          - descending
+          type:
+          - string
+      required:
+      - order_by
+      - sort_direction
+    WorkflowAuditPaginationSchema:
+      type: object
+      properties:
+        sort_order:
+          type: array
+          default:
+          - order_by: created_at
+            sort_direction: descending
+          minItems: 1
+          maxItems: 5
+          description: The list of sorting rules
+          items:
+            type:
+            - object
+            $ref: '#/components/schemas/SortOrderWorkflowAuditPaginationSchema'
+        page_size:
+          type: integer
+          default: 25
+          minimum: 1
+          maximum: 5000
+          description: The size of the page to fetch
+          example: 25
+        page_offset:
+          type: integer
+          default: 1
+          minimum: 1
+          description: The page number to fetch, starts counting from 1
+          example: 1
+    WorkflowAuditRequestSchema:
+      type: object
+      properties:
+        pagination:
+          type:
+          - object
+          $ref: '#/components/schemas/WorkflowAuditPaginationSchema'
+      required:
+      - pagination
+    OpportunityUpdateRequestSchema:
+      type: object
+      properties:
+        opportunity_title:
+          type: string
+          maxLength: 255
+        tagline:
+          type: string
+          maxLength: 255
+        purpose_statement:
+          type: string
+          maxLength: 255
+        category:
+          enum:
+          - discretionary
+          - mandatory
+          - continuation
+          - earmark
+          - other
+          type:
+          - string
+        category_explanation:
+          type:
+          - string
+          - 'null'
+          default: null
+          maxLength: 255
+      required:
+      - category
+      - opportunity_title
+      - purpose_statement
+      - tagline
+    OpportunitySummaryResponseSchema:
+      type: object
+      properties:
+        message:
+          type: string
+          description: The message to return
+          example: Success
+        data:
+          type:
+          - object
+          $ref: '#/components/schemas/OpportunitySummarySchema'
+        status_code:
+          type: integer
+          description: The HTTP status code
+          example: 200
+    OpportunitySummaryCreateRequestSchema:
+      type: object
+      properties:
+        summary_description:
+          type: string
+          maxLength: 500
+        is_cost_sharing:
+          type: boolean
+        post_timestamp:
+          type: string
+          format: date-time
+        close_timestamp:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        close_timestamp_description:
+          type:
+          - string
+          - 'null'
+        archive_timestamp:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        expected_number_of_awards:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          maximum: 999999999999999
+        estimated_total_program_funding:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          maximum: 999999999999999
+        award_floor:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          maximum: 999999999999999
+        award_ceiling:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          maximum: 999999999999999
+        additional_info_url:
+          type:
+          - string
+          - 'null'
+          maxLength: 250
+        additional_info_url_description:
+          type:
+          - string
+          - 'null'
+          maxLength: 250
+        forecasted_post_timestamp:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        forecasted_close_timestamp:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        forecasted_close_timestamp_description:
+          type:
+          - string
+          - 'null'
+          maxLength: 255
+        forecasted_award_timestamp:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        forecasted_project_start_timestamp:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        fiscal_year:
+          type:
+          - integer
+          - 'null'
+          minimum: 1900
+          maximum: 2100
+        funding_categories:
+          type: array
+          minItems: 1
+          items:
+            enum: &id018
+            - recovery_act
+            - agriculture
+            - arts
+            - business_and_commerce
+            - community_development
+            - consumer_protection
+            - disaster_prevention_and_relief
+            - education
+            - employment_labor_and_training
+            - energy
+            - environment
+            - food_and_nutrition
+            - health
+            - housing
+            - humanities
+            - infrastructure_investment_and_jobs_act
+            - information_and_statistics
+            - income_security_and_social_services
+            - law_justice_and_legal_services
+            - natural_resources
+            - opportunity_zone_benefits
+            - regional_development
+            - science_technology_and_other_research_and_development
+            - transportation
+            - affordable_care_act
+            - other
+            - energy_infrastructure_and_critical_mineral_and_materials
+            - recreation_and_tourism
+            type: &id019
+            - string
+        funding_category_description:
+          type:
+          - string
+          - 'null'
+          maxLength: 2500
+        funding_instruments:
+          type: array
+          minItems: 1
+          items:
+            enum: &id020
+            - cooperative_agreement
+            - grant
+            - procurement_contract
+            - other
+            type: &id021
+            - string
+        applicant_types:
+          type: array
+          minItems: 1
+          items:
+            enum: &id022
+            - state_governments
+            - county_governments
+            - city_or_township_governments
+            - special_district_governments
+            - independent_school_districts
+            - public_and_state_institutions_of_higher_education
+            - private_institutions_of_higher_education
+            - federally_recognized_native_american_tribal_governments
+            - other_native_american_tribal_organizations
+            - public_and_indian_housing_authorities
+            - nonprofits_non_higher_education_with_501c3
+            - nonprofits_non_higher_education_without_501c3
+            - individuals
+            - for_profit_organizations_other_than_small_businesses
+            - small_businesses
+            - other
+            - unrestricted
+            type: &id023
+            - string
+        applicant_eligibility_description:
+          type:
+          - string
+          - 'null'
+          maxLength: 4000
+        agency_contact_description:
+          type:
+          - string
+          - 'null'
+          maxLength: 1000
+        agency_email_address:
+          type:
+          - string
+          - 'null'
+          maxLength: 130
+        agency_email_address_description:
+          type:
+          - string
+          - 'null'
+          maxLength: 108
+        is_forecast:
+          type: boolean
+      required:
+      - agency_contact_description
+      - agency_email_address
+      - agency_email_address_description
+      - applicant_types
+      - award_ceiling
+      - award_floor
+      - funding_categories
+      - funding_instruments
+      - is_cost_sharing
+      - is_forecast
+      - post_timestamp
+      - summary_description
+    GrantorOrganizationSchema:
+      type: object
+      properties:
+        grantor_organization_id:
+          type: string
+          format: uuid
+          description: Unique ID of a grantor organization
+          example: 123e4567-e89b-12d3-a456-426614174000
+        organization_name:
+          type: string
+          description: Name of the grantor organization
+          example: My example organization
+        grantor_organization_type:
+          type: string
+          description: Type of grantor organization
+          example: grant_office
+        partner:
+          type:
+          - object
+          $ref: '#/components/schemas/PartnerSchema'
+        parent_organization:
+          type:
+          - object
+          - 'null'
+          anyOf:
+          - $ref: '#/components/schemas/GrantorOrganizationSchema'
+          - type: 'null'
+    GetGrantorOrganizationResponseSchema:
+      type: object
+      properties:
+        message:
+          type: string
+          description: The message to return
+          example: Success
+        data:
+          type:
+          - object
+          $ref: '#/components/schemas/GrantorOrganizationSchema'
+        status_code:
+          type: integer
+          description: The HTTP status code
+          example: 200
+    OpportunitySummarySchema1:
+      type: object
+      properties:
+        post_date:
+          type:
+          - string
+          - 'null'
+          format: date
+          description: The date the opportunity was posted
+    OpportunityDataSchema:
+      type: object
+      properties:
+        opportunity_id:
+          type: string
+          format: uuid
+          description: The unique identifier for the opportunity
+          example: 123e4567-e89b-12d3-a456-426614174000
+        opportunity_title:
+          type:
+          - string
+          - 'null'
+          description: The title of the opportunity
+        opportunity_status:
+          description: The current status of the opportunity
+          enum:
+          - forecasted
+          - posted
+          - closed
+          - archived
+          type:
+          - string
+          - 'null'
+          - 'null'
+        summary:
+          description: Summary information about the opportunity
+          type:
+          - object
+          - 'null'
+          anyOf:
+          - $ref: '#/components/schemas/OpportunitySummarySchema1'
+          - type: 'null'
+      required:
+      - opportunity_id
+    OpportunityGetResponseSchema:
+      type: object
+      properties:
+        data:
+          description: The opportunity data
+          type:
+          - object
+          $ref: '#/components/schemas/OpportunityDataSchema'
     ResourceForRoleSchema:
       type: object
       properties:
@@ -870,7 +2578,7 @@ components:
             - update_grantor_organization
             - manage_grantor_organization_members
             - internal_workflow_event_send
-            - unused_privilege_102
+            - internal_s3_scan
             - unused_privilege_103
             type:
             - string
@@ -882,6 +2590,7 @@ components:
           - program
           - grantor_organization
           - opportunity
+          - opportunity_group
           type:
           - string
         resource:
@@ -915,8 +2624,7 @@ components:
       properties:
         pagination_info:
           description: The pagination information for paginated endpoints
-          type:
-          - object
+          type: *id017
           $ref: '#/components/schemas/PaginationInfoSchema'
         message:
           type: string
@@ -950,7 +2658,7 @@ components:
             - update_grantor_organization
             - manage_grantor_organization_members
             - internal_workflow_event_send
-            - unused_privilege_102
+            - internal_s3_scan
             - unused_privilege_103
             type:
             - string
@@ -1044,13 +2752,158 @@ components:
           $ref: '#/components/schemas/ListUserForResourcePaginationSchema'
       required:
       - pagination
+    OpportunitySummaryUpdateRequestSchema:
+      type: object
+      properties:
+        summary_description:
+          type: string
+          maxLength: 500
+        is_cost_sharing:
+          type: boolean
+        post_timestamp:
+          type: string
+          format: date-time
+        close_timestamp:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        close_timestamp_description:
+          type:
+          - string
+          - 'null'
+        archive_timestamp:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        expected_number_of_awards:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          maximum: 999999999999999
+        estimated_total_program_funding:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          maximum: 999999999999999
+        award_floor:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          maximum: 999999999999999
+        award_ceiling:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          maximum: 999999999999999
+        additional_info_url:
+          type:
+          - string
+          - 'null'
+          maxLength: 250
+        additional_info_url_description:
+          type:
+          - string
+          - 'null'
+          maxLength: 250
+        forecasted_post_timestamp:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        forecasted_close_timestamp:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        forecasted_close_timestamp_description:
+          type:
+          - string
+          - 'null'
+          maxLength: 255
+        forecasted_award_timestamp:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        forecasted_project_start_timestamp:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        fiscal_year:
+          type:
+          - integer
+          - 'null'
+          minimum: 1900
+          maximum: 2100
+        funding_categories:
+          type: array
+          minItems: 1
+          items:
+            enum: *id018
+            type: *id019
+        funding_category_description:
+          type:
+          - string
+          - 'null'
+          maxLength: 2500
+        funding_instruments:
+          type: array
+          minItems: 1
+          items:
+            enum: *id020
+            type: *id021
+        applicant_types:
+          type: array
+          minItems: 1
+          items:
+            enum: *id022
+            type: *id023
+        applicant_eligibility_description:
+          type:
+          - string
+          - 'null'
+          maxLength: 4000
+        agency_contact_description:
+          type:
+          - string
+          - 'null'
+          maxLength: 1000
+        agency_email_address:
+          type:
+          - string
+          - 'null'
+          maxLength: 130
+        agency_email_address_description:
+          type:
+          - string
+          - 'null'
+          maxLength: 108
+      required:
+      - agency_contact_description
+      - agency_email_address
+      - agency_email_address_description
+      - applicant_types
+      - award_ceiling
+      - award_floor
+      - funding_categories
+      - funding_instruments
+      - is_cost_sharing
+      - post_timestamp
+      - summary_description
   securitySchemes:
-    ApiUserKeyAuth:
-      type: apiKey
-      in: header
-      name: X-API-Key
     ApiJwtAuth:
       type: apiKey
       in: header
       name: X-MGMT-Token
+    ApiUserKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
 
