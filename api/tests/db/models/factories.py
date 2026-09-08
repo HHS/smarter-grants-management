@@ -8,6 +8,7 @@ from faker.providers import BaseProvider
 from sqlalchemy.orm import scoped_session
 
 import src.adapters.db as db
+import src.db.models.assistance_listing_models as assistance_listing_models
 import src.db.models.grantor_organization_models as grantor_organization_models
 import src.db.models.resource_models as resource_models
 import src.db.models.user_models as user_models
@@ -146,6 +147,8 @@ class CustomProvider(BaseProvider):
         "{{agency_word}} Act",
     ]
 
+    ASSISTANCE_LISTING_NUMBER_FORMATS = ["##.???", "##.###"]
+
     def department_word(self) -> str:
         return self.random_element(self.DEPARTMENT_WORDS)
 
@@ -166,6 +169,10 @@ class CustomProvider(BaseProvider):
 
     def program_name(self) -> str:
         pattern = self.random_element(self.PROGRAM_NAME_FORMATS)
+        return self.generator.parse(pattern)
+
+    def assistance_listing_number(self) -> str:
+        pattern = self.bothify(self.random_element(self.ASSISTANCE_LISTING_NUMBER_FORMATS)).upper()
         return self.generator.parse(pattern)
 
 
@@ -571,6 +578,20 @@ class WorkflowApprovalFactory(BaseFactory):
 
     event = factory.SubFactory(WorkflowEventHistoryFactory)
     workflow_event_history_id = factory.LazyAttribute(lambda a: a.event.workflow_event_history_id)
+
+
+class AssistanceListingFactory(BaseFactory):
+    class Meta:
+        model = assistance_listing_models.AssistanceListing
+
+    assistance_listing_id = Generators.UuidObj
+
+    program_title = factory.Faker("company")
+    assistance_listing_number = factory.Faker("assistance_listing_number")
+
+    is_active = True
+
+    published_date = factory.Faker("date_time_between", start_date="-5y", end_date="now")
 
 
 class ExampleTableFactory(BaseFactory):
