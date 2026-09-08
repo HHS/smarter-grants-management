@@ -112,6 +112,14 @@ class WorkflowEventProcessingResult(StrEnum):
     GENERAL_ERROR = "general_error"
 
 
+class FileScanStatus(StrEnum):
+    PENDING = "pending"
+    IN_PROGRESS = "in_progress"
+    COMPLETE = "complete"
+    INFECTED = "infected"
+    PROCESSED = "processed"
+
+
 class ResourceInheritance(StrEnum):
     """How far up the resource hierarchy a user lookup should reach.
 
