@@ -5,6 +5,7 @@ class JobType(StrEnum):
     MIGRATE_UP = "migrate-up"
     MIGRATE_DOWN = "migrate-down"
     MIGRATE_DOWNALL = "migrate-downall"
+    FETCH_ASSISTANCE_LISTING = "fetch-assistance-listing"
 
 
 class UserType(StrEnum):
@@ -111,6 +112,14 @@ class WorkflowEventProcessingResult(StrEnum):
     GENERAL_ERROR = "general_error"
 
 
+class FileScanStatus(StrEnum):
+    PENDING = "pending"
+    IN_PROGRESS = "in_progress"
+    COMPLETE = "complete"
+    INFECTED = "infected"
+    PROCESSED = "processed"
+
+
 class ResourceInheritance(StrEnum):
     """How far up the resource hierarchy a user lookup should reach.
 
@@ -124,6 +133,12 @@ class ResourceInheritance(StrEnum):
     # Only roles granted on the resource itself. Note that a program is a special case
     # (users are never attached to programs).
     DIRECT = "direct"
+
+
+class JobStatus(StrEnum):
+    STARTED = "started"
+    COMPLETED = "completed"
+    FAILED = "failed"
 
 
 # The resource types each privilege is allowed to be assigned at. A privilege may only be

@@ -2,11 +2,18 @@
 
 import json
 import logging
+import math
 import os
 import shutil
 
-from src.adapters.sam_gov.client import BaseSamGovClient
-from src.adapters.sam_gov.models import SamExtractRequest, SamExtractResponse
+from src.adapters.sam_gov.client import BaseSamGovClient, SamGovError
+from src.adapters.sam_gov.models import (
+    SamAssistanceListingData,
+    SamAssistanceListingRequest,
+    SamAssistanceListingResponse,
+    SamExtractRequest,
+    SamExtractResponse,
+)
 from src.util.file_util import copy_file, open_stream
 
 logger = logging.getLogger(__name__)
@@ -48,10 +55,14 @@ class MockSamGovClient(BaseSamGovClient):
             mock_extract_dir: Optional path to a directory containing mock extract files.
                            If provided, will use these files for extract downloads.
         """
+        self.assistance_listings: list[SamAssistanceListingData] = []
         self.extracts = MOCK_EXTRACTS.copy()
         self.mock_extract_dir = mock_extract_dir
 
         # Load additional mock data from file if provided
+        self._load_additional_mock_extract_data(mock_data_file=mock_data_file)
+
+    def _load_additional_mock_extract_data(self, mock_data_file: str | None) -> None:
         if mock_data_file and os.path.exists(mock_data_file):
             try:
                 with open(mock_data_file) as f:
@@ -138,3 +149,33 @@ class MockSamGovClient(BaseSamGovClient):
         if file_path and self.mock_extract_dir:
             os.makedirs(self.mock_extract_dir, exist_ok=True)
             shutil.copyfile(file_path, os.path.join(self.mock_extract_dir, file_name))
+
+    def get_assistance_listings(
+        self, request: SamAssistanceListingRequest
+    ) -> SamAssistanceListingResponse:
+
+        page_size = request.page_size
+        page_number = request.page_number
+
+        # Sam.gov verifies these are both 1+, so directly error
+        if page_size <= 0 or page_number <= 0:
+            raise SamGovError("Invalid page size or page number")
+
+        total_records = len(self.assistance_listings)
+        total_pages = math.ceil(total_records / page_size)
+
+        start_range = page_size * (page_number - 1)
+        end_range = page_size * page_number
+
+        return SamAssistanceListingResponse(
+            assistanceListingsData=self.assistance_listings[start_range:end_range],
+            # From testing against the real sam.gov, pageSize is always echoing what you passed in
+            # Even if you ask for page 100 and there are only 28, pageSize is always just what you passed in.
+            pageSize=page_size,
+            pageNumber=page_number,
+            totalPages=total_pages,
+            totalRecords=total_records,
+        )
+
+    def add_mock_assistance_listings(self, records: list[SamAssistanceListingData]) -> None:
+        self.assistance_listings.extend(records)

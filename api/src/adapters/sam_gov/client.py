@@ -14,10 +14,21 @@ from tenacity import (
 )
 
 from src.adapters.sam_gov.config import SamGovConfig
-from src.adapters.sam_gov.models import SamExtractRequest, SamExtractResponse
+from src.adapters.sam_gov.models import (
+    SamAssistanceListingRequest,
+    SamAssistanceListingResponse,
+    SamExtractRequest,
+    SamExtractResponse,
+)
 from src.util.file_util import open_stream
 
 logger = logging.getLogger(__name__)
+
+
+class SamGovError(Exception):
+
+    def __init__(self, message: str):
+        self.message = message
 
 
 class BaseSamGovClient(abc.ABC, metaclass=abc.ABCMeta):
@@ -41,19 +52,28 @@ class BaseSamGovClient(abc.ABC, metaclass=abc.ABCMeta):
         """
         pass
 
+    @abc.abstractmethod
+    def get_assistance_listings(
+        self, request: SamAssistanceListingRequest
+    ) -> SamAssistanceListingResponse:
+        pass
+
 
 class SamGovClient(BaseSamGovClient):
     """Client for interacting with the SAM.gov API."""
 
     def __init__(
         self,
-        config: SamGovConfig,
+        config: SamGovConfig | None = None,
     ):
         """Initialize the client.
 
         Args:
             config: Configuration object for the SAM.gov client.
         """
+        if config is None:
+            config = SamGovConfig()
+
         self.api_key = config.api_key
         self.api_url = config.base_url
 
@@ -134,7 +154,7 @@ class SamGovClient(BaseSamGovClient):
                 except Exception:
                     pass
 
-                raise Exception(error_message)
+                raise SamGovError(error_message)
 
             # Save the file
             with open_stream(output_path, "wb") as f:
@@ -149,11 +169,44 @@ class SamGovClient(BaseSamGovClient):
             return extract_response
 
         except requests.RequestException as e:
-            raise Exception(f"Request failed: {str(e)}") from e
+            raise SamGovError(f"Request failed: {str(e)}") from e
         except OSError as e:
-            raise OSError(f"Failed to save file: {str(e)}") from e
+            raise SamGovError(f"Failed to save file: {str(e)}") from e
         except Exception as e:
-            raise Exception(f"Error downloading extract: {str(e)}") from e
+            raise SamGovError(f"Error downloading extract: {str(e)}") from e
+
+    def get_assistance_listings(
+        self, request: SamAssistanceListingRequest
+    ) -> SamAssistanceListingResponse:
+
+        url = urljoin(self.api_url, "assistance-listings/v1/search")
+
+        # Set the query params
+        # Note that this endpoint only supports passing in the
+        # API key via a query param and not as a header.
+        params = {
+            "api_key": self.api_key,
+            "pageNumber": request.page_number,
+            "pageSize": request.page_size,
+        }
+
+        response = _do_request(
+            url, params, {"Content-Type": "application/json", "Accept": "application/hal+json"}
+        )
+
+        if not response.ok:
+            error_message = (
+                f"Failed to fetch assistance listings: {response.status_code} {response.reason}"
+            )
+            try:
+                error_data = response.json()
+                error_message += f", Details: {error_data}"
+            except Exception:
+                pass
+
+            raise SamGovError(error_message)
+
+        return SamAssistanceListingResponse.model_validate(response.json())
 
 
 @retry(
@@ -165,5 +218,6 @@ class SamGovClient(BaseSamGovClient):
     # Raise the actual error, not a retry wrapped error
     reraise=True,
 )
-def _do_request(url: str, params: dict, headers: dict) -> requests.Response:
-    return requests.get(url, params=params, headers=headers, stream=True, timeout=30)
+def _do_request(url: str, params: dict, headers: dict, timeout: int = 30) -> requests.Response:
+    logger.info("Attempting to call sam.gov API")
+    return requests.get(url, params=params, headers=headers, stream=True, timeout=timeout)
