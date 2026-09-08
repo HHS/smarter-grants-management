@@ -60,7 +60,7 @@ locals {
   # To enable: create the SSM parameter (a SecureString whose value matches the
   # key_id on the internal scanner user's user_api_key row), build the layer, land
   # the callback endpoint, then flip this to true and re-apply the service layer.
-  enable_file_scanning = false
+  enable_file_scanning = true
 
   environment_configs = {
     dev     = module.dev_config
