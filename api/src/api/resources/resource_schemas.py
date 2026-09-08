@@ -124,3 +124,32 @@ class ListUserForResourceResponseSchema(AbstractResponseSchema, PaginationMixinS
         fields.Nested(UserForResourceSchema),
         metadata={"description": "The users with access to the resource"},
     )
+
+
+class ListRolesForResourceRequestSchema(Schema):
+    pagination = fields.Nested(
+        generate_pagination_schema(
+            "ListRolesForResourcePaginationSchema",
+            ["role_id", "role_name"],
+            default_sort_order=[{"order_by": "role_name", "sort_direction": "ascending"}],
+        ),
+        required=True,
+    )
+
+
+class RoleForResourceSchema(Schema):
+    role_id = fields.UUID(metadata={"description": "The role's unique identifier"})
+    role_name = fields.String(
+        metadata={"description": "The role's name", "example": "Program Officer"}
+    )
+    privileges = fields.List(
+        fields.Enum(Privilege),
+        metadata={"description": "The privileges the role carries"},
+    )
+
+
+class ListRolesForResourceResponseSchema(AbstractResponseSchema, PaginationMixinSchema):
+    data = fields.List(
+        fields.Nested(RoleForResourceSchema),
+        metadata={"description": "The roles available for the resource"},
+    )
