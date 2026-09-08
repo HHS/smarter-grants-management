@@ -295,7 +295,7 @@ class LkFileScanStatus(GrantorLookupTable, TimestampMixin):
         return LkFileScanStatus(
             file_scan_status_id=lookup.lookup_val, description=lookup.get_description()
         )
-      
+
 
 @LookupRegistry.register_lookup(JOB_STATUS_CONFIG)
 class LkJobStatus(GrantorLookupTable, TimestampMixin):

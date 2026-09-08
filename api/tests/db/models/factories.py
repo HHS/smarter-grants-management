@@ -8,8 +8,8 @@ from faker.providers import BaseProvider
 from sqlalchemy.orm import scoped_session
 
 import src.adapters.db as db
-import src.db.models.file_upload_models as file_upload_models
 import src.db.models.assistance_listing_models as assistance_listing_models
+import src.db.models.file_upload_models as file_upload_models
 import src.db.models.grantor_organization_models as grantor_organization_models
 import src.db.models.resource_models as resource_models
 import src.db.models.user_models as user_models

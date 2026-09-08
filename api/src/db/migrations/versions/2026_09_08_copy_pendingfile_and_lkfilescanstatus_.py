@@ -1,8 +1,8 @@
 """Copy PendingFile and LkFileScanStatus tables over from Simpler
 
-Revision ID: 97030600a64e
-Revises: 959c311ac64d
-Create Date: 2026-09-04 15:50:22.781678
+Revision ID: e9423fe4a35b
+Revises: 83c8549b1ef0
+Create Date: 2026-09-08 14:11:31.629101
 
 """
 
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "97030600a64e"
-down_revision = "959c311ac64d"
+revision = "e9423fe4a35b"
+down_revision = "83c8549b1ef0"
 branch_labels = None
 depends_on = None
 
