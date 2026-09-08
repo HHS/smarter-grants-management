@@ -43,6 +43,25 @@ locals {
   # 2. Configures email notifications using AWS SES
   enable_notifications = true
 
+  # Whether or not to deploy the ClamAV file scanner (infra/modules/clamav) against
+  # the file-scan S3 bucket.
+  #
+  # Disabled: the module needs three things that do not exist yet in either
+  # account, and each one fails at PLAN time, not apply time:
+  #   1. The /api/<environment>/file-scan-api-key SSM parameter, read through a
+  #      plain data.aws_ssm_parameter the same way every other manual secret is.
+  #   2. infra/modules/clamav/layer.zip built for the target architecture — the
+  #      committed artifact is a starting point, but ./infra/modules/clamav/build-layer.sh
+  #      should be re-run so the binaries match what gets deployed.
+  #   3. The API's POST /v1/files/<file_id> scan-result callback, which api/src does
+  #      not implement yet. Without it the scanner's callback fails, the event
+  #      retries, and every scan ends up on the DLQ.
+  #
+  # To enable: create the SSM parameter (a SecureString whose value matches the
+  # key_id on the internal scanner user's user_api_key row), build the layer, land
+  # the callback endpoint, then flip this to true and re-apply the service layer.
+  enable_file_scanning = false
+
   environment_configs = {
     dev     = module.dev_config
     staging = module.staging_config

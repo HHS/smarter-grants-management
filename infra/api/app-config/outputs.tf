@@ -41,3 +41,7 @@ output "enable_identity_provider" {
 output "enable_notifications" {
   value = local.enable_notifications
 }
+
+output "enable_file_scanning" {
+  value = local.enable_file_scanning
+}
