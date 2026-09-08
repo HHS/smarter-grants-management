@@ -52,7 +52,8 @@ jobs:
       - name: Start API Server for search results
         run: |
           cd ../api
-          make init db-seed-local-with-agencies populate-search-opportunities start &
+          # Agency concept was migrated away in SGM; use the plain seed target
+          make init db-seed-local start &
           cd ../frontend
           # ensure the API wait script is executable
           chmod +x ../api/bin/wait-for-api.sh

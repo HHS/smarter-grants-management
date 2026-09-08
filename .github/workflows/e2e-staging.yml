@@ -66,6 +66,8 @@ jobs:
           staging_test_user_mfa_key: ${{ secrets.STAGING_TEST_USER_MFA_KEY }}
           staging_client_session_secret: ${{ secrets.STAGING_CLIENT_SESSION_SECRET }}
           test_user_manager_api_key: ${{ secrets.STAGING_TEST_USER_MANAGER_API_KEY }}
+          staging_base_url: ${{ vars.STAGING_BASE_URL }}
+          staging_api_url: ${{ vars.STAGING_API_URL }}
           do-chrome-install: "true"
   create-report:
     name: Create Merged Test Report
