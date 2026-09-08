@@ -67,6 +67,7 @@ db-migrate-down-all = "src.db.migrations.run:downall"
 db-seed-local = "tests.lib.seed_local_db:seed_local_db"
 create-erds = "bin.create_erds:main"
 setup-postgres-db = "src.db.migrations.setup_local_postgres_db:setup_local_postgres_db"
+setup-local-dynamodb = "src.db.setup_local_dynamodb:setup_local_dynamodb"
 setup-internal-resource = "src.db.migrations.setup_local_postgres_db:setup_internal_resource"
 setup-internal-workflow-user = "src.db.migrations.setup_local_postgres_db:setup_internal_workflow_user"
 
