@@ -62,8 +62,18 @@ class StrSearchSchemaBuilder(BaseSearchSchemaBuilder):
             }
         }
 
-    This helps generate the filters for a given field. At the moment,
-    only a one_of filter is implemented.
+        or for a single value:
+
+        {
+            "filters": {
+                "field": {
+                    "term": "x"
+                }
+            }
+        }
+
+    This helps generate the filters for a given field. Both one_of (multiple values)
+    and term (single value) filters are supported.
 
     Usage::
 
@@ -79,6 +89,12 @@ class StrSearchSchemaBuilder(BaseSearchSchemaBuilder):
             example_str_field = fields.Nested(
                 StrSearchSchemaBuilder("ExampleStrFieldSchema")
                     .with_one_of(example="example_value", minimum_length=5)
+                    .build()
+            )
+
+            example_str_term_field = fields.Nested(
+                StrSearchSchemaBuilder("ExampleStrTermFieldSchema")
+                    .with_term(allowed_values=StatusEnum)
                     .build()
             )
     """
@@ -121,6 +137,44 @@ class StrSearchSchemaBuilder(BaseSearchSchemaBuilder):
         # Note that the list requires at least one value (sending us just [] will raise a validation error)
         self.schema_fields["one_of"] = fields.List(list_type, validate=[validators.Length(min=1)])
 
+        return self
+
+    def with_term(
+        self,
+        *,
+        allowed_values: type[StrEnum] | None = None,
+        pattern: str | Pattern | None = None,
+        example: str | None = None,
+        minimum_length: int | None = None,
+    ) -> StrSearchSchemaBuilder:
+        if pattern is not None and allowed_values is not None:
+            raise Exception("Cannot specify both a pattern and allowed_values")
+
+        metadata = {}
+        if example:
+            metadata["example"] = example
+
+        # We assume it's just a single string
+        if allowed_values is None:
+            params: dict = {"metadata": metadata}
+
+            field_validators: list[validators.Validator] = []
+            if minimum_length is not None:
+                field_validators.append(validators.Length(min=minimum_length))
+
+            if pattern is not None:
+                field_validators.append(validators.Regexp(regex=pattern))
+
+            if len(field_validators) > 0:
+                params["validate"] = field_validators
+
+            term_type: fields.MixinField = fields.String(**params)
+
+        # Otherwise it is an enum type which handles allowed values
+        else:
+            term_type = fields.Enum(allowed_values, metadata=metadata)
+
+        self.schema_fields["term"] = term_type
         return self
 
 
@@ -230,17 +284,28 @@ class BoolSearchSchemaBuilder(BaseSearchSchemaBuilder):
         {
             "filters": {
                 "field": {
-                    "one_of": ["True", "False"]
+                    "one_of": [true, false]
                 }
             }
         }
 
-    This helps generate the filters for a given field. At the moment,
-    only a one_of filter is implemented - note that any truthy value
-    as determined by Marshmallow is accepted (including "yes", "y", 1 - for true)
+        or for a single value:
+
+        {
+            "filters": {
+                "field": {
+                    "term": true
+                }
+            }
+        }
+
+    This helps generate the filters for a given field. Both one_of (multiple values)
+    and term (single value) filters are supported. Note that any truthy value
+    as determined by Marshmallow is accepted (including "yes", "y", 1 - for true).
 
     While it doesn't quite make sense to filter by multiple boolean values in most cases,
-    we err on the side of consistency with the structure of the query to match other types.
+    we err on the side of consistency with the structure of the query to match other types
+    when using one_of. For single boolean values, use term instead.
 
     Usage::
 
@@ -252,6 +317,12 @@ class BoolSearchSchemaBuilder(BaseSearchSchemaBuilder):
                     .with_one_of(example=True)
                     .build()
             )
+
+            example_bool_term_field = fields.Nested(
+                BoolSearchSchemaBuilder("ExampleBoolTermFieldSchema")
+                    .with_term(example=True)
+                    .build()
+            )
     """
 
     def with_one_of(self, example: bool | None = None) -> BoolSearchSchemaBuilder:
@@ -261,6 +332,13 @@ class BoolSearchSchemaBuilder(BaseSearchSchemaBuilder):
         self.schema_fields["one_of"] = fields.List(
             fields.Boolean(metadata=metadata), allow_none=True
         )
+        return self
+
+    def with_term(self, example: bool | None = None) -> BoolSearchSchemaBuilder:
+        metadata = {}
+        if example is not None:
+            metadata["example"] = example
+        self.schema_fields["term"] = fields.Boolean(metadata=metadata)
         return self
 
 
