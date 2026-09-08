@@ -5,6 +5,7 @@ from . import (
     grantor_schema_table,
     lookup_models,
     resource_models,
+    task_models,
     user_models,
     workflow_models,
 )
@@ -22,4 +23,5 @@ __all__ = [
     "grantor_organization_models",
     "resource_models",
     "workflow_models",
+    "task_models",
 ]

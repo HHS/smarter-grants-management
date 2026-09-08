@@ -29,6 +29,11 @@ class TestDynamoDBConfig:
 
 class TestGetBotoDynamoDBClient:
 
+    @pytest.fixture(autouse=True)
+    def setup(self, reset_aws_env_vars):
+        # Call reset_aws_env_vars for these tests
+        pass
+
     @patch("src.adapters.aws.dynamodb_adapter.get_boto_session")
     def test_uses_default_session(self, mock_get_session):
         """Verify the case when no session is provided, use the default AWS session"""

@@ -8,6 +8,7 @@ from src.constants.lookup_constants import (
     FileScanStatus,
     GrantorOrganizationAuditEvent,
     GrantorOrganizationType,
+    JobStatus,
     PartnerAuditEvent,
     Privilege,
     ResourceType,
@@ -110,6 +111,14 @@ FILE_SCAN_STATUS_CONFIG: LookupConfig[FileScanStatus] = LookupConfig(
         LookupStr(FileScanStatus.COMPLETE, 3),
         LookupStr(FileScanStatus.INFECTED, 4),
         LookupStr(FileScanStatus.PROCESSED, 5),
+    ]
+)
+
+JOB_STATUS_CONFIG: LookupConfig[JobStatus] = LookupConfig(
+    [
+        LookupStr(JobStatus.STARTED, 1),
+        LookupStr(JobStatus.COMPLETED, 2),
+        LookupStr(JobStatus.FAILED, 3),
     ]
 )
 
@@ -286,3 +295,15 @@ class LkFileScanStatus(GrantorLookupTable, TimestampMixin):
         return LkFileScanStatus(
             file_scan_status_id=lookup.lookup_val, description=lookup.get_description()
         )
+      
+
+@LookupRegistry.register_lookup(JOB_STATUS_CONFIG)
+class LkJobStatus(GrantorLookupTable, TimestampMixin):
+    __tablename__ = "lk_job_status"
+
+    job_status_id: Mapped[int] = mapped_column(primary_key=True)
+    description: Mapped[str]
+
+    @classmethod
+    def from_lookup(cls, lookup: Lookup) -> LkJobStatus:
+        return LkJobStatus(job_status_id=lookup.lookup_val, description=lookup.get_description())
