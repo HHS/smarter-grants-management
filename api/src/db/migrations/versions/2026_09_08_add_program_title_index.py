@@ -1,7 +1,7 @@
 """add program title index
 
 Revision ID: 8d1ad26e7f9d
-Revises: 83c8549b1ef0
+Revises: e9423fe4a35b
 Create Date: 2026-09-08 10:52:28.358988
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "8d1ad26e7f9d"
-down_revision = "83c8549b1ef0"
+down_revision = "e9423fe4a35b"
 branch_labels = None
 depends_on = None
 
