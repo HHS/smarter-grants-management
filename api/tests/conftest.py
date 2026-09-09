@@ -458,8 +458,6 @@ def mock_simpler_grants_client(monkeypatch):
     return mock_client
 
 
-
-
 ####################
 # Class-based testing
 ####################

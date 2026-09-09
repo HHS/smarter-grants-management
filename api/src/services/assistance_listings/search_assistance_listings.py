@@ -19,9 +19,11 @@ class SearchAssistanceListingParams(BaseModel):
 def search_assistance_listings(
     db_session: db.Session, json_data: dict
 ) -> tuple[Sequence[AssistanceListing], PaginationInfo]:
+    """Search for assistance listings"""
 
     search_params = SearchAssistanceListingParams.model_validate(json_data)
 
+    # Only return active assistance listings
     stmt = select(AssistanceListing).where(AssistanceListing.is_active.is_(True))
 
     # If a query is provided, we filter on both the assistance listing number and program title like:
