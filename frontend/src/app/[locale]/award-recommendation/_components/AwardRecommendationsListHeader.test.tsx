@@ -40,7 +40,7 @@ describe("AwardRecommendationsListHeader", () => {
     expect(screen.getByTestId("agency-selector")).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "createRecommendationButton" }),
-    ).toHaveAttribute("href", "/grantor/award-recommendation/create");
+    ).toHaveAttribute("href", "/award-recommendation/create");
   });
 
   it("hides the count and create button when no agency is selected", () => {

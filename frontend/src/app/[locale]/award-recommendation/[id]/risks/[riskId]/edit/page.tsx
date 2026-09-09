@@ -86,11 +86,11 @@ async function EditRiskPageContent({ params }: EditRiskPageProps) {
             additionalBreadcrumbs={[
               {
                 title: t("risks.editTitle"),
-                path: `/grantor/award-recommendation/${awardRecommendationId}/risks`,
+                path: `/award-recommendation/${awardRecommendationId}/risks`,
               },
               {
                 title: heroHeading,
-                path: `/grantor/award-recommendation/${awardRecommendationId}/risks/${riskId}/edit`,
+                path: `/award-recommendation/${awardRecommendationId}/risks/${riskId}/edit`,
               },
             ]}
           />

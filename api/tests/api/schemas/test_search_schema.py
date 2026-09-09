@@ -61,6 +61,25 @@ class ExampleSchema(Schema):
         UuidSearchSchemaBuilder("MyUuidSearchFieldSchema").with_one_of(minimum_length=None).build()
     )
 
+    # Term filter fields
+    my_str_term_field = fields.Nested(
+        StrSearchSchemaBuilder("MyStrTermFieldSchema")
+        .with_term(example="hello", minimum_length=3)
+        .build()
+    )
+
+    my_enum_term_field = fields.Nested(
+        StrSearchSchemaBuilder("MyEnumTermFieldSchema").with_term(allowed_values=MyEnum).build()
+    )
+
+    my_pattern_term_field = fields.Nested(
+        StrSearchSchemaBuilder("MyPatternTermFieldSchema").with_term(pattern=r"^\d{2}$").build()
+    )
+
+    my_bool_term_field = fields.Nested(
+        BoolSearchSchemaBuilder("MyBoolTermFieldSchema").with_term(example=True).build()
+    )
+
 
 @pytest.mark.parametrize(
     "data",
@@ -110,6 +129,20 @@ class ExampleSchema(Schema):
             },
             "uuid_null_min_field": {"one_of": ["a3cab250-f15c-464b-a5a0-7c8db58fe162"]},
         },
+        # Various term filter cases for strings
+        {
+            "my_str_term_field": {"term": "hello"},
+            "my_enum_term_field": {"term": "a"},
+            "my_pattern_term_field": {"term": "42"},
+        },
+        {
+            "my_str_term_field": {"term": "world"},
+            "my_enum_term_field": {"term": "c"},
+            "my_pattern_term_field": {"term": "99"},
+        },
+        # Various term filter cases for booleans
+        {"my_bool_term_field": {"term": True}},
+        {"my_bool_term_field": {"term": False}},
     ],
 )
 def test_valid_data_for_schema(data):
@@ -202,6 +235,53 @@ def test_valid_data_for_schema(data):
                 "uuid_null_min_field.one_of.0": SchemaValidationError.INVALID,
             },
         ),
+        # Various term filter issues for strings
+        (
+            {
+                "my_str_term_field": {"term": "ab"},
+                "my_enum_term_field": {"term": "x"},
+                "my_pattern_term_field": {"term": "123"},
+            },
+            {
+                "my_str_term_field.term": SchemaValidationError.MIN_LENGTH,
+                "my_enum_term_field.term": SchemaValidationError.INVALID_CHOICE,
+                "my_pattern_term_field.term": SchemaValidationError.FORMAT,
+            },
+        ),
+        (
+            {"my_str_term_field": {"term": 45}, "my_enum_term_field": {"term": ["a"]}},
+            {
+                "my_str_term_field.term": SchemaValidationError.INVALID,
+                "my_enum_term_field.term": SchemaValidationError.INVALID_CHOICE,
+            },
+        ),
+        # Term filter should not accept lists
+        (
+            {"my_str_term_field": {"term": ["hello", "world"]}},
+            {"my_str_term_field.term": SchemaValidationError.INVALID},
+        ),
+        (
+            {"my_enum_term_field": {"term": ["a", "b"]}},
+            {"my_enum_term_field.term": SchemaValidationError.INVALID_CHOICE},
+        ),
+        # Various term filter issues for booleans
+        (
+            {"my_bool_term_field": {"term": "hello"}},
+            {"my_bool_term_field.term": SchemaValidationError.INVALID},
+        ),
+        (
+            {"my_bool_term_field": {"term": [True]}},
+            {"my_bool_term_field.term": SchemaValidationError.INVALID},
+        ),
+        # Empty term filters should fail
+        (
+            {"my_str_term_field": {}},
+            {"my_str_term_field._schema": SchemaValidationError.INVALID},
+        ),
+        (
+            {"my_bool_term_field": {}},
+            {"my_bool_term_field._schema": SchemaValidationError.INVALID},
+        ),
     ],
 )
 def test_invalid_data_for_schema(data, expected_errors):
@@ -214,3 +294,8 @@ def test_string_schema_pattern_and_allowed_values():
         StrSearchSchemaBuilder("BadSchema123").with_one_of(
             pattern=r"^\d{2}$", allowed_values=MyEnum
         )
+
+
+def test_string_schema_term_pattern_and_allowed_values():
+    with pytest.raises(Exception, match="Cannot specify both a pattern and allowed_values"):
+        StrSearchSchemaBuilder("BadSchema456").with_term(pattern=r"^\d{2}$", allowed_values=MyEnum)

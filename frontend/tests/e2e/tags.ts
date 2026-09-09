@@ -3,6 +3,7 @@ enum validFeatureTags {
   STATIC = "@static",
   AUTH = "@auth",
   USER_MANAGEMENT = "@user-management",
+  OPPORTUNITY_MANAGEMENT = "@opportunity-management",
 }
 
 enum validExecutionTags {

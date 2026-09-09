@@ -14,12 +14,12 @@ export async function createOpportunity(
   fillData: Record<OpportunityFieldValueKey, string>,
 ): Promise<void> {
   // Given I navigate to the opportunities list.
-  await page.goto("/grantor/opportunities");
-  await expect(page).toHaveURL(/\/grantor\/opportunities/);
+  await page.goto("/opportunities");
+  await expect(page).toHaveURL(/\/opportunities/);
 
   // When I start creating a new opportunity.
   await page.getByRole("link", { name: "Create Opportunity" }).click();
-  await expect(page).toHaveURL(/\/grantor\/opportunities\/create/);
+  await expect(page).toHaveURL(/\/opportunities\/create/);
 
   // And I fill the required fields using the metadata in CREATE_OPPORTUNITY_FIELD_DEFINITIONS, which testers update when they need to change what gets filled.
   await fillPageFields(

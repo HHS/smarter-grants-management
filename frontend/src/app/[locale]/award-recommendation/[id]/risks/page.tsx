@@ -46,7 +46,7 @@ async function AwardRecommendationRisksPageContent({
     {
       type: "navigation",
       label: t("heroButtons.backToEdit"),
-      href: `/grantor/award-recommendation/${awardRecommendationId}/edit`,
+      href: `/award-recommendation/${awardRecommendationId}/edit`,
       outline: true,
     },
   ];
@@ -121,7 +121,7 @@ async function AwardRecommendationRisksPageContent({
           additionalBreadcrumbs={[
             {
               title: heroHeading,
-              path: `/grantor/award-recommendation/${awardRecommendationId}/risks`,
+              path: `/award-recommendation/${awardRecommendationId}/risks`,
             },
           ]}
         />
