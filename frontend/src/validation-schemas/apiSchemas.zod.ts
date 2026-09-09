@@ -186,6 +186,122 @@ export const GetPartnerResponseSchema = zod.object({
 export type GetPartnerResponseSchema = zod.input<typeof GetPartnerResponseSchema>;
 export type GetPartnerResponseSchemaOutput = zod.output<typeof GetPartnerResponseSchema>;
 
+export const WorkflowUserSchema = zod.object({
+  "user_id": zod.string().uuid().optional().describe('The user\'s unique identifier'),
+  "email": zod.string().nullish().describe('The user\'s email address, null if they have no login')
+});
+
+export type WorkflowUserSchema = zod.input<typeof WorkflowUserSchema>;
+export type WorkflowUserSchemaOutput = zod.output<typeof WorkflowUserSchema>;
+
+export const WorkflowApprovalSchema = zod.object({
+  "workflow_approval_id": zod.string().uuid().optional().describe('The approval record\'s unique identifier'),
+  "approving_user": zod.object({
+  "user_id": zod.string().uuid().optional().describe('The user\'s unique identifier'),
+  "email": zod.string().nullish().describe('The user\'s email address, null if they have no login')
+}).optional().describe('The user who gave this approval'),
+  "event_id": zod.string().uuid().optional().describe('The ID of the event that recorded this approval'),
+  "is_still_valid": zod.boolean().optional().describe('Whether this approval is still in effect'),
+  "comment": zod.string().nullish().describe('An optional comment left with the approval'),
+  "approval_type": zod.enum(['basic_test_approval', 'secondary_test_approval']).optional().describe('The type of approval'),
+  "approval_response_type": zod.enum(['approved', 'declined', 'requires_modification']).optional().describe('The response given for this approval'),
+  "created_at": zod.string().datetime({"offset":true}).optional()
+});
+
+export type WorkflowApprovalSchema = zod.input<typeof WorkflowApprovalSchema>;
+export type WorkflowApprovalSchemaOutput = zod.output<typeof WorkflowApprovalSchema>;
+
+export const WorkflowApprovalConfigEntrySchema = zod.object({
+  "approval_type": zod.enum(['basic_test_approval', 'secondary_test_approval']).optional().describe('The type of approval this event represents'),
+  "required_privileges": zod.array(zod.enum(['view_partner', 'update_partner', 'manage_partner_members', 'view_program', 'update_program', 'view_grantor_organization', 'update_grantor_organization', 'manage_grantor_organization_members', 'internal_workflow_event_send', 'unused_privilege_102', 'unused_privilege_103'])).optional().describe('The privileges required to give this approval'),
+  "allowed_approval_response_types": zod.array(zod.enum(['approved', 'declined', 'requires_modification'])).optional().describe('The response types this approval accepts'),
+  "possible_users": zod.array(zod.object({
+  "user_id": zod.string().uuid().optional().describe('The user\'s unique identifier'),
+  "email": zod.string().nullish().describe('The user\'s email address, null if they have no login')
+})).optional().describe('The users eligible to give this approval')
+});
+
+export type WorkflowApprovalConfigEntrySchema = zod.input<typeof WorkflowApprovalConfigEntrySchema>;
+export type WorkflowApprovalConfigEntrySchemaOutput = zod.output<typeof WorkflowApprovalConfigEntrySchema>;
+
+export const WorkflowGetResponseDataSchema = zod.object({
+  "workflow_id": zod.string().uuid().optional().describe('The workflow\'s unique identifier'),
+  "workflow_type": zod.enum(['basic_test_workflow', 'prototype_workflow', 'approval_test_workflow', 'limited_approval_test_workflow']).optional().describe('The type of workflow'),
+  "current_workflow_state": zod.string().optional().describe('The workflow\'s current state'),
+  "is_active": zod.boolean().optional().describe('Whether the workflow is still active'),
+  "resource_id": zod.string().uuid().optional().describe('The resource the workflow is attached to'),
+  "resource_type": zod.enum(['internal', 'partner', 'program', 'grantor_organization', 'opportunity']).optional().describe('The type of resource the workflow is attached to'),
+  "created_at": zod.string().datetime({"offset":true}).optional(),
+  "updated_at": zod.string().datetime({"offset":true}).optional(),
+  "workflow_approvals": zod.array(zod.object({
+  "workflow_approval_id": zod.string().uuid().optional().describe('The approval record\'s unique identifier'),
+  "approving_user": zod.object({
+  "user_id": zod.string().uuid().optional().describe('The user\'s unique identifier'),
+  "email": zod.string().nullish().describe('The user\'s email address, null if they have no login')
+}).optional().describe('The user who gave this approval'),
+  "event_id": zod.string().uuid().optional().describe('The ID of the event that recorded this approval'),
+  "is_still_valid": zod.boolean().optional().describe('Whether this approval is still in effect'),
+  "comment": zod.string().nullish().describe('An optional comment left with the approval'),
+  "approval_type": zod.enum(['basic_test_approval', 'secondary_test_approval']).optional().describe('The type of approval'),
+  "approval_response_type": zod.enum(['approved', 'declined', 'requires_modification']).optional().describe('The response given for this approval'),
+  "created_at": zod.string().datetime({"offset":true}).optional()
+})).optional().describe('The approvals recorded against the workflow, sorted oldest to newest'),
+  "workflow_approval_config": zod.record(zod.string(), zod.object({
+  "approval_type": zod.enum(['basic_test_approval', 'secondary_test_approval']).optional().describe('The type of approval this event represents'),
+  "required_privileges": zod.array(zod.enum(['view_partner', 'update_partner', 'manage_partner_members', 'view_program', 'update_program', 'view_grantor_organization', 'update_grantor_organization', 'manage_grantor_organization_members', 'internal_workflow_event_send', 'unused_privilege_102', 'unused_privilege_103'])).optional().describe('The privileges required to give this approval'),
+  "allowed_approval_response_types": zod.array(zod.enum(['approved', 'declined', 'requires_modification'])).optional().describe('The response types this approval accepts'),
+  "possible_users": zod.array(zod.object({
+  "user_id": zod.string().uuid().optional().describe('The user\'s unique identifier'),
+  "email": zod.string().nullish().describe('The user\'s email address, null if they have no login')
+})).optional().describe('The users eligible to give this approval')
+})).optional().describe('For each event that requires an approval, who can give it and how'),
+  "valid_events": zod.array(zod.string()).optional().describe('The events that can legally be sent next, given the current state')
+});
+
+export type WorkflowGetResponseDataSchema = zod.input<typeof WorkflowGetResponseDataSchema>;
+export type WorkflowGetResponseDataSchemaOutput = zod.output<typeof WorkflowGetResponseDataSchema>;
+
+export const WorkflowGetResponseSchema = zod.object({
+  "message": zod.string().optional().describe('The message to return'),
+  "data": zod.object({
+  "workflow_id": zod.string().uuid().optional().describe('The workflow\'s unique identifier'),
+  "workflow_type": zod.enum(['basic_test_workflow', 'prototype_workflow', 'approval_test_workflow', 'limited_approval_test_workflow']).optional().describe('The type of workflow'),
+  "current_workflow_state": zod.string().optional().describe('The workflow\'s current state'),
+  "is_active": zod.boolean().optional().describe('Whether the workflow is still active'),
+  "resource_id": zod.string().uuid().optional().describe('The resource the workflow is attached to'),
+  "resource_type": zod.enum(['internal', 'partner', 'program', 'grantor_organization', 'opportunity']).optional().describe('The type of resource the workflow is attached to'),
+  "created_at": zod.string().datetime({"offset":true}).optional(),
+  "updated_at": zod.string().datetime({"offset":true}).optional(),
+  "workflow_approvals": zod.array(zod.object({
+  "workflow_approval_id": zod.string().uuid().optional().describe('The approval record\'s unique identifier'),
+  "approving_user": zod.object({
+  "user_id": zod.string().uuid().optional().describe('The user\'s unique identifier'),
+  "email": zod.string().nullish().describe('The user\'s email address, null if they have no login')
+}).optional().describe('The user who gave this approval'),
+  "event_id": zod.string().uuid().optional().describe('The ID of the event that recorded this approval'),
+  "is_still_valid": zod.boolean().optional().describe('Whether this approval is still in effect'),
+  "comment": zod.string().nullish().describe('An optional comment left with the approval'),
+  "approval_type": zod.enum(['basic_test_approval', 'secondary_test_approval']).optional().describe('The type of approval'),
+  "approval_response_type": zod.enum(['approved', 'declined', 'requires_modification']).optional().describe('The response given for this approval'),
+  "created_at": zod.string().datetime({"offset":true}).optional()
+})).optional().describe('The approvals recorded against the workflow, sorted oldest to newest'),
+  "workflow_approval_config": zod.record(zod.string(), zod.object({
+  "approval_type": zod.enum(['basic_test_approval', 'secondary_test_approval']).optional().describe('The type of approval this event represents'),
+  "required_privileges": zod.array(zod.enum(['view_partner', 'update_partner', 'manage_partner_members', 'view_program', 'update_program', 'view_grantor_organization', 'update_grantor_organization', 'manage_grantor_organization_members', 'internal_workflow_event_send', 'unused_privilege_102', 'unused_privilege_103'])).optional().describe('The privileges required to give this approval'),
+  "allowed_approval_response_types": zod.array(zod.enum(['approved', 'declined', 'requires_modification'])).optional().describe('The response types this approval accepts'),
+  "possible_users": zod.array(zod.object({
+  "user_id": zod.string().uuid().optional().describe('The user\'s unique identifier'),
+  "email": zod.string().nullish().describe('The user\'s email address, null if they have no login')
+})).optional().describe('The users eligible to give this approval')
+})).optional().describe('For each event that requires an approval, who can give it and how'),
+  "valid_events": zod.array(zod.string()).optional().describe('The events that can legally be sent next, given the current state')
+}).optional(),
+  "status_code": zod.number().int().optional().describe('The HTTP status code')
+});
+
+export type WorkflowGetResponseSchema = zod.input<typeof WorkflowGetResponseSchema>;
+export type WorkflowGetResponseSchemaOutput = zod.output<typeof WorkflowGetResponseSchema>;
+
 export const UserCanAccessResponseSchema = zod.object({
   "message": zod.string().optional().describe('The message to return'),
   "data": zod.unknown().optional(),
@@ -206,6 +322,144 @@ export const UserCanAccessRequestSchema = zod.object({
 
 export type UserCanAccessRequestSchema = zod.input<typeof UserCanAccessRequestSchema>;
 export type UserCanAccessRequestSchemaOutput = zod.output<typeof UserCanAccessRequestSchema>;
+
+export const SortOrderSchema = zod.object({
+  "order_by": zod.string().optional().describe('The field that the records were sorted by'),
+  "sort_direction": zod.enum(['ascending', 'descending']).optional().describe('The direction the records are sorted')
+});
+
+export type SortOrderSchema = zod.input<typeof SortOrderSchema>;
+export type SortOrderSchemaOutput = zod.output<typeof SortOrderSchema>;
+
+export const PaginationInfoSchema = zod.object({
+  "page_offset": zod.number().int().optional().describe('The page number that was fetched'),
+  "page_size": zod.number().int().optional().describe('The size of the page fetched'),
+  "total_records": zod.number().int().optional().describe('The total number of records fetchable'),
+  "total_pages": zod.number().int().optional().describe('The total number of pages that can be fetched'),
+  "sort_order": zod.array(zod.object({
+  "order_by": zod.string().optional().describe('The field that the records were sorted by'),
+  "sort_direction": zod.enum(['ascending', 'descending']).optional().describe('The direction the records are sorted')
+})).optional().describe('The sort order passed in originally')
+});
+
+export type PaginationInfoSchema = zod.input<typeof PaginationInfoSchema>;
+export type PaginationInfoSchemaOutput = zod.output<typeof PaginationInfoSchema>;
+
+export const WorkflowEventRefSchema = zod.object({
+  "event_id": zod.string().uuid().optional().describe('The ID of the event that produced this record'),
+  "sent_at": zod.string().datetime({"offset":true}).optional().describe('When the event was sent')
+});
+
+export type WorkflowEventRefSchema = zod.input<typeof WorkflowEventRefSchema>;
+export type WorkflowEventRefSchemaOutput = zod.output<typeof WorkflowEventRefSchema>;
+
+export const WorkflowAuditEventSchema = zod.object({
+  "workflow_audit_id": zod.string().uuid().optional().describe('The audit record\'s unique identifier'),
+  "acting_user": zod.object({
+  "user_id": zod.string().uuid().optional().describe('The user\'s unique identifier'),
+  "email": zod.string().nullish().describe('The user\'s email address, null if they have no login')
+}).optional().describe('The user who performed the transition'),
+  "transition_event": zod.string().optional().describe('The event that triggered the transition'),
+  "source_state": zod.string().optional().describe('The state before the transition'),
+  "target_state": zod.string().optional().describe('The state after the transition'),
+  "event": zod.object({
+  "event_id": zod.string().uuid().optional().describe('The ID of the event that produced this record'),
+  "sent_at": zod.string().datetime({"offset":true}).optional().describe('When the event was sent')
+}).optional().describe('The event that triggered this transition'),
+  "audit_metadata": zod.record(zod.string(), zod.unknown()).nullish().describe('Additional metadata recorded with the transition'),
+  "created_at": zod.string().datetime({"offset":true}).optional()
+});
+
+export type WorkflowAuditEventSchema = zod.input<typeof WorkflowAuditEventSchema>;
+export type WorkflowAuditEventSchemaOutput = zod.output<typeof WorkflowAuditEventSchema>;
+
+export const WorkflowAuditResponseSchema = zod.object({
+  "pagination_info": zod.object({
+  "page_offset": zod.number().int().optional().describe('The page number that was fetched'),
+  "page_size": zod.number().int().optional().describe('The size of the page fetched'),
+  "total_records": zod.number().int().optional().describe('The total number of records fetchable'),
+  "total_pages": zod.number().int().optional().describe('The total number of pages that can be fetched'),
+  "sort_order": zod.array(zod.object({
+  "order_by": zod.string().optional().describe('The field that the records were sorted by'),
+  "sort_direction": zod.enum(['ascending', 'descending']).optional().describe('The direction the records are sorted')
+})).optional().describe('The sort order passed in originally')
+}).optional().describe('The pagination information for paginated endpoints'),
+  "message": zod.string().optional().describe('The message to return'),
+  "data": zod.array(zod.object({
+  "workflow_audit_id": zod.string().uuid().optional().describe('The audit record\'s unique identifier'),
+  "acting_user": zod.object({
+  "user_id": zod.string().uuid().optional().describe('The user\'s unique identifier'),
+  "email": zod.string().nullish().describe('The user\'s email address, null if they have no login')
+}).optional().describe('The user who performed the transition'),
+  "transition_event": zod.string().optional().describe('The event that triggered the transition'),
+  "source_state": zod.string().optional().describe('The state before the transition'),
+  "target_state": zod.string().optional().describe('The state after the transition'),
+  "event": zod.object({
+  "event_id": zod.string().uuid().optional().describe('The ID of the event that produced this record'),
+  "sent_at": zod.string().datetime({"offset":true}).optional().describe('When the event was sent')
+}).optional().describe('The event that triggered this transition'),
+  "audit_metadata": zod.record(zod.string(), zod.unknown()).nullish().describe('Additional metadata recorded with the transition'),
+  "created_at": zod.string().datetime({"offset":true}).optional()
+})).optional(),
+  "status_code": zod.number().int().optional().describe('The HTTP status code')
+});
+
+export type WorkflowAuditResponseSchema = zod.input<typeof WorkflowAuditResponseSchema>;
+export type WorkflowAuditResponseSchemaOutput = zod.output<typeof WorkflowAuditResponseSchema>;
+
+export const SortOrderWorkflowAuditPaginationSchema = zod.object({
+  "order_by": zod.enum(['created_at']).describe('The field to sort the response by'),
+  "sort_direction": zod.enum(['ascending', 'descending']).describe('Whether to sort the response ascending or descending')
+});
+
+export type SortOrderWorkflowAuditPaginationSchema = zod.input<typeof SortOrderWorkflowAuditPaginationSchema>;
+export type SortOrderWorkflowAuditPaginationSchemaOutput = zod.output<typeof SortOrderWorkflowAuditPaginationSchema>;
+
+export const workflowAuditPaginationSchemaSortOrderDefault = [{ order_by: 'created_at', sort_direction: 'descending', }];
+export const workflowAuditPaginationSchemaSortOrderMax = 5;
+
+export const workflowAuditPaginationSchemaPageSizeDefault = 25;
+export const workflowAuditPaginationSchemaPageSizeMax = 5000;
+
+export const workflowAuditPaginationSchemaPageOffsetDefault = 1;
+
+
+
+export const WorkflowAuditPaginationSchema = zod.object({
+  "sort_order": zod.array(zod.object({
+  "order_by": zod.enum(['created_at']).describe('The field to sort the response by'),
+  "sort_direction": zod.enum(['ascending', 'descending']).describe('Whether to sort the response ascending or descending')
+})).min(1).max(workflowAuditPaginationSchemaSortOrderMax).default(workflowAuditPaginationSchemaSortOrderDefault).describe('The list of sorting rules'),
+  "page_size": zod.number().int().min(1).max(workflowAuditPaginationSchemaPageSizeMax).default(workflowAuditPaginationSchemaPageSizeDefault).describe('The size of the page to fetch'),
+  "page_offset": zod.number().int().min(1).default(workflowAuditPaginationSchemaPageOffsetDefault).describe('The page number to fetch, starts counting from 1')
+});
+
+export type WorkflowAuditPaginationSchema = zod.input<typeof WorkflowAuditPaginationSchema>;
+export type WorkflowAuditPaginationSchemaOutput = zod.output<typeof WorkflowAuditPaginationSchema>;
+
+export const workflowAuditRequestSchemaPaginationSortOrderDefault = [{ order_by: 'created_at', sort_direction: 'descending', }];
+export const workflowAuditRequestSchemaPaginationSortOrderMax = 5;
+
+export const workflowAuditRequestSchemaPaginationPageSizeDefault = 25;
+export const workflowAuditRequestSchemaPaginationPageSizeMax = 5000;
+
+export const workflowAuditRequestSchemaPaginationPageOffsetDefault = 1;
+
+
+
+export const WorkflowAuditRequestSchema = zod.object({
+  "pagination": zod.object({
+  "sort_order": zod.array(zod.object({
+  "order_by": zod.enum(['created_at']).describe('The field to sort the response by'),
+  "sort_direction": zod.enum(['ascending', 'descending']).describe('Whether to sort the response ascending or descending')
+})).min(1).max(workflowAuditRequestSchemaPaginationSortOrderMax).default(workflowAuditRequestSchemaPaginationSortOrderDefault).describe('The list of sorting rules'),
+  "page_size": zod.number().int().min(1).max(workflowAuditRequestSchemaPaginationPageSizeMax).default(workflowAuditRequestSchemaPaginationPageSizeDefault).describe('The size of the page to fetch'),
+  "page_offset": zod.number().int().min(1).default(workflowAuditRequestSchemaPaginationPageOffsetDefault).describe('The page number to fetch, starts counting from 1')
+})
+});
+
+export type WorkflowAuditRequestSchema = zod.input<typeof WorkflowAuditRequestSchema>;
+export type WorkflowAuditRequestSchemaOutput = zod.output<typeof WorkflowAuditRequestSchema>;
 
 export const PartnerSchema1 = zod.object({
   "partner_id": zod.string().uuid().optional().describe('Unique ID of a partner'),
@@ -288,28 +542,6 @@ export const OpportunityGetResponseSchema = zod.object({
 
 export type OpportunityGetResponseSchema = zod.input<typeof OpportunityGetResponseSchema>;
 export type OpportunityGetResponseSchemaOutput = zod.output<typeof OpportunityGetResponseSchema>;
-
-export const SortOrderSchema = zod.object({
-  "order_by": zod.string().optional().describe('The field that the records were sorted by'),
-  "sort_direction": zod.enum(['ascending', 'descending']).optional().describe('The direction the records are sorted')
-});
-
-export type SortOrderSchema = zod.input<typeof SortOrderSchema>;
-export type SortOrderSchemaOutput = zod.output<typeof SortOrderSchema>;
-
-export const PaginationInfoSchema = zod.object({
-  "page_offset": zod.number().int().optional().describe('The page number that was fetched'),
-  "page_size": zod.number().int().optional().describe('The size of the page fetched'),
-  "total_records": zod.number().int().optional().describe('The total number of records fetchable'),
-  "total_pages": zod.number().int().optional().describe('The total number of pages that can be fetched'),
-  "sort_order": zod.array(zod.object({
-  "order_by": zod.string().optional().describe('The field that the records were sorted by'),
-  "sort_direction": zod.enum(['ascending', 'descending']).optional().describe('The direction the records are sorted')
-})).optional().describe('The sort order passed in originally')
-});
-
-export type PaginationInfoSchema = zod.input<typeof PaginationInfoSchema>;
-export type PaginationInfoSchemaOutput = zod.output<typeof PaginationInfoSchema>;
 
 export const ResourceForRoleSchema = zod.object({
   "resource_id": zod.string().uuid().optional().describe('The resource\'s unique identifier'),
@@ -549,6 +781,17 @@ export const GetV1PartnersPartnerIdResponse = GetPartnerResponseSchema
 
 
 /**
+ * Get a workflow's current state, audit history, approvals, and approval configuration.
+ * @summary Get Workflow
+ */
+export const GetV1WorkflowsWorkflowIdParams = zod.object({
+  "workflow_id": zod.string()
+})
+
+export const GetV1WorkflowsWorkflowIdResponse = WorkflowGetResponseSchema
+
+
+/**
  * @summary Check whether the calling user can access a resource with the given privileges.
  */
 export const PostV1UsersUserIdCanAccessParams = zod.object({
@@ -558,6 +801,30 @@ export const PostV1UsersUserIdCanAccessParams = zod.object({
 export const PostV1UsersUserIdCanAccessBody = UserCanAccessRequestSchema
 
 export const PostV1UsersUserIdCanAccessResponse = UserCanAccessResponseSchema
+
+
+/**
+ * Get the same payload as Get Workflow, resolved from one of its event IDs.
+ * @summary Get Workflow By Event ID
+ */
+export const GetV1WorkflowsEventsEventIdParams = zod.object({
+  "event_id": zod.string()
+})
+
+export const GetV1WorkflowsEventsEventIdResponse = WorkflowGetResponseSchema
+
+
+/**
+ * Get a workflow's audit history, paginated.
+ * @summary Get Workflow Audit History
+ */
+export const PostV1WorkflowsWorkflowIdAuditParams = zod.object({
+  "workflow_id": zod.string()
+})
+
+export const PostV1WorkflowsWorkflowIdAuditBody = WorkflowAuditRequestSchema
+
+export const PostV1WorkflowsWorkflowIdAuditResponse = WorkflowAuditResponseSchema
 
 
 /**
