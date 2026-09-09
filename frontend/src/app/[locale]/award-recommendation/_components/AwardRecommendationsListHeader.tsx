@@ -37,7 +37,7 @@ export default function AwardRecommendationsListHeader({
         </div>
         {showHeaderControls && (
           <Link
-            href="/grantor/award-recommendation/create"
+            href="/award-recommendation/create"
             className="usa-button margin-left-auto"
           >
             {t("createRecommendationButton")}

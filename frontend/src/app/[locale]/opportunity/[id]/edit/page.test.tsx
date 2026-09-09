@@ -50,7 +50,7 @@ jest.mock("src/services/featureFlags/withFeatureFlag", () => ({
 jest.mock("next/navigation", () => ({
   redirect: (location: string) => redirectMock(location) as unknown,
   useRouter: () => ({ push: jest.fn() }),
-  usePathname: () => "/grantor/opportunities",
+  usePathname: () => "/opportunities",
   useSearchParams: () => new URLSearchParams("page=1"),
 }));
 
@@ -68,6 +68,11 @@ const mockGetOpportunityForGrantor = jest.fn().mockResolvedValue({
 jest.mock("src/services/fetch/fetchers/grantorOpportunitiesFetcher", () => ({
   getOpportunityForGrantor: (arg: unknown): unknown =>
     mockGetOpportunityForGrantor(arg) as Promise<GrantorOpportunityDetail[]>,
+}));
+
+jest.mock("src/services/fetch/fetchers/opportunityAttachmentFetcher", () => ({
+  createOpportunityAttachment: jest.fn(),
+  deleteOpportunityAttachment: jest.fn(),
 }));
 
 const pageParams = new Promise<{ id: string; locale: string }>((resolve) => {
