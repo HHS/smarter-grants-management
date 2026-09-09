@@ -713,9 +713,12 @@ describe("SimplerFileInput", () => {
         .findByTestId("file-upload-status-display")
         .then((display) => {
           // eslint-disable-next-line jest/no-conditional-expect
-          return expect(display).toHaveTextContent(
-            "post upload action success",
-          );
+          expect(display).toHaveTextContent("post upload action success");
+          // eslint-disable-next-line jest/no-conditional-expect
+          expect(display).toHaveTextContent("test.txt");
+          // no suffix added on file name
+          // eslint-disable-next-line jest/no-conditional-expect
+          return expect(display).not.toHaveTextContent("_");
         })
         .catch(() => {});
     });
