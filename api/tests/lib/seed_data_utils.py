@@ -9,10 +9,40 @@ import tests.db.models.factories as factories
 from src.auth.api_jwt_auth import ApiJwtConfig, create_jwt_for_user
 from src.auth.internal_resource import get_internal_resource
 from src.constants.lookup_constants import Privilege, ResourceType
-from src.db.models.resource_models import ResourceUser
+from src.db.models.resource_models import AbstractResourceTableMixin, ResourceUser, Role
 from src.db.models.user_models import User
 
 logger = logging.getLogger(__name__)
+
+
+def grant_role_on_resource(
+    db_session: db.Session, user: User, role: Role, resource: AbstractResourceTableMixin
+) -> None:
+    """Grant a user a role on a resource. Safe to call repeatedly."""
+    role = db_session.merge(role, load=True)
+
+    # Reuse the user's existing connection to the resource if it has one -
+    # a user gets at most one per resource.
+    resource_user = db_session.execute(
+        select(ResourceUser).where(
+            ResourceUser.resource_id == resource.get_resource_id(),
+            ResourceUser.user_id == user.user_id,
+        )
+    ).scalar_one_or_none()
+
+    if resource_user is None:
+        resource_user = factories.ResourceUserFactory.build(resource=resource.resource, user=user)
+        db_session.add(resource_user)
+
+    if role not in resource_user.roles:
+        db_session.add(
+            factories.ResourceUserRoleFactory.build(resource_user=resource_user, role=role)
+        )
+
+    logger.info(
+        f"Granted role '{role.role_name}' to user {user.user_id} on "
+        f"{resource.get_resource_type()} {resource.get_resource_id()}"
+    )
 
 
 class UserBuilder:

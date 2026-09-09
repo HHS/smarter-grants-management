@@ -16,6 +16,7 @@ from src.api.grantor_organizations.grantor_organization_blueprint import (
 from src.api.healthcheck.healthcheck_blueprint import healthcheck_blueprint
 from src.api.local import local_blueprint
 from src.api.partners.partner_blueprint import partner_blueprint
+from src.api.programs.program_blueprint import program_blueprint
 from src.api.proof_of_concept.proof_of_concept_blueprint import proof_of_concept_blueprint
 from src.api.resources import resource_blueprint
 from src.api.response import restructure_error_response
@@ -103,6 +104,7 @@ def register_blueprints(app: APIFlask) -> None:
     app.register_blueprint(workflow_blueprint)
     app.register_blueprint(partner_blueprint)
     app.register_blueprint(grantor_organization_blueprint)
+    app.register_blueprint(program_blueprint)
     app.register_blueprint(resource_blueprint)
 
     # Local endpoints for development, will error

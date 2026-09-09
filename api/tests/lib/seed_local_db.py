@@ -2,15 +2,19 @@ import logging
 import uuid
 
 import click
+from sqlalchemy import select
 
 import src.logs
 import tests.db.models.factories as f
 from src.adapters import db
 from src.adapters.db import PostgresDBClient
 from src.constants.lookup_constants import Privilege
+from src.constants.static_role_values import PARTNER_VIEWER
+from src.db.models.grantor_organization_models import Program
+from src.db.models.user_models import User
 from src.db.resource_automation.resource_automation import setup_resource_automation
 from src.util.local import error_if_not_local
-from tests.lib.seed_data_utils import UserBuilder
+from tests.lib.seed_data_utils import UserBuilder, grant_role_on_resource
 
 logger = logging.getLogger(__name__)
 
@@ -31,15 +35,16 @@ def seed_local_db() -> None:
 
 
 def run_seed_logic(db_session: db.Session) -> None:
-    create_users(db_session)
+    program_viewers = create_users(db_session)
 
-    create_programs()
+    create_programs(db_session, program_viewers)
 
     # Commit anything remaining that wasn't made with factories
     db_session.commit()
 
 
-def create_users(db_session: db.Session) -> None:
+def create_users(db_session: db.Session) -> list[User]:
+    """Create the local users, returning the ones that should be able to view programs."""
     logger.info("Creating users")
 
     # Create a few basic users with JWT auth setup
@@ -56,17 +61,27 @@ def create_users(db_session: db.Session) -> None:
     ).with_oauth_login("another_jwt_user").with_jwt_auth().build()
 
     # Create users with API key auth setup
-    UserBuilder(
-        user_id=uuid.UUID("a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d"),
-        db_session=db_session,
-        scenario_name="API Key User",
-    ).with_oauth_login("api_key_user").with_api_key("local-dev-api-key-1").build()
+    api_key_user = (
+        UserBuilder(
+            user_id=uuid.UUID("a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d"),
+            db_session=db_session,
+            scenario_name="API Key User",
+        )
+        .with_oauth_login("api_key_user")
+        .with_api_key("local-dev-api-key-1")
+        .build()
+    )
 
-    UserBuilder(
-        user_id=uuid.UUID("b2c3d4e5-f6a7-4b5c-9d0e-1f2a3b4c5d6e"),
-        db_session=db_session,
-        scenario_name="Another API Key User",
-    ).with_oauth_login("another_api_key_user").with_api_key("local-dev-api-key-2").build()
+    another_api_key_user = (
+        UserBuilder(
+            user_id=uuid.UUID("b2c3d4e5-f6a7-4b5c-9d0e-1f2a3b4c5d6e"),
+            db_session=db_session,
+            scenario_name="Another API Key User",
+        )
+        .with_oauth_login("another_api_key_user")
+        .with_api_key("local-dev-api-key-2")
+        .build()
+    )
 
     # A user who can send workflow events. The event API refuses everyone else, so
     # without this there's no way to drive a workflow by hand locally.
@@ -82,9 +97,21 @@ def create_users(db_session: db.Session) -> None:
         role_name="Local Workflow Event Sender",
     ).build()
 
+    return [api_key_user, another_api_key_user]
 
-def create_programs() -> None:
+
+def create_programs(db_session: db.Session, program_viewers: list[User]) -> None:
     # Create a few programs just to have something to work with.
     # Later work will add more specific scenarios
     logger.info("Creating programs")
     f.ProgramFactory.create_batch(size=5)
+
+    # Grant the API key users the Partner Viewer role (which carries VIEW_PROGRAM)
+    # on the partner of every program, so the GET program endpoint returns
+    # a 200 for them locally.
+    programs = db_session.execute(select(Program)).scalars().all()
+    for program in programs:
+        for user in program_viewers:
+            grant_role_on_resource(db_session, user, PARTNER_VIEWER, program.partner)
+
+    logger.info(f"{len(programs)} programs viewable by the API key users")
