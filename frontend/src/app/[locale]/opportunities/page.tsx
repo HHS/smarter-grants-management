@@ -3,7 +3,6 @@ import { AgencySelector } from "src/app/[locale]/opportunities/_components/Agenc
 import Unauthenticated from "src/app/[locale]/unauthenticated/page";
 import { MissingAuthError, UnauthorizedError } from "src/errors";
 import { getSession } from "src/services/auth/session";
-import withFeatureFlag from "src/services/featureFlags/withFeatureFlag";
 import { getUserAgencies } from "src/services/fetch/fetchers/agenciesFetcher";
 import { searchOpportunitiesByAgency } from "src/services/fetch/fetchers/grantorOpportunitiesFetcher";
 import { LocalizedPageProps, TFn } from "src/types/intl";
@@ -386,7 +385,9 @@ const fetchOpportunities = async (agencyId: string, page: number) => {
 // The Main Page
 // --------------------------------------------------
 type OpportunitiesListProps = LocalizedPageProps & WithFeatureFlagProps;
-async function OpportunitiesListPage(props: OpportunitiesListProps) {
+export default async function OpportunitiesListPage(
+  props: OpportunitiesListProps,
+) {
   const { searchParams } = props;
   const resolvedSearchParams: Record<string, string | string[] | undefined> =
     searchParams ? await searchParams : {};
@@ -514,9 +515,3 @@ async function OpportunitiesListPage(props: OpportunitiesListProps) {
     </OpportunitiesPageWrapper>
   );
 }
-
-export default withFeatureFlag<OpportunitiesListProps, never>(
-  OpportunitiesListPage,
-  "opportunitiesListOff",
-  () => redirect("/maintenance"),
-);

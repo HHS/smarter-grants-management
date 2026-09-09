@@ -4,14 +4,13 @@ import {
   MissingAuthError,
   parseErrorStatus,
 } from "src/errors";
-import withFeatureFlag from "src/services/featureFlags/withFeatureFlag";
 import { getForms } from "src/services/fetch/fetchers/allFormsFetcher";
 import { getOpportunityForGrantor } from "src/services/fetch/fetchers/grantorOpportunitiesFetcher";
 import { Competition } from "src/types/competitionsResponseTypes";
 
 import { useTranslations } from "next-intl";
 import { getTranslations } from "next-intl/server";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { Button } from "@trussworks/react-uswds";
 
 import LeftHandFormNav from "src/components/core/forms/LeftHandFormNav";
@@ -43,7 +42,9 @@ const ButtonSaveAndExit = () => {
   );
 };
 
-async function OpportunityCompetitionPage({ params }: PageProps) {
+export default async function OpportunityCompetitionPage({
+  params,
+}: PageProps) {
   const { id, locale } = await params;
   const forms = await getForms();
   forms.data = forms.data.filter((form) => {
@@ -139,9 +140,3 @@ async function OpportunityCompetitionPage({ params }: PageProps) {
     </div>
   );
 }
-
-export default withFeatureFlag<PageProps, never>(
-  OpportunityCompetitionPage,
-  "opportunitiesListOff",
-  () => redirect("/maintenance"),
-);
