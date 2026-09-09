@@ -254,7 +254,10 @@ export const NavLinks = ({
                 text={loggedInNavItem.displayText}
               />
             )),
-            <SignOutNavLink key="logout" onClick={closeDropdownAndMobileNav} />,
+            <SignOutNavLink
+              key="logout"
+              closeDropdownAndMobileNav={closeDropdownAndMobileNav}
+            />,
           ]}
         />,
       );
