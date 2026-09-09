@@ -588,8 +588,10 @@ class AssistanceListingFactory(BaseFactory):
 
     assistance_listing_id = Generators.UuidObj
 
-    program_title = factory.Faker("company")
-    assistance_listing_number = factory.Faker("assistance_listing_number")
+    program_title = factory.Faker("program_name")
+    assistance_listing_number = factory.LazyFunction(
+        lambda: fake.unique.assistance_listing_number()
+    )
 
     is_active = True
 
