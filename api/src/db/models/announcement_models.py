@@ -1,11 +1,14 @@
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import UUID, BigInteger, ForeignKey, UniqueConstraint
 from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from api.src.db.models.application_package_models import ApplicationPackage
+if TYPE_CHECKING:
+    from src.db.models.application_package_models import ApplicationPackage
+
 from src.adapters.db.lookup.lookup_column import LookupColumn
 from src.constants.lookup_constants import (
     AnnouncementCategory,
