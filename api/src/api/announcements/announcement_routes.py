@@ -10,10 +10,17 @@ from src.api.announcements.announcement_schemas import (
     AnnouncementListRequestSchema,
     AnnouncementListResponseSchema,
     AnnouncementResponseSchema,
+    AnnouncementSummaryCreateRequestSchema,
+    AnnouncementSummaryResponseSchema,
+    AnnouncementSummaryUpdateRequestSchema,
     AnnouncementUpdateRequestSchema,
 )
 from src.auth.multi_auth import jwt_or_api_user_key_multi_auth
 from src.logs.flask_logger import add_extra_data_to_current_request_logs
+from src.services.announcements.announcement_summaries import (
+    create_announcement_summary,
+    update_announcement_summary,
+)
 from src.services.announcements.create_announcement import create_announcement
 from src.services.announcements.get_announcement import (
     get_announcement,
@@ -121,3 +128,70 @@ def announcement_list(db_session: db.Session, json_data: dict) -> response.ApiRe
         data=announcements,
         pagination_info=pagination_info,
     )
+
+
+@announcement_blueprint.post("/<uuid:announcement_id>/summaries")
+@announcement_blueprint.input(AnnouncementSummaryCreateRequestSchema, location="json")
+@announcement_blueprint.output(AnnouncementSummaryResponseSchema)
+@announcement_blueprint.doc(
+    summary="Create an Announcement Summary",
+    responses=[200, 401, 403, 404, 422],
+)
+@announcement_blueprint.auth_required(jwt_or_api_user_key_multi_auth)
+@flask_db.with_db_session()
+def announcement_summary_create(
+    db_session: db.Session,
+    announcement_id: uuid.UUID,
+    json_data: dict,
+) -> response.ApiResponse:
+    add_extra_data_to_current_request_logs({"announcement_id": announcement_id})
+    logger.info("POST /v1/announcements/:announcement_id/summaries")
+
+    with db_session.begin():
+        user = jwt_or_api_user_key_multi_auth.get_user()
+        db_session.add(user)
+        announcement_summary = create_announcement_summary(
+            db_session,
+            announcement_id,
+            json_data,
+            user,
+        )
+
+    return response.ApiResponse(message="Success", data=announcement_summary)
+
+
+@announcement_blueprint.put("/<uuid:announcement_id>/summaries/<uuid:announcement_summary_id>")
+@announcement_blueprint.input(AnnouncementSummaryUpdateRequestSchema, location="json")
+@announcement_blueprint.output(AnnouncementSummaryResponseSchema)
+@announcement_blueprint.doc(
+    summary="Update an Announcement Summary",
+    responses=[200, 401, 403, 404, 422],
+)
+@announcement_blueprint.auth_required(jwt_or_api_user_key_multi_auth)
+@flask_db.with_db_session()
+def announcement_summary_update(
+    db_session: db.Session,
+    announcement_id: uuid.UUID,
+    announcement_summary_id: uuid.UUID,
+    json_data: dict,
+) -> response.ApiResponse:
+    add_extra_data_to_current_request_logs(
+        {
+            "announcement_id": announcement_id,
+            "announcement_summary_id": announcement_summary_id,
+        }
+    )
+    logger.info("PUT /v1/announcements/:announcement_id/summaries/:announcement_summary_id")
+
+    with db_session.begin():
+        user = jwt_or_api_user_key_multi_auth.get_user()
+        db_session.add(user)
+        announcement_summary = update_announcement_summary(
+            db_session,
+            announcement_id,
+            announcement_summary_id,
+            json_data,
+            user,
+        )
+
+    return response.ApiResponse(message="Success", data=announcement_summary)
