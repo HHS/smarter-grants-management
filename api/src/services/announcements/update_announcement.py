@@ -1,3 +1,4 @@
+import logging
 import uuid
 
 from src.adapters import db
@@ -6,6 +7,8 @@ from src.db.models.announcement_models import Announcement
 from src.db.models.user_models import User
 from src.services.announcements.authorization import has_access
 from src.services.announcements.get_announcement import get_announcement
+
+logger = logging.getLogger(__name__)
 
 
 def update_announcement(
@@ -19,15 +22,9 @@ def update_announcement(
     if not has_access(user, announcement, "update"):
         raise_flask_error(403, "User does not have access to update this announcement")
 
-    for field_name in (
-        "announcement_title",
-        "tagline",
-        "purpose_statement",
-        "category",
-        "category_explanation",
-    ):
-        if field_name in json_data:
-            setattr(announcement, field_name, json_data[field_name])
+    for field, value in json_data.items():
+        setattr(announcement, field, value)
 
-    db_session.flush()
+    logger.info("Updated announcement", extra={"announcement_id": announcement_id})
+
     return announcement

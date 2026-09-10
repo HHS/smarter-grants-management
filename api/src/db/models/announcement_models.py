@@ -76,6 +76,18 @@ class Announcement(GrantorSchemaTable, TimestampMixin, AbstractResourceTableMixi
     def resource_name(self) -> str | None:
         return self.announcement_title
 
+    @property
+    def forecast_summary(self) -> AnnouncementSummary | None:
+        forecasts = [summary for summary in self.announcement_summaries if summary.is_forecast]
+        return forecasts[0] if forecasts else None
+
+    @property
+    def non_forecast_summary(self) -> AnnouncementSummary | None:
+        non_forecasts = [
+            summary for summary in self.announcement_summaries if not summary.is_forecast
+        ]
+        return non_forecasts[0] if non_forecasts else None
+
 
 class AnnouncementAssistanceListing(GrantorSchemaTable, TimestampMixin):
     __tablename__ = "announcement_assistance_listing"
@@ -95,6 +107,14 @@ class AnnouncementAssistanceListing(GrantorSchemaTable, TimestampMixin):
         UUID, ForeignKey(AssistanceListing.assistance_listing_id), index=True
     )
     assistance_listing: Mapped[AssistanceListing] = relationship(AssistanceListing)
+
+    @property
+    def assistance_listing_number(self) -> str:
+        return self.assistance_listing.assistance_listing_number
+
+    @property
+    def program_title(self) -> str:
+        return self.assistance_listing.program_title
 
 
 class AnnouncementSummary(GrantorSchemaTable, TimestampMixin):
