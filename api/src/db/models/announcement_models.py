@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import UUID, BigInteger, ForeignKey, UniqueConstraint
@@ -42,8 +42,8 @@ class Announcement(GrantorSchemaTable, TimestampMixin, AbstractResourceTableMixi
     announcement_number: Mapped[str]
     announcement_title: Mapped[str]
 
-    tagline: Mapped[str]
-    purpose_statement: Mapped[str]
+    tagline: Mapped[str | None]
+    purpose_statement: Mapped[str | None]
 
     category: Mapped[AnnouncementCategory | None] = mapped_column(
         "announcement_category_id",
@@ -140,8 +140,8 @@ class AnnouncementSummary(GrantorSchemaTable, TimestampMixin):
 
     # These existed as forecast-only fields in Simpler. Reviewer feedback on the first
     # port suggested making them generally usable and naming them as estimates.
-    estimated_award_timestamp: Mapped[datetime | None]
-    estimated_project_start_timestamp: Mapped[datetime | None]
+    estimated_award_date: Mapped[date | None]
+    estimated_project_start_date: Mapped[date | None]
 
     fiscal_year: Mapped[int | None]
 
