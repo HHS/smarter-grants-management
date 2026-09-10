@@ -47,6 +47,7 @@ class ResourceType(StrEnum):
     PROGRAM = "program"
     GRANTOR_ORGANIZATION = "grantor_organization"
     ANNOUNCEMENT = "announcement"
+    OPPORTUNITY = "opportunity"
 
 
 class GrantorOrganizationType(StrEnum):
