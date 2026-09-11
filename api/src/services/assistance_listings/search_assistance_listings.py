@@ -29,12 +29,14 @@ def search_assistance_listings(
     # If a query is provided, we filter on both the assistance listing number and program title like:
     #
     #   where assistance_listing_number ILIKE 'query%' OR
-    #         program_title @@ to_tsquery('query')
+    #         to_tsvector('english', program_title) @@ to_tsquery('query')
     if search_params.query:
         stmt = stmt.where(
             or_(
                 AssistanceListing.assistance_listing_number.istartswith(search_params.query),
-                AssistanceListing.program_title.op("@@")(
+                # NOTE - we have to include to_tsvector around program_title otherwise it won't
+                # hit the index we added on that column.
+                func.to_tsvector("english", AssistanceListing.program_title).op("@@")(
                     func.to_tsquery(query_to_tsquery(search_params.query))
                 ),
             )
