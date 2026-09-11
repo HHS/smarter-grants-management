@@ -1,6 +1,6 @@
 # Background
 
-Simpler Grants maintains a feature flag system within its NextJS app that currently allows for custom behavior on pages and features. Each feature flag is a simple boolean, and when turned on (or turned to `true`), a page or feature that is set up to respond to this flag can opt out of the standard render or behavior. For example, when an "applyFormPrototypeOff" feature flag is set to "true", the application form page is configured to disable or hide the prototype feature.
+Smarter Grants Management maintains a feature flag system within its NextJS app that currently allows for custom behavior on pages and features. Each feature flag is a simple boolean, and when turned on (or turned to `true`), a page or feature that is set up to respond to this flag can opt out of the standard render or behavior. For example, when the "maintenanceMode" feature flag is set to "true", the application is configured to show a maintenance page instead of its normal content.
 
 Our feature flags implementation can read feature flag values from environment variables, but can also read them from the frontend, and stores user settings on client side cookies. The intent is for these feature flags to be user configurable, so that
 
@@ -19,8 +19,8 @@ You can find and update the feature flags currently in use by the application in
 
 Feature flags will follow these conventions!
 
-- feature flags should be named and conceived such that their default value is `false` or `off`. This allows us to easily implement custom behavior across the board when flags are turned on. For example, a feature flag to toggle the form prototype should be something like `applyFormPrototypeOff` or `disableApplyFormPrototype` and with a default value of `false`.
-- feature flag names will use simple camel case naming, for example `applyFormPrototypeOff`
+- feature flags should be named and conceived such that their default value is `false` or `off`. This allows us to easily implement custom behavior across the board when flags are turned on. For example, a feature flag to toggle maintenance mode should be something like `maintenanceMode` and with a default value of `false`.
+- feature flag names will use simple camel case naming, for example `featureFlagAdminOff`
 - names of environment variables for controlling feature flag values should match the name of the flags within the code, except
   - using snake case
   - all caps
@@ -131,8 +131,8 @@ export default async function handler(request, response) {
 
 To add a new feature flag, you must:
 
-1. Add it and a default value to the object exported from [the FeatureFlags constants file](https://github.com/HHS/simpler-grants-gov/blob/main/frontend/src/constants/featureFlags.ts)
-2. If you want to control the feature flag with an environment variable add it to the list of environment variables [in the terraform](https://github.com/HHS/simpler-grants-gov/blob/main/infra/frontend/app-config/env-config/environment-variables.tf), and add variables for each environment in SSM
+1. Add it and a default value to the object exported from [the FeatureFlags constants file](../../frontend/src/constants/defaultFeatureFlags.ts)
+2. If you want to control the feature flag with an environment variable add it to the list of environment variables [in the terraform](https://github.com/HHS/smarter-grants-management/blob/main/infra/frontend/app-config/env-config/environment_variables.tf), and add variables for each environment in SSM
 3. That's it! Everything else is handled for you!
 
 ## Testing
@@ -191,7 +191,7 @@ When the default value of a flag should be updated for all users of a deployed a
 
 First, gather the name for the SSM parameter from terraform. You may need to trace through from frontend variable name -> env var name (found in environments.ts) -> SSM param name (found in frontend/app-config/env-config/environment_variables.tf). The name will look something like `/<application>/<environment>/<name-of-flag>`
 
-For PROD and Training:
+<!-- TODO: confirm for mgmt --> For PROD and Training (mgmt's infra currently only defines `dev.tf`/`staging.tf` - confirm whether this environment pairing applies, or update to mgmt's actual upper environment(s)):
 
 1. log in to AWS. Note that this can only be done by a user with write access to AWS
 2. go to Systems Manager
@@ -203,7 +203,7 @@ For PROD and Training:
 
 For DEV and Staging:
 
-1. go to https://github.com/HHS/simpler-grants-gov/actions/workflows/update-frontend-feature-flag.yml
+1. go to https://github.com/HHS/smarter-grants-management/actions/workflows/update-frontend-feature-flag.yml
 2. click run workflow
 3. choose the feature flag in the drop down that you found in step one
 4. set value and environment

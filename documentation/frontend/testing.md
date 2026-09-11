@@ -2,16 +2,18 @@
 
 ## End to End (E2E) testing
 
-E2E tests are run using Playwright. See [development.md](/DEVELOPMENT.md) for more general info!
+E2E tests are run using Playwright. See [development.md](../../DEVELOPMENT.md) for more general info!
 
 ### Running against deployed environments
 
 Playwright tests can be directed at any deployed environment by adjusting environment variables set in your `.env.local` file. For example, when running against staging:
 
+<!-- TODO: confirm for mgmt - PLAYWRIGHT_BASE_URL/PLAYWRIGHT_API_URL below are placeholders, not simpler-grants-gov's staging domains - fill in mgmt's actual staging URLs -->
+
 ```
 PLAYWRIGHT_TARGET_ENV=staging
-PLAYWRIGHT_BASE_URL=https://staging.simpler.grants.gov
-PLAYWRIGHT_API_URL=https://api.staging.simpler.grants.gov
+PLAYWRIGHT_BASE_URL=<mgmt staging URL>
+PLAYWRIGHT_API_URL=<mgmt staging API URL>
 TEST_USER_EMAIL=<from 1password>
 TEST_USER_PASSWORD=<from 1password>
 TEST_USER_MFA_KEY=<from 1password>
@@ -27,9 +29,9 @@ The correct values for secrets can be found in 1Password, AWS SSM, or ask a team
 
 There are situations where we want to be able to test a "logged in" experience without having to script the test through the full login flow. In order to support this we have built a system to spoof the user login by placing a session cookie into the browser context. This system works by creating a client side cookie on the browser context within Playwright that will function the same as the session cookie produced as the output of the real login process.
 
-Both local and staging use the same mechanism: Playwright fetches a session token for a seeded test user from the staging-only internal endpoint `POST /v1/internal/e2e-token`, then encodes it into a spoofed client session cookie. The request is authorized by a "test user manager" API key, and the target test user is chosen per test via a readable key (see [test-users.ts](https://github.com/HHS/simpler-grants-gov/blob/main/frontend/tests/e2e/utils/auth/test-users.ts)). Seeded test users have no login credentials, so if spoofing fails the test fails — there is no fallback to a real Login.gov login.
+Both local and staging use the same mechanism: Playwright fetches a session token for a seeded test user from the staging-only internal endpoint `POST /v1/internal/e2e-token`, then encodes it into a spoofed client session cookie. The request is authorized by a "test user manager" API key, and the target test user is chosen per test via a readable key (see [test-users.ts](../../frontend/tests/e2e/utils/auth/test-users.ts)). Seeded test users have no login credentials, so if spoofing fails the test fails — there is no fallback to a real Login.gov login.
 
-The system is defined in [Login Utils](https://github.com/HHS/simpler-grants-gov/blob/main/frontend/tests/e2e/utils/auth/login-utils.ts) and [Authenticate E2E User Utils](https://github.com/HHS/simpler-grants-gov/blob/main/frontend/tests/e2e/utils/auth/authenticate-e2e-user-utils.ts).
+The system is defined in [Login Utils](../../frontend/tests/e2e/utils/auth/login-utils.ts) and [Authenticate E2E User Utils](../../frontend/tests/e2e/utils/auth/authenticate-e2e-user-utils.ts).
 
 #### Local setup
 
@@ -49,7 +51,7 @@ There are two types of tags used in our grouping scheme - feature tags & executi
 
 _All_ tests should be assigned exactly _one_ execution tag, and any number of feature tags.
 
-Only defined test groups should be used, and the decision to create a new group should be made by only with approval from the testing and feature teams. [Current groups are defined here](https://github.com/HHS/simpler-grants-gov/blob/main/frontend/tests/e2e/tags.ts).
+Only defined test groups should be used, and the decision to create a new group should be made by only with approval from the testing and feature teams. [Current groups are defined here](../../frontend/tests/e2e/tags.ts).
 
 Current testing cadences are defined as:
 
@@ -65,10 +67,10 @@ Current testing cadences are defined as:
 - We use Jest and testing-library for our unit testing
 - We strive for high unit test coverage (but not 100%)
 - We expect engineers to write unit tests for any changes they make in the same PR that contains the code changes
-- We use data fixtures when relevant (see https://github.com/HHS/simpler-grants-gov/blob/main/frontend/src/utils/testing/fixtures.ts)
+- We use data fixtures when relevant (see https://github.com/HHS/smarter-grants-management/blob/main/frontend/src/utils/testing/fixtures.ts)
 - We strive to include axe tests on all components
 
-See [development.md](/DEVELOPMENT.md) for more general info!
+See [development.md](../../DEVELOPMENT.md) for more general info!
 
 ### Debugging
 
@@ -107,7 +109,7 @@ Install the `Jest / Vitest Runner` extension. When you open the quick menu with 
 
 ### Helpful common patterns
 
-Before writing tests, familiarize yourself with the [testing utilities](https://github.com/HHS/simpler-grants-gov/tree/main/frontend/src/utils/testing) that we have written to deal with common or complex testing scenarios
+Before writing tests, familiarize yourself with the [testing utilities](../../frontend/src/utils/testing) that we have written to deal with common or complex testing scenarios
 
 #### Async components
 
@@ -117,13 +119,12 @@ The easiest thing to do in these cases is to:
 
 - rather than using JSX directly to render the component within the test, call the component as a function, passing the props as an argument
 - render the returned value from the component function call
-- [example usage](https://github.com/HHS/simpler-grants-gov/blob/f92baefc1b8409f12057240d98fa68d20946593b/frontend/tests/components/organization/manage-users/ActiveUsersSection.test.tsx#L44)
+- [example usage](https://github.com/HHS/smarter-grants-management/blob/main/frontend/src/app/%5Blocale%5D/opportunity/%5Bid%5D/overview/page.test.tsx#L137)
 
 ```tsx
-const component = await ActiveUsersSection({
-  organizationId: "org-123",
-  activeUsers,
-  roles,
+const component = await OpportunityOverviewPage({
+  params: pageParams,
+  searchParams: emptySearchParams,
 });
 render(component);
 ```
@@ -142,5 +143,5 @@ Route tests will not work correctly unless we specify that Jest should use Node 
 
 A utility exists that can be used whenever you're expecting a route or component to throw an error.
 
-- [wrapForExpectedError function](https://github.com/HHS/simpler-grants-gov/blob/f92baefc1b8409f12057240d98fa68d20946593b/frontend/src/utils/testing/commonTestUtils.ts#L30)
-- [example usage](https://github.com/HHS/simpler-grants-gov/blob/f92baefc1b8409f12057240d98fa68d20946593b/frontend/tests/components/applyForm/widgets/WidgetRenderers.test.tsx#L49)
+- [wrapForExpectedError function](../../frontend/src/utils/testing/commonTestUtils.ts#L30)
+- [example usage](https://github.com/HHS/smarter-grants-management/blob/main/frontend/src/app/%5Blocale%5D/opportunity/%5Bid%5D/overview/page.test.tsx#L169)

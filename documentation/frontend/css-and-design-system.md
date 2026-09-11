@@ -1,6 +1,6 @@
 # CSS and Design System 
 
-Simpler Grants uses the U.S. Web Design System (USWDS), a toolkit of principles, guidance, and code to help design and build accessible, mobile-friendly government websites. Its [components](https://designsystem.digital.gov/components/), [patterns](https://designsystem.digital.gov/patterns/), [design tokens](https://designsystem.digital.gov/design-tokens/), and [utilities](https://designsystem.digital.gov/utilities/) are throughly documented at [designsystem.digital.gov](https://designsystem.digital.gov/). 
+Smarter Grants Management uses the U.S. Web Design System (USWDS), a toolkit of principles, guidance, and code to help design and build accessible, mobile-friendly government websites. Its [components](https://designsystem.digital.gov/components/), [patterns](https://designsystem.digital.gov/patterns/), [design tokens](https://designsystem.digital.gov/design-tokens/), and [utilities](https://designsystem.digital.gov/utilities/) are throughly documented at [designsystem.digital.gov](https://designsystem.digital.gov/). 
 
 
 ## Customizing styles
@@ -11,7 +11,7 @@ Be mindful when adjusting the presentation of elements, styling existing compone
 
 When implementing a design pattern, first configure any available `$theme-` variables to bring the design system defaults closer to the desired pattern. These global system settings are our primary method for maintaining a unified and recognizable identity. 
 
-The design system has been customized to match the [Simpler brand guidelines](https://wiki.simpler.grants.gov/design-and-research/brand-guidelines). However, not all USWDS settings variables have been explicitly defined. It may be necessary to define additional `$theme-` variables to match design mockups and ensure brand consistency.  
+<!-- TODO: confirm for mgmt --> The design system has been customized to match the [Simpler brand guidelines](https://wiki.simpler.grants.gov/design-and-research/brand-guidelines) - confirm whether mgmt has its own brand guidelines page, or shares this one. However, not all USWDS settings variables have been explicitly defined. It may be necessary to define additional `$theme-` variables to match design mockups and ensure brand consistency.  
 
 _See [USWDS Settings guidance](https://designsystem.digital.gov/documentation/settings/)_
 

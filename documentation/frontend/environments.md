@@ -1,14 +1,14 @@
 # Environments
 
-The Simpler Grants Next application is deployed and used in a number of environments. Here is how those environments, and the data required by each environment, are managed.
+The Smarter Grants Management Next application is deployed and used in a number of environments. Here is how those environments, and the data required by each environment, are managed.
 
 ## General Things
 
 Note that Next applications follow a set hierarchy for evaluating environment variable precedence, as noted [in documentation here](https://nextjs.org/docs/pages/building-your-application/configuring/environment-variables#environment-variable-load-order).
 
-Secret environment variables, and others that should be controlled specifically based on deployed environment, are specified in terraform, which pulls them from SSM and sets them on the service definition, which passes them from the ECS task definition to the Next container. See [code referenced here](https://github.com/HHS/simpler-grants-gov/blob/main/infra/frontend/app-config/env-config/environment-variables.tf).
+Secret environment variables, and others that should be controlled specifically based on deployed environment, are specified in terraform, which pulls them from SSM and sets them on the service definition, which passes them from the ECS task definition to the Next container. See [code referenced here](https://github.com/HHS/smarter-grants-management/blob/main/infra/frontend/app-config/env-config/environment_variables.tf).
 
-All environment variables referenced in the app should be handled in the [environments file here](https://github.com/HHS/simpler-grants-gov/blob/main/frontend/src/constants/environments.ts)].
+All environment variables referenced in the app should be handled in the [environments file here](../../frontend/src/constants/environments.ts).
 
 ## NODE_ENV
 
@@ -39,7 +39,7 @@ E2E tests are run against a running Next server, so the environment used there i
 
 In CI E2E tests use `npx playwright test`, which will run `next start` pointing at a production build of the application. To work around this our CI code copies .env.development values into a .env.local file that will take precedence over .env.production. Note that NODE_ENV will still be set to "production".
 
-See [our CI code](https://github.com/HHS/simpler-grants-gov/blob/1b85220c7369d40ab2f690050ece41be91c91b7f/.github/workflows/ci-frontend-e2e.yml#L58) for more details.
+See [our CI code](https://github.com/HHS/smarter-grants-management/blob/main/.github/workflows/ci-frontend-e2e.yml#L355) for more details.
 
 ## Development / Staging / Production
 
@@ -49,7 +49,7 @@ As a result, environment variables are gathered from the .env.production file ra
 
 ## Deployment
 
-[Check out this diagram](https://lucid.app/lucidchart/107dcf47-46e7-4088-a90a-1ef3b0ca3744/edit?viewport_loc=42%2C439%2C2295%2C1182%2C0_0&invitationId=inv_3559eb81-f735-4b22-9365-49920268e061). This should explain most of what the next section explains, and more but in visual form.
+<!-- TODO: confirm for mgmt --> [Check out this diagram](https://lucid.app/lucidchart/107dcf47-46e7-4088-a90a-1ef3b0ca3744/edit?viewport_loc=42%2C439%2C2295%2C1182%2C0_0&invitationId=inv_3559eb81-f735-4b22-9365-49920268e061), which was built for simpler-grants-gov's deployment setup - confirm it still applies here, or replace with an mgmt-specific diagram. This should explain most of what the next section explains, and more but in visual form.
 
 Will add image directly to document later.
 

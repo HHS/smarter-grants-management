@@ -1,10 +1,10 @@
 # SimplerFileInput
 
-This component, and NextJS APIs it communicates with, provide an client side / frontend interface for interacting with the [Python API's file upload system documented here](https://github.com/HHS/simpler-grants-gov/blob/main/documentation/api/file-upload-and-scanning.md)
+This component, and NextJS APIs it communicates with, provide an client side / frontend interface for interacting with the [Python API's file upload system documented here](../api/file-upload-and-scanning.md)
 
 ## Overview
 
-The SimplerFileInput provides the entire Simpler Grants application with an easy way to manage file uploads. It should be used for all file uploads across the application.
+The SimplerFileInput provides the entire Smarter Grants Management application with an easy way to manage file uploads. It should be used for all file uploads across the application.
 
 The component and the backend systems it communicates provide:
 

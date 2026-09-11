@@ -6,7 +6,7 @@ The Next JS application logs to std out where messages are picked up by the Flue
 
 ## Configuration
 
-Next JS logs use an instance of a Pino logger configured in the [simplerLogger](https://github.com/HHS/simpler-grants-gov/blob/main/frontend/src/services/logger/simplerLogger.tsx). Since Pino can be used in both server and browser contexts this is a good setup for Next JS logging.
+Next JS logs use an instance of a Pino logger configured in the [simplerLogger](../../frontend/src/services/logger/simplerLogger.tsx). Since Pino can be used in both server and browser contexts this is a good setup for Next JS logging.
 
 All logs should be set up to include an AWS trace id(https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/RequestAndResponseBehaviorCustomOrigin.html) (`X-Amz-Cf-Id` header) whenever possible.
 
@@ -18,7 +18,7 @@ Note that since the Next JS middleware uses Vercel's `edge` runtime rather than 
 
 ## Responses
 
-Responses will be logged by a wrapper added by convention to API route handlers. The `respondWithTraceAndLogs` wrapper can be found in [apiUtils](https://github.com/HHS/simpler-grants-gov/blob/main/frontend/src/utils/apiUtils.ts)
+Responses will be logged by a wrapper added by convention to API route handlers. The `respondWithTraceAndLogs` wrapper can be found in [apiUtils](../../frontend/src/utils/apiUtils.ts)
 
 Since Next JS route files disallow exporting anything other than functions named after the HTTP methods they will be handling, handler logic will be set up in separate files in the same directory. The route file's job will be to wrap the imported handler functions for logging and export them.
 
