@@ -33,6 +33,10 @@ class Privilege(StrEnum):
     # It exists so we can drive workflows ourselves for testing, not for real grantor users.
     INTERNAL_WORKFLOW_EVENT_SEND = "internal_workflow_event_send"
 
+    # Internal-only privilege for updating file scan status from the S3 virus scanner.
+    # This is used by the scanner service to report scan results back to the API.
+    INTERNAL_S3_SCAN = "internal_s3_scan"
+
     # NOTE - if you need to add any new privileges, you can
     # rename these ones first. Our lookup logic doesn't allow
     # for deleting lookup values, but does let you rename.
@@ -176,6 +180,7 @@ ALLOWED_RESOURCES_FOR_PRIVILEGE: dict[Privilege, set[ResourceType]] = {
     },
     # Internal-only
     Privilege.INTERNAL_WORKFLOW_EVENT_SEND: {ResourceType.INTERNAL},
+    Privilege.INTERNAL_S3_SCAN: {ResourceType.INTERNAL},
     Privilege.UNUSED_PRIVILEGE_102: set(),
     Privilege.UNUSED_PRIVILEGE_103: set(),
 }

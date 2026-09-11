@@ -47,6 +47,7 @@ PRIVILEGE_CONFIG: LookupConfig[Privilege] = LookupConfig(
         LookupStr(Privilege.VIEW_GRANTOR_ORGANIZATION, 7),
         LookupStr(Privilege.UPDATE_GRANTOR_ORGANIZATION, 8),
         LookupStr(Privilege.MANAGE_GRANTOR_ORGANIZATION_MEMBERS, 9),
+        LookupStr(Privilege.INTERNAL_S3_SCAN, 12),
         LookupStr(Privilege.UNUSED_PRIVILEGE_102, 10),
         LookupStr(Privilege.UNUSED_PRIVILEGE_103, 11),
     ]

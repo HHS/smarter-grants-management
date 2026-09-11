@@ -20,6 +20,7 @@ from src.adapters.aws import S3Config
 from src.adapters.oauth.login_gov.mock_login_gov_oauth_client import MockLoginGovOauthClient
 from src.adapters.simpler_grants import client as simpler_grants_client
 from src.adapters.simpler_grants.mock_client import MockSimplerGrantsClient
+from src.auth.api_jwt_auth import create_jwt_for_user
 from src.auth.internal_resource import create_internal_resource
 from src.db import models
 from src.db.models.lookup.sync_lookup_values import sync_lookup_values
@@ -171,7 +172,8 @@ def internal_resource(monkeypatch_session, db_client):
     monkeypatch_session.setenv("INTERNAL_RESOURCE_ID", "2a9c7e50-6b1e-4c8f-9d3a-5e7f1b2c4d6e")
 
     with db_client.get_session() as db_session, db_session.begin():
-        create_internal_resource(db_session)
+        resource = create_internal_resource(db_session)
+        return resource
 
 
 @pytest.fixture
@@ -390,14 +392,8 @@ def mock_sqs(reset_aws_env_vars):
         yield
 
 
-@pytest.fixture
-def mock_dynamodb(reset_aws_env_vars):
-    with moto.mock_aws(config={"core": {"service_whitelist": ["dynamodb"]}}):
-        yield
-
-
-@pytest.fixture
-def file_scan_dynamodb_table(mock_dynamodb, monkeypatch):
+def _create_file_scan_dynamodb_table(monkeypatch):
+    """Helper to create the file scan DynamoDB table (shared logic)."""
     dynamodb = boto3.client("dynamodb", region_name="us-east-1")
     table_name = "test-local-virus-scan"
     dynamodb.create_table(
@@ -412,6 +408,18 @@ def file_scan_dynamodb_table(mock_dynamodb, monkeypatch):
     )
     monkeypatch.setenv("FILE_SCAN_CACHE_TABLE_NAME", table_name)
     return table_name
+
+
+@pytest.fixture
+def mock_dynamodb(reset_aws_env_vars):
+    with moto.mock_aws(config={"core": {"service_whitelist": ["dynamodb"]}}):
+        yield
+
+
+@pytest.fixture
+def file_scan_dynamodb_table(mock_dynamodb, monkeypatch):
+    """Create DynamoDB table for file scan tests (DynamoDB-only mock)."""
+    return _create_file_scan_dynamodb_table(monkeypatch)
 
 
 @pytest.fixture
@@ -456,6 +464,74 @@ def mock_simpler_grants_client(monkeypatch):
     mock_client = MockSimplerGrantsClient()
     monkeypatch.setattr(simpler_grants_client, "SimplerGrantsClient", lambda config: mock_client)
     return mock_client
+
+
+####################
+# File Upload Test Fixtures
+####################
+
+
+@pytest.fixture
+def user(db_session, enable_factory_create):
+    """Create a standard test user."""
+
+    user = factories.UserFactory.create()
+    db_session.commit()
+    return user
+
+
+@pytest.fixture
+def user_auth_token(user, db_session):
+    """Create a JWT token for the test user."""
+
+    token, user_token_session = create_jwt_for_user(user, db_session)
+    db_session.commit()
+    return token
+
+
+@pytest.fixture
+def user_api_key(user, db_session, enable_factory_create):
+    """Create an API key for the test user."""
+
+    api_key = factories.UserApiKeyFactory.create(user=user)
+    db_session.commit()
+    return api_key
+
+
+@pytest.fixture
+def user_api_key_id(user_api_key):
+    """Return just the API key ID string."""
+    return user_api_key.key_id
+
+
+@pytest.fixture
+def mock_s3_and_dynamodb(reset_aws_env_vars):
+    """Mock both S3 and DynamoDB services together for file scan tests."""
+    with moto.mock_aws(config={"core": {"service_whitelist": ["s3", "dynamodb"]}}):
+        yield
+
+
+@pytest.fixture
+def mock_dynamodb_and_s3(mock_s3_and_dynamodb, monkeypatch):
+    """Bundle S3 and DynamoDB fixtures for file scan tests."""
+    # Create S3 bucket
+    s3 = boto3.resource("s3")
+    bucket = s3.Bucket("local-mock-file-scan-bucket")
+    bucket.create()
+    monkeypatch.setenv("FILE_SCAN_BUCKET", f"s3://{bucket.name}")
+
+    # Create DynamoDB table (reuses helper to avoid duplication)
+    table_name = _create_file_scan_dynamodb_table(monkeypatch)
+
+    return type(
+        "MockAWS",
+        (),
+        {
+            "bucket": bucket.name,
+            "table_name": table_name,
+            "dynamodb_client": boto3.client("dynamodb", region_name="us-east-1"),
+        },
+    )()
 
 
 ####################
