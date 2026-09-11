@@ -1,4 +1,5 @@
 from src.constants.lookup_constants import AnnouncementCategory
+from tests.db.models.factories import AnnouncementFactory
 
 
 def build_update_request(announcement):
@@ -19,8 +20,9 @@ def test_announcement_update_200(
     client,
     db_session,
     api_key_headers,
-    announcement,
 ):
+    announcement = AnnouncementFactory.create()
+
     request = build_update_request(announcement)
     request["announcement_title"] = "Updated Announcement Title"
     request["tagline"] = "Updated tagline"
@@ -48,8 +50,8 @@ def test_announcement_update_200(
 def test_announcement_update_other_requires_category_explanation_422(
     client,
     api_key_headers,
-    announcement,
 ):
+    announcement = AnnouncementFactory.create()
     request = build_update_request(announcement)
     request["category"] = AnnouncementCategory.OTHER.value
     request["category_explanation"] = ""
@@ -63,7 +65,8 @@ def test_announcement_update_other_requires_category_explanation_422(
     assert response.status_code == 422
 
 
-def test_announcement_update_no_auth_401(client, announcement):
+def test_announcement_update_no_auth_401(client, enable_factory_create):
+    announcement = AnnouncementFactory.create()
     response = client.put(
         f"/v1/announcements/{announcement.announcement_id}",
         json=build_update_request(announcement),

@@ -1,19 +1,16 @@
+import logging
 import uuid
 
 from sqlalchemy import select
 
 from src.adapters import db
 from src.api.route_utils import raise_flask_error
-from src.db.models.announcement_models import (
-    Announcement,
-    AnnouncementSummary,
-    LinkAnnouncementSummaryApplicantType,
-    LinkAnnouncementSummaryFundingCategory,
-    LinkAnnouncementSummaryFundingInstrument,
-)
+from src.db.models.announcement_models import Announcement, AnnouncementSummary
 from src.db.models.user_models import User
 from src.services.announcements.authorization import has_access
 from src.services.announcements.get_announcement import get_announcement
+
+logger = logging.getLogger(__name__)
 
 
 def _check_existing_summary(
@@ -57,25 +54,6 @@ def _get_announcement_summary(
     return summary
 
 
-def _replace_summary_lookups(
-    summary: AnnouncementSummary,
-    funding_instruments: list,
-    funding_categories: list,
-    applicant_types: list,
-) -> None:
-    summary.link_funding_instruments = [
-        LinkAnnouncementSummaryFundingInstrument(funding_instrument=value)
-        for value in funding_instruments
-    ]
-    summary.link_funding_categories = [
-        LinkAnnouncementSummaryFundingCategory(funding_category=value)
-        for value in funding_categories
-    ]
-    summary.link_applicant_types = [
-        LinkAnnouncementSummaryApplicantType(applicant_type=value) for value in applicant_types
-    ]
-
-
 def create_announcement_summary(
     db_session: db.Session,
     announcement_id: uuid.UUID,
@@ -89,23 +67,22 @@ def create_announcement_summary(
 
     _check_existing_summary(db_session, announcement_id, summary_data["is_forecast"])
 
-    funding_instruments = summary_data.pop("funding_instruments")
-    funding_categories = summary_data.pop("funding_categories")
-    applicant_types = summary_data.pop("applicant_types")
-
     summary = AnnouncementSummary(
         announcement=announcement,
         **summary_data,
     )
-    _replace_summary_lookups(
-        summary,
-        funding_instruments,
-        funding_categories,
-        applicant_types,
-    )
 
     db_session.add(summary)
     db_session.flush()
+
+    logger.info(
+        "Created announcement summary",
+        extra={
+            "announcement_id": announcement_id,
+            "announcement_summary_id": summary.announcement_summary_id,
+            "is_forecast": summary.is_forecast,
+        },
+    )
 
     return summary
 
@@ -128,33 +105,7 @@ def update_announcement_summary(
         announcement_summary_id,
     )
 
-    funding_instruments = summary_data.pop("funding_instruments")
-    funding_categories = summary_data.pop("funding_categories")
-    applicant_types = summary_data.pop("applicant_types")
-
     for field_name, new_value in summary_data.items():
         setattr(summary, field_name, new_value)
 
-    old_funding_instruments = set(summary.funding_instruments)
-    new_funding_instruments = set(funding_instruments)
-
-    old_funding_categories = set(summary.funding_categories)
-    new_funding_categories = set(funding_categories)
-
-    old_applicant_types = set(summary.applicant_types)
-    new_applicant_types = set(applicant_types)
-
-    if (
-        old_funding_instruments != new_funding_instruments
-        or old_funding_categories != new_funding_categories
-        or old_applicant_types != new_applicant_types
-    ):
-        _replace_summary_lookups(
-            summary,
-            funding_instruments,
-            funding_categories,
-            applicant_types,
-        )
-
-    db_session.flush()
     return summary

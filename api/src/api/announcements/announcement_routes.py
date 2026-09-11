@@ -22,10 +22,7 @@ from src.services.announcements.announcement_summaries import (
     update_announcement_summary,
 )
 from src.services.announcements.create_announcement import create_announcement
-from src.services.announcements.get_announcement import (
-    get_announcement,
-    get_announcement_and_verify_access,
-)
+from src.services.announcements.get_announcement import get_announcement_and_verify_access
 from src.services.announcements.list_announcements import list_announcements
 from src.services.announcements.update_announcement import update_announcement
 
@@ -49,7 +46,6 @@ def announcement_create(db_session: db.Session, json_data: dict) -> response.Api
         db_session.add(user)
 
         announcement = create_announcement(db_session, user, json_data)
-        announcement = get_announcement(db_session, announcement.announcement_id)
 
     return response.ApiResponse(message="Success", data=announcement)
 
@@ -95,13 +91,12 @@ def announcement_update(
         user = jwt_or_api_user_key_multi_auth.get_user()
         db_session.add(user)
 
-        update_announcement(
+        announcement = update_announcement(
             db_session,
             user,
             announcement_id,
             json_data,
         )
-        announcement = get_announcement(db_session, announcement_id)
 
     return response.ApiResponse(message="Success", data=announcement)
 

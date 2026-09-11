@@ -1,24 +1,27 @@
+import random
 import uuid
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta
 
 from sqlalchemy import select
 
 from src.constants.lookup_constants import ApplicantType, FundingCategory, FundingInstrument
 from src.db.models.announcement_models import AnnouncementSummary
+from src.util import datetime_util
+from tests.db.models.factories import AnnouncementFactory, AnnouncementSummaryFactory
 
 
 def build_summary_request(is_forecast: bool = False) -> dict:
-    now = datetime.now(UTC)
+
     return {
         "summary_description": "A summary for testing the Announcement API.",
         "is_cost_sharing": False,
-        "post_timestamp": now.isoformat(),
-        "close_timestamp": (now + timedelta(days=30)).isoformat(),
+        "post_timestamp": datetime_util.utcnow().isoformat(),
+        "close_timestamp": (datetime_util.utcnow() + timedelta(days=30)).isoformat(),
         "award_floor": 10_000,
         "award_ceiling": 100_000,
-        "funding_categories": [next(iter(FundingCategory)).value],
-        "funding_instruments": [next(iter(FundingInstrument)).value],
-        "applicant_types": [next(iter(ApplicantType)).value],
+        "funding_categories": random.choices(list(FundingCategory)),
+        "funding_instruments": random.choices(list(FundingInstrument)),
+        "applicant_types": random.choices(list(ApplicantType)),
         "agency_contact_description": None,
         "agency_email_address": None,
         "agency_email_address_description": None,
@@ -26,39 +29,19 @@ def build_summary_request(is_forecast: bool = False) -> dict:
     }
 
 
-def build_summary_update_request(summary: AnnouncementSummary) -> dict:
+def build_summary_update_request() -> dict:
     request = build_summary_request()
     request.pop("is_forecast")
-    request["summary_description"] = summary.summary_description
-    request["is_cost_sharing"] = summary.is_cost_sharing
-    request["post_timestamp"] = summary.post_timestamp.isoformat()
     return request
-
-
-def create_summary(db_session, announcement, is_forecast: bool = False) -> AnnouncementSummary:
-    summary = AnnouncementSummary(
-        announcement=announcement,
-        summary_description="Existing summary",
-        is_cost_sharing=False,
-        is_forecast=is_forecast,
-        post_timestamp=datetime.now(UTC),
-        award_floor=10_000,
-        award_ceiling=100_000,
-    )
-    summary.funding_categories = {next(iter(FundingCategory))}
-    summary.funding_instruments = {next(iter(FundingInstrument))}
-    summary.applicant_types = {next(iter(ApplicantType))}
-    db_session.add(summary)
-    db_session.commit()
-    return summary
 
 
 def test_announcement_summary_create_200(
     client,
     db_session,
     api_key_headers,
-    announcement,
 ):
+    announcement = AnnouncementFactory.create()
+
     response = client.post(
         f"/v1/announcements/{announcement.announcement_id}/summaries",
         json=build_summary_request(),
@@ -83,8 +66,8 @@ def test_announcement_summary_create_200(
 def test_announcement_summary_create_sets_archive_timestamp_200(
     client,
     api_key_headers,
-    announcement,
 ):
+    announcement = AnnouncementFactory.create()
     request = build_summary_request()
     close_timestamp = datetime.fromisoformat(request["close_timestamp"])
 
@@ -102,8 +85,9 @@ def test_announcement_summary_create_sets_archive_timestamp_200(
 def test_announcement_summary_create_forecast_200(
     client,
     api_key_headers,
-    announcement,
 ):
+    announcement = AnnouncementFactory.create()
+
     response = client.post(
         f"/v1/announcements/{announcement.announcement_id}/summaries",
         json=build_summary_request(is_forecast=True),
@@ -118,12 +102,11 @@ def test_announcement_summary_create_duplicate_type_422(
     client,
     db_session,
     api_key_headers,
-    announcement,
 ):
-    create_summary(db_session, announcement, is_forecast=False)
+    summary = AnnouncementSummaryFactory.create(is_forecast=False)
 
     response = client.post(
-        f"/v1/announcements/{announcement.announcement_id}/summaries",
+        f"/v1/announcements/{summary.announcement_id}/summaries",
         json=build_summary_request(),
         headers=api_key_headers,
     )
@@ -148,8 +131,8 @@ def test_announcement_summary_create_unknown_announcement_404(
 def test_announcement_summary_create_invalid_award_values_422(
     client,
     api_key_headers,
-    announcement,
 ):
+    announcement = AnnouncementFactory.create()
     request = build_summary_request()
     request["award_floor"] = 200_000
     request["award_ceiling"] = 100_000
@@ -166,8 +149,8 @@ def test_announcement_summary_create_invalid_award_values_422(
 def test_announcement_summary_create_invalid_timestamps_422(
     client,
     api_key_headers,
-    announcement,
 ):
+    announcement = AnnouncementFactory.create()
     request = build_summary_request()
     request["post_timestamp"], request["close_timestamp"] = (
         request["close_timestamp"],
@@ -183,7 +166,8 @@ def test_announcement_summary_create_invalid_timestamps_422(
     assert response.status_code == 422
 
 
-def test_announcement_summary_create_no_auth_401(client, announcement):
+def test_announcement_summary_create_no_auth_401(client, enable_factory_create):
+    announcement = AnnouncementFactory.create()
     response = client.post(
         f"/v1/announcements/{announcement.announcement_id}/summaries",
         json=build_summary_request(),
@@ -196,14 +180,13 @@ def test_announcement_summary_update_200(
     client,
     db_session,
     api_key_headers,
-    announcement,
 ):
-    summary = create_summary(db_session, announcement)
-    request = build_summary_update_request(summary)
+    summary = AnnouncementSummaryFactory.create(is_forecast=False)
+    request = build_summary_update_request()
     request["summary_description"] = "Updated summary description"
 
     response = client.put(
-        f"/v1/announcements/{announcement.announcement_id}/summaries/"
+        f"/v1/announcements/{summary.announcement_id}/summaries/"
         f"{summary.announcement_summary_id}",
         json=request,
         headers=api_key_headers,
@@ -220,28 +203,15 @@ def test_announcement_summary_update_wrong_announcement_404(
     client,
     db_session,
     api_key_headers,
-    announcement,
 ):
-    from src.constants.lookup_constants import AnnouncementCategory
-    from src.db.models.announcement_models import Announcement
+    announcement = AnnouncementFactory.create()
 
-    other_announcement = Announcement(
-        announcement_number=f"TEST-{uuid.uuid4().hex[:8]}",
-        announcement_title="Other Announcement",
-        tagline="Another announcement",
-        purpose_statement="Test summary ownership.",
-        category=AnnouncementCategory.DISCRETIONARY,
-        category_explanation=None,
-    )
-    db_session.add(other_announcement)
-    db_session.commit()
-
-    summary = create_summary(db_session, other_announcement)
+    summary = AnnouncementSummaryFactory.create()
 
     response = client.put(
         f"/v1/announcements/{announcement.announcement_id}/summaries/"
         f"{summary.announcement_summary_id}",
-        json=build_summary_update_request(summary),
+        json=build_summary_update_request(),
         headers=api_key_headers,
     )
 
@@ -251,10 +221,9 @@ def test_announcement_summary_update_wrong_announcement_404(
 def test_announcement_summary_update_unknown_summary_404(
     client,
     api_key_headers,
-    announcement,
 ):
-    request = build_summary_request()
-    request.pop("is_forecast")
+    announcement = AnnouncementFactory.create()
+    request = build_summary_update_request()
 
     response = client.put(
         f"/v1/announcements/{announcement.announcement_id}/summaries/{uuid.uuid4()}",
@@ -265,17 +234,13 @@ def test_announcement_summary_update_unknown_summary_404(
     assert response.status_code == 404
 
 
-def test_announcement_summary_update_no_auth_401(
-    client,
-    db_session,
-    announcement,
-):
-    summary = create_summary(db_session, announcement)
+def test_announcement_summary_update_no_auth_401(client, db_session, enable_factory_create):
+    summary = AnnouncementSummaryFactory.create()
 
     response = client.put(
-        f"/v1/announcements/{announcement.announcement_id}/summaries/"
+        f"/v1/announcements/{summary.announcement_id}/summaries/"
         f"{summary.announcement_summary_id}",
-        json=build_summary_update_request(summary),
+        json=build_summary_update_request(),
     )
 
     assert response.status_code == 401

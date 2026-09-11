@@ -6,7 +6,12 @@ from sqlalchemy.orm.interfaces import ORMOption
 
 from src.adapters import db
 from src.api.route_utils import raise_flask_error
-from src.db.models.announcement_models import Announcement, AnnouncementAssistanceListing
+from src.db.models.announcement_models import (
+    Announcement,
+    AnnouncementAssistanceListing,
+    AnnouncementSummary,
+)
+from src.db.models.application_package_models import ApplicationPackage
 from src.db.models.user_models import User
 from src.services.announcements.authorization import has_access
 
@@ -15,6 +20,16 @@ def announcement_response_options() -> tuple[ORMOption, ...]:
     return (
         selectinload(Announcement.announcement_assistance_listings).selectinload(
             AnnouncementAssistanceListing.assistance_listing
+        ),
+        selectinload(Announcement.announcement_summaries).options(
+            selectinload(AnnouncementSummary.link_applicant_types),
+            selectinload(AnnouncementSummary.link_funding_categories),
+            selectinload(AnnouncementSummary.link_funding_instruments),
+        ),
+        selectinload(Announcement.application_packages).options(
+            selectinload(ApplicationPackage.application_package_forms),
+            selectinload(ApplicationPackage.announcement_assistance_listing),
+            selectinload(ApplicationPackage.link_application_package_open_to_applicant),
         ),
     )
 

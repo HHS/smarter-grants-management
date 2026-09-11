@@ -7,12 +7,9 @@ from src.db.models.announcement_models import Announcement, AnnouncementAssistan
 
 
 def test_announcement_create_200(
-    client,
-    db_session,
-    api_key_headers,
-    assistance_listing,
-    announcement_request,
+    client, db_session, api_key_headers, announcement_request, assistance_listing
 ):
+
     response = client.post(
         "/v1/announcements",
         json=announcement_request,
@@ -108,7 +105,7 @@ def test_announcement_create_unknown_assistance_listing_404(
     api_key_headers,
     announcement_request,
 ):
-    announcement_request["assistance_listing_number"] = "99.999"
+    announcement_request["assistance_listing_number"] = "Zx.Yvb"
 
     response = client.post(
         "/v1/announcements",
@@ -117,7 +114,7 @@ def test_announcement_create_unknown_assistance_listing_404(
     )
 
     assert response.status_code == 404
-    assert "Could not find assistance listing" in response.get_json()["message"]
+    assert "Could not find Assistance Listing" in response.get_json()["message"]
 
 
 def test_announcement_create_no_auth_401(client, announcement_request):
