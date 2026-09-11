@@ -10,6 +10,7 @@ import src.adapters.db.flask_db as flask_db
 import src.logs
 import src.logs.flask_logger as flask_logger
 from src.adapters.newrelic import init_newrelic
+from src.api.files_v1 import file_blueprint
 from src.api.grantor_organizations.grantor_organization_blueprint import (
     grantor_organization_blueprint,
 )
@@ -104,6 +105,7 @@ def register_blueprints(app: APIFlask) -> None:
     app.register_blueprint(partner_blueprint)
     app.register_blueprint(grantor_organization_blueprint)
     app.register_blueprint(resource_blueprint)
+    app.register_blueprint(file_blueprint)
 
     # Local endpoints for development, will error
     # if this is ever enabled non-locally.
