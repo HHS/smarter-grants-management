@@ -119,7 +119,7 @@ The easiest thing to do in these cases is to:
 
 - rather than using JSX directly to render the component within the test, call the component as a function, passing the props as an argument
 - render the returned value from the component function call
-- [example usage](https://github.com/HHS/smarter-grants-management/blob/main/frontend/src/app/%5Blocale%5D/opportunity/%5Bid%5D/overview/page.test.tsx#L137)
+- [example usage](https://github.com/HHS/smarter-grants-management/blob/main/frontend/src/app/%5Blocale%5D/opportunity/%5Bid%5D/overview/page.test.tsx#L149)
 
 ```tsx
 const component = await OpportunityOverviewPage({
@@ -144,4 +144,4 @@ Route tests will not work correctly unless we specify that Jest should use Node 
 A utility exists that can be used whenever you're expecting a route or component to throw an error.
 
 - [wrapForExpectedError function](../../frontend/src/utils/testing/commonTestUtils.ts#L30)
-- [example usage](https://github.com/HHS/smarter-grants-management/blob/main/frontend/src/app/%5Blocale%5D/opportunity/%5Bid%5D/overview/page.test.tsx#L169)
+- [example usage](https://github.com/HHS/smarter-grants-management/blob/main/frontend/src/app/%5Blocale%5D/opportunity/%5Bid%5D/overview/page.test.tsx#L181)

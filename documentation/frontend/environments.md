@@ -39,7 +39,7 @@ E2E tests are run against a running Next server, so the environment used there i
 
 In CI E2E tests use `npx playwright test`, which will run `next start` pointing at a production build of the application. To work around this our CI code copies .env.development values into a .env.local file that will take precedence over .env.production. Note that NODE_ENV will still be set to "production".
 
-See [our CI code](https://github.com/HHS/smarter-grants-management/blob/main/.github/workflows/ci-frontend-e2e.yml#L355) for more details.
+See [our CI code](https://github.com/HHS/smarter-grants-management/blob/main/.github/workflows/ci-frontend-e2e.yml#L349) for more details.
 
 ## Development / Staging / Production
 
