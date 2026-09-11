@@ -172,9 +172,6 @@ def _write_scan_record(
     )
 
 
-# Everything under here will stay in Simpler, everything above will go to grant-shared.
-
-
 class SimplerPresignFileUploadService(BasePresignFileUploadService[User]):
 
     def validate_user_can_presign(self, user: User) -> None:
