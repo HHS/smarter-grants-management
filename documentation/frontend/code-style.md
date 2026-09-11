@@ -1,4 +1,4 @@
-# Simpler Grants Code Style and Norms
+# Smarter Grants Management Code Style and Norms
 
 Here you'll find documentation of decisions around how to handle questions of code style, so that the code can remain as clear and consistent as possible.
 
@@ -73,4 +73,4 @@ End-to-end or integration tests are generally a better fit for validating full p
 
 By default page titles should follow the format:
 
-`<Page Name> | Simpler.Grants.gov`
+`<Page Name> | Smarter Grants Management`

@@ -8,12 +8,12 @@ This [Next.js](https://nextjs.org) application can be run natively (or locally)
 
 ### 🏗️ Development version
 
-Running a local server requires the version of Node specified in [the .nvmrc file](https://github.com/HHS/simpler-grants-gov/blob/main/frontend/.nvmrc) to be installed.
+Running a local server requires the version of Node specified in [the .nvmrc file](../../frontend/.nvmrc) to be installed.
 
 This project supports the use of NVM for node version management, so it is suggested you install and use NVM. More information can be found in [this guide](https://www.freecodecamp.org/news/node-version-manager-nvm-install-guide/).
 
 - **For Mac** - Run `npm install && npm run local` to install and start the application.
-- **For Windows** - First follow [this guide](https://www.freecodecamp.org/news/node-version-manager-nvm-install-guide/) for installing Node Version Manager (How to Install NVM on Windows). Then in Windows PowerShell in the \simpler-grants-gov\frontend directory, run `npm install` to install the application. Run `npx next dev` afterwards to start the application.
+- **For Windows** - First follow [this guide](https://www.freecodecamp.org/news/node-version-manager-nvm-install-guide/) for installing Node Version Manager (How to Install NVM on Windows). Then in Windows PowerShell in the \smarter-grants-management\frontend directory, run `npm install` to install the application. Run `npx next dev` afterwards to start the application.
 
 Optionally, disable [telemetry data collection](https://nextjs.org/telemetry)
 
@@ -310,11 +310,11 @@ From the `frontend/` directory:
 
 The following features require additional local setup to use.
 
-### Search and Opportunity Pages
+### Opportunity and Award Recommendation Pages
 
-The `/search` and opportunity pages rely on the application API. The API endpoint and authentication token are defined in `.env.development` and can be overwritten in an `.env.local` file.
+The opportunity, opportunity-editing, and award-recommendation pages rely on the application API. The API endpoint and authentication token are defined in `.env.development` and can be overwritten in an `.env.local` file.
 
-The `API_URL` environment variable can be set to connect to prod (`https://api.simpler.grants.gov`) or lower environment URLs to quickly develop using production or development data. To successfully connect to a deployed API, the `API_GW_AUTH` variable must be set to a valid API gateway key for the environment.
+<!-- TODO: confirm for mgmt --> The `API_URL` environment variable can be set to connect to prod or lower environment URLs to quickly develop using production or development data. To successfully connect to a deployed API, the `API_GW_AUTH` variable must be set to a valid API gateway key for the environment.
 
 To start a local development version of the API, run `make remake-backend` in the `/api` folder.
 
@@ -353,4 +353,3 @@ If you need to access this functionality locally, contact an engineer on the tea
 
 - [Internationalization](./internationalization.md)
 - [Feature Flags](./featureFlags.md)
-- Refer to the [architecture decision records](../wiki/product/decisions) for more context on technical decisions.

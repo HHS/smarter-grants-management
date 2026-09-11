@@ -13,7 +13,7 @@ In order to support easy data management, each field should follow a few common 
     - on submit, FormData is created using `name` attribute values as keys. This generally follows the [form submission spec](https://html.spec.whatwg.org/dev/form-control-infrastructure.html#form-submission-2), but [NextJS extends this (somehow)](https://nextjs.org/docs/app/guides/forms#how-it-works) by creating FormData and passing it to the action function rather than passing key / values as parameters to a target url.
   - you can, of course, still label fields however you want in the UI
   - if fields are nested, use standard nesting notation when naming the field in the DOM so it can be easily expanded into JSON.
-    - for example a "city" field nested under "address" could be implemented with `name` set as "city.address" or "city--address", depending on the nesting separator you choose to use ([see relevant code here](https://github.com/HHS/simpler-grants-gov/blob/57a9707d24644b8f3875c47554330e5709018bb4/frontend/src/utils/formData/formDataToJson.ts#L23))
+    - for example a "city" field nested under "address" could be implemented with `name` set as "city.address" or "city--address", depending on the nesting separator you choose to use ([see relevant code here](https://github.com/HHS/smarter-grants-management/blob/main/frontend/src/utils/formData/formDataToJson.ts#L23))
 
 ### Array fields
 
@@ -31,7 +31,7 @@ In this setup, instead of pulling the value for the field directly from each inp
 
 Each hidden input should be named with the name of the field, and the index of the selected value in array notation. For example, if 3 values are selected from a checkbox group for an "agencies" field, they would named `agencies[0]`, `agencies[1]`, `agencies[2]`.
 
-For an example, see how this is done in the `MultiSelectWidget` [component here](https://github.com/HHS/simpler-grants-gov/blob/99bd434a000d985754d2ce5ae2bfda01b25f9608/frontend/src/components/apply-form/widgets/MultiSelectWidget.tsx#L161)
+For an example, see how this is done for the `applicant_types` field in [`OpportunityEditForm`](https://github.com/HHS/smarter-grants-management/blob/main/frontend/src/app/%5Blocale%5D/opportunity/%5Bid%5D/edit/_components/OpportunityEditForm.tsx#L645)
 
 This may seem counterituitive, but is suggested because:
 
@@ -78,7 +78,7 @@ Form submission functionality should be handled by server functions!
 
 On each form submission, it will necessary to translate form data (or more technically FormData) into a formatted JSON payload suitable for sending to the API.
 
-[A utility function exists to handle this here](https://github.com/HHS/simpler-grants-gov/blob/99bd434a000d985754d2ce5ae2bfda01b25f9608/frontend/src/utils/formData/formDataToJson.ts#L94)
+[A utility function exists to handle this here](https://github.com/HHS/smarter-grants-management/blob/main/frontend/src/utils/formData/formDataToJson.ts#L94)
 
 This `formDataToObject` function will:
 
@@ -105,7 +105,7 @@ tbd
 
 ## Validation
 
-[General validation rules for the project are found here](https://navasage.atlassian.net/wiki/x/R4ALwQ).
+<!-- TODO: confirm for mgmt --> [General validation rules for the project are found here](https://navasage.atlassian.net/wiki/x/R4ALwQ) - confirm this Confluence page applies to mgmt, or link mgmt's own validation-rules doc if one exists.
 
 On a technical level, this means to be sure to handle all 422 errors in an intelligent way, such that the validation errors that come back in the payload with the response are surfaced in the UI.
 

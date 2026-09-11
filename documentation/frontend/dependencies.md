@@ -46,7 +46,7 @@ TBD
 
 ### Node
 
-On cadence TBD, check the current node version used by [the 24-bookworm-slim Dockerfile in Dockerhub](https://hub.docker.com/layers/library/node/24-bookworm-slim). This is the image used in our frontend Dockerfile, so this dictates the actual node version that our production build and runtime processes will use. If the version specified by the `NODE_VERSION` env var here is different from the version in the [engines declaration in our package.json](https://github.com/HHS/simpler-grants-gov/blob/ef46fd680a4b1fbe0972da0ebac96e788b8592a4/frontend/package.json#L6) and [our .nvmrc](https://github.com/HHS/simpler-grants-gov/blob/main/frontend/.nvmrc), the version referenced in those places needs to be updated.
+On cadence TBD, check the current node version used by [the 24-bookworm-slim Dockerfile in Dockerhub](https://hub.docker.com/layers/library/node/24-bookworm-slim). This is the image used in our frontend Dockerfile, so this dictates the actual node version that our production build and runtime processes will use. If the version specified by the `NODE_VERSION` env var here is different from the version in the [engines declaration in our package.json](https://github.com/HHS/smarter-grants-management/blob/main/frontend/package.json#L6) and [our .nvmrc](https://github.com/HHS/smarter-grants-management/blob/main/frontend/.nvmrc), the version referenced in those places needs to be updated.
 
 Whenever this version is updated, make sure to run a fresh `npm i` on the project as well, and commit any changes to the lockfile so we avoid lockfile mismatches in CI.
 
@@ -72,7 +72,7 @@ It is referenced at ^8.20.0 in puppeteer-core v24.43.1
 It is referenced at ^8.18.0 in jsdom v26.1.0
 It is referenced at ^8.18.0 in storybook v10.5.3
 
-Tracking this in https://github.com/HHS/simpler-grants-gov/issues/11636
+<!-- TODO: confirm for mgmt --> Tracked in simpler-grants-gov at https://github.com/HHS/simpler-grants-gov/issues/11636 - file an mgmt-specific issue if this override needs separate tracking here.
 
 ### sharp
 

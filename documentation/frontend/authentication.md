@@ -1,10 +1,10 @@
 # Authentication
 
-This document explains how the Simpler Grants Next JS frontend application handles token creation, token checks, and expiration refreshes to manage user authentication.
+This document explains how the Smarter Grants Management frontend application handles token creation, token checks, and expiration refreshes to manage user authentication.
 
 ## Token Creation
 
-Tokens are created at the end of the login process, which is initiated when a user authenticates against Login.gov via the Simpler API. The API / Login.gov process is covered in the API documentation here(https://github.com/HHS/simpler-grants-gov/blob/main/documentation/api/authentication.md).
+Tokens are created at the end of the login process, which is initiated when a user authenticates against Login.gov via the API. The API / Login.gov process is covered in the API documentation here(https://github.com/HHS/smarter-grants-management/blob/main/documentation/api/authentication.md).
 
 Once the flow takes you into the frontend code, the token:
 
@@ -27,20 +27,20 @@ Tokens are validated during user interactions with the application. Specifically
 
 - Routine Session Retrieval
   - whenever the client makes a call to the Next API's /session route, the token provided from the session cookie will be validated
-  - these calls can be traced from the [useUser `getUserSession` function](https://github.com/HHS/simpler-grants-gov/blob/7eab597355d4fc0d1e3e32a1a82d1987cc9a7df8/frontend/src/services/auth/UserProvider.tsx#L21)
+  - these calls can be traced from the [useUser `getUserSession` function](https://github.com/HHS/smarter-grants-management/blob/main/frontend/src/services/auth/UserProvider.tsx#L49)
   - generally, this is done whenever a user logs in or out
 
 - Expiration Checks
   - expiration checks are run on each route change and API request within the client application. See:
-    - [useClientFetch](https://github.com/HHS/simpler-grants-gov/blob/7eab597355d4fc0d1e3e32a1a82d1987cc9a7df8/frontend/src/hooks/useClientFetch.ts#L21)
-    - [RouteChangeWatcher](https://github.com/HHS/simpler-grants-gov/blob/main/frontend/src/components/core/header/RouteChangeWatcher.tsx)
+    - [useClientFetch](https://github.com/HHS/smarter-grants-management/blob/main/frontend/src/hooks/useClientFetch.ts#L14)
+    - [RouteChangeWatcher](https://github.com/HHS/smarter-grants-management/blob/main/frontend/src/components/core/header/RouteChangeWatcher.tsx)
   - checks are also run whenever the session is retrieved from the API as described above
 
 ### What Happens If a Token Check Fails
 
 If a token is invalid or expired the user is logged out of the system, and shown a message that they have been logged out. In most cases this requires an automated page refresh in order to fully log the user out of the UI.
 
-The logged out message is controlled by [logic in the Header component](https://github.com/HHS/simpler-grants-gov/blob/7eab597355d4fc0d1e3e32a1a82d1987cc9a7df8/frontend/src/components/Header.tsx#L258).
+The logged out message is controlled by [logic in the Header component](https://github.com/HHS/smarter-grants-management/blob/main/frontend/src/components/core/header/Header.tsx#L38).
 
 ---
 
@@ -59,7 +59,7 @@ The application refreshes tokens to extend the user's session without requiring 
 1. **Token Refresh Process**:
    - The `refreshSession` function in `session.ts` is called to refresh the token.
    - This function:
-     - Sends a request to the Simpler API's token refresh endpoint (`postTokenRefresh`) to update the expiration on the server side.
+     - Sends a request to the API's token refresh endpoint (`postTokenRefresh`) to update the expiration on the server side.
      - Re-encrypts the existing API token with a new expiration date using the `createAndReturnSession` function.
      - Updates the `session` cookie with the refreshed token.
 
