@@ -21,6 +21,7 @@ tags:
 - name: Partners
 - name: Grantor Organizations
 - name: Resources
+- name: Assistance Listing
 - name: LOCAL ONLY
 servers: .
 paths:
@@ -253,6 +254,77 @@ paths:
       security:
       - ApiJwtAuth: &id002 []
       - ApiUserKeyAuth: *id002
+  /v1/assistance-listings/search:
+    post:
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssistanceListingSearchResponseSchema'
+          description: Successful response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Validation error
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+      tags:
+      - Assistance Listing
+      summary: Assistance Listing Search
+      description: '
+
+        The query parameter of this endpoint supports a few basic search operations
+        which
+
+        query against the assistance listing number and program title.
+
+
+        For querying against the assistance listing number, it automatically handles
+        prefixing,
+
+        and searching for `12.` will return all assistance listings that begin with
+        ''12.''.
+
+
+        For querying against the program title, there are a few options you have for
+        querying:
+
+
+        * `chemistry` will search for program titles with the word chemistry
+
+        * `chem*` will search for words that begin with ''chem'' including chemistry
+        and chemical
+
+        * `chemistry disease` will search for program titles that contain both words
+
+        * `chemistry OR disease` will search for program titles that contain either
+        word
+
+        * `-chemistry` will search for program titles that don''t contain chemistry
+
+
+        These can be mix and matched like:
+
+        * `chem* -act` which will get everything that starts with chem but doesn''t
+        contain act
+
+        '
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssistanceListingSearchRequestSchema'
+      security:
+      - ApiJwtAuth: &id003 []
+      - ApiUserKeyAuth: *id003
   /v1/workflows/{workflow_id}:
     get:
       parameters:
@@ -292,8 +364,8 @@ paths:
       description: Get a workflow's current state, audit history, approvals, and approval
         configuration.
       security:
-      - ApiJwtAuth: &id003 []
-      - ApiUserKeyAuth: *id003
+      - ApiJwtAuth: &id004 []
+      - ApiUserKeyAuth: *id004
   /v1/users/{user_id}/can_access:
     post:
       parameters:
@@ -343,8 +415,8 @@ paths:
             schema:
               $ref: '#/components/schemas/UserCanAccessRequestSchema'
       security:
-      - ApiJwtAuth: &id004 []
-      - ApiUserKeyAuth: *id004
+      - ApiJwtAuth: &id005 []
+      - ApiUserKeyAuth: *id005
   /v1/workflows/events/{event_id}:
     get:
       parameters:
@@ -384,8 +456,8 @@ paths:
       description: Get the same payload as Get Workflow, resolved from one of its
         event IDs.
       security:
-      - ApiJwtAuth: &id005 []
-      - ApiUserKeyAuth: *id005
+      - ApiJwtAuth: &id006 []
+      - ApiUserKeyAuth: *id006
   /v1/workflows/{workflow_id}/audit:
     post:
       parameters:
@@ -435,8 +507,8 @@ paths:
             schema:
               $ref: '#/components/schemas/WorkflowAuditRequestSchema'
       security:
-      - ApiJwtAuth: &id006 []
-      - ApiUserKeyAuth: *id006
+      - ApiJwtAuth: &id007 []
+      - ApiUserKeyAuth: *id007
   /v1/grantor-organizations/{grantor_organization_id}:
     get:
       parameters:
@@ -480,8 +552,8 @@ paths:
       - Grantor Organizations
       summary: Fetch a Grantor Organization
       security:
-      - ApiJwtAuth: &id007 []
-      - ApiUserKeyAuth: *id007
+      - ApiJwtAuth: &id008 []
+      - ApiUserKeyAuth: *id008
   /alpha/proof_of_concept/opportunities/{opportunity_id}:
     get:
       parameters:
@@ -516,8 +588,8 @@ paths:
         of cross-service data transfer. This endpoint requires JWT or API key authentication
         but has no authorization enforcement.
       security:
-      - ApiJwtAuth: &id008 []
-      - ApiUserKeyAuth: *id008
+      - ApiJwtAuth: &id009 []
+      - ApiUserKeyAuth: *id009
   /v1/resources/{resource_type}/{resource_id}/users/list:
     post:
       parameters:
@@ -573,8 +645,8 @@ paths:
             schema:
               $ref: '#/components/schemas/ListUserForResourceRequestSchema'
       security:
-      - ApiJwtAuth: &id009 []
-      - ApiUserKeyAuth: *id009
+      - ApiJwtAuth: &id010 []
+      - ApiUserKeyAuth: *id010
 openapi: 3.1.0
 components:
   schemas:
@@ -863,6 +935,154 @@ components:
           type: integer
           description: The HTTP status code
           example: 200
+    SortOrderSchema:
+      type: object
+      properties:
+        order_by:
+          type: string
+          description: The field that the records were sorted by
+          example: id
+        sort_direction:
+          description: The direction the records are sorted
+          enum:
+          - ascending
+          - descending
+          type:
+          - string
+    PaginationInfoSchema:
+      type: object
+      properties:
+        page_offset:
+          type: integer
+          description: The page number that was fetched
+          example: 1
+        page_size:
+          type: integer
+          description: The size of the page fetched
+          example: 25
+        total_records:
+          type: integer
+          description: The total number of records fetchable
+          example: 42
+        total_pages:
+          type: integer
+          description: The total number of pages that can be fetched
+          example: 2
+        sort_order:
+          type: array
+          description: The sort order passed in originally
+          items:
+            type:
+            - object
+            $ref: '#/components/schemas/SortOrderSchema'
+    AssistanceListingSchema:
+      type: object
+      properties:
+        assistance_listing_id:
+          type: string
+          format: uuid
+          description: Unique ID of an assistance listing
+          example: 123e4567-e89b-12d3-a456-426614174000
+        assistance_listing_number:
+          type: string
+          description: The assistance listing number of the assistance listing
+          example: '11.482'
+        program_title:
+          type: string
+          description: The title of the assistance listing
+          example: Coral Reef Conservation Program
+        is_active:
+          type: boolean
+          description: Whether the assistance listing is active
+        published_date:
+          type: string
+          format: date-time
+          description: The date the assistance listing was published / last updated
+    AssistanceListingSearchResponseSchema:
+      type: object
+      properties:
+        pagination_info:
+          description: The pagination information for paginated endpoints
+          type: &id011
+          - object
+          $ref: '#/components/schemas/PaginationInfoSchema'
+        message:
+          type: string
+          description: The message to return
+          example: Success
+        data:
+          type: array
+          description: The list of assistance listings
+          items:
+            type:
+            - object
+            $ref: '#/components/schemas/AssistanceListingSchema'
+        status_code:
+          type: integer
+          description: The HTTP status code
+          example: 200
+    SortOrderAssistanceListingListPaginationSchema:
+      type: object
+      properties:
+        order_by:
+          type: string
+          enum:
+          - program_title
+          - assistance_listing_number
+          description: The field to sort the response by
+        sort_direction:
+          description: Whether to sort the response ascending or descending
+          enum:
+          - ascending
+          - descending
+          type:
+          - string
+      required:
+      - order_by
+      - sort_direction
+    AssistanceListingListPaginationSchema:
+      type: object
+      properties:
+        sort_order:
+          type: array
+          default:
+          - order_by: assistance_listing_number
+            sort_direction: ascending
+          minItems: 1
+          maxItems: 5
+          description: The list of sorting rules
+          items:
+            type:
+            - object
+            $ref: '#/components/schemas/SortOrderAssistanceListingListPaginationSchema'
+        page_size:
+          type: integer
+          minimum: 1
+          maximum: 5000
+          description: The size of the page to fetch
+          example: 25
+        page_offset:
+          type: integer
+          minimum: 1
+          description: The page number to fetch, starts counting from 1
+          example: 1
+      required:
+      - page_offset
+      - page_size
+    AssistanceListingSearchRequestSchema:
+      type: object
+      properties:
+        query:
+          type: string
+          description: Query string to filter results against the assistance listing
+            number & program title
+          example: chem
+        pagination:
+          type:
+          - object
+          $ref: '#/components/schemas/AssistanceListingListPaginationSchema'
+      required:
+      - pagination
     WorkflowUserSchema:
       type: object
       properties:
@@ -1105,46 +1325,6 @@ components:
       - privileges
       - resource_id
       - resource_type
-    SortOrderSchema:
-      type: object
-      properties:
-        order_by:
-          type: string
-          description: The field that the records were sorted by
-          example: id
-        sort_direction:
-          description: The direction the records are sorted
-          enum:
-          - ascending
-          - descending
-          type:
-          - string
-    PaginationInfoSchema:
-      type: object
-      properties:
-        page_offset:
-          type: integer
-          description: The page number that was fetched
-          example: 1
-        page_size:
-          type: integer
-          description: The size of the page fetched
-          example: 25
-        total_records:
-          type: integer
-          description: The total number of records fetchable
-          example: 42
-        total_pages:
-          type: integer
-          description: The total number of pages that can be fetched
-          example: 2
-        sort_order:
-          type: array
-          description: The sort order passed in originally
-          items:
-            type:
-            - object
-            $ref: '#/components/schemas/SortOrderSchema'
     WorkflowEventRefSchema:
       type: object
       properties:
@@ -1199,8 +1379,7 @@ components:
       properties:
         pagination_info:
           description: The pagination information for paginated endpoints
-          type: &id010
-          - object
+          type: *id011
           $ref: '#/components/schemas/PaginationInfoSchema'
         message:
           type: string
@@ -1449,7 +1628,7 @@ components:
       properties:
         pagination_info:
           description: The pagination information for paginated endpoints
-          type: *id010
+          type: *id011
           $ref: '#/components/schemas/PaginationInfoSchema'
         message:
           type: string
@@ -1578,12 +1757,12 @@ components:
       required:
       - pagination
   securitySchemes:
-    ApiJwtAuth:
-      type: apiKey
-      in: header
-      name: X-MGMT-Token
     ApiUserKeyAuth:
       type: apiKey
       in: header
       name: X-API-Key
+    ApiJwtAuth:
+      type: apiKey
+      in: header
+      name: X-MGMT-Token
 
