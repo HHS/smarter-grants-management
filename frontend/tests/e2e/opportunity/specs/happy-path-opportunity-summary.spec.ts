@@ -45,12 +45,12 @@ import { waitForOpportunityRowByStatus } from "tests/e2e/utils/opportunities/tab
 import { createOpportunity } from "tests/e2e/utils/opportunity/create-opportunity-utils";
 import { fillPageFields } from "tests/e2e/utils/pages/general-pages-filling";
 
-const { GRANTOR, CORE_REGRESSION } = VALID_TAGS;
+const { GRANTOR, OPPORTUNITY_MANAGEMENT, CORE_REGRESSION } = VALID_TAGS;
 const { targetEnv } = playwrightEnv;
 
 test.describe("Grantor Opportunity Summary Happy Path", () => {
   test.beforeEach(({ page: _ }, testInfo) => {
-    if (targetEnv === "staging") {
+    if (targetEnv !== "local") {
       test.skip(
         testInfo.project.name !== "Chrome",
         "Staging MFA login is limited to Chrome to avoid OTP rate-limiting",
@@ -60,7 +60,7 @@ test.describe("Grantor Opportunity Summary Happy Path", () => {
 
   test(
     "Create and validate draft opportunity details",
-    { tag: [GRANTOR, CORE_REGRESSION] },
+    { tag: [GRANTOR, OPPORTUNITY_MANAGEMENT, CORE_REGRESSION] },
     async (
       { page, context }: { page: Page; context: BrowserContext },
       testInfo: TestInfo,
@@ -80,8 +80,8 @@ test.describe("Grantor Opportunity Summary Happy Path", () => {
 
       //--------------Scenario steps start here----------------
 
-      // Given I use direct URL "/grantor/opportunities" to navigate to the "Opportunities List" page
-      await page.goto("/grantor/opportunities");
+      // Given I use direct URL "/opportunities" to navigate to the "Opportunities List" page
+      await page.goto("/opportunities");
 
       // And I create a new opportunity with happy-path data.
       await createOpportunity(page, fillData);
@@ -90,9 +90,7 @@ test.describe("Grantor Opportunity Summary Happy Path", () => {
       await page.getByRole("link", { name: "Opportunity Summary" }).click();
 
       // Then I should be on the "Opportunity Summary" page.
-      await expect(page).toHaveURL(
-        /\/grantor\/opportunity\/([a-z0-9-]+?)\/edit/,
-      );
+      await expect(page).toHaveURL(/\/opportunity\/([a-z0-9-]+?)\/edit/);
 
       // And I should see the "Save and exit", "Save and go back", and "Save and continue" buttons enabled.
       await assertButtonEnabledDisabledStates(page, {
@@ -136,9 +134,7 @@ test.describe("Grantor Opportunity Summary Happy Path", () => {
       await page.getByRole("button", { name: "Save and exit" }).click();
 
       // Then I should return to the "Opportunity Overview" page.
-      await expect(page).toHaveURL(
-        /\/grantor\/opportunity\/([a-z0-9-]+?)\/overview/,
-      );
+      await expect(page).toHaveURL(/\/opportunity\/([a-z0-9-]+?)\/overview/);
 
       // And I should see overview statuses for key sections.
       await assertOverviewSectionStatus(page, {
@@ -147,7 +143,7 @@ test.describe("Grantor Opportunity Summary Happy Path", () => {
       });
 
       // When I navigate directly to opportunity list page
-      await page.goto("/grantor/opportunities");
+      await page.goto("/opportunities");
 
       // Then I should see "Draft" status for the created opportunity row.
       const matchingRow = await waitForOpportunityRowByStatus(page, {

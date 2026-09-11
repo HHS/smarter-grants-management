@@ -2,6 +2,8 @@ import { ApiRequestError } from "src/errors";
 import {
   createCompetitionForGrantor,
   createOpportunity,
+  deleteCompetitionInstructions,
+  saveCompetitionInstructions,
   searchOpportunitiesByAgency,
   updateCompetitionForGrantor,
 } from "src/services/fetch/fetchers/grantorOpportunitiesFetcher";
@@ -244,6 +246,20 @@ describe("createCompetitionForGrantor", () => {
     });
     expect(result).toEqual({ data: { competition_id: "new-competition-id" } });
   });
+
+  it("includes public_competition_id in the request body", async () => {
+    const competitionWithPublicId: CompetitionSaveRequest = {
+      ...competitionData,
+      public_competition_id: "PUBLIC-COMP-789",
+    };
+
+    await createCompetitionForGrantor("opp-123", competitionWithPublicId);
+
+    expect(mockFetcher).toHaveBeenCalledWith({
+      subPath: "opp-123/competitions",
+      body: competitionWithPublicId,
+    });
+  });
 });
 
 describe("updateCompetitionForGrantor", () => {
@@ -300,5 +316,85 @@ describe("updateCompetitionForGrantor", () => {
     await expect(
       updateCompetitionForGrantor("opp-123", "compete-321", competitionData),
     ).rejects.toThrow(ApiRequestError);
+  });
+});
+
+describe("saveCompetitionInstructions", () => {
+  afterEach(() => jest.clearAllMocks());
+
+  it("calls fetchGrantorOpportunityWithMethod with POST, the correct subPath and body, and returns the parsed JSON response", async () => {
+    const responseBody = {
+      data: {
+        competition_instruction_id: "instruction-123",
+        file_name: "instructions.pdf",
+        created_at: "2026-08-20T00:00:00Z",
+      },
+    };
+    mockFetcher.mockResolvedValue({
+      json: () => Promise.resolve(responseBody),
+    });
+
+    const result = await saveCompetitionInstructions(
+      "opp-123",
+      "compete-321",
+      "pending-file-456",
+    );
+
+    expect(mockFetchGrantorOpportunityWithMethod).toHaveBeenCalledTimes(1);
+    expect(mockFetchGrantorOpportunityWithMethod).toHaveBeenCalledWith("POST");
+    expect(mockFetcher).toHaveBeenCalledWith({
+      subPath: "opp-123/competitions/compete-321/instructions",
+      body: { pending_file_id: "pending-file-456" },
+    });
+    expect(result).toEqual(responseBody);
+  });
+
+  it("propagates request errors", async () => {
+    mockFetcher.mockRejectedValue(new Error("Network failure"));
+
+    await expect(
+      saveCompetitionInstructions("opp-123", "compete-321", "pending-file-456"),
+    ).rejects.toThrow("Network failure");
+  });
+});
+
+describe("deleteCompetitionInstructions", () => {
+  afterEach(() => jest.clearAllMocks());
+
+  it("calls fetchGrantorOpportunityWithMethod with DELETE, the correct subPath, and returns the parsed JSON response", async () => {
+    const responseBody = {
+      message: "Instruction deleted successfully",
+      status_code: 200,
+    };
+    mockFetcher.mockResolvedValue({
+      json: () => Promise.resolve(responseBody),
+    });
+
+    const result = await deleteCompetitionInstructions(
+      "opp-123",
+      "compete-321",
+      "instruction-123",
+    );
+
+    expect(mockFetchGrantorOpportunityWithMethod).toHaveBeenCalledTimes(1);
+    expect(mockFetchGrantorOpportunityWithMethod).toHaveBeenCalledWith(
+      "DELETE",
+    );
+    expect(mockFetcher).toHaveBeenCalledWith({
+      subPath: "opp-123/competitions/compete-321/instructions/instruction-123",
+    });
+    expect(result).toEqual(responseBody);
+  });
+
+  it("propagates request errors", async () => {
+    mockFetcher.mockRejectedValue(new Error("Network failure"));
+
+    await expect(
+      deleteCompetitionInstructions(
+        "opp-123",
+        "compete-321",
+        "instruction-123",
+      ),
+    ).rejects.toThrow("Network failure");
   });
 });

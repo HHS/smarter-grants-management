@@ -108,7 +108,7 @@ async function EditRecommendationsPageContent({
           additionalBreadcrumbs={[
             {
               title: tEdit("heading"),
-              path: `/grantor/award-recommendation/${awardRecommendationId}/application-submissions/edit`,
+              path: `/award-recommendation/${awardRecommendationId}/application-submissions/edit`,
             },
           ]}
         />

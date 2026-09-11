@@ -182,7 +182,7 @@ describe("EditRecommendationsPage", () => {
       const breadcrumb = screen.getByTestId("breadcrumb-0");
       expect(breadcrumb).toHaveTextContent("heading");
       expect(breadcrumb).toHaveTextContent(
-        "/grantor/award-recommendation/AR-26-0001/application-submissions/edit",
+        "/award-recommendation/AR-26-0001/application-submissions/edit",
       );
     });
 
@@ -199,7 +199,7 @@ describe("EditRecommendationsPage", () => {
 
       const breadcrumb = screen.getByTestId("breadcrumb-0");
       expect(breadcrumb).toHaveTextContent(
-        "/grantor/award-recommendation/AR-26-9999/application-submissions/edit",
+        "/award-recommendation/AR-26-9999/application-submissions/edit",
       );
     });
 

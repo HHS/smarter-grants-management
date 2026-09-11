@@ -4,4 +4,5 @@ export const defaultFeatureFlags: FeatureFlags = {
   featureFlagAdminOff: false,
   maintenanceBannerEnabled: false,
   maintenanceMode: false,
+  awardRecommendationOff: true,
 };

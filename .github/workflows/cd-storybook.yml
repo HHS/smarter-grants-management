@@ -5,7 +5,9 @@ on:
   push:
     branches: ["main"]
     paths:
-      - frontend/**
+      # GitHub Pages isn't configured on this repo yet, so this job fails on every
+      # frontend push - only run it when someone deliberately touches this workflow.
+      - .github/workflows/cd-storybook.yml
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:

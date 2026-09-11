@@ -28,9 +28,9 @@ const getAwardRecommendationHref = (
   status: AwardRecommendationStatus,
 ): string => {
   if (status === "draft") {
-    return `/grantor/award-recommendation/${awardRecommendationId}/edit`;
+    return `/award-recommendation/${awardRecommendationId}/edit`;
   }
-  return `/grantor/award-recommendation/${awardRecommendationId}`;
+  return `/award-recommendation/${awardRecommendationId}`;
 };
 
 interface AwardRecommendationsListTableProps {

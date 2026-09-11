@@ -52,7 +52,7 @@ jobs:
       - name: Run unit tests
         run: npm run test -- --testLocationInResults --coverage
 
-      # disabled while we determine next steps for coverage, see https://github.com/HHS/simpler-grants-gov/issues/10650
+      # disabled while we determine next steps for coverage, see ticket #10650
       # - name: Run coverage report
       #   uses: ArtiomTr/jest-coverage-report-action@v2
       #   with:
