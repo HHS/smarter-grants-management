@@ -1,5 +1,6 @@
 import os
 import uuid
+from types import SimpleNamespace
 
 import _pytest.monkeypatch
 import boto3
@@ -392,8 +393,15 @@ def mock_sqs(reset_aws_env_vars):
         yield
 
 
-def _create_file_scan_dynamodb_table(monkeypatch):
-    """Helper to create the file scan DynamoDB table (shared logic)."""
+@pytest.fixture
+def mock_dynamodb(reset_aws_env_vars):
+    with moto.mock_aws(config={"core": {"service_whitelist": ["dynamodb"]}}):
+        yield
+
+
+@pytest.fixture
+def file_scan_dynamodb_table(mock_dynamodb, monkeypatch):
+    """Create DynamoDB table for file scan tests."""
     dynamodb = boto3.client("dynamodb", region_name="us-east-1")
     table_name = "test-local-virus-scan"
     dynamodb.create_table(
@@ -408,18 +416,6 @@ def _create_file_scan_dynamodb_table(monkeypatch):
     )
     monkeypatch.setenv("FILE_SCAN_CACHE_TABLE_NAME", table_name)
     return table_name
-
-
-@pytest.fixture
-def mock_dynamodb(reset_aws_env_vars):
-    with moto.mock_aws(config={"core": {"service_whitelist": ["dynamodb"]}}):
-        yield
-
-
-@pytest.fixture
-def file_scan_dynamodb_table(mock_dynamodb, monkeypatch):
-    """Create DynamoDB table for file scan tests (DynamoDB-only mock)."""
-    return _create_file_scan_dynamodb_table(monkeypatch)
 
 
 @pytest.fixture
@@ -474,16 +470,13 @@ def mock_simpler_grants_client(monkeypatch):
 @pytest.fixture
 def user(db_session, enable_factory_create):
     """Create a standard test user."""
-
     user = factories.UserFactory.create()
-    db_session.commit()
     return user
 
 
 @pytest.fixture
 def user_auth_token(user, db_session):
     """Create a JWT token for the test user."""
-
     token, user_token_session = create_jwt_for_user(user, db_session)
     db_session.commit()
     return token
@@ -492,9 +485,7 @@ def user_auth_token(user, db_session):
 @pytest.fixture
 def user_api_key(user, db_session, enable_factory_create):
     """Create an API key for the test user."""
-
     api_key = factories.UserApiKeyFactory.create(user=user)
-    db_session.commit()
     return api_key
 
 
@@ -505,33 +496,37 @@ def user_api_key_id(user_api_key):
 
 
 @pytest.fixture
-def mock_s3_and_dynamodb(reset_aws_env_vars):
-    """Mock both S3 and DynamoDB services together for file scan tests."""
-    with moto.mock_aws(config={"core": {"service_whitelist": ["s3", "dynamodb"]}}):
-        yield
+def mock_dynamodb_and_s3(reset_aws_env_vars, monkeypatch):
+    """A single moto context whitelisting both dynamodb and s3.
 
+    The single-service ``mock_dynamodb`` / ``mock_s3`` fixtures each enter their
+    own ``moto.mock_aws`` context with a one-service whitelist, and the
+    innermost-entered context wins -- so they can't both be active at once.
+    Flows that touch both services (e.g. the file-scan-complete path: read the
+    dynamodb scan record, then presign/size the s3 object) need this combined
+    context instead.
 
-@pytest.fixture
-def mock_dynamodb_and_s3(mock_s3_and_dynamodb, monkeypatch):
-    """Bundle S3 and DynamoDB fixtures for file scan tests."""
-    # Create S3 bucket
-    s3 = boto3.resource("s3")
-    bucket = s3.Bucket("local-mock-file-scan-bucket")
-    bucket.create()
-    monkeypatch.setenv("FILE_SCAN_BUCKET", f"s3://{bucket.name}")
+    Yields a namespace with ``table_name``, ``bucket``, and a ``dynamodb_client``
+    for seeding scan records.
+    """
+    table_name = "test-local-virus-scan"
+    bucket = "local-mock-file-scan-bucket"
 
-    # Create DynamoDB table (reuses helper to avoid duplication)
-    table_name = _create_file_scan_dynamodb_table(monkeypatch)
+    with moto.mock_aws(config={"core": {"service_whitelist": ["dynamodb", "s3"]}}):
+        # Create DynamoDB table
+        dynamodb_client = boto3.client("dynamodb", region_name="us-east-1")
+        dynamodb_client.create_table(
+            TableName=table_name,
+            KeySchema=[{"AttributeName": "file_id", "KeyType": "HASH"}],
+            AttributeDefinitions=[{"AttributeName": "file_id", "AttributeType": "S"}],
+            BillingMode="PAY_PER_REQUEST",
+        )
+        monkeypatch.setenv("FILE_SCAN_CACHE_TABLE_NAME", table_name)
 
-    return type(
-        "MockAWS",
-        (),
-        {
-            "bucket": bucket.name,
-            "table_name": table_name,
-            "dynamodb_client": boto3.client("dynamodb", region_name="us-east-1"),
-        },
-    )()
+        # Create S3 bucket
+        boto3.client("s3").create_bucket(Bucket=bucket)
+
+        yield SimpleNamespace(table_name=table_name, bucket=bucket, dynamodb_client=dynamodb_client)
 
 
 ####################

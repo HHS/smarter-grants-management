@@ -1,4 +1,3 @@
-import abc
 import logging
 import uuid
 from dataclasses import dataclass
@@ -15,7 +14,6 @@ from src.adapters.aws.dynamodb_adapter import DynamoDBClient, DynamoDBConfig
 from src.api.response import ValidationErrorDetail
 from src.api.route_utils import raise_flask_error
 from src.constants.lookup_constants import FileScanStatus
-from src.db.models.auth_base_models import BaseUser
 from src.db.models.file_upload_models import PendingFile
 from src.db.models.user_models import User
 from src.util import datetime_util
@@ -38,9 +36,9 @@ class PresignedUploadResult:
     body: dict[str, Any]
 
 
-class BasePresignFileUploadService[USER: BaseUser](abc.ABC, metaclass=abc.ABCMeta):
+class SimplerPresignFileUploadService:
     """
-    Base class for setting up a presigned URL to work with our file upload approach.
+    Service for setting up a presigned URL to work with our file upload approach.
 
     This handles:
     * Validating anything about the user before they upload the file.
@@ -75,7 +73,7 @@ class BasePresignFileUploadService[USER: BaseUser](abc.ABC, metaclass=abc.ABCMet
         self.config = config
 
     def create_presigned_upload(
-        self, user: USER, file_name: str, mime_type: str
+        self, user: User, file_name: str, mime_type: str
     ) -> PresignedUploadResult:
 
         # Verify that the user can presign the URL
@@ -131,49 +129,6 @@ class BasePresignFileUploadService[USER: BaseUser](abc.ABC, metaclass=abc.ABCMet
             body=presigned["fields"],
         )
 
-    @abc.abstractmethod
-    def validate_user_can_presign(self, user: USER) -> None:
-        pass
-
-    @abc.abstractmethod
-    def create_pending_file_in_db(
-        self,
-        pending_file_id: uuid.UUID,
-        user: USER,
-        file_name: str,
-        s3_file_location: str,
-        mime_type: str,
-    ) -> None:
-        pass
-
-
-def _build_s3_file_location(s3_config: S3Config, pending_file_id: uuid.UUID, file_name: str) -> str:
-    return file_util.join(
-        s3_config.file_scan_bucket_path,
-        "unscanned",
-        str(pending_file_id),
-        file_name,
-    )
-
-
-def _write_scan_record(
-    dynamodb_client: DynamoDBClient,
-    dynamodb_config: DynamoDBConfig,
-    pending_file_id: uuid.UUID,
-    user_id: uuid.UUID,
-) -> None:
-    dynamodb_client.put_item(
-        table_name=dynamodb_config.file_scan_cache_table_name,
-        item={
-            "file_id": {"S": str(pending_file_id)},
-            "user_id": {"S": str(user_id)},
-            "status": {"S": FileScanStatus.PENDING.value},
-        },
-    )
-
-
-class SimplerPresignFileUploadService(BasePresignFileUploadService[User]):
-
     def validate_user_can_presign(self, user: User) -> None:
         recent_count = _count_recent_pending_files(
             self.db_session, user.user_id, self.config.pending_file_upload_rate_window_hours
@@ -222,6 +177,31 @@ class SimplerPresignFileUploadService(BasePresignFileUploadService[User]):
             file_scan_status=FileScanStatus.PENDING,
         )
         self.db_session.add(pending_file)
+
+
+def _build_s3_file_location(s3_config: S3Config, pending_file_id: uuid.UUID, file_name: str) -> str:
+    return file_util.join(
+        s3_config.file_scan_bucket_path,
+        "unscanned",
+        str(pending_file_id),
+        file_name,
+    )
+
+
+def _write_scan_record(
+    dynamodb_client: DynamoDBClient,
+    dynamodb_config: DynamoDBConfig,
+    pending_file_id: uuid.UUID,
+    user_id: uuid.UUID,
+) -> None:
+    dynamodb_client.put_item(
+        table_name=dynamodb_config.file_scan_cache_table_name,
+        item={
+            "file_id": {"S": str(pending_file_id)},
+            "user_id": {"S": str(user_id)},
+            "status": {"S": FileScanStatus.PENDING.value},
+        },
+    )
 
 
 def _count_recent_pending_files(
