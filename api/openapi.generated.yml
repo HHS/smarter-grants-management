@@ -1222,6 +1222,7 @@ components:
           - partner
           - program
           - grantor_organization
+          - announcement
           - opportunity
           type:
           - string
@@ -1298,6 +1299,7 @@ components:
           - partner
           - program
           - grantor_organization
+          - announcement
           - opportunity
           type:
           - string
@@ -1594,6 +1596,7 @@ components:
           - partner
           - program
           - grantor_organization
+          - announcement
           - opportunity
           type:
           - string
