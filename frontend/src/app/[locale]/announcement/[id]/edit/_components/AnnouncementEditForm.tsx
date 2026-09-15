@@ -119,12 +119,26 @@ export default function AnnouncementEditForm({
     validationErrors: {},
   });
 
-  const validationErrors: AnnouncementEditValidationErrors | undefined =
-    formState.validationErrors;
-
   //--- Validations for Award Minimum, Award Maximum and Total Program Funding ---
   const [frontendErrors, setFrontendErrors] =
     useState<AnnouncementEditValidationErrors>({});
+
+  useEffect(() => {
+    if (formState.newOpportunitySummaryId) {
+      // TODO #9633
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setCurrentSummaryId(formState.newOpportunitySummaryId);
+    }
+  }, [formState.newOpportunitySummaryId]);
+
+  useEffect(() => {
+    if (Object.keys(formState.validationErrors || {}).length) {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }
+  }, [formState.validationErrors]);
 
   function setSingleFrontendError<
     K extends keyof AnnouncementEditValidationErrors,
@@ -198,7 +212,7 @@ export default function AnnouncementEditForm({
   function getFieldError(
     fieldName: keyof AnnouncementEditValidationErrors,
   ): string | undefined {
-    let fieldErrors = validationErrors?.[fieldName];
+    let fieldErrors = formState.validationErrors?.[fieldName];
     if (!fieldErrors) {
       fieldErrors = frontendErrors?.[fieldName];
     }

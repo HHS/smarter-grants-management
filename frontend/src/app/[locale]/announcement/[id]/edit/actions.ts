@@ -10,9 +10,9 @@ import {
   updateAnnouncementSummary,
 } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 import { AnnouncementSummaryUpdateRawData } from "src/types/announcement/announcementResponseTypes";
-import { FrontendErrorDetails } from "src/types/apiResponseTypes";
 import { dateToTimestamp, getConfiguredDayJs } from "src/utils/dateUtil";
 import { formDataToObject } from "src/utils/formData/formDataToJson";
+import { mapApiValidationErrors } from "src/utils/validationUtils";
 import { z } from "zod";
 
 import { getTranslations } from "next-intl/server";
@@ -115,7 +115,11 @@ async function processAttachmentChanges(
     );
     if (response.status_code === 422) {
       console.error("API side validation errors:", response.errors);
-      const { errorMessage } = mapApiValidationErrors(response, genericMessage);
+      const { errorMessage } = mapApiValidationErrors(
+        response,
+        genericMessage,
+        EDIT_FORM_FIELD_NAMES,
+      );
       return { errorMessage: errorMessage ?? genericMessage };
     }
   }
@@ -126,7 +130,11 @@ async function processAttachmentChanges(
     );
     if (response.status_code === 422) {
       console.error("API side validation errors:", response.errors);
-      const { errorMessage } = mapApiValidationErrors(response, genericMessage);
+      const { errorMessage } = mapApiValidationErrors(
+        response,
+        genericMessage,
+        EDIT_FORM_FIELD_NAMES,
+      );
       return { errorMessage: errorMessage ?? genericMessage };
     }
   }
@@ -149,63 +157,6 @@ function stripCurrencyFormatting(formData: FormData) {
       formData.set(fieldName, rawValue.replace(/[$,\s]/g, ""));
     }
   }
-}
-
-const EDIT_FORM_FIELD_NAMES = new Set<keyof AnnouncementEditValidationErrors>([
-  "announcement_title",
-  "category",
-  "summary_description",
-  "post_timestamp",
-  "close_timestamp",
-  "agency_email_address",
-  "agency_email_address_description",
-  "award_floor",
-  "award_ceiling",
-  "funding_instruments",
-  "funding_categories",
-  "expected_number_of_awards",
-  "estimated_total_program_funding",
-  "applicant_types",
-  "applicant_eligibility_description",
-  "additional_info_url",
-  "additional_info_url_description",
-  "agency_contact_description",
-]);
-
-// Maps a 422's errors[] to inline validationErrors by field, with a top-level errorMessage
-// fallback for field-less business-rule errors (which return an empty errors[] and put the
-// real text in the response's top-level message instead).
-function mapApiValidationErrors(
-  response: { errors?: unknown[] | null; message?: string },
-  genericMessage: string,
-): Pick<OpportunityEditActionState, "validationErrors" | "errorMessage"> {
-  const validationErrors: AnnouncementEditValidationErrors = {};
-  const unmappedMessages: string[] = [];
-
-  for (const rawError of response.errors ?? []) {
-    const error = rawError as FrontendErrorDetails;
-    const message = error.message ?? genericMessage;
-    const field = error.field as
-      keyof AnnouncementEditValidationErrors | undefined;
-
-    if (field && EDIT_FORM_FIELD_NAMES.has(field)) {
-      validationErrors[field] = [...(validationErrors[field] ?? []), message];
-    } else {
-      unmappedMessages.push(message);
-    }
-  }
-
-  const hasFieldErrors = Object.keys(validationErrors).length > 0;
-
-  return {
-    validationErrors: hasFieldErrors ? validationErrors : undefined,
-    errorMessage:
-      unmappedMessages.length > 0
-        ? unmappedMessages.join(" ")
-        : hasFieldErrors
-          ? undefined
-          : response.message || genericMessage,
-  };
 }
 
 // Shared by the outer catch and the create-path's local catch (see below) so a thrown
@@ -451,7 +402,11 @@ export async function saveAnnouncementEditAction(
 
       if (createResponse.status_code === 422) {
         console.error("API side validation errors:", createResponse.errors);
-        return mapApiValidationErrors(createResponse, alerts("genericError"));
+        return mapApiValidationErrors(
+          createResponse,
+          alerts("genericError"),
+          EDIT_FORM_FIELD_NAMES,
+        );
       }
 
       // caught locally (rather than by the outer catch below) because the summary itself
@@ -515,7 +470,11 @@ export async function saveAnnouncementEditAction(
     });
     if (response.status_code === 422) {
       console.error("API side validation errors:", response.errors);
-      return mapApiValidationErrors(response, alerts("genericError"));
+      return mapApiValidationErrors(
+        response,
+        alerts("genericError"),
+        EDIT_FORM_FIELD_NAMES,
+      );
     }
 
     const attachmentError = await processAttachmentChanges(

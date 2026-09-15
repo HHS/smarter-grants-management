@@ -133,6 +133,7 @@ export async function createCompetitionForGrantor(
   const response = await fetchAnnouncementWithMethod("POST")({
     subPath: `${opportunityId}/application-packages`,
     body: data,
+    allowedErrorStatuses: [422],
   });
   return (await response.json()) as ApplicationPackageSaveApiResponse;
 }
@@ -145,6 +146,7 @@ export async function updateCompetitionForGrantor(
   const response = await fetchAnnouncementWithMethod("PUT")({
     subPath: `${opportunityId}/application-packages/${competitionId}`,
     body: data,
+    allowedErrorStatuses: [422],
   });
   return (await response.json()) as ApplicationPackageSaveApiResponse;
 }

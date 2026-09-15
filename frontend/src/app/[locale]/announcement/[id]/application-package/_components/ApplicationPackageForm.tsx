@@ -17,7 +17,7 @@ import {
 import { UploadFileMetadata } from "src/types/fileUploadTypes";
 
 import { useTranslations } from "next-intl";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Button,
@@ -68,10 +68,20 @@ export function ApplicationPackageForm({
     );
 
   // ===== Server side action to save data =====
-  const [formState, setFormState] = useState<CompetitionActionState | null>(
-    null,
-  );
+  const [formState, setFormState] = useState<CompetitionActionState>({});
   const [isPending, setIsPending] = useState(false);
+
+  useEffect(() => {
+    if (
+      formState.validationErrors &&
+      Object.keys(formState.validationErrors).length
+    ) {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }
+  }, [formState.validationErrors]);
 
   const handleSubmit = (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -101,18 +111,32 @@ export function ApplicationPackageForm({
       <input type="hidden" name="announcementId" value={announcementId} />
       <input type="hidden" name="competitionId" value={competitionId} />
 
-      {formState?.errorMessage ? (
+      {formState.errorMessage ? (
+        <div className="margin-top-2">
+          <Alert
+            type="warning"
+            heading={formState.errorMessage}
+            headingLevel="h3"
+            validation
+          />
+        </div>
+      ) : null}
+
+      {formState.validationErrors &&
+      Object.keys(formState.validationErrors).length > 0 ? (
         <div className="margin-top-2">
           <Alert
             type="error"
-            heading={formState.errorMessage}
+            heading={t("alerts.validationErrors")}
             headingLevel="h3"
           >
             <span className="display-block margin-top-1 margin-bottom-1">
               {t("alerts.validationErrorBody")}
             </span>
-            {formState?.validationErrors?.map((error, index) => (
-              <span key={index} className="display-block">
+            {Array.from(
+              new Set(Object.values(formState.validationErrors).flat()),
+            ).map((error, i) => (
+              <span key={i} className="display-block">
                 {error}
               </span>
             ))}
