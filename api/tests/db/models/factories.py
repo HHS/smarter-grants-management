@@ -17,6 +17,7 @@ import src.db.models.resource_models as resource_models
 import src.db.models.user_models as user_models
 import src.db.models.workflow_models as workflow_models
 from src.constants.lookup_constants import (
+    AnnouncementAuditEvent,
     AnnouncementCategory,
     ApplicantType,
     ApplicationPackageOpenToApplicant,
@@ -34,7 +35,7 @@ from src.constants.lookup_constants import (
     UserType,
     WorkflowType,
 )
-from src.util import datetime_util
+from src.util import datetime_util, file_util
 from tests.db_test_models import db_test_models
 
 
@@ -699,6 +700,57 @@ class AssistanceListingFactory(BaseFactory):
 
 
 ###################
+# File Factories
+###################
+
+
+class FileAttachmentFactory(BaseFactory):
+    class Meta:
+        model = file_upload_models.FileAttachment
+
+    file_attachment_id = Generators.UuidObj
+
+    # Whatever you pass in for file_contents will end up in the file, but
+    # not included anywhere on the model itself
+    file_contents = factory.Faker("sentence")
+    # NOTE: If you want the file to properly get written to s3 for tests/locally
+    # make sure the bucket actually exists
+    file_location = factory.LazyAttribute(
+        lambda f: f"s3://local-mock-draft-bucket/attachments/{f.file_attachment_id}/{f.file_name}"
+    )
+    mime_type = factory.Faker("mime_type")
+    file_name = factory.Faker("file_name")
+    file_description = factory.Faker("sentence")
+    file_size_bytes = factory.Faker("random_int", min=1000, max=10000000)
+
+    @classmethod
+    def _build(cls, model_class, *args, **kwargs):
+        kwargs.pop("file_contents")  # Don't file for build strategy
+        return super()._build(model_class, *args, **kwargs)
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        file_contents = kwargs.pop("file_contents")
+        attachment = super()._create(model_class, *args, **kwargs)
+
+        try:
+            with file_util.open_stream(attachment.file_location, "w") as my_file:
+                my_file.write(file_contents)
+        except Exception as e:
+            raise Exception(
+                f"""There was an error writing your attachment to {attachment.file_location}.
+
+                Does this location exist? If you are running in unit tests, make sure
+                `enable_factory_create` is pulled in as a fixture to your test.
+
+                If you are running locally outside of unit tests, make sure that `make init-s3mock` has run.
+                """
+            ) from e
+
+        return attachment
+
+
+###################
 # Announcement Factories
 ###################
 
@@ -853,6 +905,19 @@ class AnnouncementSummaryFactory(BaseFactory):
     )
 
 
+class AnnouncementAttachmentFactory(BaseFactory):
+    class Meta:
+        model = announcement_models.AnnouncementAttachment
+
+    announcement_attachment_id = Generators.UuidObj
+
+    announcement = factory.SubFactory(AnnouncementFactory)
+    announcement_id = factory.LazyAttribute(lambda a: a.announcement.announcement_id)
+
+    file_attachment = factory.SubFactory(FileAttachmentFactory)
+    file_attachment_id = factory.LazyAttribute(lambda a: a.file_attachment.file_attachment_id)
+
+
 class ApplicationPackageFactory(BaseFactory):
     class Meta:
         model = application_package_models.ApplicationPackage
@@ -907,6 +972,102 @@ class ApplicationPackageFormFactory(BaseFactory):
     form_id = factory.Faker("random_int", min=100, max=150)
 
     is_required = factory.Faker("boolean")
+
+
+class ApplicationPackageInstructionFactory(BaseFactory):
+    class Meta:
+        model = application_package_models.ApplicationPackageInstruction
+
+    application_package_instruction_id = Generators.UuidObj
+
+    application_package = factory.SubFactory(ApplicationPackageFactory)
+    application_package_id = factory.LazyAttribute(
+        lambda a: a.application_package.application_package_id
+    )
+
+    file_attachment = factory.SubFactory(FileAttachmentFactory)
+    file_attachment_id = factory.LazyAttribute(lambda a: a.file_attachment.file_attachment_id)
+
+
+class AnnouncementAuditFactory(BaseFactory):
+    class Meta:
+        model = announcement_models.AnnouncementAudit
+
+    announcement_audit_id = Generators.UuidObj
+
+    announcement = factory.SubFactory(AnnouncementFactory)
+    announcement_id = factory.LazyAttribute(lambda a: a.announcement.announcement_id)
+
+    user = factory.SubFactory(UserFactory)
+    user_id = factory.LazyAttribute(lambda a: a.user.user_id)
+
+    announcement_audit_event = AnnouncementAuditEvent.ANNOUNCEMENT_CREATED
+
+    class Params:
+        # These params allow for creating reasonable audit events
+        # of other scenarios.
+        is_summary_event = factory.Trait(
+            announcement_summary=factory.SubFactory(
+                AnnouncementSummaryFactory, announcement=factory.SelfAttribute("..announcement")
+            ),
+            announcement_summary_id=factory.LazyAttribute(
+                lambda a: a.announcement_summary.announcement_summary_id
+            ),
+            announcement_audit_event=factory.fuzzy.FuzzyChoice(
+                [
+                    AnnouncementAuditEvent.ANNOUNCEMENT_SUMMARY_CREATED,
+                    AnnouncementAuditEvent.ANNOUNCEMENT_SUMMARY_UPDATED,
+                ]
+            ),
+        )
+
+        is_attachment_event = factory.Trait(
+            announcement_attachment=factory.SubFactory(
+                AnnouncementAttachmentFactory, announcement=factory.SelfAttribute("..announcement")
+            ),
+            announcement_attachment_id=factory.LazyAttribute(
+                lambda a: a.announcement_attachment.announcement_attachment_id
+            ),
+            announcement_audit_event=factory.fuzzy.FuzzyChoice(
+                [
+                    AnnouncementAuditEvent.ANNOUNCEMENT_ATTACHMENT_CREATED,
+                    AnnouncementAuditEvent.ANNOUNCEMENT_ATTACHMENT_UPDATED,
+                ]
+            ),
+        )
+
+        is_package_event = factory.Trait(
+            application_package=factory.SubFactory(
+                ApplicationPackageFactory, announcement=factory.SelfAttribute("..announcement")
+            ),
+            application_package_id=factory.LazyAttribute(
+                lambda a: a.application_package.application_package_id
+            ),
+            announcement_audit_event=factory.fuzzy.FuzzyChoice(
+                [
+                    AnnouncementAuditEvent.APPLICATION_PACKAGE_CREATED,
+                    AnnouncementAuditEvent.APPLICATION_PACKAGE_UPDATED,
+                ]
+            ),
+        )
+
+        is_instruction_event = factory.Trait(
+            application_package_instruction=factory.SubFactory(
+                ApplicationPackageInstructionFactory,
+                application_package__announcement=factory.LazyAttribute(
+                    lambda a: a.factory_parent.factory_parent.announcement
+                ),
+            ),
+            application_package_instruction_id=factory.LazyAttribute(
+                lambda a: a.application_package_instruction.application_package_instruction_id
+            ),
+            announcement_audit_event=factory.fuzzy.FuzzyChoice(
+                [
+                    AnnouncementAuditEvent.APPLICATION_PACKAGE_INSTRUCTION_CREATED,
+                    AnnouncementAuditEvent.APPLICATION_PACKAGE_INSTRUCTION_UPDATED,
+                ]
+            ),
+        )
 
 
 ###################
