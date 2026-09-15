@@ -973,6 +973,14 @@ class ApplicationPackageFactory(BaseFactory):
         ApplicationPackageOpenToApplicant.ORGANIZATION,
     ]
 
+    class Params:
+        with_instructions = factory.Trait(
+            application_package_instructions=factory.RelatedFactoryList(
+                "tests.db.models.factories.ApplicationPackageInstructionFactory",
+                factory_related_name="application_package",
+                size=1
+            )
+        )
 
 class ApplicationPackageFormFactory(BaseFactory):
     class Meta:

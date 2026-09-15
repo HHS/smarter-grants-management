@@ -15,6 +15,8 @@ from src.api.assistance_listings.assistance_listing_blueprint import assistance_
 from src.api.grantor_organizations.grantor_organization_blueprint import (
     grantor_organization_blueprint,
 )
+
+from src.api.forms.form_blueprint import form_blueprint
 from src.api.healthcheck.healthcheck_blueprint import healthcheck_blueprint
 from src.api.local import local_blueprint
 from src.api.partners.partner_blueprint import partner_blueprint
@@ -108,6 +110,7 @@ def register_blueprints(app: APIFlask) -> None:
     app.register_blueprint(resource_blueprint)
     app.register_blueprint(announcement_blueprint)
     app.register_blueprint(assistance_listing_blueprint)
+    app.register_blueprint(form_blueprint)
     # Local endpoints for development, will error
     # if this is ever enabled non-locally.
     if endpoint_config.enable_local_endpoints:
