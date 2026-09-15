@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from marshmallow import ValidationError, validates_schema
 
 from src.api.schemas.extension import (
@@ -146,7 +148,7 @@ class AnnouncementSummarySchema(Schema):
     is_cost_sharing = fields.Boolean(
         allow_none=True,
         metadata={
-            "description": "Whether or not the opportunity has a cost sharing/matching requirement",
+            "description": "Whether or not the announcement has a cost sharing/matching requirement",
         },
     )
     is_forecast = fields.Boolean(
@@ -248,7 +250,7 @@ class AnnouncementSummarySchema(Schema):
     )
     estimated_award_date = fields.Date(
         allow_none=True,
-        metadata={"description": "The date the grantor plans to award the opportunity."},
+        metadata={"description": "The date the grantor plans to award the announcement."},
     )
     estimated_project_start_date = fields.Date(
         allow_none=True,
@@ -280,14 +282,14 @@ class AnnouncementSummarySchema(Schema):
     agency_contact_description = fields.String(
         allow_none=True,
         metadata={
-            "description": "Information regarding contacting the agency who owns the opportunity",
+            "description": "Information regarding contacting the agency who owns the announcement",
             "example": "For more information, reach out to Jane Smith at agency US-ABC",
         },
     )
     agency_email_address = fields.String(
         allow_none=True,
         metadata={
-            "description": "The contact email of the agency who owns the opportunity",
+            "description": "The contact email of the agency who owns the announcement",
             "example": "fake_email@grants.gov",
         },
     )
@@ -304,10 +306,10 @@ class AnnouncementSummarySchema(Schema):
     applicant_types = fields.List(fields.Enum(ApplicantType))
 
     created_at = fields.DateTime(
-        metadata={"description": "When the opportunity summary was created"}
+        metadata={"description": "When the announcement summary was created"}
     )
     updated_at = fields.DateTime(
-        metadata={"description": "When the opportunity summary was last updated"}
+        metadata={"description": "When the announcement summary was last updated"}
     )
 
 
@@ -315,7 +317,7 @@ class AnnouncementSchema(Schema):
     announcement_id = fields.UUID(metadata={"description": "The internal ID of the announcement"})
     announcement_number = fields.String(
         allow_none=True,
-        metadata={"description": "The funding opportunity number", "example": "ABC-123-XYZ-001"},
+        metadata={"description": "The funding announcement number", "example": "ABC-123-XYZ-001"},
     )
     announcement_title = fields.String(
         allow_none=True,
@@ -342,7 +344,7 @@ class AnnouncementSchema(Schema):
         AnnouncementCategory,
         allow_none=True,
         metadata={
-            "description": "The opportunity category",
+            "description": "The announcement category",
             "example": AnnouncementCategory.DISCRETIONARY,
         },
     )
@@ -363,7 +365,7 @@ class AnnouncementSchema(Schema):
         allow_none=True,
         attribute="forecast_summary",
         metadata={
-            "description": "The forecast summary of the opportunity (if available)",
+            "description": "The forecast summary of the announcement (if available)",
         },
     )
 
@@ -372,7 +374,7 @@ class AnnouncementSchema(Schema):
         allow_none=True,
         attribute="non_forecast_summary",
         metadata={
-            "description": "The non-forecast summary of the opportunity (if available)",
+            "description": "The non-forecast summary of the announcement (if available)",
         },
     )
 
@@ -385,12 +387,280 @@ class AnnouncementSchema(Schema):
     updated_at = fields.DateTime(dump_only=True)
 
 
+class AnnouncementSummaryBaseRequestSchema(Schema):
+    summary_description = fields.String(
+        required=True,
+        allow_none=True,
+        validate=validators.WordLimit(max=500),
+        metadata={"description": "announcement summary", "example": "This announcement..."},
+    )
+    is_cost_sharing = fields.Boolean(
+        required=True,
+        allow_none=True,
+        metadata={
+            "description": "Whether or not the announcement has a cost sharing/matching requirement",
+        },
+    )
+
+    post_timestamp = fields.DateTime(
+        required=True,
+        metadata={
+            "description": "The datetime the announcement was posted",
+        },
+    )
+    close_timestamp = fields.DateTime(
+        allow_none=True,
+        metadata={
+            "description": "The datetime the announcement closes",
+        },
+    )
+    close_timestamp_description = fields.String(
+        allow_none=True,
+        metadata={
+            "description": "Optional details regarding the close date",
+            "example": "Proposals are due earlier than usual.",
+        },
+    )
+    archive_timestamp = fields.DateTime(
+        required=False,
+        allow_none=True,
+        metadata={
+            "description": "When the announcement will be archived (defaults to 30 days after the close date)",
+        },
+    )
+
+    expected_number_of_awards = fields.Integer(
+        required=False,
+        allow_none=True,
+        validate=validators.Range(min=0, max=999_999_999_999_999),
+        metadata={
+            "description": "The number of awards the announcement is expected to award",
+            "example": 10,
+        },
+    )
+    estimated_total_program_funding = fields.Integer(
+        required=False,
+        allow_none=True,
+        validate=validators.Range(min=0, max=999_999_999_999_999),
+        metadata={
+            "description": "The total program funding of the announcement in US Dollars",
+            "example": 10_000_000,
+        },
+    )
+    award_floor = fields.Integer(
+        required=True,
+        allow_none=True,
+        validate=validators.Range(min=0, max=999_999_999_999_999),
+        metadata={
+            "description": "The minimum amount an announcement would award",
+            "example": 10_000,
+        },
+    )
+    award_ceiling = fields.Integer(
+        required=True,
+        allow_none=True,
+        validate=validators.Range(min=0, max=999_999_999_999_999),
+        metadata={
+            "description": "The maximum amount an announcement would award",
+            "example": 100_000,
+        },
+    )
+
+    additional_info_url = fields.String(
+        required=False,
+        allow_none=True,
+        validate=validators.Length(max=250),
+        metadata={
+            "description": "A URL to a website that can provide additional information about the announcement",
+            "example": "grants.gov",
+        },
+    )
+    additional_info_url_description = fields.String(
+        required=False,
+        allow_none=True,
+        validate=validators.Length(max=250),
+        metadata={
+            "description": "The text to display for the additional_info_url link",
+            "example": "Click me for more info",
+        },
+    )
+
+    forecasted_post_timestamp = fields.DateTime(
+        required=False,
+        allow_none=True,
+        metadata={
+            "description": "Forecasted announcement only. The date the announcement is expected to be posted, and transition out of being a forecast"
+        },
+    )
+    forecasted_close_timestamp = fields.DateTime(
+        required=False,
+        allow_none=True,
+        metadata={
+            "description": "Forecasted announcement only. The date the announcement is expected to be close once posted."
+        },
+    )
+    forecasted_close_timestamp_description = fields.String(
+        required=False,
+        allow_none=True,
+        validate=validators.Length(max=255),
+        metadata={
+            "description": "Forecasted announcement only. Optional details regarding the forecasted closed date.",
+            "example": "Proposals will probably be due on this date",
+        },
+    )
+    estimated_award_date = fields.Date(
+        required=False,
+        allow_none=True,
+        metadata={
+            "description": "Forecasted announcement only. The date the grantor plans to award the announcement."
+        },
+    )
+    estimated_project_start_date = fields.Date(
+        required=False,
+        allow_none=True,
+        metadata={
+            "description": "Forecasted announcement only. The date the grantor expects the award recipient should start their project"
+        },
+    )
+    fiscal_year = fields.Integer(
+        allow_none=True,
+        validate=validators.Range(min=1900, max=2100),
+        metadata={
+            "description": "Forecasted announcement only. The fiscal year the project is expected to be funded and launched",
+            "example": 2026,
+        },
+    )
+
+    funding_categories = fields.List(
+        fields.Enum(FundingCategory),
+        required=True,
+        validate=validators.Length(min=1),
+        metadata={
+            "description": "Categories of funding for this announcement",
+            "example": ["education", "health"],
+        },
+    )
+    funding_category_description = fields.String(
+        required=False,
+        allow_none=True,
+        validate=validators.Length(max=2500),
+        metadata={
+            "description": "Additional information about the funding category",
+            "example": "Economic Support",
+        },
+    )
+    funding_instruments = fields.List(
+        fields.Enum(FundingInstrument),
+        required=True,
+        validate=validators.Length(min=1),
+        metadata={
+            "description": "Types of funding instruments used for this announcement",
+            "example": [FundingInstrument.COOPERATIVE_AGREEMENT, FundingInstrument.GRANT],
+        },
+    )
+    applicant_types = fields.List(
+        fields.Enum(ApplicantType),
+        required=True,
+        validate=validators.Length(min=1),
+        metadata={
+            "description": "Types of applicants eligible for this announcement",
+            "example": [ApplicantType.STATE_GOVERNMENTS, ApplicantType.COUNTY_GOVERNMENTS],
+        },
+    )
+    applicant_eligibility_description = fields.String(
+        required=False,
+        allow_none=True,
+        validate=validators.Length(max=4000),
+        metadata={
+            "description": "Additional information about the types of applicants that are eligible",
+            "example": "All types of domestic applicants are eligible to apply",
+        },
+    )
+
+    agency_contact_description = fields.String(
+        required=True,
+        allow_none=True,
+        validate=validators.Length(max=1000),
+        metadata={
+            "description": "Information regarding contacting the agency who owns the announcement",
+            "example": "For more information, reach out to Jane Smith at agency US-ABC",
+        },
+    )
+    agency_email_address = fields.String(
+        required=True,
+        allow_none=True,
+        validate=validators.Length(max=130),
+        metadata={
+            "description": "The contact email of the agency who owns the announcement",
+            "example": "fake_email@grants.gov",
+        },
+    )
+    agency_email_address_description = fields.String(
+        required=True,
+        allow_none=True,
+        validate=validators.Length(max=108),
+        metadata={
+            "description": "The text for the link to the agency email address",
+            "example": "Click me to email the agency",
+        },
+    )
+
+    @validates_schema
+    def validate_award_values(self, data: dict, **kwargs: dict) -> None:
+        if data.get("award_floor") is not None and data.get("award_ceiling") is not None:
+            if data["award_floor"] > data["award_ceiling"]:
+                raise ValidationError(
+                    [
+                        MarshmallowErrorContainer(
+                            SchemaValidationError.INVALID,
+                            "Award floor must be less than or equal to award ceiling",
+                        )
+                    ]
+                )
+
+    @validates_schema
+    def validate_timestamps(self, data: dict, **kwargs: dict) -> None:
+        if data.get("post_timestamp") is not None and data.get("close_timestamp") is not None:
+            if data["post_timestamp"] > data["close_timestamp"]:
+                raise ValidationError(
+                    [
+                        MarshmallowErrorContainer(
+                            SchemaValidationError.INVALID,
+                            "Post timestamp must be less than or equal to close timestamp",
+                        )
+                    ]
+                )
+
+    @validates_schema
+    def set_archive_timestamp(self, data: dict, **kwargs: dict) -> None:
+        # Preserve the existing Simpler behavior: archive 30 days after close when omitted.
+        if data.get("close_timestamp") is not None and (
+            "archive_timestamp" not in data or data["archive_timestamp"] is None
+        ):
+            data["archive_timestamp"] = data["close_timestamp"] + timedelta(days=30)
+
+
+class AnnouncementSummaryCreateRequestSchema(AnnouncementSummaryBaseRequestSchema):
+    is_forecast = fields.Boolean(
+        required=True,
+        metadata={"description": "Whether the announcement is forecasted", "example": False},
+    )
+
+
+class AnnouncementSummaryUpdateRequestSchema(AnnouncementSummaryBaseRequestSchema):
+    pass
+
+
+class AnnouncementSummaryResponseSchema(AbstractResponseSchema):
+    data = fields.Nested(AnnouncementSummarySchema)
+
+
 class AnnouncementCreateRequestSchema(Schema):
     announcement_number = fields.String(
         required=True,
         validate=validators.Length(max=40),
         metadata={
-            "description": "The funding opportunity number (must be unique)",
+            "description": "The funding announcement number (must be unique)",
             "example": "ABC-2026-001",
         },
     )
@@ -422,7 +692,7 @@ class AnnouncementCreateRequestSchema(Schema):
         AnnouncementCategory,
         required=True,
         metadata={
-            "description": "The opportunity category",
+            "description": "The announcement category",
         },
     )
     category_explanation = fields.String(
@@ -487,7 +757,7 @@ class AnnouncementUpdateRequestSchema(Schema):
         AnnouncementCategory,
         required=True,
         metadata={
-            "description": "The opportunity category",
+            "description": "The announcement category",
         },
     )
     category_explanation = fields.String(

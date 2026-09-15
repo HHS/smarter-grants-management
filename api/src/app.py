@@ -108,7 +108,6 @@ def register_blueprints(app: APIFlask) -> None:
     app.register_blueprint(resource_blueprint)
     app.register_blueprint(announcement_blueprint)
     app.register_blueprint(assistance_listing_blueprint)
-
     # Local endpoints for development, will error
     # if this is ever enabled non-locally.
     if endpoint_config.enable_local_endpoints:
