@@ -10,6 +10,7 @@ from src.adapters.db import PostgresDBClient
 from src.constants.lookup_constants import Privilege
 from src.db.resource_automation.resource_automation import setup_resource_automation
 from src.util.local import error_if_not_local
+from tests.lib.seed_assistance_listings import create_assistance_listings
 from tests.lib.seed_data_utils import UserBuilder
 
 logger = logging.getLogger(__name__)
@@ -31,6 +32,8 @@ def seed_local_db() -> None:
 
 
 def run_seed_logic(db_session: db.Session) -> None:
+    create_assistance_listings(db_session)
+
     create_users(db_session)
 
     create_programs()

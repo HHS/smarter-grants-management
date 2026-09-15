@@ -141,8 +141,8 @@ class AnnouncementSummarySchema(Schema):
     summary_description = fields.String(
         allow_none=True,
         metadata={
-            "description": "The summary of the announcement",
-            "example": "This announcement aims to unravel the mysteries of the universe.",
+            "description": "The summary of the opportunity",
+            "example": "This opportunity aims to unravel the mysteries of the universe.",
         },
     )
     is_cost_sharing = fields.Boolean(
