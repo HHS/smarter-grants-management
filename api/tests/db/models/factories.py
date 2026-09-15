@@ -4,7 +4,9 @@ from datetime import datetime
 import factory
 import factory.fuzzy
 import faker
+import pytz
 from faker.providers import BaseProvider
+from faker.providers.date_time import Provider as DateTimeProvider
 from sqlalchemy.orm import scoped_session
 
 import src.adapters.db as db
@@ -278,9 +280,24 @@ class CustomProvider(BaseProvider):
         return self.generator.parse(pattern)
 
 
+class DateTimeProviderExtended(DateTimeProvider):
+    """
+    Custom provider for overriding datetime provider from Faker so we can make
+    datetimes have a timezone by default instead of being unaware and having the DB make assumptions.
+    """
+
+    def date_time_aware(self, start_date="-1y", end_date="now", tzinfo=pytz.UTC):
+        return DateTimeProvider.date_time_between(
+            self, start_date=start_date, end_date=end_date, tzinfo=tzinfo
+        )
+
+
 fake = faker.Faker()
 fake.add_provider(CustomProvider)
 factory.Faker.add_provider(CustomProvider)
+
+fake.add_provider(DateTimeProviderExtended)
+factory.Faker.add_provider(DateTimeProviderExtended)
 
 _db_session: db.Session | None = None
 
@@ -368,7 +385,7 @@ class UserTokenSessionFactory(BaseFactory):
 
     token_id = Generators.UuidObj
 
-    expires_at = factory.Faker("date_time_between", start_date="+1d", end_date="+10d")
+    expires_at = factory.Faker("date_time_aware", start_date="+1d", end_date="+10d")
 
     is_valid = True
 
@@ -576,7 +593,7 @@ class UserApiKeyFactory(BaseFactory):
     key_id = factory.Sequence(lambda n: f"aws-api-gateway-key-{n:08d}")
 
     last_used = sometimes_none(
-        factory.Faker("date_time_between", start_date="-30d", end_date="now"), none_chance=0.3
+        factory.Faker("date_time_aware", start_date="-30d", end_date="now"), none_chance=0.3
     )
     is_active = True
 
@@ -586,7 +603,7 @@ class UserApiKeyFactory(BaseFactory):
 
         # Trait for recently used keys
         recently_used = factory.Trait(
-            last_used=factory.Faker("date_time_between", start_date="-7d", end_date="now")
+            last_used=factory.Faker("date_time_aware", start_date="-7d", end_date="now")
         )
 
         # Trait for unused keys
@@ -695,7 +712,7 @@ class AssistanceListingFactory(BaseFactory):
 
     is_active = True
 
-    published_date = factory.Faker("date_time_between", start_date="-5y", end_date="now")
+    published_date = factory.Faker("date_time_aware", start_date="-5y", end_date="now")
 
 
 ###################
@@ -766,7 +783,7 @@ class AnnouncementSummaryFactory(BaseFactory):
         # If forecasted, don't set a close date
         yes_declaration=None,
         # otherwise a future date
-        no_declaration=factory.Faker("date_time_between", start_date="+2w", end_date="+3w"),
+        no_declaration=factory.Faker("date_time_aware", start_date="+2w", end_date="+3w"),
     )
     close_timestamp_description = factory.Maybe(
         decider=factory.LazyAttribute(lambda s: s.close_timestamp is None),
@@ -775,10 +792,10 @@ class AnnouncementSummaryFactory(BaseFactory):
     )
 
     # Just a random recent post time
-    post_timestamp = factory.Faker("date_time_between", start_date="-3w", end_date="-1d")
+    post_timestamp = factory.Faker("date_time_aware", start_date="-3w", end_date="-1d")
 
     # By default set to a time in the future
-    archive_timestamp = factory.Faker("date_time_between", start_date="+3w", end_date="+4w")
+    archive_timestamp = factory.Faker("date_time_aware", start_date="+3w", end_date="+4w")
 
     expected_number_of_awards = factory.Faker("random_int", min=1, max=25)
     estimated_total_program_funding = factory.Faker(
@@ -796,14 +813,14 @@ class AnnouncementSummaryFactory(BaseFactory):
     forecasted_post_timestamp = factory.Maybe(
         decider=factory.LazyAttribute(lambda s: s.is_forecast),
         # If forecasted, set it in the future
-        yes_declaration=factory.Faker("date_time_between", start_date="+2w", end_date="+3w"),
+        yes_declaration=factory.Faker("date_time_aware", start_date="+2w", end_date="+3w"),
         # otherwise don't set
         no_declaration=None,
     )
     forecasted_close_timestamp = factory.Maybe(
         decider=factory.LazyAttribute(lambda s: s.is_forecast),
         # If forecasted, set it in the future
-        yes_declaration=factory.Faker("date_time_between", start_date="+6w", end_date="+12w"),
+        yes_declaration=factory.Faker("date_time_aware", start_date="+6w", end_date="+12w"),
         # otherwise don't set
         no_declaration=None,
     )
@@ -868,8 +885,8 @@ class ApplicationPackageFactory(BaseFactory):
 
     application_package_title = sometimes_none(factory.Faker("sentence"))
 
-    opening_timestamp = factory.Faker("date_time_between", start_date="-3w", end_date="-1d")
-    closing_timestamp = factory.Faker("date_time_between", start_date="+1d", end_date="+3w")
+    opening_timestamp = factory.Faker("date_time_aware", start_date="-3w", end_date="-1d")
+    closing_timestamp = factory.Faker("date_time_aware", start_date="+1d", end_date="+3w")
 
     grace_period = sometimes_none(factory.Faker("random_int", min=1, max=10))
     contact_info = sometimes_none(factory.Faker("agency_contact_description"))
