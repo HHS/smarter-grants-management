@@ -136,7 +136,7 @@ class ApplicationPackageInstruction(GrantorSchemaTable, TimestampMixin):
     )
 
     application_package_id: Mapped[uuid.UUID] = mapped_column(
-        UUID, ForeignKey(ApplicationPackage.application_package_id)
+        UUID, ForeignKey(ApplicationPackage.application_package_id), index=True
     )
     application_package: Mapped[ApplicationPackage] = relationship(
         ApplicationPackage, back_populates="application_package_instructions"

@@ -1,8 +1,8 @@
 """add file tables and audit
 
-Revision ID: 9bc1e57ce8e4
+Revision ID: 48d36e0698ce
 Revises: 713252ec479c
-Create Date: 2026-09-15 09:54:10.785007
+Create Date: 2026-09-15 15:42:30.733608
 
 """
 
@@ -11,7 +11,7 @@ from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = "9bc1e57ce8e4"
+revision = "48d36e0698ce"
 down_revision = "713252ec479c"
 branch_labels = None
 depends_on = None
@@ -133,6 +133,13 @@ def upgrade():
         schema="grantor",
     )
     op.create_index(
+        op.f("application_package_instruction_application_package_id_idx"),
+        "application_package_instruction",
+        ["application_package_id"],
+        unique=False,
+        schema="grantor",
+    )
+    op.create_index(
         op.f("application_package_instruction_file_attachment_id_idx"),
         "application_package_instruction",
         ["file_attachment_id"],
@@ -244,6 +251,11 @@ def downgrade():
     op.drop_table("announcement_audit", schema="grantor")
     op.drop_index(
         op.f("application_package_instruction_file_attachment_id_idx"),
+        table_name="application_package_instruction",
+        schema="grantor",
+    )
+    op.drop_index(
+        op.f("application_package_instruction_application_package_id_idx"),
         table_name="application_package_instruction",
         schema="grantor",
     )
