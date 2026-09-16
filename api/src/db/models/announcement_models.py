@@ -3,14 +3,22 @@ from datetime import date, datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import UUID, BigInteger, ForeignKey, UniqueConstraint
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from src.db.models.file_upload_models import FileAttachment
+from src.db.models.user_models import User
+
 if TYPE_CHECKING:
-    from src.db.models.application_package_models import ApplicationPackage
+    from src.db.models.application_package_models import (
+        ApplicationPackage,
+        ApplicationPackageInstruction,
+    )
 
 from src.adapters.db.lookup.lookup_column import LookupColumn
 from src.constants.lookup_constants import (
+    AnnouncementAuditEvent,
     AnnouncementCategory,
     ApplicantType,
     FundingCategory,
@@ -21,6 +29,7 @@ from src.db.models.assistance_listing_models import AssistanceListing
 from src.db.models.base import TimestampMixin
 from src.db.models.grantor_schema_table import GrantorSchemaTable
 from src.db.models.lookup_models import (
+    LkAnnouncementAuditEvent,
     LkAnnouncementCategory,
     LkApplicantType,
     LkFundingCategory,
@@ -64,6 +73,14 @@ class Announcement(GrantorSchemaTable, TimestampMixin, AbstractResourceTableMixi
         back_populates="announcement",
         uselist=True,
         cascade="all, delete-orphan",
+    )
+
+    announcement_attachments: Mapped[list[AnnouncementAttachment]] = relationship(
+        back_populates="announcement", uselist=True, cascade="all, delete-orphan"
+    )
+
+    announcement_audits: Mapped[list[AnnouncementAudit]] = relationship(
+        back_populates="announcement", uselist=True, cascade="all, delete-orphan"
     )
 
     def get_resource_id(self) -> uuid.UUID:
@@ -263,3 +280,80 @@ class LinkAnnouncementSummaryApplicantType(GrantorSchemaTable, TimestampMixin):
         primary_key=True,
         index=True,
     )
+
+
+class AnnouncementAttachment(GrantorSchemaTable, TimestampMixin):
+    __tablename__ = "announcement_attachment"
+
+    __table_args__ = (
+        UniqueConstraint("announcement_id", "file_attachment_id"),
+        GrantorSchemaTable.__table_args__,
+    )
+
+    announcement_attachment_id: Mapped[uuid.UUID] = mapped_column(
+        UUID, primary_key=True, default=uuid.uuid4
+    )
+
+    announcement_id: Mapped[uuid.UUID] = mapped_column(
+        UUID, ForeignKey(Announcement.announcement_id), index=True
+    )
+    announcement: Mapped[Announcement] = relationship(
+        Announcement, back_populates="announcement_attachments"
+    )
+
+    file_attachment_id: Mapped[uuid.UUID] = mapped_column(
+        UUID, ForeignKey(FileAttachment.file_attachment_id), index=True
+    )
+    file_attachment: Mapped[FileAttachment] = relationship(FileAttachment)
+
+
+class AnnouncementAudit(GrantorSchemaTable, TimestampMixin):
+    __tablename__ = "announcement_audit"
+
+    announcement_audit_id: Mapped[uuid.UUID] = mapped_column(
+        UUID, primary_key=True, default=uuid.uuid4
+    )
+
+    announcement_id: Mapped[uuid.UUID] = mapped_column(
+        UUID, ForeignKey(Announcement.announcement_id), index=True
+    )
+    announcement: Mapped[Announcement] = relationship(
+        Announcement, back_populates="announcement_audits"
+    )
+
+    user_id: Mapped[uuid.UUID] = mapped_column(UUID, ForeignKey(User.user_id), index=True)
+    user: Mapped[User] = relationship(User)
+
+    announcement_audit_event: Mapped[AnnouncementAuditEvent] = mapped_column(
+        "announcement_audit_event_id",
+        LookupColumn(LkAnnouncementAuditEvent),
+        ForeignKey(LkAnnouncementAuditEvent.announcement_audit_event_id),
+        index=True,
+    )
+
+    announcement_summary_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID, ForeignKey(AnnouncementSummary.announcement_summary_id)
+    )
+    announcement_summary: Mapped[AnnouncementSummary | None] = relationship(AnnouncementSummary)
+
+    announcement_attachment_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID, ForeignKey(AnnouncementAttachment.announcement_attachment_id)
+    )
+    announcement_attachment: Mapped[AnnouncementAttachment | None] = relationship(
+        AnnouncementAttachment
+    )
+
+    application_package_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID, ForeignKey("grantor.application_package.application_package_id")
+    )
+    application_package: Mapped[ApplicationPackage | None] = relationship("ApplicationPackage")
+
+    application_package_instruction_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID,
+        ForeignKey("grantor.application_package_instruction.application_package_instruction_id"),
+    )
+    application_package_instruction: Mapped[ApplicationPackageInstruction | None] = relationship(
+        "ApplicationPackageInstruction"
+    )
+
+    audit_metadata: Mapped[dict | None] = mapped_column(JSONB)

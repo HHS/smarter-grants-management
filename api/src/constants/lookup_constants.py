@@ -147,10 +147,22 @@ class FormFamily(StrEnum):
 class AnnouncementAuditEvent(StrEnum):
     ANNOUNCEMENT_CREATED = "announcement_created"
     ANNOUNCEMENT_UPDATED = "announcement_updated"
+
     ANNOUNCEMENT_SUMMARY_CREATED = "announcement_summary_created"
     ANNOUNCEMENT_SUMMARY_UPDATED = "announcement_summary_updated"
+    ANNOUNCEMENT_SUMMARY_DELETED = "announcement_summary_deleted"
+
     APPLICATION_PACKAGE_CREATED = "application_package_created"
     APPLICATION_PACKAGE_UPDATED = "application_package_updated"
+    APPLICATION_PACKAGE_DELETED = "application_package_deleted"
+
+    ANNOUNCEMENT_ATTACHMENT_CREATED = "announcement_attachment_created"
+    ANNOUNCEMENT_ATTACHMENT_UPDATED = "announcement_attachment_updated"
+    ANNOUNCEMENT_ATTACHMENT_DELETED = "announcement_attachment_deleted"
+
+    APPLICATION_PACKAGE_INSTRUCTION_CREATED = "application_package_instruction_created"
+    APPLICATION_PACKAGE_INSTRUCTION_UPDATED = "application_package_instruction_updated"
+    APPLICATION_PACKAGE_INSTRUCTION_DELETED = "application_package_instruction_deleted"
 
 
 class PartnerAuditEvent(StrEnum):

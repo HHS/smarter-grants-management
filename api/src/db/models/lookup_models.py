@@ -186,6 +186,14 @@ ANNOUNCEMENT_AUDIT_EVENT_CONFIG: LookupConfig[AnnouncementAuditEvent] = LookupCo
         LookupStr(AnnouncementAuditEvent.ANNOUNCEMENT_SUMMARY_UPDATED, 4),
         LookupStr(AnnouncementAuditEvent.APPLICATION_PACKAGE_CREATED, 5),
         LookupStr(AnnouncementAuditEvent.APPLICATION_PACKAGE_UPDATED, 6),
+        LookupStr(AnnouncementAuditEvent.ANNOUNCEMENT_SUMMARY_DELETED, 7),
+        LookupStr(AnnouncementAuditEvent.APPLICATION_PACKAGE_DELETED, 8),
+        LookupStr(AnnouncementAuditEvent.ANNOUNCEMENT_ATTACHMENT_CREATED, 9),
+        LookupStr(AnnouncementAuditEvent.ANNOUNCEMENT_ATTACHMENT_UPDATED, 10),
+        LookupStr(AnnouncementAuditEvent.ANNOUNCEMENT_ATTACHMENT_DELETED, 11),
+        LookupStr(AnnouncementAuditEvent.APPLICATION_PACKAGE_INSTRUCTION_CREATED, 12),
+        LookupStr(AnnouncementAuditEvent.APPLICATION_PACKAGE_INSTRUCTION_UPDATED, 13),
+        LookupStr(AnnouncementAuditEvent.APPLICATION_PACKAGE_INSTRUCTION_DELETED, 14),
     ]
 )
 

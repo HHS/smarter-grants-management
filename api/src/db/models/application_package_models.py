@@ -9,6 +9,7 @@ from src.adapters.db.lookup.lookup_column import LookupColumn
 from src.constants.lookup_constants import ApplicationPackageOpenToApplicant, FormFamily
 from src.db.models.announcement_models import Announcement, AnnouncementAssistanceListing
 from src.db.models.base import TimestampMixin
+from src.db.models.file_upload_models import FileAttachment
 from src.db.models.grantor_schema_table import GrantorSchemaTable
 from src.db.models.lookup_models import LkApplicationPackageOpenToApplicant, LkFormFamily
 
@@ -68,6 +69,12 @@ class ApplicationPackage(GrantorSchemaTable, TimestampMixin):
         back_populates="application_package", uselist=True, cascade="all, delete-orphan"
     )
 
+    application_package_instructions: Mapped[list[ApplicationPackageInstruction]] = relationship(
+        back_populates="application_package",
+        uselist=True,
+        cascade="all, delete-orphan",
+    )
+
 
 class ApplicationPackageForm(GrantorSchemaTable, TimestampMixin):
     __tablename__ = "application_package_form"
@@ -114,3 +121,28 @@ class LinkApplicationPackageOpenToApplicant(GrantorSchemaTable, TimestampMixin):
             primary_key=True,
         )
     )
+
+
+class ApplicationPackageInstruction(GrantorSchemaTable, TimestampMixin):
+    __tablename__ = "application_package_instruction"
+
+    __table_args__ = (
+        UniqueConstraint("application_package_id", "file_attachment_id"),
+        GrantorSchemaTable.__table_args__,
+    )
+
+    application_package_instruction_id: Mapped[uuid.UUID] = mapped_column(
+        UUID, primary_key=True, default=uuid.uuid4
+    )
+
+    application_package_id: Mapped[uuid.UUID] = mapped_column(
+        UUID, ForeignKey(ApplicationPackage.application_package_id), index=True
+    )
+    application_package: Mapped[ApplicationPackage] = relationship(
+        ApplicationPackage, back_populates="application_package_instructions"
+    )
+
+    file_attachment_id: Mapped[uuid.UUID] = mapped_column(
+        UUID, ForeignKey(FileAttachment.file_attachment_id), index=True
+    )
+    file_attachment: Mapped[FileAttachment] = relationship(FileAttachment)
