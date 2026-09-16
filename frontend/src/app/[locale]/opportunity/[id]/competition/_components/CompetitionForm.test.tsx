@@ -9,15 +9,18 @@ import { CompetitionForm } from "./CompetitionForm";
 
 const mockCompetitionFormAction = jest.fn();
 const mockScrollTo = jest.fn();
+const mockClientFetch = jest.fn();
 
-jest.mock(
-  "src/app/[locale]/(base)/grantor/opportunity/[id]/competition/actions",
-  () => ({
-    competitionFormAction: (formData: unknown) =>
-      mockCompetitionFormAction(formData) as unknown,
-  }),
-);
+jest.mock("src/app/[locale]/opportunity/[id]/competition/actions", () => ({
+  competitionFormAction: (formData: unknown) =>
+    mockCompetitionFormAction(formData) as unknown,
+}));
 
+jest.mock("src/hooks/useClientFetch", () => ({
+  useClientFetch: jest.fn(() => ({
+    clientFetch: mockClientFetch,
+  })),
+}));
 let originalScrollTo: typeof global.window.scrollTo;
 
 describe("CompetitionForm", () => {
