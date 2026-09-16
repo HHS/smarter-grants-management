@@ -5,22 +5,25 @@ import {
   fakeFormType,
 } from "src/utils/testing/fixtures";
 
-import { CompetitionForm } from "./CompetitionForm";
+import { ApplicationPackage } from "./ApplicationPackage";
 
-const mockCompetitionFormAction = jest.fn();
+const mockApplicationPackageAction = jest.fn();
 const mockScrollTo = jest.fn();
+const mockClientFetch = jest.fn();
 
-jest.mock(
-  "src/app/[locale]/(base)/grantor/opportunity/[id]/competition/actions",
-  () => ({
-    competitionFormAction: (formData: unknown) =>
-      mockCompetitionFormAction(formData) as unknown,
-  }),
-);
+jest.mock("src/app/[locale]/opportunity/[id]/competition/actions", () => ({
+  ApplicationPackageAction: (formData: unknown) =>
+    mockApplicationPackageAction(formData) as unknown,
+}));
 
+jest.mock("src/hooks/useClientFetch", () => ({
+  useClientFetch: jest.fn(() => ({
+    clientFetch: mockClientFetch,
+  })),
+}));
 let originalScrollTo: typeof global.window.scrollTo;
 
-describe("CompetitionForm", () => {
+describe("ApplicationPackage", () => {
   beforeEach(() => {
     // the bind here is to work around a linting issue, shouldn't effect behavior at all
     originalScrollTo = global.window.scrollTo.bind(global.window);
@@ -31,11 +34,11 @@ describe("CompetitionForm", () => {
     jest.resetAllMocks();
   });
   it("scrolls to the top on validation errors", async () => {
-    mockCompetitionFormAction.mockResolvedValue({
+    mockApplicationPackageAction.mockResolvedValue({
       validationErrors: ["an error string"],
     });
     render(
-      <CompetitionForm
+      <ApplicationPackage
         opportunityId="1"
         competition={fakeCompetitionWithOpportunity}
         forms={[fakeFormType]}
@@ -45,7 +48,7 @@ describe("CompetitionForm", () => {
       name: "button.saveAndContinue",
     });
     await userEvent.click(submitButton);
-    expect(mockCompetitionFormAction).toHaveBeenCalledTimes(1);
+    expect(mockApplicationPackageAction).toHaveBeenCalledTimes(1);
     expect(mockScrollTo).toHaveBeenCalledTimes(1);
   });
 });
