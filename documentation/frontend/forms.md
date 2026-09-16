@@ -105,7 +105,7 @@ tbd
 
 ## Validation
 
-<!-- TODO: confirm for mgmt --> [General validation rules for the project are found here](https://navasage.atlassian.net/wiki/x/R4ALwQ) - confirm this Confluence page applies to mgmt, or link mgmt's own validation-rules doc if one exists.
+[General validation rules for the project are found here](https://navasage.atlassian.net/wiki/x/R4ALwQ).
 
 On a technical level, this means to be sure to handle all 422 errors in an intelligent way, such that the validation errors that come back in the payload with the response are surfaced in the UI.
 

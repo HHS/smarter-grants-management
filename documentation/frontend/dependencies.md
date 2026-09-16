@@ -72,7 +72,7 @@ It is referenced at ^8.20.0 in puppeteer-core v24.43.1
 It is referenced at ^8.18.0 in jsdom v26.1.0
 It is referenced at ^8.18.0 in storybook v10.5.3
 
-<!-- TODO: confirm for mgmt --> Tracked in simpler-grants-gov at https://github.com/HHS/simpler-grants-gov/issues/11636 - file an mgmt-specific issue if this override needs separate tracking here.
+Tracking this in https://github.com/HHS/smarter-grants-management/issues/279
 
 ### sharp
 

@@ -11,7 +11,7 @@ Be mindful when adjusting the presentation of elements, styling existing compone
 
 When implementing a design pattern, first configure any available `$theme-` variables to bring the design system defaults closer to the desired pattern. These global system settings are our primary method for maintaining a unified and recognizable identity. 
 
-<!-- TODO: confirm for mgmt --> The design system has been customized to match the [Simpler brand guidelines](https://wiki.simpler.grants.gov/design-and-research/brand-guidelines) - confirm whether mgmt has its own brand guidelines page, or shares this one. However, not all USWDS settings variables have been explicitly defined. It may be necessary to define additional `$theme-` variables to match design mockups and ensure brand consistency.  
+The design system has been customized to match the brand guidelines, which live in Storybook (storybook link tbd - not yet deployed for mgmt). However, not all USWDS settings variables have been explicitly defined. It may be necessary to define additional `$theme-` variables to match design mockups and ensure brand consistency.  
 
 _See [USWDS Settings guidance](https://designsystem.digital.gov/documentation/settings/)_
 

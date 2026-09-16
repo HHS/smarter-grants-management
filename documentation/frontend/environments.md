@@ -49,7 +49,7 @@ As a result, environment variables are gathered from the .env.production file ra
 
 ## Deployment
 
-<!-- TODO: confirm for mgmt --> [Check out this diagram](https://lucid.app/lucidchart/107dcf47-46e7-4088-a90a-1ef3b0ca3744/edit?viewport_loc=42%2C439%2C2295%2C1182%2C0_0&invitationId=inv_3559eb81-f735-4b22-9365-49920268e061), which was built for simpler-grants-gov's deployment setup - confirm it still applies here, or replace with an mgmt-specific diagram. This should explain most of what the next section explains, and more but in visual form.
+[Check out this diagram](https://lucid.app/lucidchart/107dcf47-46e7-4088-a90a-1ef3b0ca3744/edit?viewport_loc=42%2C439%2C2295%2C1182%2C0_0&invitationId=inv_3559eb81-f735-4b22-9365-49920268e061). This should explain most of what the next section explains, and more but in visual form.
 
 Will add image directly to document later.
 

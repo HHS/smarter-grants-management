@@ -191,7 +191,7 @@ When the default value of a flag should be updated for all users of a deployed a
 
 First, gather the name for the SSM parameter from terraform. You may need to trace through from frontend variable name -> env var name (found in environments.ts) -> SSM param name (found in frontend/app-config/env-config/environment_variables.tf). The name will look something like `/<application>/<environment>/<name-of-flag>`
 
-<!-- TODO: confirm for mgmt --> For PROD and Training (mgmt's infra currently only defines `dev.tf`/`staging.tf` - confirm whether this environment pairing applies, or update to mgmt's actual upper environment(s)):
+For PROD and Training:
 
 1. log in to AWS. Note that this can only be done by a user with write access to AWS
 2. go to Systems Manager

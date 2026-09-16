@@ -213,11 +213,11 @@ From the `frontend/` directory:
 
 The following features require additional local setup to use.
 
-### Opportunity and Award Recommendation Pages
+### Connecting to the API
 
-The opportunity, opportunity-editing, and award-recommendation pages rely on the application API. The API endpoint and authentication token are defined in `.env.development` and can be overwritten in an `.env.local` file.
+Unlike simpler-grants-gov, which has some static pages that don't need the API, basically nothing in the app will work without it, so the API needs to be running (or reachable) to use the app locally at all. The API endpoint and authentication token are defined in `.env.development` and can be overwritten in an `.env.local` file.
 
-<!-- TODO: confirm for mgmt --> The `API_URL` environment variable can be set to connect to prod or lower environment URLs to quickly develop using production or development data. To successfully connect to a deployed API, the `API_GW_AUTH` variable must be set to a valid API gateway key for the environment.
+The `API_URL` environment variable can be set to connect to prod or lower environment URLs to quickly develop using production or development data. To successfully connect to a deployed API, the `API_GW_AUTH` variable must be set to a valid API gateway key for the environment.
 
 To start a local development version of the API, run `make remake-backend` in the `/api` folder.
 

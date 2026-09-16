@@ -8,8 +8,6 @@ E2E tests are run using Playwright. See [development.md](../../DEVELOPMENT.md) f
 
 Playwright tests can be directed at any deployed environment by adjusting environment variables set in your `.env.local` file. For example, when running against staging:
 
-<!-- TODO: confirm for mgmt - PLAYWRIGHT_BASE_URL/PLAYWRIGHT_API_URL below are placeholders, not simpler-grants-gov's staging domains - fill in mgmt's actual staging URLs -->
-
 ```
 PLAYWRIGHT_TARGET_ENV=staging
 PLAYWRIGHT_BASE_URL=<mgmt staging URL>

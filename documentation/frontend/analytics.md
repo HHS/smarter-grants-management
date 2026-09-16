@@ -22,8 +22,6 @@ New Relic will be installed to monitor the following in DEV, Staging, and PROD e
 
 Each deployed application / environment combination will have its own name to distinguish it, but all applications will reference the same license key (found in 1password).
 
-<!-- TODO: confirm for mgmt --> The Smarter Grants Management team will have licenses for 4 admin users, 5 non-admin users. If you need access, please consult with your manager.
-
 Admin users will have full access to the features available in New Relic's UI. Non-admin users will not have access to reatime AMP or Browser monitoring, but will have access to all dashboards. Any information that should be made available to non-admin users should be exported into a dashboard for their reference.
 
 ## Usage
@@ -54,7 +52,7 @@ Note that the `window.newrelic` object may not be available immediately upon pag
 Generally you should not need run New Relic locally. By default `npm run dev` will run with the `NEW_RELIC_ENABLED` flag set to `false`. If you need to run the app with New Relic locally, run the app using the `start:nr` script and supply the `NEW_RELIC_APP_NAME` and `NEW_RELIC_LICENSE_KEY` variables via the command line when you start the app. For example:
 
 ```
-npm run build -- --no-lint && NEW_RELIC_APP_NAME="Smarter Grants Management Next DEV" NEW_RELIC_LICENSE_KEY="<lisence key>" npm run start:nr
+npm run build -- --no-lint && NEW_RELIC_APP_NAME="<app name, TBD>" NEW_RELIC_LICENSE_KEY="<lisence key>" npm run start:nr
 ```
 
 For testing locally in order to more closely emulate the deployed environment, see the considerations mentioned in the `deployed` section below.
@@ -77,7 +75,7 @@ Since environment variables necessary for instantiating the New Relic code are o
 
 - As our client side code expects New Relic configuration to be available when running `npm run build`, we will see warnings in our build logs related to this missing data.
 
-- The Typescript types package for New Relic's Node implementation is lacking a bit. We are working around this in our code (see `NewRelicWithCorrectTypes` in `frontend/src/types/newRelic.ts`), but there is a ticket out to contribute back to the New Relic package as well so that we do not need to manage this ourselves. <!-- TODO: confirm for mgmt --> See https://github.com/HHS/simpler-grants-gov/issues/2982, simpler-grants-gov's tracking issue for this - file an mgmt-specific one if this workaround needs separate tracking here.
+- The Typescript types package for New Relic's Node implementation is lacking a bit. We are working around this in our code (see `NewRelicWithCorrectTypes` in `frontend/src/types/newRelic.ts`).
 
 - client side error: `ChunkLoadError: Loading chunk 478 failed.`
   - FIX: this happens locally when the script is blocked. Firefox tends to block, try running in Chrome.
