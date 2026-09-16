@@ -4,10 +4,14 @@ from datetime import datetime
 import factory
 import factory.fuzzy
 import faker
+import pytz
 from faker.providers import BaseProvider
+from faker.providers.date_time import Provider as DateTimeProvider
 from sqlalchemy.orm import scoped_session
 
 import src.adapters.db as db
+import src.db.models.announcement_models as announcement_models
+import src.db.models.application_package_models as application_package_models
 import src.db.models.assistance_listing_models as assistance_listing_models
 import src.db.models.file_upload_models as file_upload_models
 import src.db.models.grantor_organization_models as grantor_organization_models
@@ -15,10 +19,16 @@ import src.db.models.resource_models as resource_models
 import src.db.models.user_models as user_models
 import src.db.models.workflow_models as workflow_models
 from src.constants.lookup_constants import (
+    AnnouncementCategory,
+    ApplicantType,
+    ApplicationPackageOpenToApplicant,
     ApprovalResponseType,
     ApprovalType,
     ExternalUserType,
     FileScanStatus,
+    FormFamily,
+    FundingCategory,
+    FundingInstrument,
     GrantorOrganizationAuditEvent,
     GrantorOrganizationType,
     PartnerAuditEvent,
@@ -151,6 +161,68 @@ class CustomProvider(BaseProvider):
 
     ASSISTANCE_LISTING_NUMBER_FORMATS = ["##.???", "##.###"]
 
+    AGENCY_CONTACT_DESC_FORMATS = [
+        "{{name}}\n{{job}}\n555-###-####\n{{email}}",
+        "{{relevant_url}} Contact Center\nHours of operation are 24 hours a day, 7 days a week.\n{{email}}",
+        "Webmaster\n{{email}}",
+    ]
+
+    # Rather than generate any random URL in our data, use those
+    # that are vaguely relevant to avoid linking to anything outside
+    # of the grants ecosystem that could cause confusion in test data
+    # (ie. either a website we work with, or a very generic one)
+    RELEVANT_URLS = ["google.com", "grants.gov", "simpler.grants.gov", "sam.gov"]
+
+    ADDITIONAL_INFO_DESC_FORMATS = [
+        "Full Announcement",
+        "Grants.gov",
+        "Link to grant on {{relevant_url}}",
+        "Program Announcement",
+        "Click on the link to see the full announcement.",
+        "Division of {{company}}",
+    ]
+
+    # This is to help with the unique agency code conflicts
+    AGENCY_CODE_FORMATS = [
+        # We don't make anything of format ???
+        # To avoid overlap with real agencies as we
+        # saw tests just happen to match exactly
+        # and get a unique constraint issue
+        "FAKE???",
+        "????",
+        "???-??",
+        "???-???",
+        "???-???-##",
+        "???-???-???-##",
+        "???-??-##-??",
+    ]
+
+    # Opportunity title uses several other existing providers
+    # to generate titles. Anything in {{ }} is calling a provider
+    # with that name.
+    OPPORTUNITY_TITLE_FORMATS = [
+        "Research into {{job}} industry",
+        "Embassy program for {{job}} in {{country}}",
+        "{{name}} Foundation Grant for {{bs}}",
+        "{{company}} {{year}} award",
+    ]
+
+    SUMMARY_DESCRIPTION_FORMATS = [
+        "{{agency_code}} is looking to further investigate this topic. {{paragraph}}",
+        "<p>{{paragraph}}</p><p><br></p><p>{{paragraph}}</p>",
+        "The purpose of this Notice of Funding Opportunity (NOFO) is to support research into {{job}} and how we might {{catch_phrase}}.",
+        "<div>{{paragraph:long}} <a href='{{relevant_url}}'>{{sentence}}</a> {{paragraph:long}}</div> <div>{{paragraph:long}} <a href='{{relevant_url}}'>{{sentence}}</a> {{paragraph:long}}</div>",
+    ]
+
+    # In the formatting, ? becomes a random letter, # becomes a random digit
+    OPPORTUNITY_NUMBER_FORMATS = [
+        "???-###-FY{{year}}-###",
+        "{{agency_code}}-##-###",
+        "???#######",
+        "??-##-???-###",
+        "{{word}}-###-##",
+    ]
+
     def department_word(self) -> str:
         return self.random_element(self.DEPARTMENT_WORDS)
 
@@ -173,14 +245,59 @@ class CustomProvider(BaseProvider):
         pattern = self.random_element(self.PROGRAM_NAME_FORMATS)
         return self.generator.parse(pattern)
 
+    def agency_code(self) -> str:
+        pattern = self.bothify(self.random_element(self.AGENCY_CODE_FORMATS)).upper()
+        return self.generator.parse(pattern)
+
     def assistance_listing_number(self) -> str:
         pattern = self.bothify(self.random_element(self.ASSISTANCE_LISTING_NUMBER_FORMATS)).upper()
         return self.generator.parse(pattern)
+
+    def opportunity_number(self) -> str:
+        # bothify turns any ? into letters, and # into digits
+        pattern = self.bothify(self.random_element(self.OPPORTUNITY_NUMBER_FORMATS))
+        return self.generator.parse(pattern).upper()
+
+    def opportunity_title(self) -> str:
+        pattern = self.random_element(self.OPPORTUNITY_TITLE_FORMATS)
+        return self.generator.parse(pattern)
+
+    def summary_description(self) -> str:
+        self.generator.set_arguments("long", {"nb_sentences": 25})
+        pattern = self.random_element(self.SUMMARY_DESCRIPTION_FORMATS)
+        return self.generator.parse(pattern)
+
+    def relevant_url(self):
+        return self.random_element(self.RELEVANT_URLS)
+
+    def additional_info_desc(self):
+        pattern = self.random_element(self.ADDITIONAL_INFO_DESC_FORMATS)
+        return self.generator.parse(pattern)
+
+    def agency_contact_description(self) -> str:
+        # bothify turns any ? into letters, and # into digits
+        pattern = self.bothify(self.random_element(self.AGENCY_CONTACT_DESC_FORMATS))
+        return self.generator.parse(pattern)
+
+
+class DateTimeProviderExtended(DateTimeProvider):
+    """
+    Custom provider for overriding datetime provider from Faker so we can make
+    datetimes have a timezone by default instead of being unaware and having the DB make assumptions.
+    """
+
+    def date_time_aware(self, start_date="-1y", end_date="now", tzinfo=pytz.UTC):
+        return DateTimeProvider.date_time_between(
+            self, start_date=start_date, end_date=end_date, tzinfo=tzinfo
+        )
 
 
 fake = faker.Faker()
 fake.add_provider(CustomProvider)
 factory.Faker.add_provider(CustomProvider)
+
+fake.add_provider(DateTimeProviderExtended)
+factory.Faker.add_provider(DateTimeProviderExtended)
 
 _db_session: db.Session | None = None
 
@@ -268,7 +385,7 @@ class UserTokenSessionFactory(BaseFactory):
 
     token_id = Generators.UuidObj
 
-    expires_at = factory.Faker("date_time_between", start_date="+1d", end_date="+10d")
+    expires_at = factory.Faker("date_time_aware", start_date="+1d", end_date="+10d")
 
     is_valid = True
 
@@ -476,7 +593,7 @@ class UserApiKeyFactory(BaseFactory):
     key_id = factory.Sequence(lambda n: f"aws-api-gateway-key-{n:08d}")
 
     last_used = sometimes_none(
-        factory.Faker("date_time_between", start_date="-30d", end_date="now"), none_chance=0.3
+        factory.Faker("date_time_aware", start_date="-30d", end_date="now"), none_chance=0.3
     )
     is_active = True
 
@@ -486,7 +603,7 @@ class UserApiKeyFactory(BaseFactory):
 
         # Trait for recently used keys
         recently_used = factory.Trait(
-            last_used=factory.Faker("date_time_between", start_date="-7d", end_date="now")
+            last_used=factory.Faker("date_time_aware", start_date="-7d", end_date="now")
         )
 
         # Trait for unused keys
@@ -595,7 +712,223 @@ class AssistanceListingFactory(BaseFactory):
 
     is_active = True
 
-    published_date = factory.Faker("date_time_between", start_date="-5y", end_date="now")
+    published_date = factory.Faker("date_time_aware", start_date="-5y", end_date="now")
+
+
+###################
+# Announcement Factories
+###################
+
+
+class AnnouncementFactory(BaseFactory):
+    class Meta:
+        model = announcement_models.Announcement
+
+    announcement_id = Generators.UuidObj
+
+    announcement_number = factory.Faker("opportunity_number")
+    announcement_title = factory.Faker("opportunity_title")
+
+    category = factory.fuzzy.FuzzyChoice(AnnouncementCategory)
+    # only set the category explanation if category is Other
+    category_explanation = factory.Maybe(
+        decider=factory.LazyAttribute(lambda o: o.category == AnnouncementCategory.OTHER),
+        yes_declaration=factory.Faker("sentence", nb_words=3),
+        no_declaration=None,
+    )
+
+    tagline = factory.Faker("sentence")
+    purpose_statement = factory.Faker("paragraph")
+
+    announcement_assistance_listings = factory.RelatedFactoryList(
+        "tests.db.models.factories.AnnouncementAssistanceListingFactory",
+        factory_related_name="announcement",
+        size=lambda: random.randint(1, 2),
+    )
+
+
+class AnnouncementAssistanceListingFactory(BaseFactory):
+    class Meta:
+        model = announcement_models.AnnouncementAssistanceListing
+
+    announcement_assistance_listing_id = Generators.UuidObj
+
+    announcement = factory.SubFactory(AnnouncementFactory)
+    announcement_id = factory.LazyAttribute(lambda a: a.announcement.announcement_id)
+
+    assistance_listing = factory.SubFactory(AssistanceListingFactory)
+    assistance_listing_id = factory.LazyAttribute(
+        lambda a: a.assistance_listing.assistance_listing_id
+    )
+
+
+class AnnouncementSummaryFactory(BaseFactory):
+    class Meta:
+        model = announcement_models.AnnouncementSummary
+
+    announcement_summary_id = Generators.UuidObj
+
+    announcement = factory.SubFactory(AnnouncementFactory)
+    announcement_id = factory.LazyAttribute(lambda a: a.announcement.announcement_id)
+
+    summary_description = factory.Faker("summary_description")
+    is_cost_sharing = factory.Faker("boolean")
+
+    # By default generate non-forecasts which affects several fields
+    is_forecast = False
+
+    # Forecasted records don't have a close date
+    close_timestamp = factory.Maybe(
+        decider=factory.LazyAttribute(lambda s: s.is_forecast),
+        # If forecasted, don't set a close date
+        yes_declaration=None,
+        # otherwise a future date
+        no_declaration=factory.Faker("date_time_aware", start_date="+2w", end_date="+3w"),
+    )
+    close_timestamp_description = factory.Maybe(
+        decider=factory.LazyAttribute(lambda s: s.close_timestamp is None),
+        yes_declaration=None,
+        no_declaration=factory.Faker("paragraph", nb_sentences=1),
+    )
+
+    # Just a random recent post time
+    post_timestamp = factory.Faker("date_time_aware", start_date="-3w", end_date="-1d")
+
+    # By default set to a time in the future
+    archive_timestamp = factory.Faker("date_time_aware", start_date="+3w", end_date="+4w")
+
+    expected_number_of_awards = factory.Faker("random_int", min=1, max=25)
+    estimated_total_program_funding = factory.Faker(
+        "random_int", min=10_000, max=10_000_000, step=5_000
+    )
+    award_floor = factory.LazyAttribute(
+        lambda s: s.estimated_total_program_funding // s.expected_number_of_awards
+    )
+    award_ceiling = factory.LazyAttribute(lambda s: s.estimated_total_program_funding)
+
+    additional_info_url = factory.Faker("relevant_url")
+    additional_info_url_description = factory.Faker("additional_info_desc")
+
+    # Forecasted values are only set if is_forecast=True
+    forecasted_post_timestamp = factory.Maybe(
+        decider=factory.LazyAttribute(lambda s: s.is_forecast),
+        # If forecasted, set it in the future
+        yes_declaration=factory.Faker("date_time_aware", start_date="+2w", end_date="+3w"),
+        # otherwise don't set
+        no_declaration=None,
+    )
+    forecasted_close_timestamp = factory.Maybe(
+        decider=factory.LazyAttribute(lambda s: s.is_forecast),
+        # If forecasted, set it in the future
+        yes_declaration=factory.Faker("date_time_aware", start_date="+6w", end_date="+12w"),
+        # otherwise don't set
+        no_declaration=None,
+    )
+    forecasted_close_timestamp_description = factory.Maybe(
+        decider=factory.LazyAttribute(lambda s: s.forecasted_close_timestamp is None),
+        yes_declaration=None,
+        no_declaration=factory.Faker("paragraph", nb_sentences=1),
+    )
+
+    estimated_award_date = sometimes_none(
+        factory.Faker("date_between", start_date="+26w", end_date="+30w")
+    )
+    estimated_project_start_date = sometimes_none(
+        factory.Faker("date_between", start_date="+30w", end_date="+52w")
+    )
+
+    fiscal_year = factory.LazyAttribute(
+        lambda s: s.estimated_project_start_date.year if s.estimated_project_start_date else None
+    )
+
+    funding_category_description = sometimes_none(factory.Faker("paragraph", nb_sentences=1))
+    applicant_eligibility_description = sometimes_none(factory.Faker("paragraph", nb_sentences=1))
+
+    agency_contact_description = factory.Faker("agency_contact_description")
+    agency_email_address = factory.Faker("email")
+    agency_email_address_description = factory.LazyAttribute(
+        lambda s: "Contact this agency via email"
+    )
+
+    funding_instruments = factory.Faker(
+        "random_elements",
+        length=random.randint(1, 3),
+        elements=[f for f in FundingInstrument],
+        unique=True,
+    )
+    funding_categories = factory.Faker(
+        "random_elements",
+        length=random.randint(1, 3),
+        elements=[f for f in FundingCategory],
+        unique=True,
+    )
+    applicant_types = factory.Faker(
+        "random_elements",
+        length=random.randint(1, 3),
+        elements=[a for a in ApplicantType],
+        unique=True,
+    )
+
+
+class ApplicationPackageFactory(BaseFactory):
+    class Meta:
+        model = application_package_models.ApplicationPackage
+
+    application_package_id = Generators.UuidObj
+
+    announcement = factory.SubFactory(AnnouncementFactory)
+    announcement_id = factory.LazyAttribute(lambda a: a.announcement.announcement_id)
+
+    form_family = factory.fuzzy.FuzzyChoice(FormFamily)
+
+    public_application_package_id = sometimes_none("ABC-134-56789")
+
+    application_package_title = sometimes_none(factory.Faker("sentence"))
+
+    opening_timestamp = factory.Faker("date_time_aware", start_date="-3w", end_date="-1d")
+    closing_timestamp = factory.Faker("date_time_aware", start_date="+1d", end_date="+3w")
+
+    grace_period = sometimes_none(factory.Faker("random_int", min=1, max=10))
+    contact_info = sometimes_none(factory.Faker("agency_contact_description"))
+
+    announcement_assistance_listing = factory.SubFactory(
+        AnnouncementAssistanceListingFactory, announcement=factory.SelfAttribute("..announcement")
+    )
+
+    application_package_forms = factory.RelatedFactoryList(
+        "tests.db.models.factories.ApplicationPackageFormFactory",
+        factory_related_name="application_package",
+        size=1,
+    )
+
+    # Default to allowing both individual and organization applicants
+    # This can be overridden in tests by setting it explicitly
+    open_to_applicants = [
+        ApplicationPackageOpenToApplicant.INDIVIDUAL,
+        ApplicationPackageOpenToApplicant.ORGANIZATION,
+    ]
+
+
+class ApplicationPackageFormFactory(BaseFactory):
+    class Meta:
+        model = application_package_models.ApplicationPackageForm
+
+    application_package_form_id = Generators.UuidObj
+
+    application_package = factory.SubFactory(ApplicationPackageFactory)
+    application_package_id = factory.LazyAttribute(
+        lambda a: a.application_package.application_package_id
+    )
+
+    # We'll probably want to adjust this in the future, but for now just a random int for the form
+    form_id = factory.Faker("random_int", min=100, max=150)
+
+    is_required = factory.Faker("boolean")
+
+
+###################
+# Test Factories
+###################
 
 
 class ExampleTableFactory(BaseFactory):
