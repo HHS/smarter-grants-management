@@ -21,12 +21,12 @@ def dynamodb_boto_client(file_scan_dynamodb_table):
 
 @pytest.fixture
 def aws_mocks(
-    mock_file_scan_s3_bucket,
+    mock_file_scan_s3_bucket_name,
     file_scan_dynamodb_table,
 ):
     """Bundle the s3 + dynamodb fixtures this endpoint needs."""
     return {
-        "bucket": mock_file_scan_s3_bucket,
+        "bucket": mock_file_scan_s3_bucket_name,
         "table": file_scan_dynamodb_table,
     }
 

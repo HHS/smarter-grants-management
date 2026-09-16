@@ -334,84 +334,76 @@ def reset_aws_env_vars(monkeypatch):
 
 
 @pytest.fixture
-def mock_s3(reset_aws_env_vars):
-    # https://docs.getmoto.org/en/stable/docs/configuration/index.html#whitelist-services
-    with moto.mock_aws(config={"core": {"service_whitelist": ["s3"]}}):
-        yield boto3.resource("s3")
-
-
-@pytest.fixture
-def s3_config(mock_s3_bucket, other_mock_s3_bucket, mock_file_scan_s3_bucket):
+def s3_config(mock_s3_bucket_name, mock_other_s3_bucket_name, mock_file_scan_s3_bucket_name):
+    """Configure S3 with draft and file scan buckets."""
     return S3Config(
-        PUBLIC_FILES_BUCKET=f"s3://{mock_s3_bucket}",
-        DRAFT_FILES_BUCKET=f"s3://{other_mock_s3_bucket}",
-        FILE_SCAN_BUCKET=f"s3://{mock_file_scan_s3_bucket}",
+        PUBLIC_FILES_BUCKET=f"s3://{mock_s3_bucket_name}",
+        DRAFT_FILES_BUCKET=f"s3://{mock_other_s3_bucket_name}",
+        FILE_SCAN_BUCKET=f"s3://{mock_file_scan_s3_bucket_name}",
     )
 
 
 @pytest.fixture
-def mock_s3_bucket_resource(mock_s3):
-    bucket = mock_s3.Bucket("local-mock-public-bucket")
-    bucket.create()
-    return bucket
+def mock_aws(reset_aws_env_vars):
+    """Base AWS mock enabling multiple services.
 
-
-@pytest.fixture
-def mock_s3_bucket(mock_s3_bucket_resource):
-    return mock_s3_bucket_resource.name
-
-
-@pytest.fixture
-def other_mock_s3_bucket_resource(mock_s3):
-    # This second bucket exists for tests where we want there to be multiple buckets
-    # and/or test behavior when moving files between buckets.
-    bucket = mock_s3.Bucket("local-mock-draft-bucket")
-    bucket.create()
-    return bucket
-
-
-@pytest.fixture
-def mock_file_scan_s3_bucket_resource(mock_s3):
-    bucket = mock_s3.Bucket("local-mock-file-scan-bucket")
-    bucket.create()
-    return bucket
-
-
-@pytest.fixture
-def mock_file_scan_s3_bucket(mock_file_scan_s3_bucket_resource):
-    return mock_file_scan_s3_bucket_resource.name
-
-
-@pytest.fixture
-def other_mock_s3_bucket(other_mock_s3_bucket_resource):
-    return other_mock_s3_bucket_resource.name
-
-
-@pytest.fixture
-def mock_sqs(reset_aws_env_vars):
-    with moto.mock_aws(config={"core": {"service_whitelist": ["sqs"]}}):
+    This enables mocking for DynamoDB, S3, SQS, SES, and SESv2.
+    Individual resource fixtures depend on this base fixture.
+    """
+    with moto.mock_aws(
+        config={"core": {"service_whitelist": ["dynamodb", "s3", "sqs", "ses", "sesv2"]}}
+    ):
         yield
 
 
 @pytest.fixture
-def mock_dynamodb(reset_aws_env_vars):
-    with moto.mock_aws(config={"core": {"service_whitelist": ["dynamodb"]}}):
-        yield
+def mock_s3_bucket(mock_aws):
+    s3 = boto3.resource("s3")
+    bucket = s3.Bucket("local-mock-public-bucket")
+    bucket.create()
+    return bucket
 
 
 @pytest.fixture
-def file_scan_dynamodb_table(mock_dynamodb, monkeypatch):
-    """Create DynamoDB table for file scan tests."""
-    dynamodb = boto3.client("dynamodb", region_name="us-east-1")
+def mock_s3_bucket_name(mock_s3_bucket):
+    return mock_s3_bucket.name
+
+
+@pytest.fixture
+def mock_other_s3_bucket(mock_aws):
+    s3 = boto3.resource("s3")
+    bucket = s3.Bucket("local-mock-draft-bucket")
+    bucket.create()
+    return bucket
+
+
+@pytest.fixture
+def mock_other_s3_bucket_name(mock_other_s3_bucket):
+    return mock_other_s3_bucket.name
+
+
+@pytest.fixture
+def mock_file_scan_s3_bucket(mock_aws):
+    s3 = boto3.resource("s3")
+    bucket = s3.Bucket("local-mock-file-scan-bucket")
+    bucket.create()
+    return bucket
+
+
+@pytest.fixture
+def mock_file_scan_s3_bucket_name(mock_file_scan_s3_bucket):
+    return mock_file_scan_s3_bucket.name
+
+
+@pytest.fixture
+def file_scan_dynamodb_table(mock_aws, monkeypatch):
+    """Create DynamoDB table for tests."""
+    dynamodb_client = boto3.client("dynamodb", region_name="us-east-1")
     table_name = "test-local-virus-scan"
-    dynamodb.create_table(
+    dynamodb_client.create_table(
         TableName=table_name,
-        KeySchema=[
-            {"AttributeName": "file_id", "KeyType": "HASH"},
-        ],
-        AttributeDefinitions=[
-            {"AttributeName": "file_id", "AttributeType": "S"},
-        ],
+        KeySchema=[{"AttributeName": "file_id", "KeyType": "HASH"}],
+        AttributeDefinitions=[{"AttributeName": "file_id", "AttributeType": "S"}],
         BillingMode="PAY_PER_REQUEST",
     )
     monkeypatch.setenv("FILE_SCAN_CACHE_TABLE_NAME", table_name)
@@ -419,17 +411,15 @@ def file_scan_dynamodb_table(mock_dynamodb, monkeypatch):
 
 
 @pytest.fixture
-def ses_client(monkeypatch, reset_aws_env_vars):
+def ses_client(monkeypatch, reset_aws_env_vars, mock_aws):
     """Create a mocked SESv2 client using moto."""
     # The SES adapter logs instead of sending when running against local AWS, so
     # turn that off or nothing reaches the mocked backend.
     monkeypatch.setenv("IS_LOCAL_AWS", "0")
 
-    # to access ses_backends, need to add ses to the whitelist
-    with moto.mock_aws(config={"core": {"service_whitelist": ["ses", "sesv2"]}}):
-        ses_client = boto3.client("sesv2", region_name="us-east-1")
-        ses_client.create_email_identity(EmailIdentity=os.getenv("AWS_SES_FROM_EMAIL"))
-        yield ses_client
+    ses_client = boto3.client("sesv2", region_name="us-east-1")
+    ses_client.create_email_identity(EmailIdentity=os.getenv("AWS_SES_FROM_EMAIL"))
+    return ses_client
 
 
 @pytest.fixture
@@ -442,7 +432,7 @@ def get_sent_emails():
 
 
 @pytest.fixture
-def workflow_sqs_queue(mock_sqs, monkeypatch):
+def workflow_sqs_queue(mock_aws, monkeypatch):
     sqs = boto3.client("sqs", region_name="us-east-1")
     queue = sqs.create_queue(QueueName="test-workflow-queue")
     # Set the env var of this queue so the SQSConfig picks it up
@@ -496,37 +486,17 @@ def user_api_key_id(user_api_key):
 
 
 @pytest.fixture
-def mock_dynamodb_and_s3(reset_aws_env_vars, monkeypatch):
-    """A single moto context whitelisting both dynamodb and s3.
-
-    The single-service ``mock_dynamodb`` / ``mock_s3`` fixtures each enter their
-    own ``moto.mock_aws`` context with a one-service whitelist, and the
-    innermost-entered context wins -- so they can't both be active at once.
-    Flows that touch both services (e.g. the file-scan-complete path: read the
-    dynamodb scan record, then presign/size the s3 object) need this combined
-    context instead.
+def mock_dynamodb_and_s3(mock_file_scan_s3_bucket_name, file_scan_dynamodb_table):
+    """Convenience fixture bundling S3 bucket and DynamoDB table for file scan tests.
 
     Yields a namespace with ``table_name``, ``bucket``, and a ``dynamodb_client``
     for seeding scan records.
     """
-    table_name = "test-local-virus-scan"
-    bucket = "local-mock-file-scan-bucket"
-
-    with moto.mock_aws(config={"core": {"service_whitelist": ["dynamodb", "s3"]}}):
-        # Create DynamoDB table
-        dynamodb_client = boto3.client("dynamodb", region_name="us-east-1")
-        dynamodb_client.create_table(
-            TableName=table_name,
-            KeySchema=[{"AttributeName": "file_id", "KeyType": "HASH"}],
-            AttributeDefinitions=[{"AttributeName": "file_id", "AttributeType": "S"}],
-            BillingMode="PAY_PER_REQUEST",
-        )
-        monkeypatch.setenv("FILE_SCAN_CACHE_TABLE_NAME", table_name)
-
-        # Create S3 bucket
-        boto3.client("s3").create_bucket(Bucket=bucket)
-
-        yield SimpleNamespace(table_name=table_name, bucket=bucket, dynamodb_client=dynamodb_client)
+    return SimpleNamespace(
+        table_name=file_scan_dynamodb_table,
+        bucket=mock_file_scan_s3_bucket_name,
+        dynamodb_client=boto3.client("dynamodb", region_name="us-east-1"),
+    )
 
 
 ####################
