@@ -12,13 +12,14 @@ class Form:
     version: str
     form_family: list[FormFamily]
 
+
 SF424 = Form(
     form_id=713,
     agency_code="Grants.gov",
     name="Application for Federal Assistance (SF-424)",
     short_name="SF424",
     version="4.0",
-    form_family=[FormFamily.SF_424]
+    form_family=[FormFamily.SF_424],
 )
 
 SF424_RR = Form(
@@ -27,7 +28,7 @@ SF424_RR = Form(
     name="SF424 (R & R)",
     short_name="RR_SF424",
     version="5.0",
-    form_family=[FormFamily.RR]
+    form_family=[FormFamily.RR],
 )
 
 SF424A = Form(
@@ -36,7 +37,13 @@ SF424A = Form(
     name="Budget Information for Non-Construction Programs (SF-424A)",
     short_name="SF424A",
     version="1.0",
-    form_family=[FormFamily.SF_424, FormFamily.SF_424_INDIVIDUAL, FormFamily.SF_424_MANDATORY, FormFamily.SF_424_SHORT_ORGANIZATION, FormFamily.RR]
+    form_family=[
+        FormFamily.SF_424,
+        FormFamily.SF_424_INDIVIDUAL,
+        FormFamily.SF_424_MANDATORY,
+        FormFamily.SF_424_SHORT_ORGANIZATION,
+        FormFamily.RR,
+    ],
 )
 
 PROJECT_ABSTRACT_SUMMARY = Form(
@@ -45,7 +52,12 @@ PROJECT_ABSTRACT_SUMMARY = Form(
     name="Project Abstract Summary",
     short_name="Project_AbstractSummary",
     version="2.0",
-    form_family=[FormFamily.SF_424, FormFamily.SF_424_MANDATORY, FormFamily.SF_424_SHORT_ORGANIZATION, FormFamily.RR]
+    form_family=[
+        FormFamily.SF_424,
+        FormFamily.SF_424_MANDATORY,
+        FormFamily.SF_424_SHORT_ORGANIZATION,
+        FormFamily.RR,
+    ],
 )
 
 LOBBYING_FORM = Form(
@@ -54,10 +66,16 @@ LOBBYING_FORM = Form(
     name="Grants.gov Lobbying Form",
     short_name="GG_LobbyingForm",
     version="1.1",
-    form_family=[FormFamily.SF_424, FormFamily.SF_424_MANDATORY, FormFamily.SF_424_SHORT_ORGANIZATION, FormFamily.RR]
+    form_family=[
+        FormFamily.SF_424,
+        FormFamily.SF_424_MANDATORY,
+        FormFamily.SF_424_SHORT_ORGANIZATION,
+        FormFamily.RR,
+    ],
 )
 
 ALL_FORMS = [SF424, SF424_RR, SF424A, PROJECT_ABSTRACT_SUMMARY, LOBBYING_FORM]
+
 
 def list_forms() -> list[Form]:
     """Get forms, for now this just returns a static list until we build something better."""

@@ -13,8 +13,11 @@ from src.api.announcements.announcement_schemas import (
     AnnouncementSummaryCreateRequestSchema,
     AnnouncementSummaryResponseSchema,
     AnnouncementSummaryUpdateRequestSchema,
-    AnnouncementUpdateRequestSchema, ApplicationPackageResponseSchema, ApplicationPackageCreateRequestSchema,
-    ApplicationPackageUpdateRequestSchema, ApplicationPackageFormsSetRequestSchema,
+    AnnouncementUpdateRequestSchema,
+    ApplicationPackageCreateRequestSchema,
+    ApplicationPackageFormsSetRequestSchema,
+    ApplicationPackageResponseSchema,
+    ApplicationPackageUpdateRequestSchema,
 )
 from src.auth.multi_auth import jwt_or_api_user_key_multi_auth
 from src.logs.flask_logger import add_extra_data_to_current_request_logs
@@ -25,11 +28,15 @@ from src.services.announcements.announcement_summaries import (
 from src.services.announcements.create_announcement import create_announcement
 from src.services.announcements.create_application_package import create_application_package
 from src.services.announcements.get_announcement import get_announcement_and_verify_access
-from src.services.announcements.get_application_package import get_application_package_and_verify_access
+from src.services.announcements.get_application_package import (
+    get_application_package_and_verify_access,
+)
 from src.services.announcements.list_announcements import list_announcements
 from src.services.announcements.update_announcement import update_announcement
 from src.services.announcements.update_application_package import update_application_package
-from src.services.announcements.update_application_package_forms import update_application_package_forms
+from src.services.announcements.update_application_package_forms import (
+    update_application_package_forms,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -197,7 +204,9 @@ def announcement_summary_update(
     return response.ApiResponse(message="Success", data=announcement_summary)
 
 
-@announcement_blueprint.get("/<uuid:announcement_id>/application-packages/<uuid:application_package_id>")
+@announcement_blueprint.get(
+    "/<uuid:announcement_id>/application-packages/<uuid:application_package_id>"
+)
 @announcement_blueprint.output(ApplicationPackageResponseSchema)
 @announcement_blueprint.doc(
     summary="Fetch an Application Package",
@@ -205,14 +214,22 @@ def announcement_summary_update(
 )
 @announcement_blueprint.auth_required(jwt_or_api_user_key_multi_auth)
 @flask_db.with_db_session()
-def application_package_get(db_session: db.Session, announcement_id: uuid.UUID, application_package_id: uuid.UUID) -> response.ApiResponse:
-    add_extra_data_to_current_request_logs({"announcement_id": announcement_id, "application_package_id": application_package_id})
-    logger.info("GET /v1/announcements/:announcement_id/application-packages/:application_package_id")
+def application_package_get(
+    db_session: db.Session, announcement_id: uuid.UUID, application_package_id: uuid.UUID
+) -> response.ApiResponse:
+    add_extra_data_to_current_request_logs(
+        {"announcement_id": announcement_id, "application_package_id": application_package_id}
+    )
+    logger.info(
+        "GET /v1/announcements/:announcement_id/application-packages/:application_package_id"
+    )
 
     with db_session.begin():
         user = jwt_or_api_user_key_multi_auth.get_user()
         db_session.add(user)
-        application_package = get_application_package_and_verify_access(db_session, user, announcement_id, application_package_id)
+        application_package = get_application_package_and_verify_access(
+            db_session, user, announcement_id, application_package_id
+        )
 
     return response.ApiResponse(message="Success", data=application_package)
 
@@ -226,7 +243,9 @@ def application_package_get(db_session: db.Session, announcement_id: uuid.UUID, 
 )
 @announcement_blueprint.auth_required(jwt_or_api_user_key_multi_auth)
 @flask_db.with_db_session()
-def application_package_create(db_session: db.Session, announcement_id: uuid.UUID, json_data: dict) -> response.ApiResponse:
+def application_package_create(
+    db_session: db.Session, announcement_id: uuid.UUID, json_data: dict
+) -> response.ApiResponse:
     add_extra_data_to_current_request_logs({"announcement_id": announcement_id})
     logger.info("POST /v1/announcements/:announcement_id/application-packages")
 
@@ -234,11 +253,16 @@ def application_package_create(db_session: db.Session, announcement_id: uuid.UUI
         user = jwt_or_api_user_key_multi_auth.get_user()
         db_session.add(user)
 
-        application_package = create_application_package(db_session, user, json_data, announcement_id)
+        application_package = create_application_package(
+            db_session, user, json_data, announcement_id
+        )
 
     return response.ApiResponse(message="Success", data=application_package)
 
-@announcement_blueprint.put("/<uuid:announcement_id>/application-packages/<uuid:application_package_id>")
+
+@announcement_blueprint.put(
+    "/<uuid:announcement_id>/application-packages/<uuid:application_package_id>"
+)
 @announcement_blueprint.input(ApplicationPackageUpdateRequestSchema)
 @announcement_blueprint.output(ApplicationPackageResponseSchema)
 @announcement_blueprint.doc(
@@ -247,19 +271,33 @@ def application_package_create(db_session: db.Session, announcement_id: uuid.UUI
 )
 @announcement_blueprint.auth_required(jwt_or_api_user_key_multi_auth)
 @flask_db.with_db_session()
-def application_package_update(db_session: db.Session, announcement_id: uuid.UUID, application_package_id: uuid.UUID, json_data: dict) -> response.ApiResponse:
-    add_extra_data_to_current_request_logs({"announcement_id": announcement_id, "application_package_id": application_package_id})
-    logger.info("PUT /v1/announcements/:announcement_id/application-packages/:application_package_id")
+def application_package_update(
+    db_session: db.Session,
+    announcement_id: uuid.UUID,
+    application_package_id: uuid.UUID,
+    json_data: dict,
+) -> response.ApiResponse:
+    add_extra_data_to_current_request_logs(
+        {"announcement_id": announcement_id, "application_package_id": application_package_id}
+    )
+    logger.info(
+        "PUT /v1/announcements/:announcement_id/application-packages/:application_package_id"
+    )
 
     with db_session.begin():
         user = jwt_or_api_user_key_multi_auth.get_user()
         db_session.add(user)
 
-        application_package = update_application_package(db_session, user, announcement_id, application_package_id, json_data)
+        application_package = update_application_package(
+            db_session, user, announcement_id, application_package_id, json_data
+        )
 
     return response.ApiResponse(message="Success", data=application_package)
 
-@announcement_blueprint.put("/<uuid:announcement_id>/application-packages/<uuid:application_package_id>/forms")
+
+@announcement_blueprint.put(
+    "/<uuid:announcement_id>/application-packages/<uuid:application_package_id>/forms"
+)
 @announcement_blueprint.input(ApplicationPackageFormsSetRequestSchema)
 @announcement_blueprint.output(ApplicationPackageResponseSchema)
 @announcement_blueprint.doc(
@@ -268,14 +306,25 @@ def application_package_update(db_session: db.Session, announcement_id: uuid.UUI
 )
 @announcement_blueprint.auth_required(jwt_or_api_user_key_multi_auth)
 @flask_db.with_db_session()
-def put_application_package_forms(db_session: db.Session, announcement_id: uuid.UUID, application_package_id: uuid.UUID, json_data: dict) -> response.ApiResponse:
-    add_extra_data_to_current_request_logs({"announcement_id": announcement_id, "application_package_id": application_package_id})
-    logger.info("PUT /v1/announcements/:announcement_id/application-packages/:application_package_id/forms")
+def put_application_package_forms(
+    db_session: db.Session,
+    announcement_id: uuid.UUID,
+    application_package_id: uuid.UUID,
+    json_data: dict,
+) -> response.ApiResponse:
+    add_extra_data_to_current_request_logs(
+        {"announcement_id": announcement_id, "application_package_id": application_package_id}
+    )
+    logger.info(
+        "PUT /v1/announcements/:announcement_id/application-packages/:application_package_id/forms"
+    )
 
     with db_session.begin():
         user = jwt_or_api_user_key_multi_auth.get_user()
         db_session.add(user)
 
-        application_package = update_application_package_forms(db_session, user, announcement_id, application_package_id, json_data)
+        application_package = update_application_package_forms(
+            db_session, user, announcement_id, application_package_id, json_data
+        )
 
     return response.ApiResponse(message="Success", data=application_package)

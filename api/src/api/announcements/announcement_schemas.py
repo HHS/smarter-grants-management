@@ -1,7 +1,6 @@
 from datetime import timedelta
-from typing import Any
 
-from marshmallow import ValidationError, validates_schema, pre_dump
+from marshmallow import ValidationError, validates_schema
 
 from src.api.schemas.extension import (
     MarshmallowErrorContainer,
@@ -812,8 +811,6 @@ class AnnouncementListResponseSchema(AbstractResponseSchema, PaginationMixinSche
     data = fields.List(fields.Nested(AnnouncementSchema()))
 
 
-
-
 class ApplicationPackageRequestSchema(Schema):
 
     application_package_title = fields.String(
@@ -877,14 +874,33 @@ class ApplicationPackageRequestSchema(Schema):
         },
     )
 
+    @validates_schema
+    def validate_dates(self, data: dict, **kwargs: dict) -> None:
+        opening = data.get("opening_timestamp")
+        closing = data.get("closing_timestamp")
+        if opening and closing and closing < opening:
+            raise ValidationError(
+                [
+                    MarshmallowErrorContainer(
+                        SchemaValidationError.INVALID_DATE_ORDER,
+                        "Closing timestamp must be on or after opening timestamp.",
+                    )
+                ]
+            )
+
+
 class ApplicationPackageCreateRequestSchema(ApplicationPackageRequestSchema):
     pass
+
 
 class ApplicationPackageUpdateRequestSchema(ApplicationPackageRequestSchema):
     pass
 
+
 class FormReplaceSchema(Schema):
-    form_id = fields.Integer(required=True, metadata={"description": "The primary key ID of the form"})
+    form_id = fields.Integer(
+        required=True, metadata={"description": "The primary key ID of the form"}
+    )
     is_required = fields.Boolean(
         required=True, metadata={"description": "Whether the form is required"}
     )
@@ -898,12 +914,12 @@ class ApplicationPackageFormsSetRequestSchema(Schema):
         metadata={"description": "List of forms to set on the application package"},
     )
 
+
 class ApplicationPackageWithInstructionSchema(ApplicationPackageSchema):
 
     # Only add the instructions for certain endpoints, don't need them on all endpoints.
-    application_package_instructions = fields.List(
-        fields.Nested(FileAttachmentDownloadSchema())
-    )
+    application_package_instructions = fields.List(fields.Nested(FileAttachmentDownloadSchema()))
+
 
 class ApplicationPackageResponseSchema(AbstractResponseSchema):
     data = fields.Nested(ApplicationPackageWithInstructionSchema())

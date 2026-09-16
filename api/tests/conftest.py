@@ -340,15 +340,15 @@ def mock_s3(reset_aws_env_vars):
 @pytest.fixture
 def s3_config(mock_s3_bucket, other_mock_s3_bucket, mock_file_scan_s3_bucket):
     return S3Config(
-        PUBLIC_FILES_BUCKET=f"s3://{mock_s3_bucket}",
-        DRAFT_FILES_BUCKET=f"s3://{other_mock_s3_bucket}",
+        PUBLIC_FILES_BUCKET=f"s3://{other_mock_s3_bucket}",
+        DRAFT_FILES_BUCKET=f"s3://{mock_s3_bucket}",
         FILE_SCAN_BUCKET=f"s3://{mock_file_scan_s3_bucket}",
     )
 
 
 @pytest.fixture
 def mock_s3_bucket_resource(mock_s3):
-    bucket = mock_s3.Bucket("local-mock-public-bucket")
+    bucket = mock_s3.Bucket("local-mock-draft-bucket")
     bucket.create()
     return bucket
 
@@ -362,7 +362,7 @@ def mock_s3_bucket(mock_s3_bucket_resource):
 def other_mock_s3_bucket_resource(mock_s3):
     # This second bucket exists for tests where we want there to be multiple buckets
     # and/or test behavior when moving files between buckets.
-    bucket = mock_s3.Bucket("local-mock-draft-bucket")
+    bucket = mock_s3.Bucket("local-mock-public-bucket")
     bucket.create()
     return bucket
 

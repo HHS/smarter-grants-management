@@ -8,6 +8,7 @@ from src.services.forms.list_forms import list_forms
 
 logger = logging.getLogger(__name__)
 
+
 @form_blueprint.post("/list")
 @form_blueprint.output(FormListResponseSchema)
 @form_blueprint.auth_required(jwt_or_api_user_key_multi_auth)

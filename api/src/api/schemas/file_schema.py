@@ -28,7 +28,6 @@ class FileAttachmentSchema(Schema):
     created_at = fields.DateTime(dump_only=True)
     updated_at = fields.DateTime(dump_only=True)
 
-
     @pre_dump
     def grab_file_attachment(self, record: Any, **kwargs: Any) -> Any:
         """

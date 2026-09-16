@@ -10,7 +10,10 @@ from src.services.announcements.get_announcement import get_announcement_and_ver
 
 logger = logging.getLogger(__name__)
 
-def create_application_package(db_session: db.Session, user: User, json_data: dict, announcement_id: uuid.UUID) -> ApplicationPackage:
+
+def create_application_package(
+    db_session: db.Session, user: User, json_data: dict, announcement_id: uuid.UUID
+) -> ApplicationPackage:
     # Fetch / verify announcement exists and user can access
     announcement = get_announcement_and_verify_access(db_session, announcement_id, user)
 
@@ -27,16 +30,23 @@ def create_application_package(db_session: db.Session, user: User, json_data: di
         application_package_forms=[],
         application_package_instructions=[],
         # Pass in the data from the user
-        **json_data
+        **json_data,
     )
 
     db_session.add(application_package)
 
     # Auto-set assistance listing from announcement (currently one per announcement)
     if announcement.announcement_assistance_listings:
-        application_package.announcement_assistance_listing = announcement.announcement_assistance_listings[0]
+        application_package.announcement_assistance_listing = (
+            announcement.announcement_assistance_listings[0]
+        )
+    else:
+        # Set this to None explicitly so SQLAlchemy doesn't try to load it when we make the response
+        application_package.announcement_assistance_listing = None
 
-
-    logger.info("Created application package", extra={"application_package_id": application_package.application_package_id})
+    logger.info(
+        "Created application package",
+        extra={"application_package_id": application_package.application_package_id},
+    )
 
     return application_package

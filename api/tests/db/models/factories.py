@@ -978,9 +978,10 @@ class ApplicationPackageFactory(BaseFactory):
             application_package_instructions=factory.RelatedFactoryList(
                 "tests.db.models.factories.ApplicationPackageInstructionFactory",
                 factory_related_name="application_package",
-                size=1
+                size=1,
             )
         )
+
 
 class ApplicationPackageFormFactory(BaseFactory):
     class Meta:

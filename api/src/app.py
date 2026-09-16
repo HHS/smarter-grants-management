@@ -12,11 +12,10 @@ import src.logs.flask_logger as flask_logger
 from src.adapters.newrelic import init_newrelic
 from src.api.announcements import announcement_blueprint
 from src.api.assistance_listings.assistance_listing_blueprint import assistance_listing_blueprint
+from src.api.forms.form_blueprint import form_blueprint
 from src.api.grantor_organizations.grantor_organization_blueprint import (
     grantor_organization_blueprint,
 )
-
-from src.api.forms.form_blueprint import form_blueprint
 from src.api.healthcheck.healthcheck_blueprint import healthcheck_blueprint
 from src.api.local import local_blueprint
 from src.api.partners.partner_blueprint import partner_blueprint
