@@ -381,7 +381,8 @@ describe("deleteCompetitionInstructions", () => {
       "DELETE",
     );
     expect(mockFetcher).toHaveBeenCalledWith({
-      subPath: "opp-123/application-packages/compete-321/instructions/instruction-123",
+      subPath:
+        "opp-123/application-packages/compete-321/instructions/instruction-123",
     });
     expect(result).toEqual(responseBody);
   });

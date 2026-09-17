@@ -2,8 +2,8 @@ import { render, screen, within } from "@testing-library/react";
 import { axe } from "jest-axe";
 import OpportunityOverviewPage from "src/app/[locale]/announcement/[id]/overview/page";
 import { ForbiddenError, MissingAuthError, NotFoundError } from "src/errors";
-import { ApplicationPackage } from "src/types/applicationpackageResponseTypes";
 import { GrantorAnnouncementDetail } from "src/types/announcement/announcementResponseTypes";
+import { ApplicationPackage } from "src/types/applicationpackageResponseTypes";
 import {
   DeepPartial,
   wrapForExpectedError,

@@ -1,9 +1,9 @@
+import {
+  AnnouncementAssistanceListing,
+  BaseAnnouncement,
+} from "./announcement/announcementResponseTypes";
 import { APIResponse } from "./apiResponseTypes";
 import { FormDetail } from "./formResponseTypes";
-import {
-  BaseAnnouncement,
-  AnnouncementAssistanceListing,
-} from "./announcement/announcementResponseTypes";
 
 export interface ApplicationPackageInstructions {
   competition_instruction_id: string;
@@ -12,7 +12,10 @@ export interface ApplicationPackageInstructions {
   file_name: string;
   updated_at: string;
 }
-export type ApplicationPackageForms = { form: FormDetail; is_required: boolean }[];
+export type ApplicationPackageForms = {
+  form: FormDetail;
+  is_required: boolean;
+}[];
 
 export type ApplicationPackageFormsSubmitApi = {
   form_id: string;

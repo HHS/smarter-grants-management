@@ -1,11 +1,11 @@
 "use client";
 
 import { useClientFetch } from "src/hooks/useClientFetch";
+import { AnnouncementAttachment } from "src/types/announcement/announcementAttachmentTypes";
 import {
   FileResultsMetadata,
   UploadFileMetadata,
 } from "src/types/fileUploadTypes";
-import { AnnouncementAttachment } from "src/types/announcement/announcementAttachmentTypes";
 import { mapAnnouncementAttachmentsToFileMetadata } from "src/utils/announcement/announcementAttachmentUtils";
 
 import { useTranslations } from "next-intl";

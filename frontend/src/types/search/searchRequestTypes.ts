@@ -1,5 +1,5 @@
-import { APIResponse, PaginationInfo } from "src/types/apiResponseTypes";
 import { BaseAnnouncement } from "src/types/announcement/announcementResponseTypes";
+import { APIResponse, PaginationInfo } from "src/types/apiResponseTypes";
 
 import { BackendFilterNames } from "./searchFilterTypes";
 import { FilterQueryParamData } from "./searchQueryTypes";

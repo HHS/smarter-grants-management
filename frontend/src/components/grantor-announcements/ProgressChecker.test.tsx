@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import {
-  BaseAnnouncement,
   AnnouncementAssistanceListing,
+  BaseAnnouncement,
   Summary,
 } from "src/types/announcement/announcementResponseTypes";
 

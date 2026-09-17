@@ -1,13 +1,13 @@
 import { identity } from "lodash";
 import { ApiRequestError } from "src/errors";
 import {
-  createOpportunitySummaryForGrantor,
-  updateOpportunitySummaryForGrantor,
-} from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
-import {
   createAnnouncementAttachment,
   deleteOpportunityAttachment,
 } from "src/services/fetch/fetchers/announcementAttachmentFetcher";
+import {
+  createOpportunitySummaryForGrantor,
+  updateOpportunitySummaryForGrantor,
+} from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 
 import {
   opportunityEditFormAction,

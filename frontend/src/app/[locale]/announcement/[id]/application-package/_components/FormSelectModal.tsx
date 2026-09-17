@@ -34,7 +34,9 @@ const resetTableForms = (
     };
   });
 };
-const resetSelectedForms = (_requiredForms: ApplicationPackageFormsSubmitApi) => {
+const resetSelectedForms = (
+  _requiredForms: ApplicationPackageFormsSubmitApi,
+) => {
   const formHolder: Record<string, boolean> = {};
   _requiredForms.forEach((form) => {
     formHolder[form.form_id] = form.is_required;

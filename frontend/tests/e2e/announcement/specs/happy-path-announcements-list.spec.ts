@@ -33,8 +33,8 @@ import {
   type TestInfo,
 } from "@playwright/test";
 import {
-  getAnnouncementListPageLocator,
   ANNOUNCEMENTS_LIST_PAGE_DEFINITIONS,
+  getAnnouncementListPageLocator,
 } from "tests/e2e/announcement/fixtures/announcement-list-definition";
 import playwrightEnv from "tests/e2e/playwright-env";
 import { VALID_TAGS } from "tests/e2e/tags";

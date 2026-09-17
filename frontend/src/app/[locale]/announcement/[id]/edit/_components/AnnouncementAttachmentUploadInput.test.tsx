@@ -1,10 +1,10 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { axe } from "jest-axe";
+import { AnnouncementAttachment } from "src/types/announcement/announcementAttachmentTypes";
 import {
   PostUploadAction,
   UploadFileMetadata,
 } from "src/types/fileUploadTypes";
-import { AnnouncementAttachment } from "src/types/announcement/announcementAttachmentTypes";
 
 import { AnnouncementAttachmentUploadInput } from "./AnnouncementAttachmentUploadInput";
 

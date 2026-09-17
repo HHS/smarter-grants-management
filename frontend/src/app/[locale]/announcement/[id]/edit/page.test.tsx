@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import OpportunityEditPage from "src/app/[locale]/announcement/[id]/edit/page";
-import { LocalizedPageProps } from "src/types/intl";
 import { GrantorAnnouncementDetail } from "src/types/announcement/announcementResponseTypes";
+import { LocalizedPageProps } from "src/types/intl";
 import { FeatureFlaggedPageWrapper } from "src/types/uiTypes";
 
 import { FunctionComponent, ReactNode } from "react";

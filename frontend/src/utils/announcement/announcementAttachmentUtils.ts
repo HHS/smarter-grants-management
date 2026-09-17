@@ -1,5 +1,5 @@
-import { UploadFileMetadata } from "src/types/fileUploadTypes";
 import { AnnouncementAttachment } from "src/types/announcement/announcementAttachmentTypes";
+import { UploadFileMetadata } from "src/types/fileUploadTypes";
 
 // AnnouncementAttachment has no updated_at (only created_at) and no download_path
 // (deferred to V2), unlike the apply-form Attachment type this mirrors.

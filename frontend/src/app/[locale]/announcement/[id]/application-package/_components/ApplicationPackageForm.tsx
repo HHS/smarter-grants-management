@@ -55,16 +55,17 @@ export function ApplicationPackageForm({
 
   // ===== Required Forms =====
   const formModalRef = useRef<ModalRef | null>(null);
-  const [requiredForms, setRequiredForms] = useState<ApplicationPackageFormsSubmitApi>(
-    competition?.competition_forms?.map(({ form, is_required }) => ({
-      form_id: form.form_id,
-      is_required,
-    })) ??
-      Object.entries(alwaysRequiredForms).map(([formId, isRequired]) => ({
-        form_id: formId,
-        is_required: isRequired,
-      })),
-  );
+  const [requiredForms, setRequiredForms] =
+    useState<ApplicationPackageFormsSubmitApi>(
+      competition?.competition_forms?.map(({ form, is_required }) => ({
+        form_id: form.form_id,
+        is_required,
+      })) ??
+        Object.entries(alwaysRequiredForms).map(([formId, isRequired]) => ({
+          form_id: formId,
+          is_required: isRequired,
+        })),
+    );
 
   // ===== Server side action to save data =====
   const [formState, setFormState] = useState<CompetitionActionState | null>(
@@ -178,7 +179,9 @@ export function ApplicationPackageForm({
                 requiredForms={requiredForms}
                 forms={forms}
                 formModalRef={formModalRef}
-                submitRequiredForms={(forms: ApplicationPackageFormsSubmitApi) => {
+                submitRequiredForms={(
+                  forms: ApplicationPackageFormsSubmitApi,
+                ) => {
                   setRequiredForms(forms);
                 }}
               />

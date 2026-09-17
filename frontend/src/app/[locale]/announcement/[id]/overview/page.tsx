@@ -38,7 +38,10 @@ export default async function OpportunityOverviewPage({
   const { id, locale } = await params;
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const isNewlyCreated = resolvedSearchParams.fromCreate === "true";
-  const t = await getTranslations({ locale, namespace: "AnnouncementOverview" });
+  const t = await getTranslations({
+    locale,
+    namespace: "AnnouncementOverview",
+  });
   let opportunityData: GrantorAnnouncementDetail;
   try {
     const response = await getOpportunityForGrantor(id);

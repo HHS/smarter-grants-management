@@ -1,12 +1,12 @@
-import TopLevelError from "src/app/[locale]/error/page";
 import { AgencySelector } from "src/app/[locale]/announcements/_components/AgencySelector";
+import TopLevelError from "src/app/[locale]/error/page";
 import Unauthenticated from "src/app/[locale]/unauthenticated/page";
 import { MissingAuthError, UnauthorizedError } from "src/errors";
 import { getSession } from "src/services/auth/session";
 import { getUserAgencies } from "src/services/fetch/fetchers/agenciesFetcher";
 import { searchOpportunitiesByAgency } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
-import { LocalizedPageProps, TFn } from "src/types/intl";
 import { BaseAnnouncement } from "src/types/announcement/announcementResponseTypes";
+import { LocalizedPageProps, TFn } from "src/types/intl";
 import { RelevantAgencyRecord } from "src/types/search/searchFilterTypes";
 import { PaginationRequestBody } from "src/types/search/searchRequestTypes";
 import { WithFeatureFlagProps } from "src/types/uiTypes";
@@ -23,12 +23,12 @@ import { redirect } from "next/navigation";
 import { PropsWithChildren } from "react";
 import { Alert, GridContainer } from "@trussworks/react-uswds";
 
+import AnnouncementStatusTag from "src/components/announcement/AnnouncementStatusTag";
 import { PopoverMenu } from "src/components/core/PopoverMenu";
 import {
   TableCellData,
   TableWithResponsiveHeader,
 } from "src/components/core/TableWithResponsiveHeader";
-import AnnouncementStatusTag from "src/components/announcement/AnnouncementStatusTag";
 import AnnouncementsPagination from "./_components/AnnouncementsPagination";
 
 export const OpportunitiesPageWrapper = ({ children }: PropsWithChildren) => {

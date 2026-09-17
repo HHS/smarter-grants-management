@@ -26,6 +26,7 @@ import {
   type Page,
   type TestInfo,
 } from "@playwright/test";
+import { buildOpportunityHappyPathFillData } from "tests/e2e/announcement/fixtures/announcement-pages-fill-data";
 import {
   APPLICATION_PACKAGE_AGENCY_CONTACT_FIELD_DEFINITIONS,
   APPLICATION_PACKAGE_SUBMISSION_SETUP_FIELD_DEFINITIONS,
@@ -33,14 +34,13 @@ import {
   buildPageFieldsFromDefinitions,
 } from "tests/e2e/announcement/fixtures/application-package-field-definitions";
 import { buildApplicationPackageHappyPathFillData } from "tests/e2e/announcement/fixtures/application-package-fill-data";
-import { buildOpportunityHappyPathFillData } from "tests/e2e/announcement/fixtures/announcement-pages-fill-data";
 import playwrightEnv from "tests/e2e/playwright-env";
 import { VALID_TAGS } from "tests/e2e/tags";
-import { authenticateE2eUser } from "tests/e2e/utils/auth/authenticate-e2e-user-utils";
-import { assertButtonEnabledDisabledStates } from "tests/e2e/utils/common/index";
+import { createOpportunity } from "tests/e2e/utils/announcement/create-announcement-utils";
 import { assertOverviewSectionStatus } from "tests/e2e/utils/announcements/overview-status-utils";
 import { waitForOpportunityRowByStatus } from "tests/e2e/utils/announcements/table-row-utils";
-import { createOpportunity } from "tests/e2e/utils/announcement/create-announcement-utils";
+import { authenticateE2eUser } from "tests/e2e/utils/auth/authenticate-e2e-user-utils";
+import { assertButtonEnabledDisabledStates } from "tests/e2e/utils/common/index";
 import { fillPageFields } from "tests/e2e/utils/pages/general-pages-filling";
 
 const { GRANTOR, CORE_REGRESSION } = VALID_TAGS;
@@ -86,7 +86,9 @@ test.describe("Grantor Opportunity ApplicationPackage Happy Path", () => {
       await page.getByRole("link", { name: "Application Package" }).click();
 
       // Then I should be on the "Application Package" page.
-      await expect(page).toHaveURL(/\/announcement\/([a-z0-9-]+?)\/application-package/);
+      await expect(page).toHaveURL(
+        /\/announcement\/([a-z0-9-]+?)\/application-package/,
+      );
 
       // And I should see the "Save and go back" and "Save and exit" buttons enabled.
       await assertButtonEnabledDisabledStates(page, {

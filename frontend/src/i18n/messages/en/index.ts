@@ -820,7 +820,8 @@ export const messages = {
   },
   OpportunityCompetition: {
     pageTitle: "Application Package",
-    metaDescription: "Set up application package details for this announcement.",
+    metaDescription:
+      "Set up application package details for this announcement.",
     leftNavTitle: "On this page",
     applicationRequirements: "Application requirements",
     applicationRequirementsSubheader:
@@ -835,8 +836,10 @@ export const messages = {
       success: "Saved successfully",
       successBody: "Your changes have been saved.",
       genericError: "Unable to save application package updates.",
-      unauthenticated: "You must be signed in to update this application package.",
-      forbidden: "You do not have permission to update this application package.",
+      unauthenticated:
+        "You must be signed in to update this application package.",
+      forbidden:
+        "You do not have permission to update this application package.",
       notFound: "This application package could not be found.",
       networkError: "A network error occurred.",
       validationErrors: "Errors Found",

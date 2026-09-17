@@ -1,8 +1,9 @@
+import { AnnouncementAttachment } from "src/types/announcement/announcementAttachmentTypes";
 import { APIResponse } from "src/types/apiResponseTypes";
 import { ApplicationPackage } from "src/types/applicationpackageResponseTypes";
-import { AnnouncementAttachment } from "src/types/announcement/announcementAttachmentTypes";
 
-export type AnnouncementStatus = "archived" | "closed" | "posted" | "forecasted";
+export type AnnouncementStatus =
+  "archived" | "closed" | "posted" | "forecasted";
 
 export interface AnnouncementAssistanceListing {
   assistance_listing_number: string;

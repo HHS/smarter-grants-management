@@ -12,8 +12,8 @@ import {
   fundingOptions,
 } from "src/constants/announcement";
 import { AnnouncementAttachment } from "src/types/announcement/announcementAttachmentTypes";
-import { getNumericAmountFromString } from "src/utils/formatCurrencyUtil";
 import { AnnouncementEditFormValues } from "src/utils/announcementEditFormConfig";
+import { getNumericAmountFromString } from "src/utils/formatCurrencyUtil";
 
 import { useTranslations } from "next-intl";
 import {
