@@ -115,15 +115,15 @@ def test_get_file_length_bytes(tmp_path):
     assert size == len(test_content)
 
 
-def test_get_file_length_bytes_s3_with_content(mock_s3_bucket):
+def test_get_file_length_bytes_s3_with_content(mock_s3_bucket_name):
     """Test getting file size from S3 with actual content"""
     # Create test content
     test_content = b"Test content!"
-    test_file_path = f"s3://{mock_s3_bucket}/test/file.txt"
+    test_file_path = f"s3://{mock_s3_bucket_name}/test/file.txt"
 
     # Upload test content to mock S3
     s3_client = boto3.client("s3")
-    s3_client.put_object(Bucket=mock_s3_bucket, Key="test/file.txt", Body=test_content)
+    s3_client.put_object(Bucket=mock_s3_bucket_name, Key="test/file.txt", Body=test_content)
 
     # Get file size using our utility
     size = file_util.get_file_length_bytes(test_file_path)
@@ -151,10 +151,10 @@ def test_file_exists_local_filesystem(tmp_path):
     assert file_util.file_exists(tmp_path / "test5.txt") is False
 
 
-def test_file_exists_s3(mock_s3_bucket):
-    file_path1 = f"s3://{mock_s3_bucket}/test.txt"
-    file_path2 = f"s3://{mock_s3_bucket}/test2.txt"
-    file_path3 = f"s3://{mock_s3_bucket}/test3.txt"
+def test_file_exists_s3(mock_s3_bucket_name):
+    file_path1 = f"s3://{mock_s3_bucket_name}/test.txt"
+    file_path2 = f"s3://{mock_s3_bucket_name}/test2.txt"
+    file_path3 = f"s3://{mock_s3_bucket_name}/test3.txt"
 
     with file_util.open_stream(file_path1, "w") as outfile:
         outfile.write("hello")
@@ -166,17 +166,17 @@ def test_file_exists_s3(mock_s3_bucket):
     assert file_util.file_exists(file_path1) is True
     assert file_util.file_exists(file_path2) is True
     assert file_util.file_exists(file_path3) is True
-    assert file_util.file_exists(f"s3://{mock_s3_bucket}/test4.txt") is False
-    assert file_util.file_exists(f"s3://{mock_s3_bucket}/test5.txt") is False
+    assert file_util.file_exists(f"s3://{mock_s3_bucket_name}/test4.txt") is False
+    assert file_util.file_exists(f"s3://{mock_s3_bucket_name}/test5.txt") is False
 
 
-def test_copy_file_s3(mock_s3_bucket, other_mock_s3_bucket):
-    file_path = f"s3://{mock_s3_bucket}/my_file.txt"
+def test_copy_file_s3(mock_s3_bucket_name, mock_other_s3_bucket_name):
+    file_path = f"s3://{mock_s3_bucket_name}/my_file.txt"
 
     with file_util.open_stream(file_path, "w") as outfile:
         outfile.write(fake.sentence(25))
 
-    other_file_path = f"s3://{other_mock_s3_bucket}/my_new_file.txt"
+    other_file_path = f"s3://{mock_other_s3_bucket_name}/my_new_file.txt"
     file_util.copy_file(file_path, other_file_path)
 
     assert file_util.file_exists(file_path) is True
@@ -200,14 +200,14 @@ def test_copy_file_local_disk(tmp_path):
     assert file_util.read_file(file_path) == file_util.read_file(other_file_path)
 
 
-def test_move_file_s3(mock_s3_bucket, other_mock_s3_bucket):
-    file_path = f"s3://{mock_s3_bucket}/my_file_to_copy.txt"
+def test_move_file_s3(mock_s3_bucket_name, mock_other_s3_bucket_name):
+    file_path = f"s3://{mock_s3_bucket_name}/my_file_to_copy.txt"
 
     contents = fake.sentence(25)
     with file_util.open_stream(file_path, "w") as outfile:
         outfile.write(contents)
 
-    other_file_path = f"s3://{other_mock_s3_bucket}/my_destination_file.txt"
+    other_file_path = f"s3://{mock_other_s3_bucket_name}/my_destination_file.txt"
     file_util.move_file(file_path, other_file_path)
 
     assert file_util.file_exists(file_path) is False
@@ -273,29 +273,29 @@ def test_write_to_file(tmp_path):
     assert file_util.read_file(file_path) == contents
 
 
-def test_pre_sign_file_location_uses_configured_duration(mock_s3_bucket):
+def test_pre_sign_file_location_uses_configured_duration(mock_s3_bucket_name):
     """Presigned URLs use the duration from S3Config (defaults to 15 minutes)."""
     s3_config = S3Config(
-        PUBLIC_FILES_BUCKET=f"s3://{mock_s3_bucket}",
-        DRAFT_FILES_BUCKET=f"s3://{mock_s3_bucket}",
+        PUBLIC_FILES_BUCKET=f"s3://{mock_s3_bucket_name}",
+        DRAFT_FILES_BUCKET=f"s3://{mock_s3_bucket_name}",
     )
 
     url = file_util.pre_sign_file_location(
-        f"s3://{mock_s3_bucket}/some/file.txt", s3_config=s3_config
+        f"s3://{mock_s3_bucket_name}/some/file.txt", s3_config=s3_config
     )
 
     query = parse_qs(urlparse(url).query)
     assert int(query["X-Amz-Expires"][0]) == 900
 
 
-def test_presigned_post_local_override_with_s3_endpoint_url(mock_s3_bucket, s3_config):
+def test_presigned_post_local_override_with_s3_endpoint_url(mock_s3_bucket_name, s3_config):
     file_id = uuid.uuid4()
     user_id = uuid.uuid4()
 
     s3_config.aws_s3_endpoint_url = "http://mocks3:9090"
 
     result = file_util.pre_sign_upload(
-        file_path=f"s3://{mock_s3_bucket}/some/file.txt",
+        file_path=f"s3://{mock_s3_bucket_name}/some/file.txt",
         content_type="text/plain",
         metadata={
             "file-id": str(file_id),

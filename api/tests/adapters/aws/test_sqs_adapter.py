@@ -84,7 +84,7 @@ class TestSQSClient:
         messages = sqs_client.receive_messages(max_messages=10, wait_time=0)
         assert messages == []
 
-    def test_receive_messages_logs_on_error(self, mock_sqs, caplog):
+    def test_receive_messages_logs_on_error(self, mock_aws, caplog):
         """Verify that failed receive attempts raise a ClientError and log the queue URL as extra context."""
         invalid_url = "https://sqs.us-east-1.amazonaws.com/123456789012/non-existent"
         boto_client = boto3.client("sqs", region_name="us-east-1")
@@ -189,7 +189,7 @@ class TestSQSClient:
         received_body = json.loads(messages[0].body)
         assert received_body == message_body
 
-    def test_send_message_logs_on_error(self, mock_sqs, caplog):
+    def test_send_message_logs_on_error(self, mock_aws, caplog):
         """Verify that failed send attempts raise a ClientError and log the queue URL as extra context."""
         invalid_url = "https://sqs.us-east-1.amazonaws.com/123456789012/non-existent"
         boto_client = boto3.client("sqs", region_name="us-east-1")

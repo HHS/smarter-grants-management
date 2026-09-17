@@ -157,7 +157,7 @@ class TestDynamoDBClient:
         assert response.item["file_id"]["S"] == "test-id-789"
         assert response.item["status"]["S"] == "in_progress"
 
-    def test_get_item_logs_on_error(self, mock_dynamodb, caplog):
+    def test_get_item_logs_on_error(self, mock_aws, caplog):
         invalid_table = "non-existent-table"
         boto_client = boto3.client("dynamodb", region_name="us-east-1")
         dynamodb_client = DynamoDBClient(dynamodb_client=boto_client)
