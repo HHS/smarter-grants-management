@@ -1,5 +1,5 @@
 # Feature: Create opportunity - Failure Path
-# Related spec: e2e/opportunity/specs/failure-path-create-opportunity.spec.ts
+# Related spec: e2e/announcement/specs/failure-path-create-opportunity.spec.ts
 # Scenario: Failure path - Create Opportunity validations
 #
 # Notes:

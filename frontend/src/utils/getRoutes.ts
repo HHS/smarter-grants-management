@@ -32,7 +32,7 @@ export function getNextRoutes(src: string): string[] {
           .replace("/page.tsx", "")
           .replace(/\[locale\]/g, "")
           .replace(/\\/g, "/")
-          .replace(/\[id\]/g, "1") // for id-based routes like /opportunity/[id]
+          .replace(/\[id\]/g, "1") // for id-based routes like /announcement/[id]
       : "/";
     return route.replace(/\/\//g, "/");
   });

@@ -11,7 +11,7 @@ import { CompetitionSaveRequest } from "src/types/competitionsResponseTypes";
 import { PaginationRequestBody } from "src/types/search/searchRequestTypes";
 import { fakeAgencyResponseData } from "src/utils/testing/fixtures";
 
-// Mock the grantor agencies/opportunities requesters and the sub-method they call, fetch
+// Mock the grantor agencies/announcements requesters and the sub-method they call, fetch
 const mockFetcher = jest.fn();
 const mockFetchGrantorAgenciesWithMethod = jest.fn(
   (_args: unknown) => mockFetcher,
@@ -68,7 +68,7 @@ describe("searchOpportunitiesByAgency", () => {
     expect(mockFetchGrantorAgenciesWithMethod).toHaveBeenCalledTimes(1);
     expect(mockFetchGrantorAgenciesWithMethod).toHaveBeenCalledWith("POST");
     expect(mockFetcher).toHaveBeenCalledWith({
-      subPath: "123-ABC-456-DEF/opportunities",
+      subPath: "123-ABC-456-DEF/announcements",
       body: pageBody,
     });
   });
@@ -241,7 +241,7 @@ describe("createCompetitionForGrantor", () => {
     expect(mockFetchGrantorOpportunityWithMethod).toHaveBeenCalledTimes(1);
     expect(mockFetchGrantorOpportunityWithMethod).toHaveBeenCalledWith("POST");
     expect(mockFetcher).toHaveBeenCalledWith({
-      subPath: "opp-123/competitions",
+      subPath: "opp-123/application-packages",
       body: competitionData,
     });
     expect(result).toEqual({ data: { competition_id: "new-competition-id" } });
@@ -256,7 +256,7 @@ describe("createCompetitionForGrantor", () => {
     await createCompetitionForGrantor("opp-123", competitionWithPublicId);
 
     expect(mockFetcher).toHaveBeenCalledWith({
-      subPath: "opp-123/competitions",
+      subPath: "opp-123/application-packages",
       body: competitionWithPublicId,
     });
   });
@@ -278,7 +278,7 @@ describe("updateCompetitionForGrantor", () => {
     expect(mockFetchGrantorOpportunityWithMethod).toHaveBeenCalledTimes(1);
     expect(mockFetchGrantorOpportunityWithMethod).toHaveBeenCalledWith("PUT");
     expect(mockFetcher).toHaveBeenCalledWith({
-      subPath: "opp-123/competitions/compete-321",
+      subPath: "opp-123/application-packages/compete-321",
       body: competitionData,
     });
   });
@@ -343,7 +343,7 @@ describe("saveCompetitionInstructions", () => {
     expect(mockFetchGrantorOpportunityWithMethod).toHaveBeenCalledTimes(1);
     expect(mockFetchGrantorOpportunityWithMethod).toHaveBeenCalledWith("POST");
     expect(mockFetcher).toHaveBeenCalledWith({
-      subPath: "opp-123/competitions/compete-321/instructions",
+      subPath: "opp-123/application-packages/compete-321/instructions",
       body: { pending_file_id: "pending-file-456" },
     });
     expect(result).toEqual(responseBody);
@@ -381,7 +381,7 @@ describe("deleteCompetitionInstructions", () => {
       "DELETE",
     );
     expect(mockFetcher).toHaveBeenCalledWith({
-      subPath: "opp-123/competitions/compete-321/instructions/instruction-123",
+      subPath: "opp-123/application-packages/compete-321/instructions/instruction-123",
     });
     expect(result).toEqual(responseBody);
   });

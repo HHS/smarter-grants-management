@@ -1,6 +1,6 @@
 /**
  * @feature Opportunity - Happy Path
- * @featureFile e2e/opportunity/features/happy-path-opportunities-list.feature
+ * @featureFile e2e/announcement/features/happy-path-opportunities-list.feature
  * @scenario Grantor opportunities list page UI
  *
  * Notes for reviewer (what happens in this test):
@@ -19,7 +19,7 @@
  *
  * Tester parameter guide:
  * - Page locator definitions are maintained in:
- *   - tests/e2e/opportunity/fixtures/opportunity-list-page-definition.ts
+ *   - tests/e2e/opportunity/fixtures/announcement-list-page-definition.ts
  * - To update labels, roles, text, or selectors used by this test, update:
  *   - OPPORTUNITIES_LIST_PAGE_DEFINITIONS
  * - This scenario validates the initial Opportunities List page UI only.
@@ -82,10 +82,10 @@ test.describe("Grantor opportunities list page happy path", () => {
       //--------------Scenario steps start here----------------
 
       // Given I navigate to the Grantor Opportunities List page.
-      await page.goto("/opportunities");
+      await page.goto("/announcements");
 
       // Then I should be redirected to the Opportunities List page.
-      await expect(page).toHaveURL(/\/opportunities/);
+      await expect(page).toHaveURL(/\/announcements/);
 
       // And I should see the Opportunities List heading.
       await expect(
@@ -109,7 +109,7 @@ test.describe("Grantor opportunities list page happy path", () => {
       // And the Create Opportunity link should navigate to the create opportunity page.
       await expect(createOpportunityLink).toHaveAttribute(
         "href",
-        /opportunities\/create\?agency=/,
+        /announcements\/create\?agency=/,
       );
 
       // And I should see the Opportunities table.

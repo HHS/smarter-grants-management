@@ -1,5 +1,5 @@
 # Feature: Opportunity Summary - Failure Path
-# Related spec: e2e/opportunity/specs/failure-path-opportunity-summary.spec.ts
+# Related spec: e2e/announcement/specs/failure-path-opportunity-summary.spec.ts
 # Scenarios:
 # - Required-field validation
 # - Negative number validation

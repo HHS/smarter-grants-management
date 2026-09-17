@@ -1,5 +1,5 @@
 # Feature: Opportunity Competition - Happy Path
-# Related spec: e2e/opportunity/specs/happy-path-application-package.spec.ts
+# Related spec: e2e/announcement/specs/happy-path-application-package.spec.ts
 # Scenario: Happy path application package
 #
 # ============== Notes for reviewer ===============================================
@@ -37,6 +37,6 @@ Feature: Opportunity application package happy path draft completion
     And I should see "Opportunity Summary" status as "Not started"
     And I should see "Application Package" status as "Complete"
 
-    When I navigate directly to "/opportunities"
+    When I navigate directly to "/announcements"
     Then I should see "Draft" status for the created opportunity row
     And the matching row should be visible

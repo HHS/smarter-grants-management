@@ -46,7 +46,7 @@ export const searchOpportunitiesByAgency = async (
   const pageBody: PaginationBody = { pagination };
 
   const response = await fetchGrantorAgenciesWithMethod("POST")({
-    subPath: `${agencyId}/opportunities`,
+    subPath: `${agencyId}/announcements`,
     body: pageBody,
   });
   return (await response.json()) as SearchAPIResponse;
@@ -126,7 +126,7 @@ export async function createCompetitionForGrantor(
   data: CompetitionSaveRequest,
 ): Promise<CompetitionSaveApiResponse> {
   const response = await fetchGrantorOpportunityWithMethod("POST")({
-    subPath: `${opportunityId}/competitions`,
+    subPath: `${opportunityId}/application-packages`,
     body: data,
   });
   return (await response.json()) as CompetitionSaveApiResponse;
@@ -138,7 +138,7 @@ export async function updateCompetitionForGrantor(
   data: CompetitionSaveRequest,
 ): Promise<CompetitionSaveApiResponse> {
   const response = await fetchGrantorOpportunityWithMethod("PUT")({
-    subPath: `${opportunityId}/competitions/${competitionId}`,
+    subPath: `${opportunityId}/application-packages/${competitionId}`,
     body: data,
   });
   return (await response.json()) as CompetitionSaveApiResponse;
@@ -150,7 +150,7 @@ export async function saveCompetitionInstructions(
   pendingFileId: string,
 ): Promise<CompetitionInstructionsApiResponse> {
   const response = await fetchGrantorOpportunityWithMethod("POST")({
-    subPath: `${opportunityId}/competitions/${competitionId}/instructions`,
+    subPath: `${opportunityId}/application-packages/${competitionId}/instructions`,
     body: { pending_file_id: pendingFileId },
   });
   return (await response.json()) as CompetitionInstructionsApiResponse;
@@ -162,7 +162,7 @@ export async function deleteCompetitionInstructions(
   competitionInstructionId: string,
 ): Promise<APIResponse> {
   const response = await fetchGrantorOpportunityWithMethod("DELETE")({
-    subPath: `${opportunityId}/competitions/${competitionId}/instructions/${competitionInstructionId}`,
+    subPath: `${opportunityId}/application-packages/${competitionId}/instructions/${competitionInstructionId}`,
   });
   return (await response.json()) as APIResponse;
 }

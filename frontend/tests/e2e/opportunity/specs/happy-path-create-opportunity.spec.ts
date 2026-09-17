@@ -1,6 +1,6 @@
 /**
  * @feature Opportunity - Happy Path
- * @featureFile e2e/opportunity/features/happy-path-create-opportunity.feature
+ * @featureFile e2e/announcement/features/happy-path-create-opportunity.feature
  * @scenario Happy path create opportunity
  */
 
@@ -58,17 +58,17 @@ test.describe("Grantor Opportunity Happy Path", () => {
 
       //--------------Scenario steps start here----------------
 
-      // Given I use direct URL "/opportunities" to navigate to the "Opportunities List" page
-      await page.goto("/opportunities");
+      // Given I use direct URL "/announcements" to navigate to the "Opportunities List" page
+      await page.goto("/announcements");
 
       // And I should be on the "Opportunities List" page
-      await expect(page).toHaveURL(/\/opportunities/);
+      await expect(page).toHaveURL(/\/announcements/);
 
       // When I click "Create Opportunity"
       await page.getByRole("link", { name: "Create Opportunity" }).click();
 
       // And I should be on the "Create Opportunity" page
-      await expect(page).toHaveURL(/\/opportunities\/create/);
+      await expect(page).toHaveURL(/\/announcements\/create/);
 
       // And I enter the required create-opportunity fields.
       await fillPageFields(
@@ -102,7 +102,7 @@ test.describe("Grantor Opportunity Happy Path", () => {
       });
 
       // When I navigate directly to opportunity list page
-      await page.goto("/opportunities");
+      await page.goto("/announcements");
 
       // Then I should see "Draft" status for the created opportunity row.
       const matchingRow = await waitForOpportunityRowByStatus(page, {

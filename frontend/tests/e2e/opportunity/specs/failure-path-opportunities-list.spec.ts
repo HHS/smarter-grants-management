@@ -1,6 +1,6 @@
 /**
  * @feature Opportunity list page access - failure path
- * @featureFile e2e/opportunity/features/failure-path-opportunities-list.feature
+ * @featureFile e2e/announcement/features/failure-path-opportunities-list.feature
  * @scenario Grantor opportunities list failure paths
  *
  * Notes for reviewer:
@@ -27,12 +27,12 @@ const AGENCY_NOT_AUTHORIZED_MESSAGE =
 // Shared helper for asserting the agency-not-authorized state on the grantor opportunities page.
 const assertAgencyNotAuthorized = async (page: Page, agencyId: string) => {
   // Given I navigate to the grantor opportunities list for the requested agency.
-  await page.goto(`/opportunities?agency=${agencyId}`, {
+  await page.goto(`/announcements?agency=${agencyId}`, {
     waitUntil: "networkidle",
   });
 
   // Then the browser should be on the expected agency URL.
-  await expect(page).toHaveURL(/\/opportunities\?agency=/, {
+  await expect(page).toHaveURL(/\/announcements\?agency=/, {
     timeout: 30000,
   });
 
@@ -48,7 +48,7 @@ test.describe("Opportunity list page access - failure path", () => {
     { tag: [AUTH, CORE_REGRESSION] },
     async ({ page }) => {
       // Given I access the grantor opportunities list without signing in.
-      await page.goto("/opportunities", {
+      await page.goto("/announcements", {
         waitUntil: "domcontentloaded",
       });
 
@@ -73,7 +73,7 @@ test.describe("Opportunity list page access - failure path", () => {
   //     await authenticateE2eUser(page, context, isMobile, "noAgencyUser");
 
   //     // When I navigate to the grantor opportunities list.
-  //     await page.goto("/opportunities", {
+  //     await page.goto("/announcements", {
   //       waitUntil: "networkidle",
   //     });
 

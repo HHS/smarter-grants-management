@@ -1,5 +1,5 @@
 # Feature: Opportunity List Page - Happy Path
-# Related spec: e2e/opportunity/specs/happy-path-opportunities-list.spec.ts
+# Related spec: e2e/announcement/specs/happy-path-opportunities-list.spec.ts
 # Scenario: Grantor opportunities list page UI
 #
 # ============== Notes for reviewer ===============================================

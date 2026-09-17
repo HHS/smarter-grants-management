@@ -79,7 +79,7 @@ const isLikelyLoggedOut = async (page: Page): Promise<boolean> => {
   }
 
   const opportunitiesHeading = page
-    .getByRole("heading", { name: /opportunities list/i })
+    .getByRole("heading", { name: /announcements list/i })
     .first();
   const accountButton = page.getByRole("button", { name: /account/i }).first();
   const signInLink = page.getByRole("link", { name: /sign in/i }).first();
@@ -162,7 +162,7 @@ export const waitForTableRow = async (
           await page.reload({ waitUntil: "domcontentloaded" });
           await page.waitForLoadState("load").catch(() => undefined);
           await expect(
-            page.getByRole("heading", { name: /opportunities list/i }).first(),
+            page.getByRole("heading", { name: /announcements list/i }).first(),
           )
             .toBeVisible({ timeout: 10000 })
             .catch(() => undefined);

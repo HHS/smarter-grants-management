@@ -62,7 +62,7 @@ export const SelectFundingOpportunityContent = ({
         {
           cellData: (
             <Link
-              href={`/opportunity/${fundingOpportunity.opportunity_id}`}
+              href={`/announcement/${fundingOpportunity.opportunity_id}`}
               className="usa-link"
             >
               {fundingOpportunity.opportunity_number}
@@ -83,7 +83,7 @@ export const SelectFundingOpportunityContent = ({
                 );
               }}
             >
-              {t("startButtonText")} <span aria-hidden="true">→</span>
+              {t("startButtonText")} <span aria-hidden="true">â†’</span>
             </Button>
           ),
         },

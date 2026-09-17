@@ -1,5 +1,5 @@
 # Feature: Opportunity Summary - Happy Path
-# Related spec: e2e/opportunity/specs/happy-path-opportunity-summary.spec.ts
+# Related spec: e2e/announcement/specs/happy-path-opportunity-summary.spec.ts
 # Scenario: Happy path opportunity summary
 #
 # ============== Notes for reviewer ===============================================
@@ -18,7 +18,7 @@ Feature: Opportunity summary happy path draft completion
   @GRANTOR
   Scenario: Happy path opportunity summary
     Given I am authenticated as a grantor user
-    And I use direct URL "/opportunities" to navigate to the "Opportunities List" page
+    And I use direct URL "/announcements" to navigate to the "Opportunities List" page
     And I create a new opportunity with happy-path data
 
     When I click "Opportunity Summary"
@@ -39,6 +39,6 @@ Feature: Opportunity summary happy path draft completion
     And I should see "Opportunity Summary" status as "Complete"
     And I should see "Application Package" status as "Not started"
 
-    When I navigate directly to "/opportunities"
+    When I navigate directly to "/announcements"
     Then I should see "Draft" status for "Title-mm-dd-yyyy-hh-mm-sec"
     And the matching "Draft" opportunity row should be visible

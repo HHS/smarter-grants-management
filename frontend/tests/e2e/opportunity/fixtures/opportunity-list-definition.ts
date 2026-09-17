@@ -25,7 +25,7 @@ export const OPPORTUNITIES_LIST_PAGE_DEFINITIONS: Record<
   pageHeading: {
     label: "Opportunities list heading",
     role: "heading",
-    name: /opportunities list/i,
+    name: /announcements list/i,
   },
 
   opportunitiesCount: {

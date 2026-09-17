@@ -1,6 +1,6 @@
 /**
  * @feature Opportunity Overview - failure path initial state
- * @featureFile e2e/opportunity/features/failure-path-opportunity-overview-initial-state.feature
+ * @featureFile e2e/announcement/features/failure-path-opportunity-overview-initial-state.feature
  * @scenario Verifies bypass attempt fails and stays on the same overview page
  *
  * Notes for reviewer (what happens in this test):
@@ -59,7 +59,7 @@ test.describe("Grantor opportunity overview failure path - initial state gating"
       await createOpportunity(page, fillData);
 
       // Then I should land on the overview page.
-      await expect(page).toHaveURL(/\/opportunity\/([a-z0-9-]+?)\/overview/);
+      await expect(page).toHaveURL(/\/announcement\/([a-z0-9-]+?)\/overview/);
 
       // And I should see the "Preview" and "Publish" buttons disabled.
       await assertButtonEnabledDisabledStates(page, {

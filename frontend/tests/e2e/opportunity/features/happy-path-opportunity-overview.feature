@@ -1,5 +1,5 @@
 # Feature: Opportunity Overview - Happy Path
-# Related spec: e2e/opportunity/specs/happy-path-opportunity-overview-initial-state.spec.ts
+# Related spec: e2e/announcement/specs/happy-path-opportunity-overview-initial-state.spec.ts
 # Scenario: Happy path opportunity overview initial state
 #
 # ============== Notes for reviewer ===============================================

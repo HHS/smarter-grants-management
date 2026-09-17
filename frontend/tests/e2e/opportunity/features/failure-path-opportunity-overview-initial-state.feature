@@ -1,5 +1,5 @@
 # Feature: Opportunity Overview - Failure Path (Initial State)
-# Related spec: e2e/opportunity/specs/failure-path-opportunity-overview-initial-state.spec.ts
+# Related spec: e2e/announcement/specs/failure-path-opportunity-overview-initial-state.spec.ts
 # Scenario: Verifies bypass attempt fails and stays on the same overview page
 #
 # Notes:
