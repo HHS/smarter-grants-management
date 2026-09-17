@@ -3,7 +3,7 @@ import {
   MissingAuthError,
   parseErrorStatus,
 } from "src/errors";
-import { getOpportunityForGrantor } from "src/services/fetch/fetchers/grantorOpportunitiesFetcher";
+import { getOpportunityForGrantor } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 import {
   GrantorAnnouncementDetail,
   Summary,

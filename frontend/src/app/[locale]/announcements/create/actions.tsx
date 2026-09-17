@@ -1,7 +1,7 @@
 "use server";
 
 import { getSession } from "src/services/auth/session";
-import { createOpportunity } from "src/services/fetch/fetchers/grantorOpportunitiesFetcher";
+import { createOpportunity } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 import { CreateAnnouncementResponse } from "src/types/createannouncementTypes";
 
 // Future: Apply any field level validations before submitting to the backend.

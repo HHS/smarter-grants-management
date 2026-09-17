@@ -15,7 +15,7 @@ import { expect, test, type Page } from "@playwright/test";
 import {
   INVALID_AGENCY_ID,
   VALID_NON_MEMBER_AGENCY_ID,
-} from "tests/e2e/announcement/fixtures/opportunity-test-data";
+} from "tests/e2e/announcement/fixtures/announcement-test-data";
 import { VALID_TAGS } from "tests/e2e/tags";
 import { authenticateE2eUser } from "tests/e2e/utils/auth/authenticate-e2e-user-utils";
 

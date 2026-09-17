@@ -4,7 +4,7 @@ import Unauthenticated from "src/app/[locale]/unauthenticated/page";
 import { MissingAuthError, UnauthorizedError } from "src/errors";
 import { getSession } from "src/services/auth/session";
 import { getUserAgencies } from "src/services/fetch/fetchers/agenciesFetcher";
-import { searchOpportunitiesByAgency } from "src/services/fetch/fetchers/grantorOpportunitiesFetcher";
+import { searchOpportunitiesByAgency } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 import { LocalizedPageProps, TFn } from "src/types/intl";
 import { BaseAnnouncement } from "src/types/announcement/announcementResponseTypes";
 import { RelevantAgencyRecord } from "src/types/search/searchFilterTypes";

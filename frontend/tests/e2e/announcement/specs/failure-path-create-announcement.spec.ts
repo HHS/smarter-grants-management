@@ -20,8 +20,8 @@ import {
 import {
   buildPageFieldsFromDefinitions,
   CREATE_OPPORTUNITY_FIELD_DEFINITIONS,
-} from "tests/e2e/announcement/fixtures/opportunity-pages-field-definitions";
-import { buildOpportunityHappyPathFillData } from "tests/e2e/announcement/fixtures/opportunity-pages-fill-data";
+} from "tests/e2e/announcement/fixtures/announcement-pages-field-definitions";
+import { buildOpportunityHappyPathFillData } from "tests/e2e/announcement/fixtures/announcement-pages-fill-data";
 import playwrightEnv from "tests/e2e/playwright-env";
 import { VALID_TAGS } from "tests/e2e/tags";
 import { authenticateE2eUser } from "tests/e2e/utils/auth/authenticate-e2e-user-utils";
@@ -33,7 +33,7 @@ import {
   fillRequiredFieldsAndAssertButtonState,
   getCharacterLimitedFields,
 } from "tests/e2e/utils/common/index";
-import { createOpportunity } from "tests/e2e/utils/opportunity/create-opportunity-utils";
+import { createOpportunity } from "tests/e2e/utils/announcement/create-announcement-utils";
 import { fillPageFields } from "tests/e2e/utils/pages/general-pages-filling";
 
 const { GRANTOR, OPPORTUNITY_MANAGEMENT, CORE_REGRESSION } = VALID_TAGS;

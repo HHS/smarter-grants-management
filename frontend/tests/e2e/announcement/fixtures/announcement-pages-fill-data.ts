@@ -3,7 +3,7 @@
  * Usage: import { buildOpportunityHappyPathFillData } from "tests/e2e/opportunity/fixtures/opportunity-pages-fill-data";
  */
 
-import { OpportunityFieldValueKey } from "tests/e2e/announcement/fixtures/opportunity-pages-field-definitions";
+import { OpportunityFieldValueKey } from "tests/e2e/announcement/fixtures/announcement-pages-field-definitions";
 
 /** Formats numbers as two-digit strings for deterministic date/time values. */
 const pad2 = (value: number) => value.toString().padStart(2, "0");

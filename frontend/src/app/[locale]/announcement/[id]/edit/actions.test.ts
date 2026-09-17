@@ -3,11 +3,11 @@ import { ApiRequestError } from "src/errors";
 import {
   createOpportunitySummaryForGrantor,
   updateOpportunitySummaryForGrantor,
-} from "src/services/fetch/fetchers/grantorOpportunitiesFetcher";
+} from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 import {
-  createOpportunityAttachment,
+  createAnnouncementAttachment,
   deleteOpportunityAttachment,
-} from "src/services/fetch/fetchers/opportunityAttachmentFetcher";
+} from "src/services/fetch/fetchers/announcementAttachmentFetcher";
 
 import {
   opportunityEditFormAction,
@@ -25,7 +25,7 @@ jest.mock("src/services/fetch/fetchers/grantorOpportunitiesFetcher", () => ({
 }));
 
 jest.mock("src/services/fetch/fetchers/opportunityAttachmentFetcher", () => ({
-  createOpportunityAttachment: jest.fn(),
+  createAnnouncementAttachment: jest.fn(),
   deleteOpportunityAttachment: jest.fn(),
 }));
 
@@ -47,7 +47,7 @@ const mockUpdateOpportunitySummaryForGrantor = jest.mocked(
   updateOpportunitySummaryForGrantor,
 );
 const mockCreateOpportunityAttachment = jest.mocked(
-  createOpportunityAttachment,
+  createAnnouncementAttachment,
 );
 const mockDeleteOpportunityAttachment = jest.mocked(
   deleteOpportunityAttachment,
@@ -603,7 +603,7 @@ describe("saveOpportunityEditAction", () => {
       expect(mockDeleteOpportunityAttachment).not.toHaveBeenCalled();
     });
 
-    it("calls createOpportunityAttachment once per held pending file id on an update save", async () => {
+    it("calls createAnnouncementAttachment once per held pending file id on an update save", async () => {
       const formData = buildValidFormData();
       formData.set("opportunity_id", "opp-123");
       formData.set("opportunity_summary_id", "sum-456");
@@ -618,7 +618,7 @@ describe("saveOpportunityEditAction", () => {
       mockCreateOpportunityAttachment.mockResolvedValue({
         message: "success",
         status_code: 200,
-      } as unknown as Awaited<ReturnType<typeof createOpportunityAttachment>>);
+      } as unknown as Awaited<ReturnType<typeof createAnnouncementAttachment>>);
 
       const result = await saveOpportunityEditAction(initialState, formData);
 
@@ -685,7 +685,7 @@ describe("saveOpportunityEditAction", () => {
       mockCreateOpportunityAttachment.mockResolvedValue({
         message: "success",
         status_code: 200,
-      } as unknown as Awaited<ReturnType<typeof createOpportunityAttachment>>);
+      } as unknown as Awaited<ReturnType<typeof createAnnouncementAttachment>>);
       mockDeleteOpportunityAttachment.mockResolvedValue({
         status_code: 200,
         message: "success",
@@ -720,7 +720,7 @@ describe("saveOpportunityEditAction", () => {
         message: "This pending file could not be attached.",
         status_code: 422,
         errors: [],
-      } as unknown as Awaited<ReturnType<typeof createOpportunityAttachment>>);
+      } as unknown as Awaited<ReturnType<typeof createAnnouncementAttachment>>);
 
       const result = await saveOpportunityEditAction(initialState, formData);
 
@@ -807,7 +807,7 @@ describe("saveOpportunityEditAction", () => {
           "This pending file has already been claimed by another attachment.",
         status_code: 422,
         errors: [],
-      } as unknown as Awaited<ReturnType<typeof createOpportunityAttachment>>);
+      } as unknown as Awaited<ReturnType<typeof createAnnouncementAttachment>>);
 
       const result = await saveOpportunityEditAction(initialState, formData);
 

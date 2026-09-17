@@ -7,7 +7,7 @@ import {
 
 import { fetchGrantorOpportunityWithMethod } from "./fetchers";
 
-export const listOpportunityAttachments = async (
+export const listAnnouncementAttachments = async (
   opportunityId: string,
 ): Promise<AnnouncementAttachmentListResponse> => {
   const response = await fetchGrantorOpportunityWithMethod("GET")({
@@ -16,7 +16,7 @@ export const listOpportunityAttachments = async (
   return (await response.json()) as AnnouncementAttachmentListResponse;
 };
 
-export const createOpportunityAttachment = async (
+export const createAnnouncementAttachment = async (
   opportunityId: string,
   pendingFileId: string,
 ): Promise<AnnouncementAttachmentCreateResponse> => {

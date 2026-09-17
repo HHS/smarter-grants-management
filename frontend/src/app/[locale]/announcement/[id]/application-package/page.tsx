@@ -5,7 +5,7 @@ import {
   parseErrorStatus,
 } from "src/errors";
 import { getForms } from "src/services/fetch/fetchers/allFormsFetcher";
-import { getOpportunityForGrantor } from "src/services/fetch/fetchers/grantorOpportunitiesFetcher";
+import { getOpportunityForGrantor } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 import { ApplicationPackage } from "src/types/applicationpackageResponseTypes";
 
 import { useTranslations } from "next-intl";

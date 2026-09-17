@@ -71,7 +71,7 @@ jest.mock("src/services/fetch/fetchers/grantorOpportunitiesFetcher", () => ({
 }));
 
 jest.mock("src/services/fetch/fetchers/opportunityAttachmentFetcher", () => ({
-  createOpportunityAttachment: jest.fn(),
+  createAnnouncementAttachment: jest.fn(),
   deleteOpportunityAttachment: jest.fn(),
 }));
 

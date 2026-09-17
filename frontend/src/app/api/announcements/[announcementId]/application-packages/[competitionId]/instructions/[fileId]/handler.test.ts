@@ -1,6 +1,6 @@
 import { NotFoundError } from "src/errors";
 import * as sessionModule from "src/services/auth/session";
-import * as grantorOpportunitiesFetcherModule from "src/services/fetch/fetchers/grantorOpportunitiesFetcher";
+import * as grantorOpportunitiesFetcherModule from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 
 import { NextRequest, NextResponse } from "next/server";
 

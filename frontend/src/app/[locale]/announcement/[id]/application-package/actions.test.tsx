@@ -5,7 +5,7 @@ import {
   createCompetitionForGrantor,
   saveCompetitionInstructions,
   updateCompetitionForGrantor,
-} from "src/services/fetch/fetchers/grantorOpportunitiesFetcher";
+} from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 import { ApplicationPackageFormsSubmitApi } from "src/types/applicationpackageResponseTypes";
 
 import { competitionFormAction, updateCompetition } from "./actions";

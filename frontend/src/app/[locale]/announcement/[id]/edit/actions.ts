@@ -4,11 +4,11 @@ import { ApiRequestError, parseErrorStatus } from "src/errors";
 import {
   createOpportunitySummaryForGrantor,
   updateOpportunitySummaryForGrantor,
-} from "src/services/fetch/fetchers/grantorOpportunitiesFetcher";
+} from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 import {
-  createOpportunityAttachment,
+  createAnnouncementAttachment,
   deleteOpportunityAttachment,
-} from "src/services/fetch/fetchers/opportunityAttachmentFetcher";
+} from "src/services/fetch/fetchers/announcementAttachmentFetcher";
 import { FrontendErrorDetails } from "src/types/apiResponseTypes";
 import { AnnouncementSummaryUpdateRawData } from "src/types/announcement/announcementResponseTypes";
 import { getConfiguredDayJs } from "src/utils/dateUtil";
@@ -107,7 +107,7 @@ async function processAttachmentChanges(
   );
 
   for (const pendingFileId of heldPendingFileIds) {
-    const response = await createOpportunityAttachment(
+    const response = await createAnnouncementAttachment(
       opportunityId,
       pendingFileId,
     );

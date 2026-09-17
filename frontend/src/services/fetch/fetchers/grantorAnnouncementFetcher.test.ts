@@ -6,7 +6,7 @@ import {
   saveCompetitionInstructions,
   searchOpportunitiesByAgency,
   updateCompetitionForGrantor,
-} from "src/services/fetch/fetchers/grantorOpportunitiesFetcher";
+} from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 import { ApplicationPackageSaveRequest } from "src/types/applicationpackageResponseTypes";
 import { PaginationRequestBody } from "src/types/search/searchRequestTypes";
 import { fakeAgencyResponseData } from "src/utils/testing/fixtures";

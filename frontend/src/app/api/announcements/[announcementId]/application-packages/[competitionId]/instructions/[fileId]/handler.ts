@@ -1,6 +1,6 @@
 import { readError } from "src/errors";
 import { getSession } from "src/services/auth/session";
-import { deleteCompetitionInstructions } from "src/services/fetch/fetchers/grantorOpportunitiesFetcher";
+import { deleteCompetitionInstructions } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 
 import { NextRequest, NextResponse } from "next/server";
 

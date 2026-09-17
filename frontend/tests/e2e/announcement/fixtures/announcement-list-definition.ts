@@ -1,8 +1,8 @@
 /**
  * Opportunity list page locator definitions and helper.
  * Usage: import {
- *   OPPORTUNITIES_LIST_PAGE_DEFINITIONS,
- *   getOpportunityListPageLocator,
+ *   ANNOUNCEMENTS_LIST_PAGE_DEFINITIONS,
+ *   getAnnouncementListPageLocator,
  * } from "tests/e2e/opportunity/fixtures/opportunity-list-definition";
  */
 
@@ -10,7 +10,7 @@ import { type Page } from "@playwright/test";
 
 type PlaywrightRole = Parameters<Page["getByRole"]>[0];
 
-export type OpportunityListPageFieldDefinition = {
+export type AnnouncementListPageFieldDefinition = {
   label: string;
   role?: PlaywrightRole;
   name?: string | RegExp;
@@ -18,9 +18,9 @@ export type OpportunityListPageFieldDefinition = {
   selector?: string;
 };
 
-export const OPPORTUNITIES_LIST_PAGE_DEFINITIONS: Record<
+export const ANNOUNCEMENTS_LIST_PAGE_DEFINITIONS: Record<
   string,
-  OpportunityListPageFieldDefinition
+  AnnouncementListPageFieldDefinition
 > = {
   pageHeading: {
     label: "Opportunities list heading",
@@ -75,9 +75,9 @@ export const OPPORTUNITIES_LIST_PAGE_DEFINITIONS: Record<
   },
 };
 
-export function getOpportunityListPageLocator(
+export function getAnnouncementListPageLocator(
   page: Page,
-  definition: OpportunityListPageFieldDefinition,
+  definition: AnnouncementListPageFieldDefinition,
 ) {
   if (definition.role) {
     const options = definition.name ? { name: definition.name } : undefined;

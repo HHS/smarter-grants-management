@@ -31,8 +31,8 @@ import {
   EDIT_OPPORTUNITY_URL_PATTERN,
   FUNDING_DETAILS_FIELD_DEFINITIONS,
   REQUIRED_FIELD_DEFINITIONS,
-} from "tests/e2e/announcement/fixtures/opportunity-pages-field-definitions";
-import { buildOpportunityHappyPathFillData } from "tests/e2e/announcement/fixtures/opportunity-pages-fill-data";
+} from "tests/e2e/announcement/fixtures/announcement-pages-field-definitions";
+import { buildOpportunityHappyPathFillData } from "tests/e2e/announcement/fixtures/announcement-pages-fill-data";
 import { VALID_TAGS } from "tests/e2e/tags";
 import { createAuthenticatedPageLifecycle } from "tests/e2e/utils/common/auth-storage-state-utils";
 import { assertCharacterLimitValidationsFromDefinitions } from "tests/e2e/utils/common/character-limit-validation-utils";
@@ -41,7 +41,7 @@ import { assertEmailValidationsFromDefinitions } from "tests/e2e/utils/common/em
 import { assertButtonEnabledDisabledStates } from "tests/e2e/utils/common/index";
 import { assertNegativeNumberValidationsFromDefinitions } from "tests/e2e/utils/common/negative-number-validation-utils";
 import { assertRequiredFieldValidationsFromDefinitions } from "tests/e2e/utils/common/required-field-validation-utils";
-import { createOpportunity } from "tests/e2e/utils/opportunity/create-opportunity-utils";
+import { createOpportunity } from "tests/e2e/utils/announcement/create-announcement-utils";
 
 const { SMOKE, GRANTOR, OPPORTUNITY_MANAGEMENT, CORE_REGRESSION } = VALID_TAGS;
 

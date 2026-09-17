@@ -21,7 +21,7 @@
  * - Page locator definitions are maintained in:
  *   - tests/e2e/opportunity/fixtures/announcement-list-page-definition.ts
  * - To update labels, roles, text, or selectors used by this test, update:
- *   - OPPORTUNITIES_LIST_PAGE_DEFINITIONS
+ *   - ANNOUNCEMENTS_LIST_PAGE_DEFINITIONS
  * - This scenario validates the initial Opportunities List page UI only.
  */
 
@@ -33,9 +33,9 @@ import {
   type TestInfo,
 } from "@playwright/test";
 import {
-  getOpportunityListPageLocator,
-  OPPORTUNITIES_LIST_PAGE_DEFINITIONS,
-} from "tests/e2e/announcement/fixtures/opportunity-list-definition";
+  getAnnouncementListPageLocator,
+  ANNOUNCEMENTS_LIST_PAGE_DEFINITIONS,
+} from "tests/e2e/announcement/fixtures/announcement-list-definition";
 import playwrightEnv from "tests/e2e/playwright-env";
 import { VALID_TAGS } from "tests/e2e/tags";
 import { authenticateE2eUser } from "tests/e2e/utils/auth/authenticate-e2e-user-utils";
@@ -74,9 +74,9 @@ test.describe("Grantor opportunities list page happy path", () => {
       );
 
       // Define commonly used locators at the beginning of the test for better readability of the scenario steps.
-      const createOpportunityLink = getOpportunityListPageLocator(
+      const createOpportunityLink = getAnnouncementListPageLocator(
         page,
-        OPPORTUNITIES_LIST_PAGE_DEFINITIONS.createOpportunityLink,
+        ANNOUNCEMENTS_LIST_PAGE_DEFINITIONS.createOpportunityLink,
       );
 
       //--------------Scenario steps start here----------------
@@ -89,17 +89,17 @@ test.describe("Grantor opportunities list page happy path", () => {
 
       // And I should see the Opportunities List heading.
       await expect(
-        getOpportunityListPageLocator(
+        getAnnouncementListPageLocator(
           page,
-          OPPORTUNITIES_LIST_PAGE_DEFINITIONS.pageHeading,
+          ANNOUNCEMENTS_LIST_PAGE_DEFINITIONS.pageHeading,
         ),
       ).toBeVisible();
 
       // And I should see the opportunities count.
       await expect(
-        getOpportunityListPageLocator(
+        getAnnouncementListPageLocator(
           page,
-          OPPORTUNITIES_LIST_PAGE_DEFINITIONS.opportunitiesCount,
+          ANNOUNCEMENTS_LIST_PAGE_DEFINITIONS.opportunitiesCount,
         ),
       ).toBeVisible();
 
@@ -114,49 +114,49 @@ test.describe("Grantor opportunities list page happy path", () => {
 
       // And I should see the Opportunities table.
       await expect(
-        getOpportunityListPageLocator(
+        getAnnouncementListPageLocator(
           page,
-          OPPORTUNITIES_LIST_PAGE_DEFINITIONS.opportunitiesTable,
+          ANNOUNCEMENTS_LIST_PAGE_DEFINITIONS.opportunitiesTable,
         ),
       ).toBeVisible();
 
       // And I should see the Title column header.
       await expect(
-        getOpportunityListPageLocator(
+        getAnnouncementListPageLocator(
           page,
-          OPPORTUNITIES_LIST_PAGE_DEFINITIONS.titleColumnHeader,
+          ANNOUNCEMENTS_LIST_PAGE_DEFINITIONS.titleColumnHeader,
         ),
       ).toBeVisible();
 
       // And I should see the Status column header.
       await expect(
-        getOpportunityListPageLocator(
+        getAnnouncementListPageLocator(
           page,
-          OPPORTUNITIES_LIST_PAGE_DEFINITIONS.statusColumnHeader,
+          ANNOUNCEMENTS_LIST_PAGE_DEFINITIONS.statusColumnHeader,
         ),
       ).toBeVisible();
 
       // And I should see the Action column header.
       await expect(
-        getOpportunityListPageLocator(
+        getAnnouncementListPageLocator(
           page,
-          OPPORTUNITIES_LIST_PAGE_DEFINITIONS.actionColumnHeader,
+          ANNOUNCEMENTS_LIST_PAGE_DEFINITIONS.actionColumnHeader,
         ),
       ).toBeVisible();
 
       // And I should see the Page 1 pagination button.
       await expect(
-        getOpportunityListPageLocator(
+        getAnnouncementListPageLocator(
           page,
-          OPPORTUNITIES_LIST_PAGE_DEFINITIONS.pageOneButton,
+          ANNOUNCEMENTS_LIST_PAGE_DEFINITIONS.pageOneButton,
         ),
       ).toBeVisible();
 
       // And I should see the Next pagination button.
       await expect(
-        getOpportunityListPageLocator(
+        getAnnouncementListPageLocator(
           page,
-          OPPORTUNITIES_LIST_PAGE_DEFINITIONS.nextButton,
+          ANNOUNCEMENTS_LIST_PAGE_DEFINITIONS.nextButton,
         ),
       ).toBeVisible();
 

@@ -4,7 +4,7 @@ import {
   MissingAuthError,
   parseErrorStatus,
 } from "src/errors";
-import { getOpportunityForGrantor } from "src/services/fetch/fetchers/grantorOpportunitiesFetcher";
+import { getOpportunityForGrantor } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 import { GrantorAnnouncementDetail } from "src/types/announcement/announcementResponseTypes";
 import { buildOpportunityEditInitialValues } from "src/utils/announcementEditFormConfig";
 
