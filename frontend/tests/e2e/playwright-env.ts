@@ -38,7 +38,7 @@ const isLocal = targetEnv === "local";
 const baseUrl =
   process.env.PLAYWRIGHT_BASE_URL || (isLocal ? "http://127.0.0.1:3000" : "");
 const apiUrl =
-  process.env.PLAYWRIGHT_API_URL || (isLocal ? "http://127.0.0.1:8080" : "");
+  process.env.PLAYWRIGHT_API_URL || (isLocal ? "http://127.0.0.1:8089" : "");
 
 // this does what it can to prevent the app from starting with mismatched target env and url variable assignments
 if (!baseUrl || !apiUrl) {
