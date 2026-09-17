@@ -130,7 +130,7 @@ export default async function OpportunityCompetitionPage({
 
           <section className="order-2 width-full maxw-tablet-xl padding-top-4">
             <ApplicationPackageForm
-              opportunityId={id}
+              announcementId={id}
               competition={competition}
               forms={forms.data}
             />

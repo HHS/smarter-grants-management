@@ -13,13 +13,13 @@ import { SimplerFileInput } from "src/components/core/fileInput/SimplerFileInput
 import { DynamicFieldLabel } from "src/components/core/forms/DynamicFieldLabel";
 
 type ApplicationInstructionsProps = {
-  opportunityId: string;
+  announcementId: string;
   competitionId: string;
   existingFiles?: UploadFileMetadata[];
 };
 
 export function ApplicationInstructions({
-  opportunityId,
+  announcementId,
   competitionId,
   existingFiles = [],
 }: ApplicationInstructionsProps) {
@@ -53,7 +53,7 @@ export function ApplicationInstructions({
   const handleDeleteFile = async (fileId: string): Promise<undefined> => {
     if (files.length > 0 && fileId) {
       await clientFetch(
-        `/api/announcements/${opportunityId}/application-packages/${competitionId}/instructions/${fileId}`,
+        `/api/announcements/${announcementId}/application-packages/${competitionId}/instructions/${fileId}`,
         { method: "DELETE" },
       );
       setFiles((currentFiles) =>

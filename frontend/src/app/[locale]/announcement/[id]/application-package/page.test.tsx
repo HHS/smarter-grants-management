@@ -58,7 +58,7 @@ const mockCreateCompetitionForGrantor = jest.fn();
 const mockAllForms = jest.fn();
 const mockApplicationPackageForms = jest.fn();
 
-jest.mock("src/services/fetch/fetchers/grantorOpportunitiesFetcher", () => ({
+jest.mock("src/services/fetch/fetchers/grantorAnnouncementFetcher", () => ({
   getOpportunityForGrantor: (...args: unknown[]) =>
     mockGetOpportunityForGrantor(...args) as unknown,
 }));

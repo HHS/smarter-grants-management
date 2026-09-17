@@ -5,12 +5,12 @@ import { NextRequest } from "next/server";
 
 export const getCompetition = async (
   _request: NextRequest,
-  { params }: { params: Promise<{ competitionId: string }> },
+  { params }: { params: Promise<{ applicationPackageId: string }> },
 ): Promise<Response> => {
-  const { competitionId } = await params;
+  const { applicationPackageId } = await params;
 
   try {
-    const competition = await getCompetitionDetails(competitionId);
+    const competition = await getCompetitionDetails(applicationPackageId);
     return new Response(JSON.stringify(competition), {
       status: 200,
       headers: {

@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 
-import { getCompetition } from "src/app/api/application-packages/[competitionId]/handler";
+import { getCompetition } from "src/app/api/application-packages/[applicationPackageId]/handler";
 import { ApplicationPackage } from "src/types/applicationpackageResponseTypes";
 import { fakeCompetition } from "src/utils/testing/fixtures";
 
@@ -15,12 +15,12 @@ jest.mock("src/services/fetch/fetchers/competitionsFetcher", () => ({
     mockGetCompetitionDetails(id) as unknown,
 }));
 
-describe("competitions/[competitionId] GET requests", () => {
+describe("application-packages/[applicationPackageId] GET requests", () => {
   afterEach(() => jest.resetAllMocks());
   it("calls opportunityDetails with expected arguments", async () => {
     await getCompetition(new NextRequest("http://hi.gov"), {
       params: Promise.resolve({
-        competitionId: "1",
+        applicationPackageId: "1",
       }),
     });
     expect(mockGetCompetitionDetails).toHaveBeenCalledWith("1");
@@ -30,7 +30,7 @@ describe("competitions/[competitionId] GET requests", () => {
     mockGetCompetitionDetails.mockResolvedValue(fakeCompetition);
     const response = await getCompetition(new NextRequest("http://hi.gov"), {
       params: Promise.resolve({
-        competitionId: "1",
+        applicationPackageId: "1",
       }),
     });
     expect(response.status).toEqual(200);
@@ -42,7 +42,7 @@ describe("competitions/[competitionId] GET requests", () => {
     mockGetCompetitionDetails.mockRejectedValue(new Error());
     const response = await getCompetition(new NextRequest("http://hi.gov"), {
       params: Promise.resolve({
-        competitionId: "1",
+        applicationPackageId: "1",
       }),
     });
     expect(response.status).toEqual(500);

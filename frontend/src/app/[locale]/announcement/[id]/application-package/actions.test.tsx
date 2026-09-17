@@ -14,7 +14,7 @@ jest.mock("next-intl/server", () => ({
   getTranslations: () => identity,
 }));
 
-jest.mock("src/services/fetch/fetchers/grantorOpportunitiesFetcher", () => ({
+jest.mock("src/services/fetch/fetchers/grantorAnnouncementFetcher", () => ({
   createCompetitionForGrantor: jest.fn(),
   saveCompetitionInstructions: jest.fn(),
   updateCompetitionForGrantor: jest.fn(),
@@ -67,7 +67,7 @@ const successfulUpdateResponse = {
 
 function buildValidFormData(overrides?: Record<string, string>) {
   const formData = new FormData();
-  formData.set("opportunityId", "opp-123");
+  formData.set("announcementId", "opp-123");
   formData.set("competitionId", "compete-456");
   formData.set("competition_title", "Test ApplicationPackage");
   formData.set("opening_date", "2026-06-01");
@@ -93,7 +93,7 @@ describe("updateCompetition", () => {
     jest.resetAllMocks();
   });
 
-  it("returns an error when opportunityId is missing", async () => {
+  it("returns an error when announcementId is missing", async () => {
     const formData = new FormData();
     formData.set("competitionId", "compete-456");
 

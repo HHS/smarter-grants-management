@@ -8,25 +8,25 @@ export async function DELETE(
   _request: NextRequest,
   context: {
     params: Promise<{
-      opportunityId: string;
+      announcementId: string;
       competitionId: string;
       fileId: string;
     }>;
   },
 ) {
   const {
-    opportunityId,
-    competitionId,
+    announcementId,
+    competitionId: applicationPackageId,
     fileId: competitionInstructionId,
   } = await context.params;
 
-  if (!opportunityId) {
+  if (!announcementId) {
     return NextResponse.json(
-      { error: "Opportunity ID is required" },
+      { error: "Announcement ID is required" },
       { status: 400 },
     );
   }
-  if (!competitionId) {
+  if (!applicationPackageId) {
     return NextResponse.json(
       { error: "ApplicationPackage ID is required" },
       { status: 400 },
@@ -49,8 +49,8 @@ export async function DELETE(
 
   try {
     const response = await deleteCompetitionInstructions(
-      opportunityId,
-      competitionId,
+      announcementId,
+      applicationPackageId,
       competitionInstructionId,
     );
 

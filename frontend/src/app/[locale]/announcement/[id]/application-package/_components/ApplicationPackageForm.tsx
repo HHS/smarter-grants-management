@@ -32,13 +32,13 @@ const alwaysRequiredForms: Record<string, boolean> = {
   "1623b310-85be-496a-b84b-34bdee22a68a": true,
 };
 type CompetitionFormProps = {
-  opportunityId: string;
+  announcementId: string;
   competition?: ApplicationPackage;
   forms: FormType[];
 };
 
 export function ApplicationPackageForm({
-  opportunityId,
+  announcementId,
   competition,
   forms,
 }: CompetitionFormProps) {
@@ -97,7 +97,7 @@ export function ApplicationPackageForm({
   // ===== Render the form =====
   return (
     <form id="opportunity-competition-form" onSubmit={handleSubmit}>
-      <input type="hidden" name="opportunityId" value={opportunityId} />
+      <input type="hidden" name="announcementId" value={announcementId} />
       <input type="hidden" name="competitionId" value={competitionId} />
 
       {formState?.errorMessage ? (
@@ -145,7 +145,7 @@ export function ApplicationPackageForm({
               />
               <AgencyContact contactInfo={competition?.contact_info} />
               <ApplicationInstructions
-                opportunityId={opportunityId}
+                announcementId={announcementId}
                 competitionId={competitionId}
                 existingFiles={existingFiles}
               />

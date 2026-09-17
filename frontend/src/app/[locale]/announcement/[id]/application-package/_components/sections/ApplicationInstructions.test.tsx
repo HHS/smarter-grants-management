@@ -17,7 +17,7 @@ jest.mock("src/hooks/useClientFetch", () => ({
 }));
 
 const applicationInstructionsProps = {
-  opportunityId: "opp-123",
+  announcementId: "opp-123",
   competitionId: "competition-123",
 };
 
@@ -150,7 +150,7 @@ describe("ApplicationInstructions", () => {
       fireEvent.click(screen.getByRole("button", { name: "delete-file" }));
 
       expect(mockClientFetch).toHaveBeenCalledWith(
-        `/api/announcements/opp-123/application-packages/application-package-123/instructions/instruction-123`,
+        `/api/announcements/opp-123/application-packages/competition-123/instructions/instruction-123`,
         { method: "DELETE" },
       );
       await waitFor(() => {

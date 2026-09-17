@@ -99,26 +99,26 @@ export async function updateCompetition(
   requiredForms: ApplicationPackageFormsSubmitApi,
 ): Promise<CompetitionActionState> {
   const t = await getTranslations("OpportunityCompetition.alerts");
-  const opportunityId = formData.get("opportunityId") as string | null;
+  const announcementId = formData.get("announcementId") as string | null;
   let competitionId = formData.get("competitionId") as string | null;
   let apiResponse;
 
   // This should never be the case here,
   // but we need to account for this scenario to remove compile errors.
-  if (!opportunityId) return { errorMessage: t("genericError") };
+  if (!announcementId) return { errorMessage: t("genericError") };
 
   const requestBody = buildRequestBody(formData);
 
   try {
     if (!competitionId) {
       apiResponse = await createCompetitionForGrantor(
-        opportunityId,
+        announcementId,
         requestBody,
       );
       competitionId = apiResponse.data.competition_id;
     } else {
       apiResponse = await updateCompetitionForGrantor(
-        opportunityId,
+        announcementId,
         competitionId,
         requestBody,
       );
@@ -129,7 +129,7 @@ export async function updateCompetition(
     const pendingFileId = formData.get("pending-file-id") as string | null;
     if (pendingFileId) {
       await saveCompetitionInstructions(
-        opportunityId,
+        announcementId,
         competitionId,
         pendingFileId,
       );
