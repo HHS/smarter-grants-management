@@ -337,8 +337,8 @@ def reset_aws_env_vars(monkeypatch):
 def s3_config(mock_s3_bucket_name, mock_other_s3_bucket_name, mock_file_scan_s3_bucket_name):
     """Configure S3 with draft and file scan buckets."""
     return S3Config(
-        PUBLIC_FILES_BUCKET=f"s3://{mock_s3_bucket_name}",
-        DRAFT_FILES_BUCKET=f"s3://{mock_other_s3_bucket_name}",
+        PUBLIC_FILES_BUCKET=f"s3://{mock_other_s3_bucket_name}",
+        DRAFT_FILES_BUCKET=f"s3://{mock_s3_bucket_name}",
         FILE_SCAN_BUCKET=f"s3://{mock_file_scan_s3_bucket_name}",
     )
 
@@ -359,7 +359,7 @@ def mock_aws(reset_aws_env_vars):
 @pytest.fixture
 def mock_s3_bucket(mock_aws):
     s3 = boto3.resource("s3")
-    bucket = s3.Bucket("local-mock-public-bucket")
+    bucket = s3.Bucket("local-mock-draft-bucket")
     bucket.create()
     return bucket
 
@@ -372,7 +372,7 @@ def mock_s3_bucket_name(mock_s3_bucket):
 @pytest.fixture
 def mock_other_s3_bucket(mock_aws):
     s3 = boto3.resource("s3")
-    bucket = s3.Bucket("local-mock-draft-bucket")
+    bucket = s3.Bucket("local-mock-public-bucket")
     bucket.create()
     return bucket
 

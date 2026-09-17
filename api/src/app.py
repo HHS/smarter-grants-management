@@ -13,6 +13,7 @@ from src.adapters.newrelic import init_newrelic
 from src.api.announcements import announcement_blueprint
 from src.api.assistance_listings.assistance_listing_blueprint import assistance_listing_blueprint
 from src.api.files_v1 import file_blueprint
+from src.api.forms.form_blueprint import form_blueprint
 from src.api.grantor_organizations.grantor_organization_blueprint import (
     grantor_organization_blueprint,
 )
@@ -110,6 +111,7 @@ def register_blueprints(app: APIFlask) -> None:
     app.register_blueprint(file_blueprint)
     app.register_blueprint(announcement_blueprint)
     app.register_blueprint(assistance_listing_blueprint)
+    app.register_blueprint(form_blueprint)
     # Local endpoints for development, will error
     # if this is ever enabled non-locally.
     if endpoint_config.enable_local_endpoints:

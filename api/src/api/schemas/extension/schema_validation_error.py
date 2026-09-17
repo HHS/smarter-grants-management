@@ -10,6 +10,7 @@ class SchemaValidationError(StrEnum):
     INVALID = "invalid"
     INVALID_COMPARISON = "invalid_comparison"
     INVALID_TYPE = "invalid_type"
+    INVALID_DATE_ORDER = "invalid_date_order"
 
     FORMAT = "format"
     INVALID_CHOICE = "invalid_choice"
