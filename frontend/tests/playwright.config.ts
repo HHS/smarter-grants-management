@@ -1,4 +1,4 @@
-import { Project, defineConfig, devices } from "@playwright/test";
+import { defineConfig, devices, Project } from "@playwright/test";
 
 import playwrightEnv from "./e2e/playwright-env";
 
@@ -20,7 +20,8 @@ const requestedProjectNames = playwrightProjects
 const filterProjects = (allProjects: Project[]): Project[] =>
   requestedProjectNames
     ? allProjects.filter(
-        (project) => project.name && requestedProjectNames.includes(project.name),
+        (project) =>
+          project.name && requestedProjectNames.includes(project.name),
       )
     : allProjects;
 
