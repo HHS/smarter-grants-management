@@ -19,12 +19,12 @@ jest.mock("next-intl/server", () => ({
   getTranslations: () => identity,
 }));
 
-jest.mock("src/services/fetch/fetchers/grantorOpportunitiesFetcher", () => ({
+jest.mock("src/services/fetch/fetchers/grantorAnnouncementFetcher", () => ({
   createOpportunitySummaryForGrantor: jest.fn(),
   updateOpportunitySummaryForGrantor: jest.fn(),
 }));
 
-jest.mock("src/services/fetch/fetchers/opportunityAttachmentFetcher", () => ({
+jest.mock("src/services/fetch/fetchers/announcementAttachmentFetcher", () => ({
   createAnnouncementAttachment: jest.fn(),
   deleteOpportunityAttachment: jest.fn(),
 }));

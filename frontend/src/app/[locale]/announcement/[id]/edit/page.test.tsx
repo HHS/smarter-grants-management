@@ -65,12 +65,12 @@ const mockGetOpportunityForGrantor = jest.fn().mockResolvedValue({
     forecast_summary: { opportunity_summary_id: "summary-1" },
   },
 });
-jest.mock("src/services/fetch/fetchers/grantorOpportunitiesFetcher", () => ({
+jest.mock("src/services/fetch/fetchers/grantorAnnouncementFetcher", () => ({
   getOpportunityForGrantor: (arg: unknown): unknown =>
     mockGetOpportunityForGrantor(arg) as Promise<GrantorAnnouncementDetail[]>,
 }));
 
-jest.mock("src/services/fetch/fetchers/opportunityAttachmentFetcher", () => ({
+jest.mock("src/services/fetch/fetchers/announcementAttachmentFetcher", () => ({
   createAnnouncementAttachment: jest.fn(),
   deleteOpportunityAttachment: jest.fn(),
 }));

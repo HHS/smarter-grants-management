@@ -163,7 +163,7 @@ const mockFetchUserAgencies = jest.fn().mockResolvedValue([]);
 const mockCheckUserPrivileges = jest.fn().mockResolvedValue(userPrivileges);
 const mockGetSession = jest.fn().mockResolvedValue(userSession);
 
-jest.mock("src/services/fetch/fetchers/grantorOpportunitiesFetcher", () => ({
+jest.mock("src/services/fetch/fetchers/grantorAnnouncementFetcher", () => ({
   searchOpportunitiesByAgency: (arg: unknown): unknown =>
     mockSearchForOpportunities(arg) as Promise<BaseAnnouncement[]>,
 }));

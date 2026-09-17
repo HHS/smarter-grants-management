@@ -5,9 +5,8 @@ import { getNextRoutes } from "src/utils/getRoutes";
 
 describe("getNextRoutes", () => {
   it("should get Next.js routes from src directory", () => {
-    const result = getNextRoutes("src/app");
-
-    expect(result).toEqual([
+    const result = getNextRoutes("src/app").sort();
+    const expectedRoutes = [
       "/award-recommendation/1/application-submissions/[applicationSubmissionId]/edit",
       "/award-recommendation/1/application-submissions/edit/bulk",
       "/award-recommendation/1/application-submissions/edit",
@@ -32,6 +31,8 @@ describe("getNextRoutes", () => {
       "/announcement/1/overview",
       "/",
       "/unauthenticated",
-    ]);
+    ].sort();
+
+    expect(result).toEqual(expectedRoutes);
   });
 });

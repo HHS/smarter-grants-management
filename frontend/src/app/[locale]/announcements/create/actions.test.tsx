@@ -12,7 +12,7 @@ jest.mock("next-intl/server", () => ({
   getTranslations: () => identity,
 }));
 
-jest.mock("src/services/fetch/fetchers/grantorOpportunitiesFetcher", () => ({
+jest.mock("src/services/fetch/fetchers/grantorAnnouncementFetcher", () => ({
   createOpportunity: (createOppSchema: unknown) =>
     mockCreateOpportunity(createOppSchema) as unknown,
 }));
