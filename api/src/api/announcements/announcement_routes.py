@@ -301,7 +301,7 @@ def application_package_update(
 @announcement_blueprint.input(ApplicationPackageFormsSetRequestSchema)
 @announcement_blueprint.output(ApplicationPackageResponseSchema)
 @announcement_blueprint.doc(
-    summary="Update an Application Package",
+    summary="Update an Application Package's Forms",
     responses=[200, 401, 403, 404, 422],
 )
 @announcement_blueprint.auth_required(jwt_or_api_user_key_multi_auth)

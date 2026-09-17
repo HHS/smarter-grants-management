@@ -43,6 +43,6 @@ def test_list_forms_bad_auth_401(client):
     assert response.status_code == 401
 
 
-def test_list_forms_no_auth_403(client):
+def test_list_forms_no_auth_401(client):
     response = client.post("/v1/forms/list")
     assert response.status_code == 401
