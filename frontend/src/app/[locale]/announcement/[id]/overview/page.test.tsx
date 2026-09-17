@@ -69,7 +69,7 @@ jest.mock("./_components/OverviewButtons", () => ({
   ),
 }));
 
-// Fixture builders shaped relative to summaryRequiredFields / competitionRequiredFields
+// Fixture builders   shaped relative to summaryRequiredFields / competitionRequiredFields
 // (RequiredFields.tsx) so ProgressChecker's real getProgress() logic determines the
 // status - not mocked, exercised for real.
 type ProgressStatus = "notStarted" | "inProgress" | "complete";
