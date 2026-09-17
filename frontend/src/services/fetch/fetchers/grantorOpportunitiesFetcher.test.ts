@@ -243,6 +243,7 @@ describe("createCompetitionForGrantor", () => {
     expect(mockFetcher).toHaveBeenCalledWith({
       subPath: "opp-123/competitions",
       body: competitionData,
+      allowedErrorStatuses: [422],
     });
     expect(result).toEqual({ data: { competition_id: "new-competition-id" } });
   });
@@ -258,6 +259,7 @@ describe("createCompetitionForGrantor", () => {
     expect(mockFetcher).toHaveBeenCalledWith({
       subPath: "opp-123/competitions",
       body: competitionWithPublicId,
+      allowedErrorStatuses: [422],
     });
   });
 });
@@ -280,6 +282,7 @@ describe("updateCompetitionForGrantor", () => {
     expect(mockFetcher).toHaveBeenCalledWith({
       subPath: "opp-123/competitions/compete-321",
       body: competitionData,
+      allowedErrorStatuses: [422],
     });
   });
 
