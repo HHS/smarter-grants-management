@@ -1,5 +1,5 @@
-import { ApplicationPackageFormsApiResponse } from "src/types/applicationpackageFormsResponseTypes";
-import { ApplicationPackageFormsSubmitApi } from "src/types/applicationpackageResponseTypes";
+import { ApplicationPackageFormsApiResponse } from "src/types/applicationPackageFormsResponseTypes";
+import { ApplicationPackageFormsSubmitApi } from "src/types/applicationPackageResponseTypes";
 
 import { fetchCompetitionForms } from "./fetchers";
 

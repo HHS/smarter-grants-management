@@ -6,7 +6,7 @@ import {
   saveCompetitionInstructions,
   updateCompetitionForGrantor,
 } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
-import { ApplicationPackageFormsSubmitApi } from "src/types/applicationpackageResponseTypes";
+import { ApplicationPackageFormsSubmitApi } from "src/types/applicationPackageResponseTypes";
 
 import { competitionFormAction, updateCompetition } from "./actions";
 

@@ -3,7 +3,7 @@ import { axe } from "jest-axe";
 import OpportunityOverviewPage from "src/app/[locale]/announcement/[id]/overview/page";
 import { ForbiddenError, MissingAuthError, NotFoundError } from "src/errors";
 import { GrantorAnnouncementDetail } from "src/types/announcement/announcementResponseTypes";
-import { ApplicationPackage } from "src/types/applicationpackageResponseTypes";
+import { ApplicationPackage } from "src/types/applicationPackageResponseTypes";
 import {
   DeepPartial,
   wrapForExpectedError,
@@ -114,7 +114,6 @@ const baseOpportunityData: DeepPartial<GrantorAnnouncementDetail> = {
 type OverviewSectionCase = {
   name: string;
   linkNameKey: string;
-  rowSuffix: string;
   hrefSuffix: string;
   buildData: (status: ProgressStatus) => DeepPartial<GrantorAnnouncementDetail>;
 };
@@ -123,14 +122,12 @@ const OVERVIEW_SECTIONS: OverviewSectionCase[] = [
   {
     name: "Opportunity Summary",
     linkNameKey: "labels.editOpportunityLink",
-    rowSuffix: "edit",
     hrefSuffix: "edit",
     buildData: (status) => ({ summary: buildSummaryFixture(status) }),
   },
   {
     name: "Application Package",
     linkNameKey: "labels.competitionLink",
-    rowSuffix: "competition",
     hrefSuffix: "application-package",
     buildData: (status) => ({ competitions: buildCompetitionFixture(status) }),
   },
@@ -158,7 +155,7 @@ describe("OpportunityOverviewPage", () => {
         // Row is found via data-testid="overview-row-{hrefSuffix}" on the
         // page's own row markup, so both the link and status assertions
         // stay scoped correctly once a 3rd/4th section is added alongside it.
-        const row = screen.getByTestId(`overview-row-${section.rowSuffix}`);
+        const row = screen.getByTestId(`overview-row-${section.hrefSuffix}`);
         const link = within(row).getByRole("link", {
           name: section.linkNameKey,
         });

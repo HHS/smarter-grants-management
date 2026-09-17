@@ -3,7 +3,7 @@ from enum import StrEnum
 from src.api.schemas.extension import Schema, fields
 
 
-class AnnouncementStatus(StrEnum):
+class OpportunityStatus(StrEnum):
     FORECASTED = "forecasted"
     POSTED = "posted"
     CLOSED = "closed"
@@ -24,7 +24,7 @@ class OpportunityDataSchema(Schema):
         allow_none=True, metadata={"description": "The title of the opportunity"}
     )
     opportunity_status = fields.Enum(
-        AnnouncementStatus,
+        OpportunityStatus,
         allow_none=True,
         metadata={"description": "The current status of the opportunity"},
     )

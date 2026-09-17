@@ -108,7 +108,7 @@ export default async function OpportunityOverviewPage({
         <hr />
         <div
           className="grid-row grid-gap-2 padding-top-2"
-          data-testid="overview-row-competition"
+          data-testid="overview-row-application-package"
         >
           <div className="tablet:grid-col">
             <Link href={competitionUrl}>{t("labels.competitionLink")}</Link>

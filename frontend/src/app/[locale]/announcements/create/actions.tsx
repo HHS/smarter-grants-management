@@ -2,7 +2,7 @@
 
 import { getSession } from "src/services/auth/session";
 import { createOpportunity } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
-import { CreateAnnouncementResponse } from "src/types/createannouncementTypes";
+import { CreateAnnouncementResponse } from "src/types/createAnnouncementTypes";
 
 // Future: Apply any field level validations before submitting to the backend.
 //    These will be validations that have not been taken care of client-side.

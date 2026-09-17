@@ -3,7 +3,7 @@
  */
 
 import { getCompetition } from "src/app/api/application-packages/[applicationPackageId]/handler";
-import { ApplicationPackage } from "src/types/applicationpackageResponseTypes";
+import { ApplicationPackage } from "src/types/applicationPackageResponseTypes";
 import { fakeCompetition } from "src/utils/testing/fixtures";
 
 import { NextRequest } from "next/server";

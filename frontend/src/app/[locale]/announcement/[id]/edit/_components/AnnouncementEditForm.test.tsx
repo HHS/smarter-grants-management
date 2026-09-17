@@ -74,7 +74,7 @@ const renderOpportunityEditForm = (
 
 // â”€â”€â”€ Rendering â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Verifies static structure: enum-backed controls and hidden fields.
-describe("AnnouncementEditForm â€” rendering", () => {
+describe("AnnouncementEditForm - rendering", () => {
   beforeEach(() => {
     mockUseActionState.mockReturnValue([
       { validationErrors: {} },
@@ -252,7 +252,7 @@ describe("AnnouncementEditForm â€” rendering", () => {
 // â”€â”€â”€ Alert banners â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Covers the four banner states: newly-created success, save success, save error,
 // and field-level validation summary.
-describe("AnnouncementEditForm â€” alert banners", () => {
+describe("AnnouncementEditForm - alert banners", () => {
   beforeEach(() => {
     mockUseActionState.mockReturnValue([
       { validationErrors: {} },
@@ -326,7 +326,7 @@ describe("AnnouncementEditForm â€” alert banners", () => {
 // â”€â”€â”€ Conditional fields â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Three sections are conditionally rendered based on form state:
 // fundingCategoryExplanation, closeDateExplanation, additionalEligibilityInfo.
-describe("AnnouncementEditForm â€” conditional fields", () => {
+describe("AnnouncementEditForm - conditional fields", () => {
   beforeEach(() => {
     mockUseActionState.mockReturnValue([
       { validationErrors: {} },
@@ -423,7 +423,7 @@ describe("AnnouncementEditForm â€” conditional fields", () => {
 
 // â”€â”€â”€ Eligibility checkboxes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Confirms initial checked state and that toggling a checkbox updates state correctly.
-describe("AnnouncementEditForm â€” eligibility checkboxes", () => {
+describe("AnnouncementEditForm - eligibility checkboxes", () => {
   beforeEach(() => {
     mockUseActionState.mockReturnValue([
       { validationErrors: {} },
@@ -514,7 +514,7 @@ describe("AnnouncementEditForm â€” eligibility checkboxes", () => {
 // â”€â”€â”€ Save state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // When a save creates a new summary record, the returned ID is synced into
 // the hidden opportunitySummaryId input so subsequent saves target the correct record.
-describe("AnnouncementEditForm â€” save state", () => {
+describe("AnnouncementEditForm - save state", () => {
   afterEach(() => {
     jest.resetAllMocks();
   });
@@ -538,10 +538,10 @@ describe("AnnouncementEditForm â€” save state", () => {
   });
 });
 
-// â”€â”€â”€ Funding details â€” field interactions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€â”€ Funding details - field interactions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // All funding-section inputs are controlled; onChange updates state and re-renders.
 // Number inputs pass through formatNumber, formatting valid numbers with commas.
-describe("AnnouncementEditForm â€” funding details interactions", () => {
+describe("AnnouncementEditForm - funding details interactions", () => {
   beforeEach(() => {
     mockUseActionState.mockReturnValue([
       { validationErrors: {} },
@@ -672,10 +672,10 @@ describe("AnnouncementEditForm â€” funding details interactions", () => {
   });
 });
 
-// â”€â”€â”€ Eligibility and additional info â€” field interactions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€â”€ Eligibility and additional info - field interactions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Controlled inputs in the eligibility and additional information sections;
 // onChange updates are reflected in the displayed value.
-describe("AnnouncementEditForm â€” eligibility and additional info interactions", () => {
+describe("AnnouncementEditForm - eligibility and additional info interactions", () => {
   beforeEach(() => {
     mockUseActionState.mockReturnValue([
       { validationErrors: {} },
@@ -771,7 +771,7 @@ describe("AnnouncementEditForm â€” eligibility and additional info interact
 // â”€â”€â”€ Inline validation errors â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // When the save action returns field-level errors, each affected input renders
 // an ErrorMessage. All fields are exercised in a single scenario.
-describe("AnnouncementEditForm â€” inline validation errors", () => {
+describe("AnnouncementEditForm - inline validation errors", () => {
   afterEach(() => {
     jest.resetAllMocks();
   });
@@ -823,7 +823,7 @@ describe("AnnouncementEditForm â€” inline validation errors", () => {
 
 // â”€â”€â”€ Number formatting edge cases â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Non-numeric and empty strings must pass through unchanged rather than being zeroed out.
-describe("AnnouncementEditForm â€” number formatting edge cases", () => {
+describe("AnnouncementEditForm - number formatting edge cases", () => {
   beforeEach(() => {
     mockUseActionState.mockReturnValue([
       { validationErrors: {} },
@@ -845,7 +845,7 @@ describe("AnnouncementEditForm â€” number formatting edge cases", () => {
       name: /labels\.awardMinimum/i,
     });
 
-    // formatNumber("abc") â†’ isNaN branch â†’ returns "abc" as-is
+    // formatNumber("abc") -> isNaN branch -> returns "abc" as-is
     expect(input).toHaveValue("abc");
   });
 
@@ -858,7 +858,7 @@ describe("AnnouncementEditForm â€” number formatting edge cases", () => {
       name: /labels\.awardMaximum/i,
     });
 
-    // formatNumber("") â†’ !raw branch â†’ returns ""
+    // formatNumber("") -> !raw branch -> returns ""
     expect(input).toHaveValue("");
   });
 });
@@ -866,7 +866,7 @@ describe("AnnouncementEditForm â€” number formatting edge cases", () => {
 // â”€â”€â”€ Action buttons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Save, Preview, and Publish buttons are rendered at the top of the form.
 // Publish is enabled only when all four required fields are populated.
-describe("AnnouncementEditForm â€” action buttons", () => {
+describe("AnnouncementEditForm - action buttons", () => {
   beforeEach(() => {
     mockUseActionState.mockReturnValue([
       { validationErrors: {} },
@@ -926,7 +926,7 @@ describe("AnnouncementEditForm â€” action buttons", () => {
 });
 
 // â”€â”€â”€ Field validations on exiting the field â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-describe("AnnouncementEditForm â€” field validations on exiting the field", () => {
+describe("AnnouncementEditForm - field validations on exiting the field", () => {
   beforeEach(() => {
     mockUseActionState.mockReturnValue([
       { validationErrors: {} },

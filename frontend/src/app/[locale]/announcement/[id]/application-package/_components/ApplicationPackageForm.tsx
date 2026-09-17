@@ -13,7 +13,7 @@ import { FormType } from "src/types/allFormsResponseTypes";
 import {
   ApplicationPackage,
   ApplicationPackageFormsSubmitApi,
-} from "src/types/applicationpackageResponseTypes";
+} from "src/types/applicationPackageResponseTypes";
 import { UploadFileMetadata } from "src/types/fileUploadTypes";
 
 import { useTranslations } from "next-intl";

@@ -79,7 +79,7 @@ const pageParams = new Promise<{ id: string; locale: string }>((resolve) => {
   resolve({ id: "opportunity-123", locale: "en" });
 });
 
-describe("AnnouncementEditForm â€” action buttons", () => {
+describe("AnnouncementEditForm - action buttons", () => {
   beforeEach(() => {
     mockUseActionState.mockReturnValue([
       { validationErrors: {} },

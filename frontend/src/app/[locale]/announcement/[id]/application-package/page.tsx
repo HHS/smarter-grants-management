@@ -6,7 +6,7 @@ import {
 } from "src/errors";
 import { getForms } from "src/services/fetch/fetchers/allFormsFetcher";
 import { getOpportunityForGrantor } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
-import { ApplicationPackage } from "src/types/applicationpackageResponseTypes";
+import { ApplicationPackage } from "src/types/applicationPackageResponseTypes";
 
 import { useTranslations } from "next-intl";
 import { getTranslations } from "next-intl/server";

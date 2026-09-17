@@ -1,6 +1,6 @@
 import { AnnouncementAttachment } from "src/types/announcement/announcementAttachmentTypes";
 import { APIResponse } from "src/types/apiResponseTypes";
-import { ApplicationPackage } from "src/types/applicationpackageResponseTypes";
+import { ApplicationPackage } from "src/types/applicationPackageResponseTypes";
 
 export type AnnouncementStatus =
   "archived" | "closed" | "posted" | "forecasted";

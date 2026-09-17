@@ -1,6 +1,6 @@
 import "server-only";
 
-import { ApplicationPackage } from "src/types/applicationpackageResponseTypes";
+import { ApplicationPackage } from "src/types/applicationPackageResponseTypes";
 
 import { fetchCompetition } from "./fetchers";
 

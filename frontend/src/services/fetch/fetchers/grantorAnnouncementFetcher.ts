@@ -15,8 +15,8 @@ import {
   ApplicationPackageInstructionsApiResponse,
   ApplicationPackageSaveApiResponse,
   ApplicationPackageSaveRequest,
-} from "src/types/applicationpackageResponseTypes";
-import { CreateAnnouncementRecord } from "src/types/createannouncementTypes";
+} from "src/types/applicationPackageResponseTypes";
+import { CreateAnnouncementRecord } from "src/types/createAnnouncementTypes";
 import {
   PaginationRequestBody,
   SearchAPIResponse,

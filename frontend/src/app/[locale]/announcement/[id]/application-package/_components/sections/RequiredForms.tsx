@@ -1,7 +1,7 @@
 "use client";
 
 import { FormType } from "src/types/allFormsResponseTypes";
-import { ApplicationPackageFormsSubmitApi } from "src/types/applicationpackageResponseTypes";
+import { ApplicationPackageFormsSubmitApi } from "src/types/applicationPackageResponseTypes";
 
 import { useTranslations } from "next-intl";
 import { Grid, GridContainer } from "@trussworks/react-uswds";

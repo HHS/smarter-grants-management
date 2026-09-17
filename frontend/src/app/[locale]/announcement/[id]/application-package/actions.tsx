@@ -12,7 +12,7 @@ import {
   ApplicantTypes,
   ApplicationPackageFormsSubmitApi,
   ApplicationPackageSaveRequest,
-} from "src/types/applicationpackageResponseTypes";
+} from "src/types/applicationPackageResponseTypes";
 
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
