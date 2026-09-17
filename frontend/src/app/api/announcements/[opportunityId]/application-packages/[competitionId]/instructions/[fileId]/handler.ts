@@ -28,13 +28,13 @@ export async function DELETE(
   }
   if (!competitionId) {
     return NextResponse.json(
-      { error: "Competition ID is required" },
+      { error: "ApplicationPackage ID is required" },
       { status: 400 },
     );
   }
   if (!competitionInstructionId) {
     return NextResponse.json(
-      { error: "Competition Instruction ID is required" },
+      { error: "ApplicationPackage Instruction ID is required" },
       { status: 400 },
     );
   }

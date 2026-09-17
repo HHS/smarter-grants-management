@@ -15,7 +15,7 @@ export function OverviewButtons({
   opportunityId,
   publishEnabled,
 }: OverviewButtonsProps) {
-  const t = useTranslations("OpportunityOverview");
+  const t = useTranslations("AnnouncementOverview");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 

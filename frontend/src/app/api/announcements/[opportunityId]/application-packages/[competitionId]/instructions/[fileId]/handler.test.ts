@@ -98,14 +98,14 @@ describe("DELETE competition instruction handler", () => {
       "opportunity-123",
       "",
       "instruction-123",
-      "Competition ID is required",
+      "ApplicationPackage ID is required",
     ],
     [
       "fileId",
       "opportunity-123",
       "competition-123",
       "",
-      "Competition Instruction ID is required",
+      "ApplicationPackage Instruction ID is required",
     ],
   ])(
     "returns 400 when %s is missing",

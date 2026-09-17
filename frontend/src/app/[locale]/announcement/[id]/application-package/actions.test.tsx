@@ -6,7 +6,7 @@ import {
   saveCompetitionInstructions,
   updateCompetitionForGrantor,
 } from "src/services/fetch/fetchers/grantorOpportunitiesFetcher";
-import { CompetitionFormsSubmitApi } from "src/types/competitionsResponseTypes";
+import { ApplicationPackageFormsSubmitApi } from "src/types/applicationpackageResponseTypes";
 
 import { competitionFormAction, updateCompetition } from "./actions";
 
@@ -42,7 +42,7 @@ const mockSaveCompetitionInstructions = jest.mocked(
 );
 const mockUpdateCompetitionForms = jest.mocked(updateCompetitionForms);
 
-const mockRequiredForms: CompetitionFormsSubmitApi = [
+const mockRequiredForms: ApplicationPackageFormsSubmitApi = [
   {
     form_id: "1623b310-85be-496a-b84b-34bdee22a68a",
     is_required: true,
@@ -69,7 +69,7 @@ function buildValidFormData(overrides?: Record<string, string>) {
   const formData = new FormData();
   formData.set("opportunityId", "opp-123");
   formData.set("competitionId", "compete-456");
-  formData.set("competition_title", "Test Competition");
+  formData.set("competition_title", "Test ApplicationPackage");
   formData.set("opening_date", "2026-06-01");
   formData.set("closing_date", "2026-07-01");
   formData.set("public_competition_id", "PUBLIC-COMP-789");
@@ -115,7 +115,7 @@ describe("updateCompetition", () => {
     expect(mockCreateCompetitionForGrantor).toHaveBeenCalledWith(
       "opp-123",
       expect.objectContaining({
-        competition_title: "Test Competition",
+        competition_title: "Test ApplicationPackage",
         opening_date: "2026-06-01",
         closing_date: "2026-07-01",
         public_competition_id: "PUBLIC-COMP-789",
@@ -151,7 +151,7 @@ describe("updateCompetition", () => {
       "opp-123",
       "compete-456",
       expect.objectContaining({
-        competition_title: "Test Competition",
+        competition_title: "Test ApplicationPackage",
         opening_date: "2026-06-01",
         closing_date: "2026-07-01",
         public_competition_id: "PUBLIC-COMP-789",

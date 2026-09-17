@@ -3,7 +3,7 @@
  */
 
 import { getCompetition } from "src/app/api/application-packages/[competitionId]/handler";
-import { Competition } from "src/types/competitionsResponseTypes";
+import { ApplicationPackage } from "src/types/applicationpackageResponseTypes";
 import { fakeCompetition } from "src/utils/testing/fixtures";
 
 import { NextRequest } from "next/server";
@@ -34,7 +34,7 @@ describe("competitions/[competitionId] GET requests", () => {
       }),
     });
     expect(response.status).toEqual(200);
-    const body = (await response.json()) as Competition;
+    const body = (await response.json()) as ApplicationPackage;
     expect(body).toEqual(fakeCompetition);
   });
 

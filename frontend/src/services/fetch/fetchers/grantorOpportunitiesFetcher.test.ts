@@ -7,7 +7,7 @@ import {
   searchOpportunitiesByAgency,
   updateCompetitionForGrantor,
 } from "src/services/fetch/fetchers/grantorOpportunitiesFetcher";
-import { CompetitionSaveRequest } from "src/types/competitionsResponseTypes";
+import { ApplicationPackageSaveRequest } from "src/types/applicationpackageResponseTypes";
 import { PaginationRequestBody } from "src/types/search/searchRequestTypes";
 import { fakeAgencyResponseData } from "src/utils/testing/fixtures";
 
@@ -215,7 +215,7 @@ describe("createOpportunity", () => {
 // ---------------------------------------------
 // Tests for opportunity competitions
 // ---------------------------------------------
-const competitionData: CompetitionSaveRequest = {
+const competitionData: ApplicationPackageSaveRequest = {
   competition_title: "",
   opening_date: null,
   closing_date: null,
@@ -248,7 +248,7 @@ describe("createCompetitionForGrantor", () => {
   });
 
   it("includes public_competition_id in the request body", async () => {
-    const competitionWithPublicId: CompetitionSaveRequest = {
+    const competitionWithPublicId: ApplicationPackageSaveRequest = {
       ...competitionData,
       public_competition_id: "PUBLIC-COMP-789",
     };

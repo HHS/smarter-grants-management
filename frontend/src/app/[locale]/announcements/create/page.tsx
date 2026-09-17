@@ -1,5 +1,5 @@
 import TopLevelError from "src/app/[locale]/error/page";
-import { CreateOpportunityForm } from "src/app/[locale]/announcements/create/_components/CreateOpportunityForm";
+import { CreateAnnouncementForm } from "src/app/[locale]/announcements/create/_components/CreateAnnouncementForm";
 import { MissingAuthError, UnauthorizedError } from "src/errors";
 import { getSession } from "src/services/auth/session";
 import { getUserAgencies } from "src/services/fetch/fetchers/agenciesFetcher";
@@ -108,7 +108,7 @@ export default async function CreateOpportunityPage({
     <>
       <GridContainer>
         <PageHeader />
-        <CreateOpportunityForm
+        <CreateAnnouncementForm
           defaultAgencyId={defaultAgencyId}
           userAgencies={mappedAgencies}
         />

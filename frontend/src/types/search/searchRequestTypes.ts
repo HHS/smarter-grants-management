@@ -1,5 +1,5 @@
 import { APIResponse, PaginationInfo } from "src/types/apiResponseTypes";
-import { BaseOpportunity } from "src/types/opportunity/opportunityResponseTypes";
+import { BaseAnnouncement } from "src/types/announcement/announcementResponseTypes";
 
 import { BackendFilterNames } from "./searchFilterTypes";
 import { FilterQueryParamData } from "./searchQueryTypes";
@@ -77,7 +77,7 @@ export type SavedSearchRecord = {
   search_query: SavedSearchQuery;
 };
 
-export type SearchResponseData = BaseOpportunity[];
+export type SearchResponseData = BaseAnnouncement[];
 
 export type FacetCounts = {
   [key in BackendFilterNames]: {

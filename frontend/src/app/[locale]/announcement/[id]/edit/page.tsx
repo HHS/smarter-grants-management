@@ -1,12 +1,12 @@
-import OpportunityEditForm from "src/app/[locale]/announcement/[id]/edit/_components/OpportunityEditForm";
+import AnnouncementEditForm from "src/app/[locale]/announcement/[id]/edit/_components/AnnouncementEditForm";
 import {
   ApiRequestError,
   MissingAuthError,
   parseErrorStatus,
 } from "src/errors";
 import { getOpportunityForGrantor } from "src/services/fetch/fetchers/grantorOpportunitiesFetcher";
-import { GrantorOpportunityDetail } from "src/types/opportunity/opportunityResponseTypes";
-import { buildOpportunityEditInitialValues } from "src/utils/opportunityEditFormConfig";
+import { GrantorAnnouncementDetail } from "src/types/announcement/announcementResponseTypes";
+import { buildOpportunityEditInitialValues } from "src/utils/announcementEditFormConfig";
 
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -14,7 +14,7 @@ import { Alert, Button, GridContainer } from "@trussworks/react-uswds";
 
 import LeftHandFormNav from "src/components/core/forms/LeftHandFormNav";
 import { UnauthorizedMessage } from "src/components/core/UnauthorizedMessage";
-import { OpportunityDetailsHeader } from "src/components/grantor-opportunities/OpportunityDetailsHeader";
+import { AnnouncementDetailsHeader } from "src/components/grantor-announcements/AnnouncementDetailsHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -46,7 +46,7 @@ export default async function OpportunityEditPage({ params }: PageProps) {
   // this opportunity for its agency.
   const hasVerifiedGrantorEditAccess = true;
 
-  let opportunityData: GrantorOpportunityDetail;
+  let opportunityData: GrantorAnnouncementDetail;
   let opportunitySummaryId: string;
   try {
     const response = await getOpportunityForGrantor(id);
@@ -104,20 +104,20 @@ export default async function OpportunityEditPage({ params }: PageProps) {
   ];
   return (
     <div className="bg-white">
-      <OpportunityDetailsHeader
+      <AnnouncementDetailsHeader
         opportunityData={opportunityData}
         locale={locale}
         hasBackToOverview={true}
       >
         <HeaderButtons saveAndExitLabel={tEdit("button.saveAndExit")} />
-      </OpportunityDetailsHeader>
+      </AnnouncementDetailsHeader>
 
       <div className="grid-container padding-bottom-4">
         <div className="usa-in-page-nav-container">
           <LeftHandFormNav title={tEdit("navTitle")} fields={navigationItems} />
 
           <section className="order-2 width-full maxw-tablet-xl padding-top-4">
-            <OpportunityEditForm
+            <AnnouncementEditForm
               opportunityId={opportunityData.opportunity_id}
               opportunitySummaryId={opportunitySummaryId}
               isForecast={!!opportunityData.forecast_summary}

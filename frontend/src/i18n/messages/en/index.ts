@@ -768,7 +768,7 @@ export const messages = {
       next: "Next",
     },
   },
-  OpportunityOverview: {
+  AnnouncementOverview: {
     pageTitle: "Opportunity Overview",
     pageApplication: "Smarter Grants Management",
     metaDescription: "Opportunity publishing progress overview",
@@ -793,7 +793,7 @@ export const messages = {
     pending: "Pending...",
     errorHeading: "Error",
     successHeading: "Success",
-    CreateOpportunityForm: {
+    CreateAnnouncementForm: {
       opportunityNumber: "Opportunity number",
       opportunityNumberDesc:
         "Enter the unique ID assigned to this funding opportunity.",
@@ -921,7 +921,7 @@ export const messages = {
     alertMessage:
       "Hard refresh your page when done changing Flags for the changes to fully apply.",
   },
-  OpportunityDetailsHeader: {
+  AnnouncementDetailsHeader: {
     opportunityNumber: "Opportunity #: {number}",
     title: "Title:",
     agency: "Agency:",

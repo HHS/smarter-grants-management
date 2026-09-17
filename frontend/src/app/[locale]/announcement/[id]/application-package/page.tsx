@@ -1,4 +1,4 @@
-import { CompetitionForm } from "src/app/[locale]/announcement/[id]/application-package/_components/CompetitionForm";
+import { ApplicationPackageForm } from "src/app/[locale]/announcement/[id]/application-package/_components/ApplicationPackageForm";
 import {
   ApiRequestError,
   MissingAuthError,
@@ -6,7 +6,7 @@ import {
 } from "src/errors";
 import { getForms } from "src/services/fetch/fetchers/allFormsFetcher";
 import { getOpportunityForGrantor } from "src/services/fetch/fetchers/grantorOpportunitiesFetcher";
-import { Competition } from "src/types/competitionsResponseTypes";
+import { ApplicationPackage } from "src/types/applicationpackageResponseTypes";
 
 import { useTranslations } from "next-intl";
 import { getTranslations } from "next-intl/server";
@@ -15,7 +15,7 @@ import { Button } from "@trussworks/react-uswds";
 
 import LeftHandFormNav from "src/components/core/forms/LeftHandFormNav";
 import { UnauthorizedMessage } from "src/components/core/UnauthorizedMessage";
-import { OpportunityDetailsHeader } from "src/components/grantor-opportunities/OpportunityDetailsHeader";
+import { AnnouncementDetailsHeader } from "src/components/grantor-announcements/AnnouncementDetailsHeader";
 
 type PageProps = {
   params: Promise<{ id: string; locale: string }>;
@@ -74,7 +74,7 @@ export default async function OpportunityCompetitionPage({
   }
 
   // NOTE: Currently we are only supporting a single competition
-  let competition: Competition | undefined = undefined;
+  let competition: ApplicationPackage | undefined = undefined;
   if (opportunityData.competitions?.[0]) {
     competition = opportunityData.competitions[0];
   }
@@ -116,20 +116,20 @@ export default async function OpportunityCompetitionPage({
 
   return (
     <div className="bg-white">
-      <OpportunityDetailsHeader
+      <AnnouncementDetailsHeader
         opportunityData={opportunityData}
         locale={locale}
         hasBackToOverview={true}
       >
         <ButtonSaveAndExit />
-      </OpportunityDetailsHeader>
+      </AnnouncementDetailsHeader>
 
       <div className="grid-container padding-bottom-4">
         <div className="usa-in-page-nav-container">
           <LeftHandFormNav title={t("leftNavTitle")} fields={navigationItems} />
 
           <section className="order-2 width-full maxw-tablet-xl padding-top-4">
-            <CompetitionForm
+            <ApplicationPackageForm
               opportunityId={id}
               competition={competition}
               forms={forms.data}

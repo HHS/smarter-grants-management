@@ -2,8 +2,8 @@ import { render, screen, within } from "@testing-library/react";
 import { axe } from "jest-axe";
 import OpportunityOverviewPage from "src/app/[locale]/announcement/[id]/overview/page";
 import { ForbiddenError, MissingAuthError, NotFoundError } from "src/errors";
-import { Competition } from "src/types/competitionsResponseTypes";
-import { GrantorOpportunityDetail } from "src/types/opportunity/opportunityResponseTypes";
+import { ApplicationPackage } from "src/types/applicationpackageResponseTypes";
+import { GrantorAnnouncementDetail } from "src/types/announcement/announcementResponseTypes";
 import {
   DeepPartial,
   wrapForExpectedError,
@@ -41,9 +41,9 @@ jest.mock("src/services/fetch/fetchers/grantorOpportunitiesFetcher", () => ({
 }));
 
 jest.mock(
-  "src/components/grantor-opportunities/OpportunityDetailsHeader",
+  "src/components/grantor-announcements/AnnouncementDetailsHeader",
   () => ({
-    OpportunityDetailsHeader: ({
+    AnnouncementDetailsHeader: ({
       isNewlyCreated,
       children,
     }: {
@@ -87,7 +87,7 @@ function buildSummaryFixture(status: ProgressStatus) {
 
 function buildCompetitionFixture(
   status: ProgressStatus,
-): DeepPartial<[Competition]> | null {
+): DeepPartial<[ApplicationPackage]> | null {
   if (status === "notStarted") return null;
   if (status === "inProgress") return [{ competition_id: "comp-1" }];
   return [
@@ -99,7 +99,7 @@ function buildCompetitionFixture(
   ];
 }
 
-const baseOpportunityData: DeepPartial<GrantorOpportunityDetail> = {
+const baseOpportunityData: DeepPartial<GrantorAnnouncementDetail> = {
   opportunity_id: testOpportunityId,
   opportunity_title: "Test Opportunity",
   is_draft: true,
@@ -115,7 +115,7 @@ type OverviewSectionCase = {
   name: string;
   linkNameKey: string;
   hrefSuffix: string;
-  buildData: (status: ProgressStatus) => DeepPartial<GrantorOpportunityDetail>;
+  buildData: (status: ProgressStatus) => DeepPartial<GrantorAnnouncementDetail>;
 };
 
 const OVERVIEW_SECTIONS: OverviewSectionCase[] = [

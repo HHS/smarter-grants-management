@@ -2,7 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { axe } from "jest-axe";
 import OpportunityCompetitionPage from "src/app/[locale]/announcement/[id]/application-package/page";
 import { MissingAuthError } from "src/errors";
-import { GrantorOpportunityDetail } from "src/types/opportunity/opportunityResponseTypes";
+import { GrantorAnnouncementDetail } from "src/types/announcement/announcementResponseTypes";
 import { DeepPartial } from "src/utils/testing/commonTestUtils";
 import { useTranslationsMock } from "src/utils/testing/intlMocks";
 
@@ -29,18 +29,18 @@ jest.mock("src/services/featureFlags/withFeatureFlag", () => ({
 }));
 
 jest.mock(
-  "src/components/grantor-opportunities/OpportunityDetailsHeader",
+  "src/components/grantor-announcements/AnnouncementDetailsHeader",
   () => ({
-    OpportunityDetailsHeader: () => (
+    AnnouncementDetailsHeader: () => (
       <div data-testid="opportunity-details-header" />
     ),
   }),
 );
 
 jest.mock(
-  "src/app/[locale]/announcement/[id]/application-package/_components/CompetitionForm",
+  "src/app/[locale]/announcement/[id]/application-package/_components/ApplicationPackageForm",
   () => ({
-    CompetitionForm: ({
+    ApplicationPackageForm: ({
       competition,
     }: {
       competition?: { competition_id?: string };
@@ -56,7 +56,7 @@ jest.mock(
 const mockGetOpportunityForGrantor = jest.fn();
 const mockCreateCompetitionForGrantor = jest.fn();
 const mockAllForms = jest.fn();
-const mockCompetitionForms = jest.fn();
+const mockApplicationPackageForms = jest.fn();
 
 jest.mock("src/services/fetch/fetchers/grantorOpportunitiesFetcher", () => ({
   getOpportunityForGrantor: (...args: unknown[]) =>
@@ -67,7 +67,7 @@ jest.mock("src/services/fetch/fetchers/allFormsFetcher", () => ({
   getForms: (...args: unknown[]) => mockAllForms(...args) as unknown,
 }));
 
-const baseOpportunityData: DeepPartial<GrantorOpportunityDetail> = {
+const baseOpportunityData: DeepPartial<GrantorAnnouncementDetail> = {
   opportunity_id: "opp-abc-123",
   opportunity_title: "Test Opportunity",
   competitions: null,
@@ -86,7 +86,7 @@ describe("OpportunityCompetitionPage", () => {
       mockCreateCompetitionForGrantor.mockResolvedValue({
         data: { competition_id: "new-competition-id" },
       });
-      mockCompetitionForms.mockResolvedValue({
+      mockApplicationPackageForms.mockResolvedValue({
         data: [],
       });
       mockAllForms.mockResolvedValue({
@@ -105,7 +105,7 @@ describe("OpportunityCompetitionPage", () => {
       });
     });
 
-    it("passes an empty string to CompetitionForm", async () => {
+    it("passes an empty string to ApplicationPackageForm", async () => {
       const component = await OpportunityCompetitionPage({
         params: pageParams,
       });
@@ -138,7 +138,7 @@ describe("OpportunityCompetitionPage", () => {
       });
     });
 
-    it("passes the existing competition_id to CompetitionForm", async () => {
+    it("passes the existing competition_id to ApplicationPackageForm", async () => {
       const component = await OpportunityCompetitionPage({
         params: pageParams,
       });

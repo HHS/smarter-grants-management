@@ -2,7 +2,7 @@
 
 import { getSession } from "src/services/auth/session";
 import { createOpportunity } from "src/services/fetch/fetchers/grantorOpportunitiesFetcher";
-import { CreateOpportunityResponse } from "src/types/createOpportunityTypes";
+import { CreateAnnouncementResponse } from "src/types/createannouncementTypes";
 
 // Future: Apply any field level validations before submitting to the backend.
 //    These will be validations that have not been taken care of client-side.
@@ -11,7 +11,7 @@ import { CreateOpportunityResponse } from "src/types/createOpportunityTypes";
 export const createOpportunityAction = async (
   _prevState: unknown,
   formData: FormData,
-): Promise<CreateOpportunityResponse> => {
+): Promise<CreateAnnouncementResponse> => {
   const session = await getSession();
 
   if (!session || !session.token || !session.user_id) {

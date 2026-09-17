@@ -1,5 +1,5 @@
-import { CompetitionFormsApiResponse } from "src/types/competitionFormsResponseTypes";
-import { CompetitionFormsSubmitApi } from "src/types/competitionsResponseTypes";
+import { ApplicationPackageFormsApiResponse } from "src/types/applicationpackageFormsResponseTypes";
+import { ApplicationPackageFormsSubmitApi } from "src/types/applicationpackageResponseTypes";
 
 import { fetchCompetitionForms } from "./fetchers";
 
@@ -8,12 +8,12 @@ export async function updateCompetitionForms({
   body,
 }: {
   competitionId: string;
-  body: { forms: CompetitionFormsSubmitApi };
-}): Promise<CompetitionFormsApiResponse> {
+  body: { forms: ApplicationPackageFormsSubmitApi };
+}): Promise<ApplicationPackageFormsApiResponse> {
   const response = await fetchCompetitionForms({
     subPath: `${competitionId}/forms`,
     body,
   });
 
-  return (await response.json()) as CompetitionFormsApiResponse;
+  return (await response.json()) as ApplicationPackageFormsApiResponse;
 }

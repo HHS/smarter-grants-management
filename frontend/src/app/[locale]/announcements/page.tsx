@@ -6,7 +6,7 @@ import { getSession } from "src/services/auth/session";
 import { getUserAgencies } from "src/services/fetch/fetchers/agenciesFetcher";
 import { searchOpportunitiesByAgency } from "src/services/fetch/fetchers/grantorOpportunitiesFetcher";
 import { LocalizedPageProps, TFn } from "src/types/intl";
-import { BaseOpportunity } from "src/types/opportunity/opportunityResponseTypes";
+import { BaseAnnouncement } from "src/types/announcement/announcementResponseTypes";
 import { RelevantAgencyRecord } from "src/types/search/searchFilterTypes";
 import { PaginationRequestBody } from "src/types/search/searchRequestTypes";
 import { WithFeatureFlagProps } from "src/types/uiTypes";
@@ -28,8 +28,8 @@ import {
   TableCellData,
   TableWithResponsiveHeader,
 } from "src/components/core/TableWithResponsiveHeader";
-import OpportunityStatusTag from "src/components/opportunity/OpportunityStatusTag";
-import OpportunitiesPagination from "./_components/OpportunitiesPagination";
+import AnnouncementStatusTag from "src/components/announcement/AnnouncementStatusTag";
+import AnnouncementsPagination from "./_components/AnnouncementsPagination";
 
 export const OpportunitiesPageWrapper = ({ children }: PropsWithChildren) => {
   const t = useTranslations("Opportunities");
@@ -156,11 +156,11 @@ const ActionMenu = ({
 };
 
 const transformTableRowData = (
-  userOpportunities: BaseOpportunity[],
+  userOpportunities: BaseAnnouncement[],
   canUpdate: boolean,
   _t: TFn,
 ) => {
-  return userOpportunities.map((opportunity: BaseOpportunity) => {
+  return userOpportunities.map((opportunity: BaseAnnouncement) => {
     const isSgmOpportunity = opportunity.is_simpler_grants_opportunity ?? false;
     const status = opportunity.is_draft
       ? "draft"
@@ -200,7 +200,7 @@ const transformTableRowData = (
       { cellData: lastUpdated },
       {
         cellData: (
-          <OpportunityStatusTag
+          <AnnouncementStatusTag
             status={
               opportunity.is_draft ? "draft" : opportunity.opportunity_status
             }
@@ -276,7 +276,7 @@ const OpportunitiesTable = ({
   userOpportunities,
   canUpdate,
 }: {
-  userOpportunities: BaseOpportunity[];
+  userOpportunities: BaseAnnouncement[];
   canUpdate: boolean;
 }) => {
   const t = useTranslations("Opportunities");
@@ -458,7 +458,7 @@ export default async function OpportunitiesListPage(
   // note: the current page number is in the URL
   let totalRecords = 0;
   let totalPages = 0;
-  let userOpportunities: BaseOpportunity[] = [];
+  let userOpportunities: BaseAnnouncement[] = [];
   if (agencyUserAcccess.canView) {
     try {
       const data = await fetchOpportunities(
@@ -509,7 +509,7 @@ export default async function OpportunitiesListPage(
             userOpportunities={userOpportunities}
             canUpdate={agencyUserAcccess.canUpdate}
           />
-          <OpportunitiesPagination totalPages={totalPages} />
+          <AnnouncementsPagination totalPages={totalPages} />
         </>
       )}
     </OpportunitiesPageWrapper>

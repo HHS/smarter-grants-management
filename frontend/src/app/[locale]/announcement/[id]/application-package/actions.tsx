@@ -10,9 +10,9 @@ import {
 import { FrontendErrorDetails } from "src/types/apiResponseTypes";
 import {
   ApplicantTypes,
-  CompetitionFormsSubmitApi,
-  CompetitionSaveRequest,
-} from "src/types/competitionsResponseTypes";
+  ApplicationPackageFormsSubmitApi,
+  ApplicationPackageSaveRequest,
+} from "src/types/applicationpackageResponseTypes";
 
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
@@ -61,8 +61,8 @@ function buildRequestBody(formData: FormData) {
     .filter(Boolean) // Removes null, undefined, or empty values
     .join(" | ");
 
-  // Build the request body which should match the CompetitionSaveRequest
-  const requestBody: CompetitionSaveRequest = {
+  // Build the request body which should match the ApplicationPackageSaveRequest
+  const requestBody: ApplicationPackageSaveRequest = {
     competition_title: getFieldValue(formData, "competition_title"),
     opening_date: getFieldValue(formData, "opening_date"),
     closing_date: getFieldValue(formData, "closing_date"),
@@ -96,7 +96,7 @@ function formatValidationErrors(error: unknown) {
 
 export async function updateCompetition(
   formData: FormData,
-  requiredForms: CompetitionFormsSubmitApi,
+  requiredForms: ApplicationPackageFormsSubmitApi,
 ): Promise<CompetitionActionState> {
   const t = await getTranslations("OpportunityCompetition.alerts");
   const opportunityId = formData.get("opportunityId") as string | null;
@@ -168,7 +168,7 @@ export async function updateCompetition(
 
 export async function competitionFormAction(
   submitType: string,
-  requiredForms: CompetitionFormsSubmitApi,
+  requiredForms: ApplicationPackageFormsSubmitApi,
   formData: FormData,
 ): Promise<CompetitionActionState> {
   // 1. Save the form; if there are API errors, display them

@@ -1,7 +1,7 @@
 "use client";
 
 import { FormType } from "src/types/allFormsResponseTypes";
-import { CompetitionFormsSubmitApi } from "src/types/competitionsResponseTypes";
+import { ApplicationPackageFormsSubmitApi } from "src/types/applicationpackageResponseTypes";
 
 import { useTranslations } from "next-intl";
 import { Grid, GridContainer } from "@trussworks/react-uswds";
@@ -12,7 +12,7 @@ export function RequiredForms({
   formDetails,
 }: {
   alwaysRequiredForms: Record<string, boolean>;
-  requiredForms?: CompetitionFormsSubmitApi;
+  requiredForms?: ApplicationPackageFormsSubmitApi;
   formDetails: FormType[];
 }) {
   const t = useTranslations("OpportunityCompetition.sectionRequiredForms");

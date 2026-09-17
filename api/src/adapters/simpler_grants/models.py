@@ -8,7 +8,7 @@ from pydantic import BaseModel
 
 
 class SimplerOpportunityStatus(StrEnum):
-    """Opportunity status enum matching the API's OpportunityStatus."""
+    """Opportunity status enum matching the API's AnnouncementStatus."""
 
     FORECASTED = "forecasted"
     POSTED = "posted"

@@ -5,7 +5,7 @@ import OpportunitiesListPage from "src/app/[locale]/announcements/page";
 import { UnauthorizedError } from "src/errors";
 import { UserSession } from "src/types/authTypes";
 import { LocalizedPageProps } from "src/types/intl";
-import { BaseOpportunity } from "src/types/opportunity/opportunityResponseTypes";
+import { BaseAnnouncement } from "src/types/announcement/announcementResponseTypes";
 import { FeatureFlaggedPageWrapper } from "src/types/uiTypes";
 import { DeepPartial } from "src/utils/testing/commonTestUtils";
 import { localeParams, useTranslationsMock } from "src/utils/testing/intlMocks";
@@ -165,7 +165,7 @@ const mockGetSession = jest.fn().mockResolvedValue(userSession);
 
 jest.mock("src/services/fetch/fetchers/grantorOpportunitiesFetcher", () => ({
   searchOpportunitiesByAgency: (arg: unknown): unknown =>
-    mockSearchForOpportunities(arg) as Promise<BaseOpportunity[]>,
+    mockSearchForOpportunities(arg) as Promise<BaseAnnouncement[]>,
 }));
 
 jest.mock("src/services/fetch/fetchers/agenciesFetcher", () => ({
@@ -201,7 +201,7 @@ const agency2: UserAgency = {
   agency_code: "AGY2",
 };
 
-const basicOpportunity: DeepPartial<BaseOpportunity> = {
+const basicOpportunity: DeepPartial<BaseAnnouncement> = {
   agency_code: "AGY1",
   agency_name: "Agency One",
   opportunity_id: "89a44d32-0d90-4514-85a9-d5491f1c454d",

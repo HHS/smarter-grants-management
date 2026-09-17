@@ -31,7 +31,7 @@ export const textHandler: FieldHandler = async (
     );
   }
   // Prefer explicit selectors for stable targeting when labels are ambiguous
-  // (e.g., "Title" and "Competition title" on the same page).
+  // (e.g., "Title" and "ApplicationPackage title" on the same page).
   const locator = field.selector
     ? page.locator(field.selector)
     : field.testId

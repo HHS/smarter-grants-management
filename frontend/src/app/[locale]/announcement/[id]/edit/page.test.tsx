@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import OpportunityEditPage from "src/app/[locale]/announcement/[id]/edit/page";
 import { LocalizedPageProps } from "src/types/intl";
-import { GrantorOpportunityDetail } from "src/types/opportunity/opportunityResponseTypes";
+import { GrantorAnnouncementDetail } from "src/types/announcement/announcementResponseTypes";
 import { FeatureFlaggedPageWrapper } from "src/types/uiTypes";
 
 import { FunctionComponent, ReactNode } from "react";
@@ -67,7 +67,7 @@ const mockGetOpportunityForGrantor = jest.fn().mockResolvedValue({
 });
 jest.mock("src/services/fetch/fetchers/grantorOpportunitiesFetcher", () => ({
   getOpportunityForGrantor: (arg: unknown): unknown =>
-    mockGetOpportunityForGrantor(arg) as Promise<GrantorOpportunityDetail[]>,
+    mockGetOpportunityForGrantor(arg) as Promise<GrantorAnnouncementDetail[]>,
 }));
 
 jest.mock("src/services/fetch/fetchers/opportunityAttachmentFetcher", () => ({
@@ -79,7 +79,7 @@ const pageParams = new Promise<{ id: string; locale: string }>((resolve) => {
   resolve({ id: "opportunity-123", locale: "en" });
 });
 
-describe("OpportunityEditForm â€” action buttons", () => {
+describe("AnnouncementEditForm â€” action buttons", () => {
   beforeEach(() => {
     mockUseActionState.mockReturnValue([
       { validationErrors: {} },

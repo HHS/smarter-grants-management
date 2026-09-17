@@ -5,21 +5,21 @@ import {
 } from "src/errors";
 import { getOpportunityForGrantor } from "src/services/fetch/fetchers/grantorOpportunitiesFetcher";
 import {
-  GrantorOpportunityDetail,
+  GrantorAnnouncementDetail,
   Summary,
-} from "src/types/opportunity/opportunityResponseTypes";
+} from "src/types/announcement/announcementResponseTypes";
 
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Link } from "@trussworks/react-uswds";
 
 import { UnauthorizedMessage } from "src/components/core/UnauthorizedMessage";
-import { OpportunityDetailsHeader } from "src/components/grantor-opportunities/OpportunityDetailsHeader";
+import { AnnouncementDetailsHeader } from "src/components/grantor-announcements/AnnouncementDetailsHeader";
 import {
   getProgress,
   ProgressChecker,
   progressType,
-} from "src/components/grantor-opportunities/ProgressChecker";
+} from "src/components/grantor-announcements/ProgressChecker";
 import { OverviewButtons } from "./_components/OverviewButtons";
 import {
   competitionRequiredFields,
@@ -38,8 +38,8 @@ export default async function OpportunityOverviewPage({
   const { id, locale } = await params;
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const isNewlyCreated = resolvedSearchParams.fromCreate === "true";
-  const t = await getTranslations({ locale, namespace: "OpportunityOverview" });
-  let opportunityData: GrantorOpportunityDetail;
+  const t = await getTranslations({ locale, namespace: "AnnouncementOverview" });
+  let opportunityData: GrantorAnnouncementDetail;
   try {
     const response = await getOpportunityForGrantor(id);
     opportunityData = response.data;
@@ -80,13 +80,13 @@ export default async function OpportunityOverviewPage({
 
   return (
     <div className="bg-white">
-      <OpportunityDetailsHeader
+      <AnnouncementDetailsHeader
         opportunityData={opportunityData}
         locale={locale}
         isNewlyCreated={isNewlyCreated}
       >
         <OverviewButtons opportunityId={id} publishEnabled={publishEnabled} />
-      </OpportunityDetailsHeader>
+      </AnnouncementDetailsHeader>
       <div className="grid-container padding-top-4 padding-bottom-4">
         <div
           className="grid-row grid-gap-2 padding-top-2"

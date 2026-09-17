@@ -10,12 +10,12 @@ export async function generateMetadata({ params }: LocalizedPageProps) {
   const { locale } = await params;
   const t = await getTranslations({ locale });
   const pageTitle =
-    t("OpportunityOverview.pageTitle") +
+    t("AnnouncementOverview.pageTitle") +
     " | " +
-    t("OpportunityOverview.pageApplication");
+    t("AnnouncementOverview.pageApplication");
   const meta: Metadata = {
     title: pageTitle,
-    description: t("OpportunityOverview.metaDescription"),
+    description: t("AnnouncementOverview.metaDescription"),
   };
   return meta;
 }

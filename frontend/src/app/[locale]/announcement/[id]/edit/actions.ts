@@ -10,7 +10,7 @@ import {
   deleteOpportunityAttachment,
 } from "src/services/fetch/fetchers/opportunityAttachmentFetcher";
 import { FrontendErrorDetails } from "src/types/apiResponseTypes";
-import { OpportunitySummaryUpdateRawData } from "src/types/opportunity/opportunityResponseTypes";
+import { AnnouncementSummaryUpdateRawData } from "src/types/announcement/announcementResponseTypes";
 import { getConfiguredDayJs } from "src/utils/dateUtil";
 import { formDataToObject } from "src/utils/formData/formDataToJson";
 import { z } from "zod";
@@ -131,7 +131,7 @@ async function processAttachmentChanges(
   return undefined;
 }
 
-// These fields display comma-formatted (formatNumber() in OpportunityEditForm.tsx) but are
+// These fields display comma-formatted (formatNumber() in AnnouncementEditForm.tsx) but are
 // never stripped before submit, so the API's integer validation 422s on the raw comma string.
 const CURRENCY_FIELD_NAMES = [
   "award_floor",
@@ -419,7 +419,7 @@ export async function saveOpportunityEditAction(
   try {
     if (!opportunitySummaryId) {
       const rawBody = {
-        ...formDataToObject<OpportunitySummaryUpdateRawData>(
+        ...formDataToObject<AnnouncementSummaryUpdateRawData>(
           formData,
           editOpportunityFormSchema,
           null,
@@ -470,7 +470,7 @@ export async function saveOpportunityEditAction(
       };
     }
 
-    const rawBody = formDataToObject<OpportunitySummaryUpdateRawData>(
+    const rawBody = formDataToObject<AnnouncementSummaryUpdateRawData>(
       formData,
       editOpportunityFormSchema,
       null,

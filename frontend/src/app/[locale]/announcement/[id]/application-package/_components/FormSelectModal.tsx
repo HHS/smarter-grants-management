@@ -1,7 +1,7 @@
 "use client";
 
 import { FormType } from "src/types/allFormsResponseTypes";
-import { CompetitionFormsSubmitApi } from "src/types/competitionsResponseTypes";
+import { ApplicationPackageFormsSubmitApi } from "src/types/applicationpackageResponseTypes";
 
 import { useTranslations } from "next-intl";
 import { CSSProperties, RefObject, useState } from "react";
@@ -34,7 +34,7 @@ const resetTableForms = (
     };
   });
 };
-const resetSelectedForms = (_requiredForms: CompetitionFormsSubmitApi) => {
+const resetSelectedForms = (_requiredForms: ApplicationPackageFormsSubmitApi) => {
   const formHolder: Record<string, boolean> = {};
   _requiredForms.forEach((form) => {
     formHolder[form.form_id] = form.is_required;
@@ -50,10 +50,10 @@ export const FormSelectModal = ({
   submitRequiredForms,
 }: {
   alwaysRequiredForms: Record<string, boolean>;
-  requiredForms: CompetitionFormsSubmitApi;
+  requiredForms: ApplicationPackageFormsSubmitApi;
   forms: FormType[];
   formModalRef: RefObject<ModalRef | null>;
-  submitRequiredForms: (forms: CompetitionFormsSubmitApi) => void;
+  submitRequiredForms: (forms: ApplicationPackageFormsSubmitApi) => void;
 }) => {
   const toggleSelectAll = () => {
     if (Object.keys(selectedForms).length >= forms.length - 1) {

@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createAwardRecommendationAction } from "src/app/[locale]/award-recommendation/select-opportunity/actions";
-import { BaseOpportunity } from "src/types/opportunity/opportunityResponseTypes";
+import { BaseAnnouncement } from "src/types/announcement/announcementResponseTypes";
 
 import { SelectFundingOpportunityContent } from "./SelectFundingOpportunityContent";
 
@@ -42,8 +42,8 @@ describe("SelectFundingOpportunityContent", () => {
   });
 
   const mockFundingOpportunity = (
-    overrides: Partial<BaseOpportunity> = {},
-  ): BaseOpportunity =>
+    overrides: Partial<BaseAnnouncement> = {},
+  ): BaseAnnouncement =>
     ({
       opportunity_id: "opp-1",
       opportunity_number: "OPP-001",
@@ -61,12 +61,12 @@ describe("SelectFundingOpportunityContent", () => {
       is_draft: false,
       is_simpler_grants_opportunity: true,
       saved_to_organizations: [],
-      summary: {} as BaseOpportunity["summary"],
+      summary: {} as BaseAnnouncement["summary"],
 
       ...overrides,
-    }) as BaseOpportunity;
+    }) as BaseAnnouncement;
 
-  const mockFundingOpportunities: BaseOpportunity[] = [
+  const mockFundingOpportunities: BaseAnnouncement[] = [
     mockFundingOpportunity(),
   ];
 

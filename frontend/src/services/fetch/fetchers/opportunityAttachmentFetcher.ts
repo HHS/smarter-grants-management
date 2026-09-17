@@ -1,32 +1,32 @@
 import "server-only";
 
 import {
-  OpportunityAttachmentCreateResponse,
-  OpportunityAttachmentListResponse,
-} from "src/types/opportunity/opportunityAttachmentTypes";
+  AnnouncementAttachmentCreateResponse,
+  AnnouncementAttachmentListResponse,
+} from "src/types/announcement/announcementAttachmentTypes";
 
 import { fetchGrantorOpportunityWithMethod } from "./fetchers";
 
 export const listOpportunityAttachments = async (
   opportunityId: string,
-): Promise<OpportunityAttachmentListResponse> => {
+): Promise<AnnouncementAttachmentListResponse> => {
   const response = await fetchGrantorOpportunityWithMethod("GET")({
     subPath: `${opportunityId}/attachments`,
   });
-  return (await response.json()) as OpportunityAttachmentListResponse;
+  return (await response.json()) as AnnouncementAttachmentListResponse;
 };
 
 export const createOpportunityAttachment = async (
   opportunityId: string,
   pendingFileId: string,
-): Promise<OpportunityAttachmentCreateResponse> => {
+): Promise<AnnouncementAttachmentCreateResponse> => {
   const response = await fetchGrantorOpportunityWithMethod("POST")({
     subPath: `${opportunityId}/attachments`,
     body: { pending_file_id: pendingFileId },
     // want to allow responses with failed validations through so we can properly handle displaying validation errors
     allowedErrorStatuses: [422],
   });
-  return (await response.json()) as OpportunityAttachmentCreateResponse;
+  return (await response.json()) as AnnouncementAttachmentCreateResponse;
 };
 
 export const deleteOpportunityAttachment = async (

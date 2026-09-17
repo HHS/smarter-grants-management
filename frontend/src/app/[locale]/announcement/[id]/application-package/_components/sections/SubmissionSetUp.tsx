@@ -1,6 +1,6 @@
 "use client";
 
-import { ApplicantTypes } from "src/types/competitionsResponseTypes";
+import { ApplicantTypes } from "src/types/applicationpackageResponseTypes";
 
 import { useTranslations } from "next-intl";
 
