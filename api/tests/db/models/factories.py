@@ -1149,6 +1149,40 @@ class PendingFileFactory(BaseFactory):
     user_id = factory.LazyAttribute(lambda p: p.user.user_id)
 
     file_name = factory.Faker("file_name")
-    file_location = factory.Faker("file_path")
     mime_type = "plain/text"
     file_scan_status = FileScanStatus.PENDING
+
+    # Whatever you pass in for file_contents will end up in the file, but
+    # not included anywhere on the model itself
+    file_contents = factory.Faker("sentence")
+    # NOTE: If you want the file to properly get written to s3 for tests/locally
+    # make sure the bucket actually exists
+    file_location = factory.LazyAttribute(
+        lambda f: f"s3://local-mock-file-scan-bucket/unscanned/{f.pending_file_id}/{f.file_name}"
+    )
+
+    @classmethod
+    def _build(cls, model_class, *args, **kwargs):
+        kwargs.pop("file_contents")  # Don't file for build strategy
+        return super()._build(model_class, *args, **kwargs)
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        file_contents = kwargs.pop("file_contents")
+        attachment = super()._create(model_class, *args, **kwargs)
+
+        try:
+            with file_util.open_stream(attachment.file_location, "w") as my_file:
+                my_file.write(file_contents)
+        except Exception as e:
+            raise Exception(
+                f"""There was an error writing your attachment to {attachment.file_location}.
+
+                Does this location exist? If you are running in unit tests, make sure
+                `enable_factory_create` is pulled in as a fixture to your test.
+
+                If you are running locally outside of unit tests, make sure that `make init-s3mock` has run.
+                """
+            ) from e
+
+        return attachment
