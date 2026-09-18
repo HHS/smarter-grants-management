@@ -2,11 +2,12 @@ import uuid
 
 from src.adapters import db
 from src.adapters.aws import S3Config
-from src.db.models.announcement_models import AnnouncementAttachment, Announcement
+from src.db.models.announcement_models import Announcement, AnnouncementAttachment
 from src.db.models.file_upload_models import FileAttachment, PendingFile
 from src.db.models.user_models import User
 from src.services.announcements.get_announcement import get_announcement_and_verify_access
 from src.util import file_util
+
 
 def get_s3_attachment_path(
     file_name: str,
@@ -33,7 +34,10 @@ def get_s3_attachment_path(
         file_name,
     )
 
-def create_announcement_attachment_from_pending_file(db_session: db.Session, user: User, announcement_id: uuid.UUID, pending_file_id: uuid.UUID) -> AnnouncementAttachment:
+
+def create_announcement_attachment_from_pending_file(
+    db_session: db.Session, user: User, announcement_id: uuid.UUID, pending_file_id: uuid.UUID
+) -> AnnouncementAttachment:
 
     announcement = get_announcement_and_verify_access(db_session, announcement_id, user)
 

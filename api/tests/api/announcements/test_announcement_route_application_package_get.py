@@ -61,7 +61,7 @@ def test_application_package_get_200(client, api_key_headers, mock_s3_bucket):
     assert file_util.read_file(response_instructions["download_path"]) == "this is a file"
 
 
-def application_package_get_not_found_404(client, api_key_headers):
+def test_application_package_get_not_found_404(client, api_key_headers):
     resp = client.get(
         f"/v1/announcements/{uuid.uuid4()}/application-packages/{uuid.uuid4()}",
         headers=api_key_headers,
@@ -70,16 +70,16 @@ def application_package_get_not_found_404(client, api_key_headers):
     assert resp.status_code == 404
 
 
-def application_package_get_bad_api_key_403(client):
+def test_application_package_get_bad_api_key_401(client):
     resp = client.get(
         f"/v1/announcements/{uuid.uuid4()}/application-packages/{uuid.uuid4()}",
         headers={"X-API-Key": "bad key"},
     )
 
-    assert resp.status_code == 403
+    assert resp.status_code == 401
 
 
-def application_package_get_no_api_key_403(client):
+def test_application_package_get_no_api_key_401(client):
     resp = client.get(f"/v1/announcements/{uuid.uuid4()}/application-packages/{uuid.uuid4()}")
 
-    assert resp.status_code == 403
+    assert resp.status_code == 401

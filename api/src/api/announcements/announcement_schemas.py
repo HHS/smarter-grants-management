@@ -20,11 +20,18 @@ from src.constants.lookup_constants import (
 )
 from src.pagination.pagination_schema import generate_pagination_schema
 
+
 class AnnouncementAttachmentSchema(FileAttachmentSchema):
-    announcement_attachment_id = fields.UUID(metadata={"description": "The announcement attachment ID"})
+    announcement_attachment_id = fields.UUID(
+        metadata={"description": "The announcement attachment ID"}
+    )
+
 
 class AnnouncementAttachmentDownloadSchema(FileAttachmentDownloadSchema):
-    announcement_attachment_id = fields.UUID(metadata={"description": "The announcement attachment ID"})
+    announcement_attachment_id = fields.UUID(
+        metadata={"description": "The announcement attachment ID"}
+    )
+
 
 class AnnouncementAssistanceListingSchema(Schema):
     announcement_assistance_listing_id = fields.UUID(
@@ -389,7 +396,9 @@ class AnnouncementSchema(Schema):
 
     announcement_attachments = fields.List(
         fields.Nested(AnnouncementAttachmentSchema),
-        metadata={"description": "List of announcement attachments associated with the announcement - does not include download path"},
+        metadata={
+            "description": "List of announcement attachments associated with the announcement - does not include download path"
+        },
     )
 
     created_at = fields.DateTime(dump_only=True)
@@ -934,11 +943,14 @@ class ApplicationPackageWithInstructionSchema(ApplicationPackageSchema):
 class ApplicationPackageResponseSchema(AbstractResponseSchema):
     data = fields.Nested(ApplicationPackageWithInstructionSchema())
 
+
 class AnnouncementAttachmentGetResponseSchema(AbstractResponseSchema):
     data = fields.Nested(AnnouncementAttachmentDownloadSchema())
 
+
 class AnnouncementAttachmentDeleteResponseSchema(AbstractResponseSchema):
     data = fields.MixinField(metadata={"example": None})
+
 
 class AnnouncementAttachmentCreateFromPendingFileRequestSchema(Schema):
     pending_file_id = fields.UUID(

@@ -11,12 +11,20 @@ from src.services.announcements.authorization import has_access
 from src.services.announcements.get_announcement import get_announcement_and_verify_access
 
 
-def get_announcement_attachment_and_verify_access(db_session: db.Session, user: User, announcement_id: uuid.UUID, announcement_attachment_id: uuid.UUID) -> AnnouncementAttachment:
+def get_announcement_attachment_and_verify_access(
+    db_session: db.Session,
+    user: User,
+    announcement_id: uuid.UUID,
+    announcement_attachment_id: uuid.UUID,
+) -> AnnouncementAttachment:
     announcement = get_announcement_and_verify_access(db_session, announcement_id, user)
 
     announcement_attachment = db_session.execute(
         select(AnnouncementAttachment)
-        .where(AnnouncementAttachment.announcement_attachment_id == announcement_attachment_id, AnnouncementAttachment.announcement_id == announcement_id)
+        .where(
+            AnnouncementAttachment.announcement_attachment_id == announcement_attachment_id,
+            AnnouncementAttachment.announcement_id == announcement_id,
+        )
         .options(selectinload(AnnouncementAttachment.file_attachment))
     ).scalar_one_or_none()
 
