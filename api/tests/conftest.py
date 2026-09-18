@@ -486,6 +486,34 @@ def user_api_key_id(user_api_key):
 
 
 @pytest.fixture
+def s3_scanner_user(db_session, enable_factory_create, internal_resource, monkeypatch):
+    """Create a user with INTERNAL_S3_SCAN privilege for file scanner tests."""
+    from src.constants.lookup_constants import Privilege, ResourceType
+
+    scanner_user = factories.UserFactory.create()
+
+    # Create a role with INTERNAL_S3_SCAN privilege
+    role = factories.RoleFactory.create(
+        role_name="Test File Scanner Role",
+        privileges=[Privilege.INTERNAL_S3_SCAN],
+        resource_types=[ResourceType.INTERNAL],
+    )
+
+    # Connect user to internal resource with this role
+    resource_user = factories.ResourceUserFactory.create(
+        resource=internal_resource.resource,
+        user=scanner_user,
+    )
+    factories.ResourceUserRoleFactory.create(
+        resource_user=resource_user,
+        role=role,
+    )
+
+    monkeypatch.setenv("LOCAL_FILE_SCANNER_USER_ID", str(scanner_user.user_id))
+    return scanner_user
+
+
+@pytest.fixture
 def mock_dynamodb_and_s3(mock_file_scan_s3_bucket_name, file_scan_dynamodb_table):
     """Convenience fixture bundling S3 bucket and DynamoDB table for file scan tests.
 
