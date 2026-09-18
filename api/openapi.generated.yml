@@ -24,6 +24,7 @@ tags:
 - name: File v1
 - name: Announcements
 - name: Assistance Listing
+- name: Forms
 - name: LOCAL ONLY
 servers: .
 paths:
@@ -90,6 +91,28 @@ paths:
       security:
       - ApiJwtAuth: &id001 []
       - ApiUserKeyAuth: *id001
+  /v1/forms/list:
+    post:
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormListResponseSchema'
+          description: Successful response
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+      tags:
+      - Forms
+      summary: Forms List
+      security:
+      - ApiJwtAuth: &id002 []
+      - ApiUserKeyAuth: *id002
   /v1/users/login:
     get:
       parameters:
@@ -196,8 +219,8 @@ paths:
             schema:
               $ref: '#/components/schemas/AnnouncementCreateRequestSchema'
       security:
-      - ApiJwtAuth: &id002 []
-      - ApiUserKeyAuth: *id002
+      - ApiJwtAuth: &id003 []
+      - ApiUserKeyAuth: *id003
   /local/local-users:
     get:
       parameters: []
@@ -255,8 +278,8 @@ paths:
             schema:
               $ref: '#/components/schemas/WorkflowEventRequestSchema'
       security:
-      - ApiJwtAuth: &id003 []
-      - ApiUserKeyAuth: *id003
+      - ApiJwtAuth: &id004 []
+      - ApiUserKeyAuth: *id004
   /v1/users/token/logout:
     post:
       parameters: []
@@ -315,8 +338,8 @@ paths:
             schema:
               $ref: '#/components/schemas/AnnouncementListRequestSchema'
       security:
-      - ApiJwtAuth: &id004 []
-      - ApiUserKeyAuth: *id004
+      - ApiJwtAuth: &id005 []
+      - ApiUserKeyAuth: *id005
   /v1/users/token/refresh:
     post:
       parameters: []
@@ -381,8 +404,8 @@ paths:
       - Partners
       summary: Fetch a Partner
       security:
-      - ApiJwtAuth: &id005 []
-      - ApiUserKeyAuth: *id005
+      - ApiJwtAuth: &id006 []
+      - ApiUserKeyAuth: *id006
   /v1/assistance-listings/search:
     post:
       parameters: []
@@ -452,8 +475,8 @@ paths:
             schema:
               $ref: '#/components/schemas/AssistanceListingSearchRequestSchema'
       security:
-      - ApiJwtAuth: &id006 []
-      - ApiUserKeyAuth: *id006
+      - ApiJwtAuth: &id007 []
+      - ApiUserKeyAuth: *id007
   /v1/workflows/{workflow_id}:
     get:
       parameters:
@@ -493,8 +516,8 @@ paths:
       description: Get a workflow's current state, audit history, approvals, and approval
         configuration.
       security:
-      - ApiJwtAuth: &id007 []
-      - ApiUserKeyAuth: *id007
+      - ApiJwtAuth: &id008 []
+      - ApiUserKeyAuth: *id008
   /v1/users/{user_id}/can_access:
     post:
       parameters:
@@ -544,8 +567,8 @@ paths:
             schema:
               $ref: '#/components/schemas/UserCanAccessRequestSchema'
       security:
-      - ApiJwtAuth: &id008 []
-      - ApiUserKeyAuth: *id008
+      - ApiJwtAuth: &id009 []
+      - ApiUserKeyAuth: *id009
   /v1/workflows/events/{event_id}:
     get:
       parameters:
@@ -585,8 +608,8 @@ paths:
       description: Get the same payload as Get Workflow, resolved from one of its
         event IDs.
       security:
-      - ApiJwtAuth: &id009 []
-      - ApiUserKeyAuth: *id009
+      - ApiJwtAuth: &id010 []
+      - ApiUserKeyAuth: *id010
   /v1/workflows/{workflow_id}/audit:
     post:
       parameters:
@@ -636,8 +659,8 @@ paths:
             schema:
               $ref: '#/components/schemas/WorkflowAuditRequestSchema'
       security:
-      - ApiJwtAuth: &id010 []
-      - ApiUserKeyAuth: *id010
+      - ApiJwtAuth: &id011 []
+      - ApiUserKeyAuth: *id011
   /v1/files/{pending_file_id}/results:
     get:
       parameters:
@@ -679,8 +702,8 @@ paths:
         on a configurable interval and ends the stream when the scan reaches a terminal
         status (complete/infected) or the configured max duration elapses.
       security:
-      - ApiJwtAuth: &id011 []
-      - ApiUserKeyAuth: *id011
+      - ApiJwtAuth: &id012 []
+      - ApiUserKeyAuth: *id012
   /v1/announcements/{announcement_id}:
     get:
       parameters:
@@ -718,8 +741,8 @@ paths:
       - Announcements
       summary: Fetch an Announcement
       security:
-      - ApiJwtAuth: &id012 []
-      - ApiUserKeyAuth: *id012
+      - ApiJwtAuth: &id013 []
+      - ApiUserKeyAuth: *id013
     put:
       parameters:
       - in: path
@@ -767,8 +790,8 @@ paths:
             schema:
               $ref: '#/components/schemas/AnnouncementUpdateRequestSchema'
       security:
-      - ApiJwtAuth: &id013 []
-      - ApiUserKeyAuth: *id013
+      - ApiJwtAuth: &id014 []
+      - ApiUserKeyAuth: *id014
   /v1/announcements/{announcement_id}/summaries:
     post:
       parameters:
@@ -817,8 +840,8 @@ paths:
             schema:
               $ref: '#/components/schemas/AnnouncementSummaryCreateRequestSchema'
       security:
-      - ApiJwtAuth: &id014 []
-      - ApiUserKeyAuth: *id014
+      - ApiJwtAuth: &id015 []
+      - ApiUserKeyAuth: *id015
   /v1/grantor-organizations/{grantor_organization_id}:
     get:
       parameters:
@@ -862,8 +885,8 @@ paths:
       - Grantor Organizations
       summary: Fetch a Grantor Organization
       security:
-      - ApiJwtAuth: &id015 []
-      - ApiUserKeyAuth: *id015
+      - ApiJwtAuth: &id016 []
+      - ApiUserKeyAuth: *id016
   /alpha/proof_of_concept/opportunities/{opportunity_id}:
     get:
       parameters:
@@ -898,8 +921,58 @@ paths:
         of cross-service data transfer. This endpoint requires JWT or API key authentication
         but has no authorization enforcement.
       security:
-      - ApiJwtAuth: &id016 []
-      - ApiUserKeyAuth: *id016
+      - ApiJwtAuth: &id017 []
+      - ApiUserKeyAuth: *id017
+  /v1/announcements/{announcement_id}/application-packages:
+    post:
+      parameters:
+      - in: path
+        name: announcement_id
+        schema:
+          type: string
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationPackageResponseSchema'
+          description: Successful response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Validation error
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Not found
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Forbidden
+      tags:
+      - Announcements
+      summary: Create an Application Package
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationPackageCreateRequestSchema'
+      security:
+      - ApiJwtAuth: &id018 []
+      - ApiUserKeyAuth: *id018
   /v1/resources/{resource_type}/{resource_id}/users/list:
     post:
       parameters:
@@ -955,8 +1028,8 @@ paths:
             schema:
               $ref: '#/components/schemas/ListUserForResourceRequestSchema'
       security:
-      - ApiJwtAuth: &id017 []
-      - ApiUserKeyAuth: *id017
+      - ApiJwtAuth: &id019 []
+      - ApiUserKeyAuth: *id019
   /v1/announcements/{announcement_id}/summaries/{announcement_summary_id}:
     put:
       parameters:
@@ -1010,8 +1083,161 @@ paths:
             schema:
               $ref: '#/components/schemas/AnnouncementSummaryUpdateRequestSchema'
       security:
-      - ApiJwtAuth: &id018 []
-      - ApiUserKeyAuth: *id018
+      - ApiJwtAuth: &id020 []
+      - ApiUserKeyAuth: *id020
+  /v1/announcements/{announcement_id}/application-packages/{application_package_id}:
+    get:
+      parameters:
+      - in: path
+        name: announcement_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: application_package_id
+        schema:
+          type: string
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationPackageResponseSchema'
+          description: Successful response
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Not found
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Forbidden
+      tags:
+      - Announcements
+      summary: Fetch an Application Package
+      security:
+      - ApiJwtAuth: &id021 []
+      - ApiUserKeyAuth: *id021
+    put:
+      parameters:
+      - in: path
+        name: announcement_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: application_package_id
+        schema:
+          type: string
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationPackageResponseSchema'
+          description: Successful response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Validation error
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Not found
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Forbidden
+      tags:
+      - Announcements
+      summary: Update an Application Package
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationPackageUpdateRequestSchema'
+      security:
+      - ApiJwtAuth: &id022 []
+      - ApiUserKeyAuth: *id022
+  /v1/announcements/{announcement_id}/application-packages/{application_package_id}/forms:
+    put:
+      parameters:
+      - in: path
+        name: announcement_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: application_package_id
+        schema:
+          type: string
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationPackageResponseSchema'
+          description: Successful response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Validation error
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Not found
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Forbidden
+      tags:
+      - Announcements
+      summary: Update an Application Package's Forms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationPackageFormsSetRequestSchema'
+      security:
+      - ApiJwtAuth: &id023 []
+      - ApiUserKeyAuth: *id023
 openapi: 3.1.0
 components:
   schemas:
@@ -1147,6 +1373,59 @@ components:
       required:
       - file_name
       - mime_type
+    FormSchema:
+      type: object
+      properties:
+        form_id:
+          type: integer
+          description: Unique identifier of the form
+        agency_code:
+          type: string
+          description: The agency that owns the form
+          example: Grants.gov
+        name:
+          type: string
+          description: The full name of the form
+          example: Application for Federal Assistance (SF-424)
+        short_name:
+          type: string
+          description: The short name of the form
+          example: SF424
+        version:
+          type: string
+          description: The version of the form
+          example: '4.0'
+        form_family:
+          type: array
+          description: The form families that the form belongs to
+          example:
+          - sf-424
+          items:
+            enum:
+            - sf-424
+            - sf-424-individual
+            - r&r
+            - sf-424-mandatory
+            - sf-424-short-organization
+            type:
+            - string
+    FormListResponseSchema:
+      type: object
+      properties:
+        message:
+          type: string
+          description: The message to return
+          example: Success
+        data:
+          type: array
+          items:
+            type:
+            - object
+            $ref: '#/components/schemas/FormSchema'
+        status_code:
+          type: integer
+          description: The HTTP status code
+          example: 200
     AnnouncementAssistanceListingSchema:
       type: object
       properties:
@@ -1435,7 +1714,7 @@ components:
           type: array
           description: List of forms required for this application package
           items:
-            type:
+            type: &id025
             - object
             $ref: '#/components/schemas/ApplicationPackageFormSchema'
         public_application_package_id:
@@ -1481,7 +1760,7 @@ components:
             FakeMail@fake.com'
         announcement_assistance_listing:
           description: Assistance listing information for this application package
-          type:
+          type: &id026
           - object
           - 'null'
           anyOf:
@@ -1491,14 +1770,14 @@ components:
           type: array
           description: List of applicant types who are eligible for this application
             package
-          example:
+          example: &id027
           - individual
           - organization
           items:
-            enum:
+            enum: &id028
             - individual
             - organization
-            type:
+            type: &id029
             - string
     AnnouncementSchema:
       type: object
@@ -1862,7 +2141,7 @@ components:
       properties:
         pagination_info:
           description: The pagination information for paginated endpoints
-          type: &id019
+          type: &id024
           - object
           $ref: '#/components/schemas/PaginationInfoSchema'
         message:
@@ -2005,7 +2284,7 @@ components:
       properties:
         pagination_info:
           description: The pagination information for paginated endpoints
-          type: *id019
+          type: *id024
           $ref: '#/components/schemas/PaginationInfoSchema'
         message:
           type: string
@@ -2384,7 +2663,7 @@ components:
       properties:
         pagination_info:
           description: The pagination information for paginated endpoints
-          type: *id019
+          type: *id024
           $ref: '#/components/schemas/PaginationInfoSchema'
         message:
           type: string
@@ -2694,11 +2973,11 @@ components:
           type: array
           minItems: 1
           description: Categories of funding for this announcement
-          example: &id020
+          example: &id030
           - education
           - health
           items:
-            enum: &id021
+            enum: &id031
             - recovery_act
             - agriculture
             - arts
@@ -2727,7 +3006,7 @@ components:
             - other
             - energy_infrastructure_and_critical_mineral_and_materials
             - recreation_and_tourism
-            type: &id022
+            type: &id032
             - string
         funding_category_description:
           type:
@@ -2740,26 +3019,26 @@ components:
           type: array
           minItems: 1
           description: Types of funding instruments used for this announcement
-          example: &id023
+          example: &id033
           - cooperative_agreement
           - grant
           items:
-            enum: &id024
+            enum: &id034
             - cooperative_agreement
             - grant
             - procurement_contract
             - other
-            type: &id025
+            type: &id035
             - string
         applicant_types:
           type: array
           minItems: 1
           description: Types of applicants eligible for this announcement
-          example: &id026
+          example: &id036
           - state_governments
           - county_governments
           items:
-            enum: &id027
+            enum: &id037
             - state_governments
             - county_governments
             - city_or_township_governments
@@ -2777,7 +3056,7 @@ components:
             - small_businesses
             - other
             - unrestricted
-            type: &id028
+            type: &id038
             - string
         applicant_eligibility_description:
           type:
@@ -2918,6 +3197,193 @@ components:
           type:
           - object
           $ref: '#/components/schemas/OpportunityDataSchema'
+    FileAttachmentDownloadSchema:
+      type: object
+      properties:
+        file_name:
+          type: string
+          description: The name of the attachment file
+          example: my_NOFO.pdf
+        file_size_bytes:
+          type: integer
+          description: The size of the file in bytes
+          example: 1024
+        mime_type:
+          type: string
+          description: The MIME type of the attachment
+          example: application/pdf
+        file_description:
+          type: string
+          description: A description of the attachment
+          example: The full announcement NOFO
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        download_path:
+          type: string
+          description: The file's download path
+    ApplicationPackageWithInstructionSchema:
+      type: object
+      properties:
+        application_package_id:
+          type: string
+          format: uuid
+          description: The application package ID
+          example: 123e4567-e89b-12d3-a456-426614174000
+        announcement_id:
+          type: string
+          format: uuid
+          description: The announcement ID that the application package is associated
+            with
+          example: 123e4567-e89b-12d3-a456-426614174000
+        application_package_forms:
+          type: array
+          description: List of forms required for this application package
+          items:
+            type: *id025
+            $ref: '#/components/schemas/ApplicationPackageFormSchema'
+        public_application_package_id:
+          type:
+          - string
+          - 'null'
+          description: The public-facing identifier of the application package
+          example: ABC-123-456
+        application_package_title:
+          type:
+          - string
+          - 'null'
+          description: The title of the application package
+          example: Proposal for Advanced Research
+        opening_timestamp:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: The opening date of the application package, the first day
+            applications are accepted
+        closing_timestamp:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: The closing date of the application package, the last day applications
+            are accepted
+        grace_period:
+          type:
+          - integer
+          - 'null'
+          description: The number of days after the closing date that applications
+            are still accepted
+          example: 5
+        contact_info:
+          type:
+          - string
+          - 'null'
+          description: Contact info getting assistance with the application package
+          example: 'Bob Smith
+
+            FakeMail@fake.com'
+        announcement_assistance_listing:
+          description: Assistance listing information for this application package
+          type: *id026
+          anyOf:
+          - $ref: '#/components/schemas/AnnouncementAssistanceListingSchema'
+          - type: 'null'
+        open_to_applicants:
+          type: array
+          description: List of applicant types who are eligible for this application
+            package
+          example: *id027
+          items:
+            enum: *id028
+            type: *id029
+        application_package_instructions:
+          type: array
+          items:
+            type:
+            - object
+            $ref: '#/components/schemas/FileAttachmentDownloadSchema'
+    ApplicationPackageResponseSchema:
+      type: object
+      properties:
+        message:
+          type: string
+          description: The message to return
+          example: Success
+        data:
+          type:
+          - object
+          $ref: '#/components/schemas/ApplicationPackageWithInstructionSchema'
+        status_code:
+          type: integer
+          description: The HTTP status code
+          example: 200
+    ApplicationPackageCreateRequestSchema:
+      type: object
+      properties:
+        application_package_title:
+          type: string
+          description: The title of the application package
+          example: Proposal for Advanced Research
+        public_application_package_id:
+          type: string
+          description: The public-facing identifier of the application package
+          example: ABC-123-456
+        opening_timestamp:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: The opening date of the application package, the first day
+            applications are accepted
+        closing_timestamp:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: The closing date of the application package, the last day applications
+            are accepted
+        grace_period:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          description: The number of days after the closing date that applications
+            are still accepted
+          example: 5
+        contact_info:
+          type:
+          - string
+          - 'null'
+          description: Contact info getting assistance with the application package
+          example: 'Bob Smith
+
+            FakeMail@fake.com'
+        open_to_applicants:
+          type: array
+          minItems: 1
+          description: List of applicant types who are eligible for this application
+            package
+          example: &id039
+          - individual
+          - organization
+          items:
+            enum: &id040
+            - individual
+            - organization
+            type: &id041
+            - string
+      required:
+      - application_package_title
+      - closing_timestamp
+      - contact_info
+      - open_to_applicants
+      - opening_timestamp
     ResourceForRoleSchema:
       type: object
       properties:
@@ -3005,7 +3471,7 @@ components:
       properties:
         pagination_info:
           description: The pagination information for paginated endpoints
-          type: *id019
+          type: *id024
           $ref: '#/components/schemas/PaginationInfoSchema'
         message:
           type: string
@@ -3269,10 +3735,10 @@ components:
           type: array
           minItems: 1
           description: Categories of funding for this announcement
-          example: *id020
+          example: *id030
           items:
-            enum: *id021
-            type: *id022
+            enum: *id031
+            type: *id032
         funding_category_description:
           type:
           - string
@@ -3284,18 +3750,18 @@ components:
           type: array
           minItems: 1
           description: Types of funding instruments used for this announcement
-          example: *id023
+          example: *id033
           items:
-            enum: *id024
-            type: *id025
+            enum: *id034
+            type: *id035
         applicant_types:
           type: array
           minItems: 1
           description: Types of applicants eligible for this announcement
-          example: *id026
+          example: *id036
           items:
-            enum: *id027
-            type: *id028
+            enum: *id037
+            type: *id038
         applicant_eligibility_description:
           type:
           - string
@@ -3337,6 +3803,87 @@ components:
       - is_cost_sharing
       - post_timestamp
       - summary_description
+    ApplicationPackageUpdateRequestSchema:
+      type: object
+      properties:
+        application_package_title:
+          type: string
+          description: The title of the application package
+          example: Proposal for Advanced Research
+        public_application_package_id:
+          type: string
+          description: The public-facing identifier of the application package
+          example: ABC-123-456
+        opening_timestamp:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: The opening date of the application package, the first day
+            applications are accepted
+        closing_timestamp:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: The closing date of the application package, the last day applications
+            are accepted
+        grace_period:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          description: The number of days after the closing date that applications
+            are still accepted
+          example: 5
+        contact_info:
+          type:
+          - string
+          - 'null'
+          description: Contact info getting assistance with the application package
+          example: 'Bob Smith
+
+            FakeMail@fake.com'
+        open_to_applicants:
+          type: array
+          minItems: 1
+          description: List of applicant types who are eligible for this application
+            package
+          example: *id039
+          items:
+            enum: *id040
+            type: *id041
+      required:
+      - application_package_title
+      - closing_timestamp
+      - contact_info
+      - open_to_applicants
+      - opening_timestamp
+    FormReplaceSchema:
+      type: object
+      properties:
+        form_id:
+          type: integer
+          description: The primary key ID of the form
+        is_required:
+          type: boolean
+          description: Whether the form is required
+      required:
+      - form_id
+      - is_required
+    ApplicationPackageFormsSetRequestSchema:
+      type: object
+      properties:
+        forms:
+          type: array
+          minItems: 1
+          description: List of forms to set on the application package
+          items:
+            type:
+            - object
+            $ref: '#/components/schemas/FormReplaceSchema'
+      required:
+      - forms
   securitySchemes:
     ApiJwtAuth:
       type: apiKey
