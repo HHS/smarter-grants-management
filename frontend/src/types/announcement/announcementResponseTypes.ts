@@ -129,7 +129,7 @@ export interface BaseAnnouncement extends MinimalAnnouncement {
 
 export interface AnnouncementDetail extends BaseAnnouncement {
   attachments: AnnouncementDocument[];
-  competitions: [ApplicationPackage] | null;
+  application_packages: [ApplicationPackage] | null;
 }
 
 export interface AnnouncementApiResponse extends APIResponse {

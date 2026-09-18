@@ -23,7 +23,7 @@ function makeOpportunity(
     is_simpler_grants_opportunity: true,
     opportunity_assistance_listings: [],
     attachments: [],
-    competitions: null,
+    application_packages: null,
     saved_to_organizations: [],
     submitted_application_count: 0,
     summary: {
