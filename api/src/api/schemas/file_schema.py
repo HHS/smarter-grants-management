@@ -5,16 +5,6 @@ from marshmallow import pre_dump
 from src.api.schemas.extension import Schema, fields
 from src.db.models.file_upload_models import FileAttachment
 
-FILE_SCHEMA_FIELDS = {
-    "file_name",
-    "file_size_bytes",
-    "mime_type",
-    "file_description",
-    "created_at",
-    "updated_at",
-    "download_path",
-}
-
 
 class FileAttachmentSchema(Schema):
     """Schema for our file attachment table - DOES NOT INCLUDE A DOWNLOAD PATH - see FileAttachmentDownloadSchema for that"""
