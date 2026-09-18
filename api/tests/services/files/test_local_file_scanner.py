@@ -175,6 +175,7 @@ class TestProcessMetadataChange:
         caplog,
         monkeypatch,
     ):
+        # Skip the actual 10s wait; we only care about the status sequence.
         monkeypatch.setenv("LOCAL_FILE_SCANNER_WAIT_SCENARIO_DELAY_SECONDS", "0")
 
         pending_file = factories.PendingFileFactory.create(file_scan_status=FileScanStatus.PENDING)
@@ -231,6 +232,8 @@ class TestProcessMetadataChange:
         caplog,
     ):
         unknown_id = uuid.uuid4()
+        # Upload the s3 file so _move_to_terminal_prefix has something to move;
+        # the test is verifying the postgres-side missing-row behavior, not S3.
         s3_client = boto3.client("s3", region_name="us-east-1")
         unscanned_key = f"unscanned/{unknown_id}/file.pdf"
         s3_client.put_object(Bucket=aws_setup["bucket"], Key=unscanned_key, Body=b"x")
@@ -280,6 +283,9 @@ class TestSetupLocalFileScanner:
         assert not self._scanner_thread_running()
 
     def test_does_not_spawn_when_werkzeug_run_main_is_unset(self, monkeypatch):
+        # The Flask reloader sets WERKZEUG_RUN_MAIN to "true" only in the
+        # worker; the parent imports the app with the var unset. We must not
+        # spawn the thread there or it ends up running twice.
         monkeypatch.setenv("ENVIRONMENT", "local")
         monkeypatch.setenv("ENABLE_LOCAL_FILE_SCANNER", "TRUE")
         monkeypatch.delenv("WERKZEUG_RUN_MAIN", raising=False)
