@@ -395,7 +395,6 @@ class AnnouncementSummaryBaseRequestSchema(Schema):
     )
     is_cost_sharing = fields.Boolean(
         required=True,
-        allow_none=True,
         metadata={
             "description": "Whether or not the announcement has a cost sharing/matching requirement",
         },
