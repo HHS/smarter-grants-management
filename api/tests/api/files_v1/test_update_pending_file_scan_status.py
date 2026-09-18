@@ -23,7 +23,7 @@ def _put_scanned_file(bucket: str, key: str, body: bytes = b"scanned content") -
 
 
 @pytest.fixture
-def s3_scan_user_key(db_session, enable_factory_create, internal_resource):
+def s3_scan_user_key(db_session, enable_factory_create, internal_resource, s3_config):
     """Create a user with the internal_s3_scan privilege and return the API key."""
 
     # Fetch the internal resource in this session (it was created by the session-scoped fixture)
@@ -49,19 +49,21 @@ class TestUpdateFileScanStatusSuccess:
         self, client, db_session, s3_scan_user_key, mock_file_scan_s3_bucket_name
     ):
         pending_file = factories.PendingFileFactory.create(file_scan_status=FileScanStatus.PENDING)
-        file_location = _put_scanned_file(mock_file_scan_s3_bucket_name, "scanned/abc/example.txt")
+        new_file_location = _put_scanned_file(
+            mock_file_scan_s3_bucket_name, "scanned/abc/example.txt"
+        )
 
         resp = client.post(
             _build_url(pending_file.pending_file_id),
             headers={"X-API-Key": s3_scan_user_key},
-            json={"file_scan_status": "complete", "file_location": file_location},
+            json={"file_scan_status": "complete", "file_location": new_file_location},
         )
 
         assert resp.status_code == 200
 
         db_session.refresh(pending_file)
         assert pending_file.file_scan_status == FileScanStatus.COMPLETE
-        assert pending_file.file_location == file_location
+        assert pending_file.file_location == new_file_location
 
     def test_update_scan_status_infected(
         self, client, db_session, s3_scan_user_key, mock_file_scan_s3_bucket_name
@@ -69,19 +71,21 @@ class TestUpdateFileScanStatusSuccess:
         pending_file = factories.PendingFileFactory.create(
             file_scan_status=FileScanStatus.IN_PROGRESS
         )
-        file_location = _put_scanned_file(mock_file_scan_s3_bucket_name, "infected/abc/example.txt")
+        new_file_location = _put_scanned_file(
+            mock_file_scan_s3_bucket_name, "infected/abc/example.txt"
+        )
 
         resp = client.post(
             _build_url(pending_file.pending_file_id),
             headers={"X-API-Key": s3_scan_user_key},
-            json={"file_scan_status": "infected", "file_location": file_location},
+            json={"file_scan_status": "infected", "file_location": new_file_location},
         )
 
         assert resp.status_code == 200
 
         db_session.refresh(pending_file)
         assert pending_file.file_scan_status == FileScanStatus.INFECTED
-        assert pending_file.file_location == file_location
+        assert pending_file.file_location == new_file_location
 
     def test_logs_scan_duration(
         self, client, db_session, s3_scan_user_key, mock_file_scan_s3_bucket_name, caplog
@@ -113,7 +117,7 @@ class TestUpdateFileScanStatusSuccess:
 
 
 class TestUpdateFileScanStatus401:
-    def test_no_api_key(self, client, enable_factory_create):
+    def test_no_api_key(self, client, enable_factory_create, s3_config):
         pending_file = factories.PendingFileFactory.create()
 
         resp = client.post(
@@ -129,7 +133,7 @@ class TestUpdateFileScanStatus401:
 
 class TestUpdateFileScanStatus403:
     def test_user_without_s3_scan_privilege(
-        self, client, db_session, user_api_key_id, enable_factory_create
+        self, client, db_session, user_api_key_id, enable_factory_create, s3_config
     ):
         pending_file = factories.PendingFileFactory.create()
 

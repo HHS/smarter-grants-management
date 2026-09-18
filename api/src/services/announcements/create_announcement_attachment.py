@@ -3,9 +3,13 @@ import uuid
 from src.adapters import db
 from src.adapters.aws import S3Config
 from src.db.models.announcement_models import Announcement, AnnouncementAttachment
-from src.db.models.file_upload_models import FileAttachment, PendingFile
+from src.db.models.file_upload_models import FileAttachment
 from src.db.models.user_models import User
 from src.services.announcements.get_announcement import get_announcement_and_verify_access
+from src.services.files.pending_file_handling_domain_specific import (
+    fetch_and_validate_scan_complete_file,
+    move_pending_file_to_destination,
+)
 from src.util import file_util
 
 
@@ -41,8 +45,7 @@ def create_announcement_attachment_from_pending_file(
 
     announcement = get_announcement_and_verify_access(db_session, announcement_id, user)
 
-    # TODO - fetch pending file
-    pending_file = PendingFile()
+    pending_file = fetch_and_validate_scan_complete_file(db_session, pending_file_id, user)
 
     attachment_id = uuid.uuid4()
     # pending_file.file_location already ends in a secure_filename-sanitized
@@ -60,8 +63,8 @@ def create_announcement_attachment_from_pending_file(
     )
     file_size_bytes = file_util.get_file_length_bytes(pending_file.file_location)
 
-    # TODO
-    # move_pending_file_to_destination(pending_file, s3_file_location)
+    # Move the file on s3
+    move_pending_file_to_destination(pending_file, s3_file_location)
 
     file_attachment = FileAttachment(
         file_attachment_id=uuid.uuid4(),
