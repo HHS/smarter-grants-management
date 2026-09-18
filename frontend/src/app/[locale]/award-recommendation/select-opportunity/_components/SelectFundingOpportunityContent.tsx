@@ -83,7 +83,7 @@ export const SelectFundingOpportunityContent = ({
                 );
               }}
             >
-              {t("startButtonText")} <span aria-hidden="true">â†’</span>
+              {t("startButtonText")} <span aria-hidden="true">→</span>
             </Button>
           ),
         },

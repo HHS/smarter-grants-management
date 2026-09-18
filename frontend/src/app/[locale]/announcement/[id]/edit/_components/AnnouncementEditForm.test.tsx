@@ -72,7 +72,7 @@ const renderOpportunityEditForm = (
     />,
   );
 
-// â”€â”€â”€ Rendering â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Rendering ───────────────────────────────────────────────────────────────
 // Verifies static structure: enum-backed controls and hidden fields.
 describe("AnnouncementEditForm - rendering", () => {
   beforeEach(() => {
@@ -249,7 +249,7 @@ describe("AnnouncementEditForm - rendering", () => {
   });
 });
 
-// â”€â”€â”€ Alert banners â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Alert banners ────────────────────────────────────────────────────────────
 // Covers the four banner states: newly-created success, save success, save error,
 // and field-level validation summary.
 describe("AnnouncementEditForm - alert banners", () => {
@@ -323,7 +323,7 @@ describe("AnnouncementEditForm - alert banners", () => {
   });
 });
 
-// â”€â”€â”€ Conditional fields â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Conditional fields ───────────────────────────────────────────────────────
 // Three sections are conditionally rendered based on form state:
 // fundingCategoryExplanation, closeDateExplanation, additionalEligibilityInfo.
 describe("AnnouncementEditForm - conditional fields", () => {
@@ -421,7 +421,7 @@ describe("AnnouncementEditForm - conditional fields", () => {
   });
 });
 
-// â”€â”€â”€ Eligibility checkboxes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Eligibility checkboxes ───────────────────────────────────────────────────
 // Confirms initial checked state and that toggling a checkbox updates state correctly.
 describe("AnnouncementEditForm - eligibility checkboxes", () => {
   beforeEach(() => {
@@ -511,7 +511,7 @@ describe("AnnouncementEditForm - eligibility checkboxes", () => {
   });
 });
 
-// â”€â”€â”€ Save state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Save state ───────────────────────────────────────────────────────────────
 // When a save creates a new summary record, the returned ID is synced into
 // the hidden opportunitySummaryId input so subsequent saves target the correct record.
 describe("AnnouncementEditForm - save state", () => {
@@ -538,7 +538,7 @@ describe("AnnouncementEditForm - save state", () => {
   });
 });
 
-// â”€â”€â”€ Funding details - field interactions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Funding details - field interactions ─────────────────────────────────────
 // All funding-section inputs are controlled; onChange updates state and re-renders.
 // Number inputs pass through formatNumber, formatting valid numbers with commas.
 describe("AnnouncementEditForm - funding details interactions", () => {
@@ -672,7 +672,7 @@ describe("AnnouncementEditForm - funding details interactions", () => {
   });
 });
 
-// â”€â”€â”€ Eligibility and additional info - field interactions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Eligibility and additional info - field interactions ─────────────────────
 // Controlled inputs in the eligibility and additional information sections;
 // onChange updates are reflected in the displayed value.
 describe("AnnouncementEditForm - eligibility and additional info interactions", () => {
@@ -768,7 +768,7 @@ describe("AnnouncementEditForm - eligibility and additional info interactions", 
   });
 });
 
-// â”€â”€â”€ Inline validation errors â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Inline validation errors ─────────────────────────────────────────────────
 // When the save action returns field-level errors, each affected input renders
 // an ErrorMessage. All fields are exercised in a single scenario.
 describe("AnnouncementEditForm - inline validation errors", () => {
@@ -821,7 +821,7 @@ describe("AnnouncementEditForm - inline validation errors", () => {
   });
 });
 
-// â”€â”€â”€ Number formatting edge cases â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Number formatting edge cases ────────────────────────────────────────────
 // Non-numeric and empty strings must pass through unchanged rather than being zeroed out.
 describe("AnnouncementEditForm - number formatting edge cases", () => {
   beforeEach(() => {
@@ -863,7 +863,7 @@ describe("AnnouncementEditForm - number formatting edge cases", () => {
   });
 });
 
-// â”€â”€â”€ Action buttons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Action buttons ───────────────────────────────────────────────────────────
 // Save, Preview, and Publish buttons are rendered at the top of the form.
 // Publish is enabled only when all four required fields are populated.
 describe("AnnouncementEditForm - action buttons", () => {
@@ -925,7 +925,7 @@ describe("AnnouncementEditForm - action buttons", () => {
   });
 });
 
-// â”€â”€â”€ Field validations on exiting the field â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Field validations on exiting the field ──────────────────────────────────
 describe("AnnouncementEditForm - field validations on exiting the field", () => {
   beforeEach(() => {
     mockUseActionState.mockReturnValue([
