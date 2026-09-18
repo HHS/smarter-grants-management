@@ -119,7 +119,7 @@ RUN strip --strip-unneeded /usr/local/bin/python${PY_MM} || true; \
 #==============================================
 FROM public.ecr.aws/amazonlinux/amazonlinux:2023 AS python-base
 ARG PY_MM=3.14
-LABEL org.opencontainers.image.source="https://github.com/HHS/simpler-grants-gov"
+LABEL org.opencontainers.image.source="https://github.com/HHS/simpler-grants-management"
 
 # Install runtime dependencies and build tools for compiling Python packages
 # Build tools are needed because Python 3.14 is new and many packages lack prebuilt wheels
