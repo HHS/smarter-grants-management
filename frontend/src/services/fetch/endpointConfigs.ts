@@ -97,7 +97,7 @@ export const toDynamicGrantorOpportunityEndpoint = (
   return {
     basePath: environment.API_URL,
     version: "v1",
-    namespace: "grantors/opportunities",
+    namespace: "announcements",
     method: type as ApiMethod,
     requiresAuth: true,
   };

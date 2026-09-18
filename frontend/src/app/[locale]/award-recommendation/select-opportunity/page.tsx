@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { SelectFundingOpportunityContent } from "src/app/[locale]/award-recommendation/select-opportunity/_components/SelectFundingOpportunityContent";
 import withFeatureFlag from "src/services/featureFlags/withFeatureFlag";
-import { searchAccessibleOpportunities } from "src/services/fetch/fetchers/grantorOpportunitiesFetcher";
+import { searchAccessibleOpportunities } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 import { WithFeatureFlagProps } from "src/types/uiTypes";
 
 import { getTranslations } from "next-intl/server";

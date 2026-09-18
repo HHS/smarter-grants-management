@@ -160,7 +160,7 @@ export default function AwardRecommendationsListTable({
         {
           cellData: (
             <Link
-              href={`/opportunity/${opportunity.opportunity_id}`}
+              href={`/announcement/${opportunity.opportunity_id}`}
               className="usa-link"
             >
               {opportunity.opportunity_title}

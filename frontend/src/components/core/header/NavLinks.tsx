@@ -206,7 +206,7 @@ export const NavLinks = ({
 
     return anonymousNavLinks.toSpliced(anonymousNavLinks.length, 0, {
       text: t("opportunities"),
-      href: "/opportunities",
+      href: "/announcements",
     });
   }, [t, user?.token]);
 

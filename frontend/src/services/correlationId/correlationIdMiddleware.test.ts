@@ -105,7 +105,7 @@ describe("applyCorrelationId", () => {
   it("regenerates the CID and logs `invalid` when the existing cookie is malformed", () => {
     const request = buildRequest({
       cookieValue: "not-a-uuid",
-      url: "http://anywhere.com/opportunity/1",
+      url: "http://anywhere.com/announcement/1",
       referer: "http://anywhere.com/search",
     });
     const response = NextResponse.next();
@@ -120,7 +120,7 @@ describe("applyCorrelationId", () => {
       event: "anonymous_session_started",
       correlation_id: cidCookie,
       reason: "invalid",
-      url: "http://anywhere.com/opportunity/1",
+      url: "http://anywhere.com/announcement/1",
       referer: "http://anywhere.com/search",
     });
   });
