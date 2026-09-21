@@ -103,9 +103,11 @@ export interface SavedToOrganization {
 
 export type MinimalAnnouncement = {
   opportunity_id: string;
+  announcement_id?: string;
   legacy_opportunity_id: number;
   opportunity_status: AnnouncementStatus;
   opportunity_title: string | null;
+  announcement_title?: string | null;
   summary: MinimalSummary;
   saved_to_organizations?: SavedToOrganization[];
 };
@@ -118,6 +120,7 @@ export interface BaseAnnouncement extends MinimalAnnouncement {
   created_at: string;
   opportunity_assistance_listings: AnnouncementAssistanceListing[]; // need to true up vs AnnouncementAssistanceListing
   opportunity_number: string;
+  announcement_number?: string;
   summary: Summary;
   top_level_agency_name: string | null;
   updated_at: string;

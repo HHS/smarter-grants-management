@@ -24,9 +24,9 @@ export function AnnouncementDetailsHeader({
 }: OpportunityDetailsHeaderProps) {
   const t = useTranslations("AnnouncementDetailsHeader");
 
-  const opportunityId = opportunityData.opportunity_id;
-  const opportunityNumber = opportunityData.opportunity_number ?? "";
-  const title = opportunityData.opportunity_title ?? "";
+  const opportunityId = opportunityData.announcement_id;
+  const opportunityNumber = opportunityData.announcement_number ?? "";
+  const title = opportunityData.announcement_title ?? "";
   const agency = opportunityData.top_level_agency_name ?? "";
   const subAgency = opportunityData.agency_name ?? "";
 
