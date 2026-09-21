@@ -1,6 +1,6 @@
 # @featureArea Authentication
 # @specFile e2e/login/specs/login-redirect.spec.ts
-# @debugNote Redirected to "/opportunities"
+# @debugNote Redirected to "/announcements"
 
 Feature: Login page redirect behavior
   As a user
@@ -15,9 +15,9 @@ Feature: Login page redirect behavior
     Then I am redirected to the home page
 
   Scenario: should redirect to stored URL after login
-    Given I have stored "/opportunities" as the login redirect
+    Given I have stored "/announcements" as the login redirect
     When I open the login page
-    Then I am redirected to "/opportunities"
+    Then I am redirected to "/announcements"
 
   Scenario: should redirect to home page when stored URL is empty
     Given I have stored "/" as the login redirect
@@ -30,7 +30,7 @@ Feature: Login page redirect behavior
     Then I am redirected to the home page
 
   Scenario: should display "Redirecting..." text while redirecting
-    Given I have stored "/opportunities" as the login redirect
+    Given I have stored "/announcements" as the login redirect
     When I open the login page
     Then I see "Redirecting..."
-    And I am redirected to "/opportunities"
+    And I am redirected to "/announcements"

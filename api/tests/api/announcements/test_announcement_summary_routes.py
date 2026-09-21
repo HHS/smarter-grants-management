@@ -146,6 +146,23 @@ def test_announcement_summary_create_invalid_award_values_422(
     assert response.status_code == 422
 
 
+def test_announcement_summary_create_null_cost_sharing_422(
+    client,
+    api_key_headers,
+):
+    announcement = AnnouncementFactory.create()
+    request = build_summary_request()
+    request["is_cost_sharing"] = None
+
+    response = client.post(
+        f"/v1/announcements/{announcement.announcement_id}/summaries",
+        json=request,
+        headers=api_key_headers,
+    )
+
+    assert response.status_code == 422
+
+
 def test_announcement_summary_create_invalid_timestamps_422(
     client,
     api_key_headers,

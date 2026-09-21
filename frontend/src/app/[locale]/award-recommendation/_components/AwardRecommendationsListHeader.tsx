@@ -1,6 +1,6 @@
 "use client";
 
-import { AgencySelector } from "src/app/[locale]/opportunities/_components/AgencySelector";
+import { AgencySelector } from "src/app/[locale]/announcements/_components/AgencySelector";
 import { RelevantAgencyRecord } from "src/types/search/searchFilterTypes";
 
 import { useTranslations } from "next-intl";

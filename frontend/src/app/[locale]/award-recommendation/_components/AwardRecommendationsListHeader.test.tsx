@@ -7,7 +7,7 @@ jest.mock("next-intl", () => ({
   useTranslations: () => identity,
 }));
 
-jest.mock("src/app/[locale]/opportunities/_components/AgencySelector", () => ({
+jest.mock("src/app/[locale]/announcements/_components/AgencySelector", () => ({
   AgencySelector: () => <div data-testid="agency-selector" />,
 }));
 

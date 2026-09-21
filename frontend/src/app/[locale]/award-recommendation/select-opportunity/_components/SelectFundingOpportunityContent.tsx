@@ -1,7 +1,7 @@
 "use client";
 
 import { createAwardRecommendationAction } from "src/app/[locale]/award-recommendation/select-opportunity/actions";
-import { BaseOpportunity } from "src/types/opportunity/opportunityResponseTypes";
+import { BaseAnnouncement } from "src/types/announcement/announcementResponseTypes";
 
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -15,7 +15,7 @@ import {
 } from "src/components/core/TableWithResponsiveHeader";
 
 type SelectFundingOpportunityContentProps = {
-  fundingOpportunities: BaseOpportunity[];
+  fundingOpportunities: BaseAnnouncement[];
 };
 
 export const SelectFundingOpportunityContent = ({
@@ -62,7 +62,7 @@ export const SelectFundingOpportunityContent = ({
         {
           cellData: (
             <Link
-              href={`/opportunity/${fundingOpportunity.opportunity_id}`}
+              href={`/announcement/${fundingOpportunity.opportunity_id}`}
               className="usa-link"
             >
               {fundingOpportunity.opportunity_number}
