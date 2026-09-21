@@ -39,7 +39,7 @@ def test_attachment_get_missing_announcement_404(client, api_key_headers):
     assert resp.status_code == 404
 
 
-def test_attachment_delete_missing_attachment_404(client, api_key_headers):
+def test_attachment_get_missing_attachment_404(client, api_key_headers):
     announcement = AnnouncementFactory.create()
 
     resp = client.get(
@@ -58,5 +58,5 @@ def test_attachment_get_bad_api_key_401(client):
 
 
 def test_attachment_get_no_api_key_401(client):
-    resp = client.delete(f"/v1/announcements/{uuid.uuid4()}/attachments/{uuid.uuid4()}")
+    resp = client.get(f"/v1/announcements/{uuid.uuid4()}/attachments/{uuid.uuid4()}")
     assert resp.status_code == 401

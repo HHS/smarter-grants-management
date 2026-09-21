@@ -29,7 +29,9 @@ def get_announcement_attachment_and_verify_access(
     ).scalar_one_or_none()
 
     if announcement_attachment is None:
-        raise_flask_error(404, f"Could not find announcement attachment with ID {announcement_id}")
+        raise_flask_error(
+            404, f"Could not find announcement attachment with ID {announcement_attachment_id}"
+        )
 
     if not has_access(user, announcement, "read"):
         raise_flask_error(403, "User does not have read access to this announcement attachment")
