@@ -128,6 +128,21 @@ def test_announcement_summary_create_unknown_announcement_404(
     assert response.status_code == 404
 
 
+def test_announcement_summary_create_deleted_announcement_404(
+    client,
+    api_key_headers,
+):
+    announcement = AnnouncementFactory.create(is_deleted=True)
+
+    response = client.post(
+        f"/v1/announcements/{announcement.announcement_id}/summaries",
+        json=build_summary_request(),
+        headers=api_key_headers,
+    )
+
+    assert response.status_code == 404
+
+
 def test_announcement_summary_create_invalid_award_values_422(
     client,
     api_key_headers,

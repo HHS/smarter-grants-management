@@ -1,6 +1,10 @@
 import uuid
 
-from tests.db.models.factories import ApplicationPackageFactory, ApplicationPackageFormFactory
+from tests.db.models.factories import (
+    AnnouncementFactory,
+    ApplicationPackageFactory,
+    ApplicationPackageFormFactory,
+)
 
 
 def test_application_package_form_update_200(client, api_key_headers, db_session):
@@ -82,6 +86,35 @@ def test_application_package_form_update_package_not_found_404(client, api_key_h
 
     resp = client.put(
         f"/v1/announcements/{uuid.uuid4()}/application-packages/{uuid.uuid4()}/forms",
+        json=request,
+        headers=api_key_headers,
+    )
+    assert resp.status_code == 404
+
+
+def test_application_package_form_update_announcement_deleted_404(client, api_key_headers):
+    announcement = AnnouncementFactory.create(is_deleted=True)
+    package = ApplicationPackageFactory.create(
+        announcement=announcement, application_package_forms=[]
+    )
+
+    request = {"forms": [{"form_id": 1, "is_required": True}]}
+
+    resp = client.put(
+        f"/v1/announcements/{package.announcement_id}/application-packages/{package.application_package_id}/forms",
+        json=request,
+        headers=api_key_headers,
+    )
+    assert resp.status_code == 404
+
+
+def test_application_package_form_update_package_deleted_404(client, api_key_headers):
+    package = ApplicationPackageFactory.create(is_deleted=True, application_package_forms=[])
+
+    request = {"forms": [{"form_id": 1, "is_required": True}]}
+
+    resp = client.put(
+        f"/v1/announcements/{package.announcement_id}/application-packages/{package.application_package_id}/forms",
         json=request,
         headers=api_key_headers,
     )

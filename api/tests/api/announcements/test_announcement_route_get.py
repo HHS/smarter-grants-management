@@ -231,6 +231,17 @@ def test_announcement_get_404(
     assert "Could not find announcement with ID" in response.get_json()["message"]
 
 
+def test_announcement_get_deleted_404(client, api_key_headers):
+    announcement = AnnouncementFactory.create(is_deleted=True, announcement_assistance_listings=[])
+
+    response = client.get(
+        f"/v1/announcements/{announcement.announcement_id}",
+        headers=api_key_headers,
+    )
+
+    assert response.status_code == 404
+
+
 def test_announcement_get_no_auth_401(client):
     response = client.get(f"/v1/announcements/{uuid.uuid4()}")
 

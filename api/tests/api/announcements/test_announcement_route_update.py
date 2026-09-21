@@ -1,3 +1,5 @@
+import uuid
+
 from src.constants.lookup_constants import AnnouncementCategory
 from tests.db.models.factories import AnnouncementFactory
 
@@ -45,6 +47,32 @@ def test_announcement_update_200(
     assert announcement.announcement_title == request["announcement_title"]
     assert announcement.tagline == request["tagline"]
     assert announcement.purpose_statement == request["purpose_statement"]
+
+
+def test_announcement_update_not_found_404(client, api_key_headers):
+    announcement = AnnouncementFactory.create()
+    request = build_update_request(announcement)
+
+    response = client.put(
+        f"/v1/announcements/{uuid.uuid4()}",
+        json=request,
+        headers=api_key_headers,
+    )
+
+    assert response.status_code == 404
+
+
+def test_announcement_update_deleted_404(client, api_key_headers):
+    announcement = AnnouncementFactory.create(is_deleted=True)
+    request = build_update_request(announcement)
+
+    response = client.put(
+        f"/v1/announcements/{announcement.announcement_id}",
+        json=request,
+        headers=api_key_headers,
+    )
+
+    assert response.status_code == 404
 
 
 def test_announcement_update_other_requires_category_explanation_422(

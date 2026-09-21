@@ -155,6 +155,19 @@ def test_application_package_create_null_dates_200(client, api_key_headers, db_s
     assert db_package.closing_timestamp is None
 
 
+def test_application_package_create_deleted_announcement_404(client, api_key_headers, db_session):
+    announcement = AnnouncementFactory.create(is_deleted=True)
+
+    request = create_application_package_request()
+
+    resp = client.post(
+        f"/v1/announcements/{announcement.announcement_id}/application-packages",
+        json=request,
+        headers=api_key_headers,
+    )
+    assert resp.status_code == 404
+
+
 def test_application_package_create_negative_grace_period_422(client, api_key_headers):
     announcement = AnnouncementFactory.create()
 

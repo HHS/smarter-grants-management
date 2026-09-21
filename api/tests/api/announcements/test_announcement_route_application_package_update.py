@@ -138,6 +138,33 @@ def test_application_package_update_wrong_announcement_404(client, api_key_heade
     assert resp.status_code == 404
 
 
+def test_application_package_update_announcement_deleted_404(client, api_key_headers):
+    announcement = AnnouncementFactory.create(is_deleted=True)
+    package = ApplicationPackageFactory.create(announcement=announcement)
+
+    request = create_application_package_request()
+
+    resp = client.put(
+        f"/v1/announcements/{package.announcement_id}/application-packages/{package.application_package_id}",
+        json=request,
+        headers=api_key_headers,
+    )
+    assert resp.status_code == 404
+
+
+def test_application_package_update_package_deleted_404(client, api_key_headers):
+    package = ApplicationPackageFactory.create(is_deleted=True)
+
+    request = create_application_package_request()
+
+    resp = client.put(
+        f"/v1/announcements/{package.announcement_id}/application-packages/{package.application_package_id}",
+        json=request,
+        headers=api_key_headers,
+    )
+    assert resp.status_code == 404
+
+
 def test_application_package_missing_required_fields_422(client, api_key_headers):
     package = ApplicationPackageFactory.create()
 
