@@ -781,6 +781,8 @@ class AnnouncementFactory(BaseFactory):
     announcement_number = factory.Faker("opportunity_number")
     announcement_title = factory.Faker("opportunity_title")
 
+    is_deleted = False
+
     category = factory.fuzzy.FuzzyChoice(AnnouncementCategory)
     # only set the category explanation if category is Other
     category_explanation = factory.Maybe(
@@ -828,6 +830,7 @@ class AnnouncementSummaryFactory(BaseFactory):
 
     # By default generate non-forecasts which affects several fields
     is_forecast = False
+    is_deleted = False
 
     # Forecasted records don't have a close date
     close_timestamp = factory.Maybe(
@@ -934,6 +937,8 @@ class AnnouncementAttachmentFactory(BaseFactory):
     file_attachment = factory.SubFactory(FileAttachmentFactory)
     file_attachment_id = factory.LazyAttribute(lambda a: a.file_attachment.file_attachment_id)
 
+    is_deleted = False
+
 
 class ApplicationPackageFactory(BaseFactory):
     class Meta:
@@ -943,6 +948,8 @@ class ApplicationPackageFactory(BaseFactory):
 
     announcement = factory.SubFactory(AnnouncementFactory)
     announcement_id = factory.LazyAttribute(lambda a: a.announcement.announcement_id)
+
+    is_deleted = False
 
     form_family = factory.fuzzy.FuzzyChoice(FormFamily)
 
@@ -1013,6 +1020,8 @@ class ApplicationPackageInstructionFactory(BaseFactory):
 
     file_attachment = factory.SubFactory(FileAttachmentFactory)
     file_attachment_id = factory.LazyAttribute(lambda a: a.file_attachment.file_attachment_id)
+
+    is_deleted = False
 
 
 class AnnouncementAuditFactory(BaseFactory):
