@@ -9,7 +9,7 @@ from src.api.schemas.extension import (
     fields,
     validators,
 )
-from src.api.schemas.file_schema import FileAttachmentDownloadSchema
+from src.api.schemas.file_schema import FileAttachmentDownloadSchema, FileAttachmentSchema
 from src.api.schemas.response_schema import AbstractResponseSchema, PaginationMixinSchema
 from src.api.schemas.search_schema import StrSearchSchemaBuilder
 from src.constants.lookup_constants import (
@@ -21,6 +21,18 @@ from src.constants.lookup_constants import (
     FundingInstrument,
 )
 from src.pagination.pagination_schema import generate_pagination_schema
+
+
+class AnnouncementAttachmentSchema(FileAttachmentSchema):
+    announcement_attachment_id = fields.UUID(
+        metadata={"description": "The announcement attachment ID"}
+    )
+
+
+class AnnouncementAttachmentDownloadSchema(FileAttachmentDownloadSchema):
+    announcement_attachment_id = fields.UUID(
+        metadata={"description": "The announcement attachment ID"}
+    )
 
 
 class AnnouncementAssistanceListingSchema(Schema):
@@ -382,6 +394,13 @@ class AnnouncementSchema(Schema):
     application_packages = fields.List(
         fields.Nested(ApplicationPackageSchema),
         metadata={"description": "List of application packages associated with the announcement"},
+    )
+
+    announcement_attachments = fields.List(
+        fields.Nested(AnnouncementAttachmentSchema),
+        metadata={
+            "description": "List of announcement attachments associated with the announcement - does not include download path"
+        },
     )
 
     created_at = fields.DateTime(dump_only=True)
@@ -1053,3 +1072,16 @@ class AnnouncementAuditRequestSchema(Schema):
 
 class AnnouncementAuditResponseSchema(AbstractResponseSchema, PaginationMixinSchema):
     data = fields.List(fields.Nested(AnnouncementAuditEventSchema))
+class AnnouncementAttachmentGetResponseSchema(AbstractResponseSchema):
+    data = fields.Nested(AnnouncementAttachmentDownloadSchema())
+
+
+class AnnouncementAttachmentDeleteResponseSchema(AbstractResponseSchema):
+    data = fields.MixinField(metadata={"example": None})
+
+
+class AnnouncementAttachmentCreateFromPendingFileRequestSchema(Schema):
+    pending_file_id = fields.UUID(
+        required=True,
+        metadata={"description": "The ID of the pending (virus-scanned) file to attach"},
+    )
