@@ -70,7 +70,7 @@ jest.mock("src/services/fetch/fetchers/allFormsFetcher", () => ({
 const baseOpportunityData: DeepPartial<GrantorAnnouncementDetail> = {
   opportunity_id: "opp-abc-123",
   opportunity_title: "Test Opportunity",
-  competitions: null,
+  application_packages: null,
 };
 
 describe("OpportunityCompetitionPage", () => {
@@ -81,7 +81,7 @@ describe("OpportunityCompetitionPage", () => {
   describe("when opportunity has no existing competition", () => {
     beforeEach(() => {
       mockGetOpportunityForGrantor.mockResolvedValue({
-        data: { ...baseOpportunityData, competitions: null },
+        data: { ...baseOpportunityData, application_packages: null },
       });
       mockCreateCompetitionForGrantor.mockResolvedValue({
         data: { competition_id: "new-competition-id" },
@@ -133,7 +133,7 @@ describe("OpportunityCompetitionPage", () => {
       mockGetOpportunityForGrantor.mockResolvedValue({
         data: {
           ...baseOpportunityData,
-          competitions: [{ competition_id: "existing-competition-id" }],
+          application_packages: [{ competition_id: "existing-competition-id" }],
         },
       });
     });

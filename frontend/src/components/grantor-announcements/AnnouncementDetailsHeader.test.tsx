@@ -9,7 +9,7 @@ jest.mock("next-intl", () => ({
     .fn()
     .mockReturnValue((key: string, params?: Record<string, string>) => {
       const translations: Record<string, string> = {
-        opportunityNumber: `Opportunity #: ${params?.number ?? ""}`,
+        opportunityNumber: `Announcement #: ${params?.number ?? ""}`,
         title: "Title:",
         agency: "Agency:",
         subAgency: "Sub-agency:",
@@ -22,9 +22,12 @@ jest.mock("next-intl", () => ({
 
 const mockOpportunityData: GrantorAnnouncementDetail = {
   opportunity_id: "abc-123",
+  announcement_id: "abc-123",
   legacy_opportunity_id: 1,
   opportunity_number: "PAR-25-316",
+  announcement_number: "PAR-25-316",
   opportunity_title: "Workforce Innovation Sample Grant",
+  announcement_title: "Workforce Innovation Sample Grant",
   agency_name: "Workforce Innovation Sub",
   top_level_agency_name: "Workforce Innovation Agency",
   is_draft: true,
@@ -137,7 +140,7 @@ describe("AnnouncementDetailsHeader", () => {
   it("renders -- for missing title", () => {
     render(
       <AnnouncementDetailsHeader
-        opportunityData={{ ...mockOpportunityData, opportunity_title: null }}
+        opportunityData={{ ...mockOpportunityData, announcement_title: null }}
         locale="en"
       />,
     );
