@@ -4,7 +4,6 @@ import uuid
 from pathlib import Path
 
 import boto3
-import moto
 import pytest
 
 import tests.db.models.factories as factories
@@ -16,39 +15,6 @@ from src.services.files.local_file_scanner import (
     process_metadata_change,
     setup_local_file_scanner,
 )
-
-FAKE_FILE_SCAN_BUCKET = "test-local-mock-file-scan-bucket"
-FAKE_DYNAMODB_TABLE = "test-local-virus-scan"
-
-
-@pytest.fixture
-def aws_setup(reset_aws_env_vars, db_session, monkeypatch):
-    """Single moto context covering both s3 and DynamoDB.
-
-    Test conftest exposes s3 and DynamoDB through separately-whitelisted
-    moto contexts; if you nest them, only the inner whitelist applies, so
-    one of the two services gets blocked. This fixture opens a single
-    non-whitelisted moto.mock_aws so tests can exercise both at once. It
-    also wires factories to db_session so PendingFile rows can be created.
-    """
-    monkeypatch.setattr(factories, "_db_session", db_session)
-
-    with moto.mock_aws():
-        s3 = boto3.resource("s3", region_name="us-east-1")
-        s3.Bucket(FAKE_FILE_SCAN_BUCKET).create()
-
-        dynamodb = boto3.client("dynamodb", region_name="us-east-1")
-        dynamodb.create_table(
-            TableName=FAKE_DYNAMODB_TABLE,
-            KeySchema=[{"AttributeName": "file_id", "KeyType": "HASH"}],
-            AttributeDefinitions=[{"AttributeName": "file_id", "AttributeType": "S"}],
-            BillingMode="PAY_PER_REQUEST",
-        )
-
-        monkeypatch.setenv("FILE_SCAN_BUCKET", f"s3://{FAKE_FILE_SCAN_BUCKET}")
-        monkeypatch.setenv("FILE_SCAN_CACHE_TABLE_NAME", FAKE_DYNAMODB_TABLE)
-
-        yield {"s3": s3, "dynamodb": dynamodb, "bucket": FAKE_FILE_SCAN_BUCKET}
 
 
 def _write_metadata(path: Path, key: str) -> Path:
@@ -95,7 +61,7 @@ class TestProcessMetadataChange:
         tmp_path,
         db_client,
         db_session,
-        aws_setup,
+        mock_dynamodb_and_s3,
         s3_scanner_user,
     ):
         pending_file = factories.PendingFileFactory.create(file_scan_status=FileScanStatus.PENDING)
@@ -103,7 +69,9 @@ class TestProcessMetadataChange:
 
         s3_client = boto3.client("s3", region_name="us-east-1")
         unscanned_key = f"unscanned/{pending_file.pending_file_id}/resume.pdf"
-        s3_client.put_object(Bucket=aws_setup["bucket"], Key=unscanned_key, Body=b"file contents")
+        s3_client.put_object(
+            Bucket=mock_dynamodb_and_s3.bucket, Key=unscanned_key, Body=b"file contents"
+        )
 
         metadata_path = _write_metadata(
             tmp_path / pending_file.pending_file_id.hex / "objectMetadata.json",
@@ -115,27 +83,27 @@ class TestProcessMetadataChange:
         db_session.refresh(pending_file)
         assert pending_file.file_scan_status == FileScanStatus.COMPLETE
 
-        item = aws_setup["dynamodb"].get_item(
-            TableName=FAKE_DYNAMODB_TABLE,
+        item = mock_dynamodb_and_s3.dynamodb_client.get_item(
+            TableName=mock_dynamodb_and_s3.table_name,
             Key={"file_id": {"S": str(pending_file.pending_file_id)}},
         )["Item"]
         assert item["status"]["S"] == FileScanStatus.COMPLETE.value
         assert item["user_id"]["S"] == str(pending_file.user_id)
 
         expected_scanned_key = f"scanned/{pending_file.pending_file_id}/resume.pdf"
-        moved_body = s3_client.get_object(Bucket=aws_setup["bucket"], Key=expected_scanned_key)[
-            "Body"
-        ].read()
+        moved_body = s3_client.get_object(
+            Bucket=mock_dynamodb_and_s3.bucket, Key=expected_scanned_key
+        )["Body"].read()
         assert moved_body == b"file contents"
         with pytest.raises(s3_client.exceptions.NoSuchKey):
-            s3_client.get_object(Bucket=aws_setup["bucket"], Key=unscanned_key)
+            s3_client.get_object(Bucket=mock_dynamodb_and_s3.bucket, Key=unscanned_key)
 
     def test_infected_scenario_moves_file_and_marks_infected(
         self,
         tmp_path,
         db_client,
         db_session,
-        aws_setup,
+        mock_dynamodb_and_s3,
         s3_scanner_user,
     ):
         pending_file = factories.PendingFileFactory.create(file_scan_status=FileScanStatus.PENDING)
@@ -143,7 +111,9 @@ class TestProcessMetadataChange:
 
         s3_client = boto3.client("s3", region_name="us-east-1")
         unscanned_key = f"unscanned/{pending_file.pending_file_id}/scenario-infected-resume.pdf"
-        s3_client.put_object(Bucket=aws_setup["bucket"], Key=unscanned_key, Body=b"file contents")
+        s3_client.put_object(
+            Bucket=mock_dynamodb_and_s3.bucket, Key=unscanned_key, Body=b"file contents"
+        )
 
         metadata_path = _write_metadata(
             tmp_path / pending_file.pending_file_id.hex / "objectMetadata.json",
@@ -158,19 +128,19 @@ class TestProcessMetadataChange:
         expected_infected_key = (
             f"infected/{pending_file.pending_file_id}/scenario-infected-resume.pdf"
         )
-        moved_body = s3_client.get_object(Bucket=aws_setup["bucket"], Key=expected_infected_key)[
-            "Body"
-        ].read()
+        moved_body = s3_client.get_object(
+            Bucket=mock_dynamodb_and_s3.bucket, Key=expected_infected_key
+        )["Body"].read()
         assert moved_body == b"file contents"
         with pytest.raises(s3_client.exceptions.NoSuchKey):
-            s3_client.get_object(Bucket=aws_setup["bucket"], Key=unscanned_key)
+            s3_client.get_object(Bucket=mock_dynamodb_and_s3.bucket, Key=unscanned_key)
 
     def test_wait_10s_scenario_runs_in_progress_then_complete(
         self,
         tmp_path,
         db_client,
         db_session,
-        aws_setup,
+        mock_dynamodb_and_s3,
         s3_scanner_user,
         caplog,
         monkeypatch,
@@ -183,7 +153,9 @@ class TestProcessMetadataChange:
 
         s3_client = boto3.client("s3", region_name="us-east-1")
         unscanned_key = f"unscanned/{pending_file.pending_file_id}/scenario-wait10s-cover.pdf"
-        s3_client.put_object(Bucket=aws_setup["bucket"], Key=unscanned_key, Body=b"file contents")
+        s3_client.put_object(
+            Bucket=mock_dynamodb_and_s3.bucket, Key=unscanned_key, Body=b"file contents"
+        )
 
         metadata_path = _write_metadata(
             tmp_path / pending_file.pending_file_id.hex / "objectMetadata.json",
@@ -208,7 +180,7 @@ class TestProcessMetadataChange:
         tmp_path,
         db_client,
         db_session,
-        aws_setup,
+        mock_dynamodb_and_s3,
     ):
         pending_file = factories.PendingFileFactory.create(file_scan_status=FileScanStatus.PENDING)
         db_session.commit()
@@ -227,7 +199,7 @@ class TestProcessMetadataChange:
         self,
         tmp_path,
         db_client,
-        aws_setup,
+        mock_dynamodb_and_s3,
         s3_scanner_user,
         caplog,
     ):
@@ -236,7 +208,7 @@ class TestProcessMetadataChange:
         # the test is verifying the postgres-side missing-row behavior, not S3.
         s3_client = boto3.client("s3", region_name="us-east-1")
         unscanned_key = f"unscanned/{unknown_id}/file.pdf"
-        s3_client.put_object(Bucket=aws_setup["bucket"], Key=unscanned_key, Body=b"x")
+        s3_client.put_object(Bucket=mock_dynamodb_and_s3.bucket, Key=unscanned_key, Body=b"x")
 
         metadata_path = _write_metadata(
             tmp_path / "obj" / "objectMetadata.json",
@@ -253,8 +225,8 @@ class TestProcessMetadataChange:
         ]
         assert len(warnings) >= 1
 
-        response = aws_setup["dynamodb"].get_item(
-            TableName=FAKE_DYNAMODB_TABLE,
+        response = mock_dynamodb_and_s3.dynamodb_client.get_item(
+            TableName=mock_dynamodb_and_s3.table_name,
             Key={"file_id": {"S": str(unknown_id)}},
         )
         assert "Item" not in response

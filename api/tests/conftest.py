@@ -23,6 +23,7 @@ from src.adapters.simpler_grants import client as simpler_grants_client
 from src.adapters.simpler_grants.mock_client import MockSimplerGrantsClient
 from src.auth.api_jwt_auth import create_jwt_for_user
 from src.auth.internal_resource import create_internal_resource
+from src.constants.lookup_constants import Privilege, ResourceType
 from src.db import models
 from src.db.models.lookup.sync_lookup_values import sync_lookup_values
 from src.db.resource_automation.resource_automation import setup_resource_automation
@@ -488,7 +489,6 @@ def user_api_key_id(user_api_key):
 @pytest.fixture
 def s3_scanner_user(db_session, enable_factory_create, internal_resource, monkeypatch):
     """Create a user with INTERNAL_S3_SCAN privilege for file scanner tests."""
-    from src.constants.lookup_constants import Privilege, ResourceType
 
     scanner_user = factories.UserFactory.create()
 
@@ -514,11 +514,13 @@ def s3_scanner_user(db_session, enable_factory_create, internal_resource, monkey
 
 
 @pytest.fixture
-def mock_dynamodb_and_s3(mock_file_scan_s3_bucket_name, file_scan_dynamodb_table):
+def mock_dynamodb_and_s3(
+    mock_file_scan_s3_bucket_name, file_scan_dynamodb_table, enable_factory_create
+):
     """Convenience fixture bundling S3 bucket and DynamoDB table for file scan tests.
 
     Yields a namespace with ``table_name``, ``bucket``, and a ``dynamodb_client``
-    for seeding scan records.
+    for seeding scan records. Depends on enable_factory_create so factories can create records.
     """
     return SimpleNamespace(
         table_name=file_scan_dynamodb_table,
