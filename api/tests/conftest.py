@@ -512,22 +512,6 @@ def s3_scanner_user(db_session, enable_factory_create, internal_resource, monkey
     return scanner_user
 
 
-@pytest.fixture
-def mock_dynamodb_and_s3(
-    mock_file_scan_s3_bucket_name, file_scan_dynamodb_table, enable_factory_create
-):
-    """Convenience fixture bundling S3 bucket and DynamoDB table for file scan tests.
-
-    Yields a namespace with ``table_name``, ``bucket``, and a ``dynamodb_client``
-    for seeding scan records. Depends on enable_factory_create so factories can create records.
-    """
-    return SimpleNamespace(
-        table_name=file_scan_dynamodb_table,
-        bucket=mock_file_scan_s3_bucket_name,
-        dynamodb_client=boto3.client("dynamodb", region_name="us-east-1"),
-    )
-
-
 ####################
 # Class-based testing
 ####################
