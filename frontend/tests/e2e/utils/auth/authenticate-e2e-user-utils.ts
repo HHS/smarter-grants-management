@@ -47,13 +47,15 @@ export const fetchE2eSessionToken = async (
 
   if (!response.ok) {
     throw new Error(
-      `unable to fetch e2e user token: ${response.status}. ` +
-        `Timestamp: ${errorTimestamp}. ` +
-        `Target environment: ${playwrightEnv.targetEnv || "unknown"}. ` +
-        `Current TEST_USER_API_KEY: ${maskedTestUserApiKey}. ` +
-        `Backend engineer: verify the API key is valid and active for /v1/internal/api-jwt in this environment. ` +
-        `Frontend engineer: verify the Playwright request is sending TEST_USER_API_KEY in the X-API-Key header. ` +
-        `Infra engineer: verify the CI secret or environment variable is populated for this run.`,
+      [
+        `unable to fetch e2e user token: response.status ${response.status}.`,
+        `Timestamp: ${errorTimestamp}.`,
+        `Target environment: ${playwrightEnv.targetEnv || "unknown"}.`,
+        `Current TEST_USER_API_KEY: ${maskedTestUserApiKey}.`,
+        "Backend engineer: verify the API key is valid and active for /v1/internal/api-jwt in this environment.",
+        "Frontend engineer: verify the Playwright request is sending TEST_USER_API_KEY in the X-API-Key header.",
+        "Infra engineer: verify the CI secret or environment variable is populated for this run.",
+      ].join("\n"),
     );
   }
 
@@ -88,13 +90,15 @@ export async function authenticateE2eUser(
 
   if (!testUserApiKeyOverride) {
     throw new Error(
-      "Unable to spoof login: TEST_USER_API_KEY is not set for the direct /v1/internal/api-jwt E2E flow. " +
-        `Timestamp: ${errorTimestamp}. ` +
-        `Target environment: ${playwrightEnv.targetEnv || "unknown"}. ` +
-        `Current TEST_USER_API_KEY: ${maskedTestUserApiKey}. ` +
-        "Backend engineer: confirm the seeded test-user API key exists and is active in the target environment. " +
-        "Frontend engineer: confirm the value is passed through TEST_USER_API_KEY in the Playwright env. " +
+      [
+        "Unable to spoof login: TEST_USER_API_KEY is not set for the direct /v1/internal/api-jwt E2E flow.",
+        `Timestamp: ${errorTimestamp}.`,
+        `Target environment: ${playwrightEnv.targetEnv || "unknown"}.`,
+        `Current TEST_USER_API_KEY: ${maskedTestUserApiKey}.`,
+        "Backend engineer: confirm the seeded test-user API key exists and is active in the target environment.",
+        "Frontend engineer: confirm the value is passed through TEST_USER_API_KEY in the Playwright env.",
         "Infra engineer: confirm the GitHub secret or environment variable is populated for the CI job.",
+      ].join("\n"),
     );
   }
 
