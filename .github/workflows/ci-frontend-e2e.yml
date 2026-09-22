@@ -441,7 +441,7 @@ jobs:
           playwright_tags: ""
           # Temporary direct API-key login workaround for E2E: fetch a JWT from
           # /v1/internal/api-jwt using the seeded local test user's key.
-          test_user_api_key: "local-manager-key"
+          test_user_api_key: "local-dev-api-key-1"
           # Legacy compatibility value retained for older local flows.
           test_user_manager_api_key: "local-manager-key"
           playwright_projects: ${{ env.playwright_projects }}
@@ -467,7 +467,7 @@ jobs:
           playwright_tags: ${{ env.test_group_tags }}
           # Temporary direct API-key login workaround for E2E: fetch a JWT from
           # /v1/internal/api-jwt using the seeded local test user's key.
-          test_user_api_key: "local-manager-key"
+          test_user_api_key: "local-dev-api-key-1"
           # Legacy compatibility value retained for older local flows.
           test_user_manager_api_key: "local-manager-key"
           playwright_projects: ${{ env.playwright_projects }}
@@ -499,7 +499,7 @@ jobs:
           shard_label: "${{ matrix.shard }}-specs"
           # Temporary direct API-key login workaround for E2E: fetch a JWT from
           # /v1/internal/api-jwt using the seeded local test user's key.
-          test_user_api_key: "local-manager-key"
+          test_user_api_key: "local-dev-api-key-1"
           # Legacy compatibility value retained for older local flows.
           test_user_manager_api_key: "local-manager-key"
           playwright_projects: ${{ env.playwright_projects }}
