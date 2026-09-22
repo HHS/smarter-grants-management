@@ -1,3 +1,5 @@
+# DO NOT MERGE used to test "no changes require scan" evidence
+
 # Smarter Grants Management
 
 This repository holds the modular grants management system that will replace GrantSolutions.gov; the platform behind more than 1,500 federal grant programs.
