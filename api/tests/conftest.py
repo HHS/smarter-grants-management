@@ -1,6 +1,5 @@
 import os
 import uuid
-from types import SimpleNamespace
 
 import _pytest.monkeypatch
 import boto3
@@ -483,20 +482,6 @@ def user_api_key(user, db_session, enable_factory_create):
 def user_api_key_id(user_api_key):
     """Return just the API key ID string."""
     return user_api_key.key_id
-
-
-@pytest.fixture
-def mock_dynamodb_and_s3(mock_file_scan_s3_bucket_name, file_scan_dynamodb_table):
-    """Convenience fixture bundling S3 bucket and DynamoDB table for file scan tests.
-
-    Yields a namespace with ``table_name``, ``bucket``, and a ``dynamodb_client``
-    for seeding scan records.
-    """
-    return SimpleNamespace(
-        table_name=file_scan_dynamodb_table,
-        bucket=mock_file_scan_s3_bucket_name,
-        dynamodb_client=boto3.client("dynamodb", region_name="us-east-1"),
-    )
 
 
 ####################
