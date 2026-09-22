@@ -24,6 +24,7 @@ tags:
 - name: File v1
 - name: Announcements
 - name: Assistance Listing
+- name: Internal
 - name: Forms
 - name: LOCAL ONLY
 servers: .
@@ -280,6 +281,31 @@ paths:
       security:
       - ApiJwtAuth: &id004 []
       - ApiUserKeyAuth: *id004
+  /v1/internal/api-jwt:
+    get:
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiJwtResponseSchema'
+          description: Successful response
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+      tags:
+      - Internal
+      summary: Get a JWT for a user by using an API key to authenticate
+      description: 'This is a temporary workaround for login before we build/adjust
+        our existing
+
+        login approach to integrate with the rest of the system.'
+      security:
+      - ApiUserKeyAuth: []
   /v1/users/token/logout:
     post:
       parameters: []
@@ -842,6 +868,56 @@ paths:
       security:
       - ApiJwtAuth: &id015 []
       - ApiUserKeyAuth: *id015
+  /v1/announcements/{announcement_id}/attachments:
+    post:
+      parameters:
+      - in: path
+        name: announcement_id
+        schema:
+          type: string
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnnouncementAttachmentGetResponseSchema'
+          description: Successful response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Validation error
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Not found
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Forbidden
+      tags:
+      - Announcements
+      summary: Create an Announcement Attachment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnnouncementAttachmentCreateFromPendingFileRequestSchema'
+      security:
+      - ApiJwtAuth: &id016 []
+      - ApiUserKeyAuth: *id016
   /v1/grantor-organizations/{grantor_organization_id}:
     get:
       parameters:
@@ -885,8 +961,8 @@ paths:
       - Grantor Organizations
       summary: Fetch a Grantor Organization
       security:
-      - ApiJwtAuth: &id016 []
-      - ApiUserKeyAuth: *id016
+      - ApiJwtAuth: &id017 []
+      - ApiUserKeyAuth: *id017
   /alpha/proof_of_concept/opportunities/{opportunity_id}:
     get:
       parameters:
@@ -921,8 +997,8 @@ paths:
         of cross-service data transfer. This endpoint requires JWT or API key authentication
         but has no authorization enforcement.
       security:
-      - ApiJwtAuth: &id017 []
-      - ApiUserKeyAuth: *id017
+      - ApiJwtAuth: &id018 []
+      - ApiUserKeyAuth: *id018
   /v1/announcements/{announcement_id}/application-packages:
     post:
       parameters:
@@ -971,8 +1047,8 @@ paths:
             schema:
               $ref: '#/components/schemas/ApplicationPackageCreateRequestSchema'
       security:
-      - ApiJwtAuth: &id018 []
-      - ApiUserKeyAuth: *id018
+      - ApiJwtAuth: &id019 []
+      - ApiUserKeyAuth: *id019
   /v1/resources/{resource_type}/{resource_id}/users/list:
     post:
       parameters:
@@ -1028,8 +1104,8 @@ paths:
             schema:
               $ref: '#/components/schemas/ListUserForResourceRequestSchema'
       security:
-      - ApiJwtAuth: &id019 []
-      - ApiUserKeyAuth: *id019
+      - ApiJwtAuth: &id020 []
+      - ApiUserKeyAuth: *id020
   /v1/announcements/{announcement_id}/summaries/{announcement_summary_id}:
     put:
       parameters:
@@ -1083,8 +1159,107 @@ paths:
             schema:
               $ref: '#/components/schemas/AnnouncementSummaryUpdateRequestSchema'
       security:
-      - ApiJwtAuth: &id020 []
-      - ApiUserKeyAuth: *id020
+      - ApiJwtAuth: &id021 []
+      - ApiUserKeyAuth: *id021
+  /v1/announcements/{announcement_id}/attachments/{announcement_attachment_id}:
+    get:
+      parameters:
+      - in: path
+        name: announcement_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: announcement_attachment_id
+        schema:
+          type: string
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnnouncementAttachmentGetResponseSchema'
+          description: Successful response
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Not found
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Forbidden
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Unprocessable Entity
+      tags:
+      - Announcements
+      summary: Get an Announcement Attachment
+      security:
+      - ApiJwtAuth: &id022 []
+      - ApiUserKeyAuth: *id022
+    delete:
+      parameters:
+      - in: path
+        name: announcement_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: announcement_attachment_id
+        schema:
+          type: string
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnnouncementAttachmentDeleteResponseSchema'
+          description: Successful response
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Not found
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Forbidden
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Unprocessable Entity
+      tags:
+      - Announcements
+      summary: Delete an Announcement Attachment
+      security:
+      - ApiJwtAuth: &id023 []
+      - ApiUserKeyAuth: *id023
   /v1/announcements/{announcement_id}/application-packages/{application_package_id}:
     get:
       parameters:
@@ -1127,8 +1302,8 @@ paths:
       - Announcements
       summary: Fetch an Application Package
       security:
-      - ApiJwtAuth: &id021 []
-      - ApiUserKeyAuth: *id021
+      - ApiJwtAuth: &id024 []
+      - ApiUserKeyAuth: *id024
     put:
       parameters:
       - in: path
@@ -1181,8 +1356,8 @@ paths:
             schema:
               $ref: '#/components/schemas/ApplicationPackageUpdateRequestSchema'
       security:
-      - ApiJwtAuth: &id022 []
-      - ApiUserKeyAuth: *id022
+      - ApiJwtAuth: &id025 []
+      - ApiUserKeyAuth: *id025
   /v1/announcements/{announcement_id}/application-packages/{application_package_id}/forms:
     put:
       parameters:
@@ -1236,8 +1411,8 @@ paths:
             schema:
               $ref: '#/components/schemas/ApplicationPackageFormsSetRequestSchema'
       security:
-      - ApiJwtAuth: &id023 []
-      - ApiUserKeyAuth: *id023
+      - ApiJwtAuth: &id026 []
+      - ApiUserKeyAuth: *id026
 openapi: 3.1.0
 components:
   schemas:
@@ -1714,7 +1889,7 @@ components:
           type: array
           description: List of forms required for this application package
           items:
-            type: &id025
+            type: &id028
             - object
             $ref: '#/components/schemas/ApplicationPackageFormSchema'
         public_application_package_id:
@@ -1760,7 +1935,7 @@ components:
             FakeMail@fake.com'
         announcement_assistance_listing:
           description: Assistance listing information for this application package
-          type: &id026
+          type: &id029
           - object
           - 'null'
           anyOf:
@@ -1770,15 +1945,47 @@ components:
           type: array
           description: List of applicant types who are eligible for this application
             package
-          example: &id027
+          example: &id030
           - individual
           - organization
           items:
-            enum: &id028
+            enum: &id031
             - individual
             - organization
-            type: &id029
+            type: &id032
             - string
+    AnnouncementAttachmentSchema:
+      type: object
+      properties:
+        file_name:
+          type: string
+          description: The name of the attachment file
+          example: my_NOFO.pdf
+        file_size_bytes:
+          type: integer
+          description: The size of the file in bytes
+          example: 1024
+        mime_type:
+          type: string
+          description: The MIME type of the attachment
+          example: application/pdf
+        file_description:
+          type: string
+          description: A description of the attachment
+          example: The full announcement NOFO
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        announcement_attachment_id:
+          type: string
+          format: uuid
+          description: The announcement attachment ID
+          example: 123e4567-e89b-12d3-a456-426614174000
     AnnouncementSchema:
       type: object
       properties:
@@ -1859,6 +2066,14 @@ components:
             type:
             - object
             $ref: '#/components/schemas/ApplicationPackageSchema'
+        announcement_attachments:
+          type: array
+          description: List of announcement attachments associated with the announcement
+            - does not include download path
+          items:
+            type:
+            - object
+            $ref: '#/components/schemas/AnnouncementAttachmentSchema'
         created_at:
           type: string
           format: date-time
@@ -2083,6 +2298,27 @@ components:
           additionalProperties: {}
       required:
       - event_type
+    ApiJwtSchema:
+      type: object
+      properties:
+        jwt_token:
+          type: string
+          description: JWT token that can be used to authenticate the user
+    ApiJwtResponseSchema:
+      type: object
+      properties:
+        message:
+          type: string
+          description: The message to return
+          example: Success
+        data:
+          type:
+          - object
+          $ref: '#/components/schemas/ApiJwtSchema'
+        status_code:
+          type: integer
+          description: The HTTP status code
+          example: 200
     UserTokenLogoutResponseSchema:
       type: object
       properties:
@@ -2141,7 +2377,7 @@ components:
       properties:
         pagination_info:
           description: The pagination information for paginated endpoints
-          type: &id024
+          type: &id027
           - object
           $ref: '#/components/schemas/PaginationInfoSchema'
         message:
@@ -2284,7 +2520,7 @@ components:
       properties:
         pagination_info:
           description: The pagination information for paginated endpoints
-          type: *id024
+          type: *id027
           $ref: '#/components/schemas/PaginationInfoSchema'
         message:
           type: string
@@ -2663,7 +2899,7 @@ components:
       properties:
         pagination_info:
           description: The pagination information for paginated endpoints
-          type: *id024
+          type: *id027
           $ref: '#/components/schemas/PaginationInfoSchema'
         message:
           type: string
@@ -2971,11 +3207,11 @@ components:
           type: array
           minItems: 1
           description: Categories of funding for this announcement
-          example: &id030
+          example: &id033
           - education
           - health
           items:
-            enum: &id031
+            enum: &id034
             - recovery_act
             - agriculture
             - arts
@@ -3004,7 +3240,7 @@ components:
             - other
             - energy_infrastructure_and_critical_mineral_and_materials
             - recreation_and_tourism
-            type: &id032
+            type: &id035
             - string
         funding_category_description:
           type:
@@ -3017,26 +3253,26 @@ components:
           type: array
           minItems: 1
           description: Types of funding instruments used for this announcement
-          example: &id033
+          example: &id036
           - cooperative_agreement
           - grant
           items:
-            enum: &id034
+            enum: &id037
             - cooperative_agreement
             - grant
             - procurement_contract
             - other
-            type: &id035
+            type: &id038
             - string
         applicant_types:
           type: array
           minItems: 1
           description: Types of applicants eligible for this announcement
-          example: &id036
+          example: &id039
           - state_governments
           - county_governments
           items:
-            enum: &id037
+            enum: &id040
             - state_governments
             - county_governments
             - city_or_township_governments
@@ -3054,7 +3290,7 @@ components:
             - small_businesses
             - other
             - unrestricted
-            type: &id038
+            type: &id041
             - string
         applicant_eligibility_description:
           type:
@@ -3102,6 +3338,66 @@ components:
       - is_forecast
       - post_timestamp
       - summary_description
+    AnnouncementAttachmentDownloadSchema:
+      type: object
+      properties:
+        file_name:
+          type: string
+          description: The name of the attachment file
+          example: my_NOFO.pdf
+        file_size_bytes:
+          type: integer
+          description: The size of the file in bytes
+          example: 1024
+        mime_type:
+          type: string
+          description: The MIME type of the attachment
+          example: application/pdf
+        file_description:
+          type: string
+          description: A description of the attachment
+          example: The full announcement NOFO
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        download_path:
+          type: string
+          description: The file's download path
+        announcement_attachment_id:
+          type: string
+          format: uuid
+          description: The announcement attachment ID
+          example: 123e4567-e89b-12d3-a456-426614174000
+    AnnouncementAttachmentGetResponseSchema:
+      type: object
+      properties:
+        message:
+          type: string
+          description: The message to return
+          example: Success
+        data:
+          type:
+          - object
+          $ref: '#/components/schemas/AnnouncementAttachmentDownloadSchema'
+        status_code:
+          type: integer
+          description: The HTTP status code
+          example: 200
+    AnnouncementAttachmentCreateFromPendingFileRequestSchema:
+      type: object
+      properties:
+        pending_file_id:
+          type: string
+          format: uuid
+          description: The ID of the pending (virus-scanned) file to attach
+          example: 123e4567-e89b-12d3-a456-426614174000
+      required:
+      - pending_file_id
     GrantorOrganizationSchema:
       type: object
       properties:
@@ -3243,7 +3539,7 @@ components:
           type: array
           description: List of forms required for this application package
           items:
-            type: *id025
+            type: *id028
             $ref: '#/components/schemas/ApplicationPackageFormSchema'
         public_application_package_id:
           type:
@@ -3288,7 +3584,7 @@ components:
             FakeMail@fake.com'
         announcement_assistance_listing:
           description: Assistance listing information for this application package
-          type: *id026
+          type: *id029
           anyOf:
           - $ref: '#/components/schemas/AnnouncementAssistanceListingSchema'
           - type: 'null'
@@ -3296,10 +3592,10 @@ components:
           type: array
           description: List of applicant types who are eligible for this application
             package
-          example: *id027
+          example: *id030
           items:
-            enum: *id028
-            type: *id029
+            enum: *id031
+            type: *id032
         application_package_instructions:
           type: array
           items:
@@ -3367,14 +3663,14 @@ components:
           minItems: 1
           description: List of applicant types who are eligible for this application
             package
-          example: &id039
+          example: &id042
           - individual
           - organization
           items:
-            enum: &id040
+            enum: &id043
             - individual
             - organization
-            type: &id041
+            type: &id044
             - string
       required:
       - application_package_title
@@ -3469,7 +3765,7 @@ components:
       properties:
         pagination_info:
           description: The pagination information for paginated endpoints
-          type: *id024
+          type: *id027
           $ref: '#/components/schemas/PaginationInfoSchema'
         message:
           type: string
@@ -3731,10 +4027,10 @@ components:
           type: array
           minItems: 1
           description: Categories of funding for this announcement
-          example: *id030
+          example: *id033
           items:
-            enum: *id031
-            type: *id032
+            enum: *id034
+            type: *id035
         funding_category_description:
           type:
           - string
@@ -3746,18 +4042,18 @@ components:
           type: array
           minItems: 1
           description: Types of funding instruments used for this announcement
-          example: *id033
-          items:
-            enum: *id034
-            type: *id035
-        applicant_types:
-          type: array
-          minItems: 1
-          description: Types of applicants eligible for this announcement
           example: *id036
           items:
             enum: *id037
             type: *id038
+        applicant_types:
+          type: array
+          minItems: 1
+          description: Types of applicants eligible for this announcement
+          example: *id039
+          items:
+            enum: *id040
+            type: *id041
         applicant_eligibility_description:
           type:
           - string
@@ -3799,6 +4095,19 @@ components:
       - is_cost_sharing
       - post_timestamp
       - summary_description
+    AnnouncementAttachmentDeleteResponseSchema:
+      type: object
+      properties:
+        message:
+          type: string
+          description: The message to return
+          example: Success
+        data:
+          example: null
+        status_code:
+          type: integer
+          description: The HTTP status code
+          example: 200
     ApplicationPackageUpdateRequestSchema:
       type: object
       properties:
@@ -3845,10 +4154,10 @@ components:
           minItems: 1
           description: List of applicant types who are eligible for this application
             package
-          example: *id039
+          example: *id042
           items:
-            enum: *id040
-            type: *id041
+            enum: *id043
+            type: *id044
       required:
       - application_package_title
       - closing_timestamp
@@ -3881,12 +4190,12 @@ components:
       required:
       - forms
   securitySchemes:
-    ApiJwtAuth:
-      type: apiKey
-      in: header
-      name: X-MGMT-Token
     ApiUserKeyAuth:
       type: apiKey
       in: header
       name: X-API-Key
+    ApiJwtAuth:
+      type: apiKey
+      in: header
+      name: X-MGMT-Token
 
