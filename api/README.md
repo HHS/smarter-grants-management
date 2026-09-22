@@ -1,6 +1,6 @@
 # Grants Management API
 
-# This modifcattion is inteded to trigger branch protections checks, do not merge this PR!!!
+# This modifcattion is intended to trigger branch protections checks, do not merge this PR!!!
 
 ## Introduction
 
