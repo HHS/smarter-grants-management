@@ -1072,6 +1072,8 @@ class AnnouncementAuditRequestSchema(Schema):
 
 class AnnouncementAuditResponseSchema(AbstractResponseSchema, PaginationMixinSchema):
     data = fields.List(fields.Nested(AnnouncementAuditEventSchema))
+
+
 class AnnouncementAttachmentGetResponseSchema(AbstractResponseSchema):
     data = fields.Nested(AnnouncementAttachmentDownloadSchema())
 
