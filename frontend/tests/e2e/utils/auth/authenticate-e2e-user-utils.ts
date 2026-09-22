@@ -1,11 +1,10 @@
 /**
  * authenticateE2eUser is a high-level helper for E2E test authentication.
  *
- * Both local and staging use the same mechanism: fetch a session token for a
- * seeded test user from the staging-only internal endpoint
- * POST /v1/internal/e2e-token (authorized by the test-user-manager API key),
- * then encode it into a spoofed client session cookie. This means tests can be
- * run individually or as part of the full suite without any changes.
+ * This flow temporarily bypasses the normal app login by creating a client-side
+ * spoofed session. In SGM, the direct workaround is to fetch a JWT using a test
+ * user's API key at /v1/internal/api-jwt and then encode that JWT into the
+ * session cookie we expect the app to read.
  *
  * Test users are chosen via a TestUserKey (see test-users.ts). Spoofing is the
  * only supported path — seeded test users have no login credentials or MFA — so
@@ -20,39 +19,58 @@ import {
   type TestUserKey,
 } from "tests/e2e/utils/auth/test-users";
 
-const { baseUrl, apiUrl, testUserManagerApiKey } = playwrightEnv;
+const { baseUrl, apiUrl } = playwrightEnv;
 
-// Fetches a server-side session token for a test user by calling the internal
-// e2e-token endpoint with the manager API key and the target user id.
-const fetchE2eSessionToken = async (userId: string): Promise<string> => {
-  if (!testUserManagerApiKey) {
-    throw new Error(
-      "Unable to spoof login: test user manager API key is not set",
-    );
+// Fetches a JWT for a test user by calling the internal API-key JWT endpoint.
+// NOTE: This is intentionally using the direct user API key flow rather than the
+// legacy managed-user e2e-token endpoint. The old request is left below as a
+// commented fallback only.
+export const fetchE2eSessionToken = async (
+  testUserApiKey: string,
+): Promise<string> => {
+  if (!testUserApiKey) {
+    throw new Error("Unable to spoof login: test user API key is not set");
   }
-  const response = await fetch(`${apiUrl}/v1/internal/e2e-token`, {
+
+  const response = await fetch(`${apiUrl}/v1/internal/api-jwt`, {
     headers: {
-      "X-API-Key": testUserManagerApiKey,
+      "X-API-Key": testUserApiKey,
       "Content-Type": "application/json",
     },
-    method: "POST",
-    body: JSON.stringify({ user_id: userId }),
+    method: "GET",
   });
+
   if (!response.ok) {
     throw new Error(`unable to fetch e2e user token: ${response.status}`);
   }
-  const json = (await response.json()) as { data: { token: string } };
-  return json.data.token;
+
+  const json = (await response.json()) as { data: { jwt_token: string } };
+  return json.data.jwt_token;
 };
+
+// Legacy flow retained for rollback reference:
+// const response = await fetch(`${apiUrl}/v1/internal/e2e-token`, {
+//   headers: {
+//     "X-API-Key": testUserManagerApiKey,
+//     "Content-Type": "application/json",
+//   },
+//   method: "POST",
+//   body: JSON.stringify({ user_id: userId }),
+// });
 
 export async function authenticateE2eUser(
   page: Page,
   context: BrowserContext,
   isMobile: boolean,
   testUserKey: TestUserKey = "primaryOrgAdmin",
+  // The direct test-user API key is intentionally passed through explicitly so
+  // the E2E spoof-login flow does not rely on a hidden/global env lookup at the
+  // request boundary.
+  testUserApiKeyOverride: string = playwrightEnv.testUserApiKey,
 ): Promise<void> {
   const userId = getTestUserId(testUserKey);
-  const token = await fetchE2eSessionToken(userId);
+  void userId;
+  const token = await fetchE2eSessionToken(testUserApiKeyOverride);
   await createSpoofedSessionCookie(context, token);
 
   // Give the spoofed session cookie a moment to settle before navigating, then
