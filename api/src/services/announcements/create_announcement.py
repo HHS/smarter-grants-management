@@ -1,3 +1,4 @@
+import logging
 import uuid
 
 from pydantic import BaseModel
@@ -5,12 +6,25 @@ from sqlalchemy import select
 
 from src.adapters import db
 from src.api.route_utils import raise_flask_error
-from src.constants.lookup_constants import AnnouncementCategory
+from src.constants.lookup_constants import AnnouncementAuditEvent, AnnouncementCategory
 from src.db.models.announcement_models import Announcement, AnnouncementAssistanceListing
 from src.db.models.user_models import User
+from src.services.announcements.announcement_audit import record_announcement_audit, snapshot_fields
 from src.services.announcements.authorization import has_access
 from src.services.announcements.get_announcement import get_announcement
 from src.services.announcements.get_assistance_listing import get_assistance_listing
+
+logger = logging.getLogger(__name__)
+
+ANNOUNCEMENT_CREATE_FIELDS = (
+    "announcement_number",
+    "announcement_title",
+    "tagline",
+    "purpose_statement",
+    "category",
+    "category_explanation",
+    "assistance_listing_number",
+)
 
 
 class AnnouncementCreateRequest(BaseModel):
@@ -60,5 +74,16 @@ def create_announcement(db_session: db.Session, user: User, json_data: dict) -> 
         assistance_listing=assistance_listing,
     )
     db_session.add(announcement_assistance_listing)
+
+    logger.info("Created announcement", extra={"announcement_id": announcement.announcement_id})
+
+    record_announcement_audit(
+        db_session,
+        user,
+        announcement.announcement_id,
+        AnnouncementAuditEvent.ANNOUNCEMENT_CREATED,
+        snapshot_fields(None, ANNOUNCEMENT_CREATE_FIELDS),
+        snapshot_fields(request, ANNOUNCEMENT_CREATE_FIELDS),
+    )
 
     return get_announcement(db_session, announcement.announcement_id)
