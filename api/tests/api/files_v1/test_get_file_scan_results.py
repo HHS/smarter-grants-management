@@ -7,8 +7,9 @@ import pytest
 import tests.db.models.factories as factories
 from src.adapters.aws.dynamodb_adapter import DynamoDBClient
 from src.constants.lookup_constants import FileScanStatus
+from src.util import file_util
 
-SCANNED_FILE_BODY = b"scanned file contents"
+SCANNED_FILE_BODY = "scanned file contents"
 
 
 @pytest.fixture(autouse=True)
@@ -26,19 +27,6 @@ def dynamodb_boto_client(file_scan_dynamodb_table):
 
 def _build_url(pending_file_id: uuid.UUID) -> str:
     return f"/v1/files/{pending_file_id}/results"
-
-
-def _create_complete_pending_file(bucket: str, user):
-    """Create a COMPLETE pending file record backed by a real s3 object so the
-    metadata lookup (presign + file size) has something to read."""
-    key = f"scanned/{uuid.uuid4()}/example.pdf"
-    boto3.client("s3").put_object(Bucket=bucket, Key=key, Body=SCANNED_FILE_BODY)
-    return factories.PendingFileFactory.create(
-        user=user,
-        file_name="example.pdf",
-        file_location=f"s3://{bucket}/{key}",
-        file_scan_status=FileScanStatus.COMPLETE,
-    )
 
 
 def _put_scan_record(
@@ -69,12 +57,17 @@ class TestGetFileScanResultsSuccess:
         client,
         user,
         user_auth_token,
-        mock_dynamodb_and_s3,
+        dynamodb_boto_client,
+        file_scan_dynamodb_table,
+        s3_config,
     ):
-        pending_file = _create_complete_pending_file(mock_dynamodb_and_s3.bucket, user)
+        pending_file = factories.PendingFileFactory.create(
+            user=user, file_scan_status=FileScanStatus.COMPLETE, file_contents=SCANNED_FILE_BODY
+        )
+
         _put_scan_record(
-            mock_dynamodb_and_s3.dynamodb_client,
-            mock_dynamodb_and_s3.table_name,
+            dynamodb_boto_client,
+            file_scan_dynamodb_table,
             pending_file.pending_file_id,
             user.user_id,
             FileScanStatus.COMPLETE,
@@ -93,11 +86,10 @@ class TestGetFileScanResultsSuccess:
         assert data["status"] == FileScanStatus.COMPLETE.value
 
         metadata = data["file_metadata"]
-        assert metadata["file_name"] == "example.pdf"
+        assert metadata["file_name"] == pending_file.file_name
         assert metadata["file_size_bytes"] == len(SCANNED_FILE_BODY)
         # A presigned GET URL pointing at the scanned object.
-        assert pending_file.file_location.split("/")[-1] in metadata["download_path"]
-        assert metadata["download_path"].startswith("http")
+        assert file_util.read_file(metadata["download_path"]) == SCANNED_FILE_BODY
 
     def test_terminal_status_infected_yields_once(
         self,
@@ -133,15 +125,20 @@ class TestGetFileScanResultsSuccess:
         client,
         user,
         user_auth_token,
-        mock_dynamodb_and_s3,
+        dynamodb_boto_client,
+        file_scan_dynamodb_table,
+        s3_config,
         monkeypatch,
     ):
         """When the record transitions mid-stream we yield each status."""
-        pending_file = _create_complete_pending_file(mock_dynamodb_and_s3.bucket, user)
+        pending_file = factories.PendingFileFactory.create(
+            user=user, file_scan_status=FileScanStatus.COMPLETE, file_contents=SCANNED_FILE_BODY
+        )
+
         pending_file_id = pending_file.pending_file_id
         _put_scan_record(
-            mock_dynamodb_and_s3.dynamodb_client,
-            mock_dynamodb_and_s3.table_name,
+            dynamodb_boto_client,
+            file_scan_dynamodb_table,
             pending_file_id,
             user.user_id,
             FileScanStatus.PENDING,
@@ -160,8 +157,8 @@ class TestGetFileScanResultsSuccess:
             next_status = next(transitions, None)
             if next_status is not None:
                 _put_scan_record(
-                    mock_dynamodb_and_s3.dynamodb_client,
-                    mock_dynamodb_and_s3.table_name,
+                    dynamodb_boto_client,
+                    file_scan_dynamodb_table,
                     pending_file_id,
                     user.user_id,
                     next_status,
@@ -186,10 +183,9 @@ class TestGetFileScanResultsSuccess:
         assert chunks[0]["data"]["file_metadata"] is None
         assert chunks[1]["data"]["file_metadata"] is None
         final_metadata = chunks[2]["data"]["file_metadata"]
-        assert final_metadata["file_name"] == "example.pdf"
+        assert final_metadata["file_name"] == pending_file.file_name
         assert final_metadata["file_size_bytes"] == len(SCANNED_FILE_BODY)
-        assert pending_file.file_location.split("/")[-1] in final_metadata["download_path"]
-        assert final_metadata["download_path"].startswith("http")
+        assert file_util.read_file(final_metadata["download_path"]) == SCANNED_FILE_BODY
 
     def test_stream_ends_when_max_duration_reached(
         self,
@@ -284,14 +280,19 @@ class TestGetFileScanResultsSuccess:
         client,
         user,
         user_auth_token,
-        mock_dynamodb_and_s3,
+        dynamodb_boto_client,
+        file_scan_dynamodb_table,
+        s3_config,
         caplog,
     ):
-        pending_file = _create_complete_pending_file(mock_dynamodb_and_s3.bucket, user)
+        pending_file = factories.PendingFileFactory.create(
+            user=user, file_scan_status=FileScanStatus.COMPLETE, file_contents=SCANNED_FILE_BODY
+        )
         pending_file_id = pending_file.pending_file_id
+
         _put_scan_record(
-            mock_dynamodb_and_s3.dynamodb_client,
-            mock_dynamodb_and_s3.table_name,
+            dynamodb_boto_client,
+            file_scan_dynamodb_table,
             pending_file_id,
             user.user_id,
             FileScanStatus.COMPLETE,

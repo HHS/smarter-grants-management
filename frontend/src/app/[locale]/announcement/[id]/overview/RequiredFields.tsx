@@ -4,13 +4,13 @@
 export const summaryRequiredFields = {
   funding_instruments: true,
   funding_categories: true,
-  post_date: true,
+  post_timestamp: true,
   applicant_types: true,
 };
 
 export const competitionRequiredFields = {
   open_to_applicants: true,
-  competition_title: true,
+  application_package_title: true,
   // TBD: more required fields once this page is completed
 };
 

@@ -155,7 +155,7 @@ export const mockOpportunityDetail = {
   updated_at: "2024-01-01T00:00:00Z",
   opportunity_assistance_listings: [],
   attachments: [],
-  competitions: null,
+  application_packages: null,
   summary: {
     summary_description: "",
     close_date: null,

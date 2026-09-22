@@ -9,6 +9,7 @@ from src.api.route_utils import raise_flask_error
 from src.db.models.announcement_models import (
     Announcement,
     AnnouncementAssistanceListing,
+    AnnouncementAttachment,
     AnnouncementSummary,
 )
 from src.db.models.application_package_models import ApplicationPackage
@@ -30,6 +31,9 @@ def announcement_response_options() -> tuple[ORMOption, ...]:
             selectinload(ApplicationPackage.application_package_forms),
             selectinload(ApplicationPackage.announcement_assistance_listing),
             selectinload(ApplicationPackage.link_application_package_open_to_applicant),
+        ),
+        selectinload(Announcement.announcement_attachments).selectinload(
+            AnnouncementAttachment.file_attachment
         ),
     )
 
