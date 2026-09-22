@@ -26,28 +26,6 @@ def test_snapshot_fields_reads_plain_attributes():
     }
 
 
-def test_snapshot_fields_uses_extractor_override():
-    obj = SimpleNamespace(
-        announcement_assistance_listing=SimpleNamespace(
-            assistance_listing_id="10.241-institute-of-rural-partnerships"
-        )
-    )
-
-    result = snapshot_fields(
-        obj,
-        ["announcement_assistance_listing_id"],
-        extractors={
-            "announcement_assistance_listing_id": lambda o: (
-                o.announcement_assistance_listing.assistance_listing_id
-            ),
-        },
-    )
-
-    assert result == {
-        "announcement_assistance_listing_id": "10.241-institute-of-rural-partnerships"
-    }
-
-
 def test_build_changed_fields_only_includes_changed_keys():
     before = {
         "announcement_title": "Community Health Grant Announcement",

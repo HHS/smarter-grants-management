@@ -3,14 +3,23 @@ import uuid
 
 from src.adapters import db
 from src.api.route_utils import raise_flask_error
+from src.constants.lookup_constants import AnnouncementAuditEvent
 from src.db.models.application_package_models import ApplicationPackage, ApplicationPackageForm
 from src.db.models.user_models import User
+from src.services.announcements.announcement_audit import record_announcement_audit
 from src.services.announcements.authorization import has_access
 from src.services.announcements.get_application_package import (
     get_application_package_and_verify_access,
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _snapshot_forms(application_package: ApplicationPackage) -> list[dict]:
+    return [
+        {"form_id": form.form_id, "is_required": form.is_required}
+        for form in application_package.application_package_forms
+    ]
 
 
 def _reconcile_forms(
@@ -78,6 +87,20 @@ def update_application_package_forms(
     # TODO - we previously had a check here that verified the form IDs passed in were valid
     # but we don't have a place to fetch forms from at the moment, so that's excluded.
 
+    before = {"application_package_forms": _snapshot_forms(application_package)}
+
     _reconcile_forms(db_session, json_data["forms"], application_package)
+
+    after = {"application_package_forms": _snapshot_forms(application_package)}
+
+    record_announcement_audit(
+        db_session,
+        user,
+        announcement_id,
+        AnnouncementAuditEvent.APPLICATION_PACKAGE_UPDATED,
+        before,
+        after,
+        application_package_id=application_package_id,
+    )
 
     return application_package

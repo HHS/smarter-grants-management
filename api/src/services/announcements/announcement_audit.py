@@ -1,6 +1,6 @@
 import logging
 import uuid
-from collections.abc import Callable, Sequence
+from collections.abc import Iterable, Sequence
 from typing import Any
 
 from src.adapters import db
@@ -13,30 +13,22 @@ from src.util.json_util import json_encoder
 logger = logging.getLogger(__name__)
 
 
-def snapshot_fields(
-    obj: object | None,
-    fields: Sequence[str],
-    extractors: dict[str, Callable[[object], Any]] | None = None,
-) -> dict[str, Any]:
-    extractors = extractors or {}
+def snapshot_fields(obj: object | None, fields: Sequence[str]) -> dict[str, Any]:
     snapshot: dict[str, Any] = {}
     for field in fields:
-        if obj is None:
-            snapshot[field] = None
-        elif field in extractors:
-            snapshot[field] = extractors[field](obj)
-        else:
-            snapshot[field] = getattr(obj, field)
+        snapshot[field] = None if obj is None else getattr(obj, field)
     return snapshot
 
 
 def _normalize(value: Any) -> Any:
     if isinstance(value, dict):
         return {key: _normalize(val) for key, val in value.items()}
-    if isinstance(value, (list, tuple, set)):
-        return [_normalize(val) for val in value]
     if value is None or isinstance(value, (str, int, float, bool)):
         return value
+    if isinstance(value, Iterable):
+        # Covers list/tuple/set plus SQLAlchemy association-proxy collections
+        # (e.g. _AssociationSet), which don't subclass the builtin set/list/tuple.
+        return [_normalize(val) for val in value]
     return json_encoder(value)
 
 
