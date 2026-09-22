@@ -6,8 +6,8 @@ import {
   deleteOpportunityAttachment,
 } from "src/services/fetch/fetchers/announcementAttachmentFetcher";
 import {
-  createOpportunitySummaryForGrantor,
-  updateOpportunitySummaryForGrantor,
+  createAnnoucementSummary,
+  updateAnnoucementSummary,
 } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 import { AnnouncementSummaryUpdateRawData } from "src/types/announcement/announcementResponseTypes";
 import { FrontendErrorDetails } from "src/types/apiResponseTypes";
@@ -18,8 +18,8 @@ import { z } from "zod";
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
-export type OpportunityEditValidationErrors = {
-  opportunity_title?: string[];
+export type AnnouncementEditValidationErrors = {
+  announcement_title?: string[];
   category?: string[];
   summary_description?: string[];
   post_date?: string[];
@@ -42,15 +42,15 @@ export type OpportunityEditValidationErrors = {
 export type OpportunityEditActionState = {
   errorMessage?: string;
   successMessage?: string;
-  validationErrors?: OpportunityEditValidationErrors;
-  newOpportunitySummaryId?: string;
+  validationErrors?: AnnouncementEditValidationErrors;
+  announcementSummaryId?: string;
 };
 
 const editOpportunityFormSchema = {
-  opportunity_id: { type: "string" },
-  opportunity_summary_id: { type: "string" },
+  announcement_id: { type: "string" },
+  announcement_summary_id: { type: "string" },
   is_forecast: { type: "boolean" },
-  opportunity_title: { type: "string" },
+  announcement_title: { type: "string" },
   category: { type: "string" },
   is_cost_sharing: { type: "boolean" },
   expected_number_of_awards: { type: "number" },
@@ -97,7 +97,7 @@ function parseIdList(value: FormDataEntryValue | null): string[] {
 // surfaces as a top-level errorMessage rather than an inline validationErrors entry -
 // stops at the first failure rather than silently continuing through the rest of the list.
 async function processAttachmentChanges(
-  opportunityId: string,
+  announcementId: string,
   formData: FormData,
   genericMessage: string,
 ): Promise<Pick<OpportunityEditActionState, "errorMessage"> | undefined> {
@@ -108,7 +108,7 @@ async function processAttachmentChanges(
 
   for (const pendingFileId of heldPendingFileIds) {
     const response = await createAnnouncementAttachment(
-      opportunityId,
+      announcementId,
       pendingFileId,
     );
     if (response.status_code === 422) {
@@ -119,7 +119,7 @@ async function processAttachmentChanges(
   }
   for (const attachmentId of deletedAttachmentIds) {
     const response = await deleteOpportunityAttachment(
-      opportunityId,
+      announcementId,
       attachmentId,
     );
     if (response.status_code === 422) {
@@ -149,8 +149,8 @@ function stripCurrencyFormatting(formData: FormData) {
   }
 }
 
-const EDIT_FORM_FIELD_NAMES = new Set<keyof OpportunityEditValidationErrors>([
-  "opportunity_title",
+const EDIT_FORM_FIELD_NAMES = new Set<keyof AnnouncementEditValidationErrors>([
+  "announcement_title",
   "category",
   "summary_description",
   "post_date",
@@ -177,14 +177,14 @@ function mapApiValidationErrors(
   response: { errors?: unknown[] | null; message?: string },
   genericMessage: string,
 ): Pick<OpportunityEditActionState, "validationErrors" | "errorMessage"> {
-  const validationErrors: OpportunityEditValidationErrors = {};
+  const validationErrors: AnnouncementEditValidationErrors = {};
   const unmappedMessages: string[] = [];
 
   for (const rawError of response.errors ?? []) {
     const error = rawError as FrontendErrorDetails;
     const message = error.message ?? genericMessage;
     const field = error.field as
-      keyof OpportunityEditValidationErrors | undefined;
+      keyof AnnouncementEditValidationErrors | undefined;
 
     if (field && EDIT_FORM_FIELD_NAMES.has(field)) {
       validationErrors[field] = [...(validationErrors[field] ?? []), message];
@@ -208,7 +208,7 @@ function mapApiValidationErrors(
 
 // Shared by the outer catch and the create-path's local catch (see below) so a thrown
 // error is mapped identically either way - the only difference is whether the caller
-// still has a newOpportunitySummaryId to merge back in.
+// still has a announcementSummaryId to merge back in.
 function mapThrownError(
   error: unknown,
   alerts: (key: string) => string,
@@ -232,9 +232,9 @@ async function validateOpportunityEditForm(formData: FormData) {
   const validationErrors = await getTranslations(
     "OpportunityEdit.validationErrors",
   );
-  const reviewOpportunityEditSchema = z
+  const reviewAnnouncementEditSchema = z
     .object({
-      opportunity_title: z.string().trim(),
+      announcement_title: z.string().trim(),
       category: z.string().trim(),
       summary_description: z.string().trim(),
       post_date: z
@@ -351,8 +351,8 @@ async function validateOpportunityEditForm(formData: FormData) {
   const applicantTypeKeys = Array.from(
     formData.keys().filter((key) => key.includes("applicant_types[")),
   );
-  return reviewOpportunityEditSchema.safeParse({
-    opportunity_title: readStringValue(formData.get("opportunity_title")),
+  return reviewAnnouncementEditSchema.safeParse({
+    announcement_title: readStringValue(formData.get("announcement_title")),
     category: readStringValue(formData.get("category")),
     summary_description: readStringValue(formData.get("summary_description")),
     post_date: readStringValue(formData.get("post_date")),
@@ -387,7 +387,7 @@ async function validateOpportunityEditForm(formData: FormData) {
   });
 }
 
-export async function saveOpportunityEditAction(
+export async function saveAnnouncementEditAction(
   _prevState: OpportunityEditActionState,
   formData: FormData,
 ): Promise<OpportunityEditActionState> {
@@ -395,14 +395,16 @@ export async function saveOpportunityEditAction(
 
   stripCurrencyFormatting(formData);
 
-  const opportunityId = readStringValue(formData.get("opportunity_id")).trim();
-  const opportunitySummaryId = readStringValue(
-    formData.get("opportunity_summary_id"),
+  const announcementId = readStringValue(
+    formData.get("announcement_id"),
+  ).trim();
+  const announcementSummaryId = readStringValue(
+    formData.get("announcement_summary_id"),
   ).trim();
   const isForecast =
     readStringValue(formData.get("is_forecast")).trim() === "true";
 
-  if (!opportunityId) {
+  if (!announcementId) {
     return {
       errorMessage: alerts("missingSummaryContext"),
     };
@@ -417,7 +419,7 @@ export async function saveOpportunityEditAction(
   }
 
   try {
-    if (!opportunitySummaryId) {
+    if (!announcementSummaryId) {
       const rawBody = {
         ...formDataToObject<AnnouncementSummaryUpdateRawData>(
           formData,
@@ -432,8 +434,8 @@ export async function saveOpportunityEditAction(
         funding_categories: [rawBody.funding_categories],
         funding_instruments: [rawBody.funding_instruments],
       };
-      const createResponse = await createOpportunitySummaryForGrantor({
-        opportunityId,
+      const createResponse = await createAnnoucementSummary({
+        announcementId,
         body: body,
       });
 
@@ -450,7 +452,7 @@ export async function saveOpportunityEditAction(
         Pick<OpportunityEditActionState, "errorMessage"> | undefined;
       try {
         attachmentError = await processAttachmentChanges(
-          opportunityId,
+          announcementId,
           formData,
           alerts("genericError"),
         );
@@ -460,13 +462,15 @@ export async function saveOpportunityEditAction(
       if (attachmentError) {
         return {
           ...attachmentError,
-          newOpportunitySummaryId: createResponse.data.opportunity_summary_id,
+          announcementSummaryId: createResponse.data
+            .announcement_summary_id as string, // delete type coersion
         };
       }
 
       return {
         successMessage: alerts("success"),
-        newOpportunitySummaryId: createResponse.data.opportunity_summary_id,
+        announcementSummaryId: createResponse.data
+          .announcement_summary_id as string, // delete type coersion
       };
     }
 
@@ -488,9 +492,9 @@ export async function saveOpportunityEditAction(
       funding_instruments: [rawBody.funding_instruments],
     };
 
-    const response = await updateOpportunitySummaryForGrantor({
-      opportunityId,
-      opportunitySummaryId,
+    const response = await updateAnnoucementSummary({
+      announcementId,
+      announcementSummaryId,
       body,
     });
     if (response.status_code === 422) {
@@ -499,7 +503,7 @@ export async function saveOpportunityEditAction(
     }
 
     const attachmentError = await processAttachmentChanges(
-      opportunityId,
+      announcementId,
       formData,
       alerts("genericError"),
     );
@@ -515,12 +519,12 @@ export async function saveOpportunityEditAction(
   }
 }
 
-export async function opportunityEditFormAction(
+export async function announcementEditFormAction(
   prevState: OpportunityEditActionState,
   formData: FormData,
 ): Promise<OpportunityEditActionState> {
   // Save the form first - if there are validation or API errors, display them.
-  const saveResult = await saveOpportunityEditAction(prevState, formData);
+  const saveResult = await saveAnnouncementEditAction(prevState, formData);
   const hasValidationErrors =
     saveResult.validationErrors &&
     Object.keys(saveResult.validationErrors).length > 0;

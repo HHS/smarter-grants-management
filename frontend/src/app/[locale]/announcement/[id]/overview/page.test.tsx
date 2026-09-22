@@ -34,10 +34,10 @@ jest.mock("src/services/featureFlags/withFeatureFlag", () => ({
     WrappedComponent(props as never),
 }));
 
-const mockGetOpportunityForGrantor = jest.fn();
+const mockgetAnnouncement = jest.fn();
 jest.mock("src/services/fetch/fetchers/grantorAnnouncementFetcher", () => ({
-  getOpportunityForGrantor: (...args: unknown[]) =>
-    mockGetOpportunityForGrantor(...args) as unknown,
+  getAnnouncement: (...args: unknown[]) =>
+    mockgetAnnouncement(...args) as unknown,
 }));
 
 jest.mock(
@@ -147,7 +147,7 @@ describe("OpportunityOverviewPage", () => {
     it.each(["notStarted", "inProgress"] as const)(
       "shows %s status and links to the correct page",
       async (status) => {
-        mockGetOpportunityForGrantor.mockResolvedValue({
+        mockgetAnnouncement.mockResolvedValue({
           data: { ...baseOpportunityData, ...section.buildData(status) },
         });
 
@@ -175,9 +175,7 @@ describe("OpportunityOverviewPage", () => {
 
   describe("error handling", () => {
     it("calls notFound() on a 404", async () => {
-      mockGetOpportunityForGrantor.mockRejectedValue(
-        new NotFoundError("not found"),
-      );
+      mockgetAnnouncement.mockRejectedValue(new NotFoundError("not found"));
 
       // The real Next.js notFound() throws to halt rendering; the mocked
       // version doesn't, so execution falls through to the page's final
@@ -194,9 +192,7 @@ describe("OpportunityOverviewPage", () => {
     });
 
     it("shows UnauthorizedMessage on a 403", async () => {
-      mockGetOpportunityForGrantor.mockRejectedValue(
-        new ForbiddenError("forbidden"),
-      );
+      mockgetAnnouncement.mockRejectedValue(new ForbiddenError("forbidden"));
 
       const component = await OpportunityOverviewPage({
         params: pageParams,
@@ -207,8 +203,8 @@ describe("OpportunityOverviewPage", () => {
       expect(screen.getByTestId("alert")).toBeVisible();
     });
 
-    it("shows UnauthorizedMessage when getOpportunityForGrantor throws MissingAuthError", async () => {
-      mockGetOpportunityForGrantor.mockRejectedValue(
+    it("shows UnauthorizedMessage when getAnnouncement throws MissingAuthError", async () => {
+      mockgetAnnouncement.mockRejectedValue(
         new MissingAuthError("missing auth"),
       );
 
@@ -225,7 +221,7 @@ describe("OpportunityOverviewPage", () => {
   describe("publishEnabled", () => {
     // TODO(#251): force-disabled - see announcementPublishEligibility.test.ts for the underlying logic tests
     it("stays disabled when a draft and both sections are complete", async () => {
-      mockGetOpportunityForGrantor.mockResolvedValue({
+      mockgetAnnouncement.mockResolvedValue({
         data: {
           ...baseOpportunityData,
           is_draft: true,
@@ -249,7 +245,7 @@ describe("OpportunityOverviewPage", () => {
 
   describe("isNewlyCreated", () => {
     it("passes isNewlyCreated through when fromCreate=true", async () => {
-      mockGetOpportunityForGrantor.mockResolvedValue({
+      mockgetAnnouncement.mockResolvedValue({
         data: { ...baseOpportunityData },
       });
 
@@ -266,7 +262,7 @@ describe("OpportunityOverviewPage", () => {
     });
 
     it("does not set isNewlyCreated when fromCreate is absent", async () => {
-      mockGetOpportunityForGrantor.mockResolvedValue({
+      mockgetAnnouncement.mockResolvedValue({
         data: { ...baseOpportunityData },
       });
 
@@ -285,7 +281,7 @@ describe("OpportunityOverviewPage", () => {
 
   describe("accessibility", () => {
     it("passes accessibility scan when nothing is started", async () => {
-      mockGetOpportunityForGrantor.mockResolvedValue({
+      mockgetAnnouncement.mockResolvedValue({
         data: {
           ...baseOpportunityData,
           summary: buildSummaryFixture("notStarted"),
@@ -304,7 +300,7 @@ describe("OpportunityOverviewPage", () => {
     });
 
     it("passes accessibility scan when both sections are complete", async () => {
-      mockGetOpportunityForGrantor.mockResolvedValue({
+      mockgetAnnouncement.mockResolvedValue({
         data: {
           ...baseOpportunityData,
           summary: buildSummaryFixture("complete"),

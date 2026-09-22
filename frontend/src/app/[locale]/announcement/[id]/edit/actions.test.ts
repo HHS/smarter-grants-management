@@ -5,13 +5,13 @@ import {
   deleteOpportunityAttachment,
 } from "src/services/fetch/fetchers/announcementAttachmentFetcher";
 import {
-  createOpportunitySummaryForGrantor,
-  updateOpportunitySummaryForGrantor,
+  createAnnoucementSummary,
+  updateAnnoucementSummary,
 } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 
 import {
-  opportunityEditFormAction,
-  saveOpportunityEditAction,
+  announcementEditFormAction,
+  saveAnnouncementEditAction,
   type OpportunityEditActionState,
 } from "./actions";
 
@@ -20,8 +20,8 @@ jest.mock("next-intl/server", () => ({
 }));
 
 jest.mock("src/services/fetch/fetchers/grantorAnnouncementFetcher", () => ({
-  createOpportunitySummaryForGrantor: jest.fn(),
-  updateOpportunitySummaryForGrantor: jest.fn(),
+  createAnnoucementSummary: jest.fn(),
+  updateAnnoucementSummary: jest.fn(),
 }));
 
 jest.mock("src/services/fetch/fetchers/announcementAttachmentFetcher", () => ({
@@ -40,12 +40,8 @@ const initialState: OpportunityEditActionState = {
   validationErrors: {},
 };
 
-const mockCreateOpportunitySummaryForGrantor = jest.mocked(
-  createOpportunitySummaryForGrantor,
-);
-const mockUpdateOpportunitySummaryForGrantor = jest.mocked(
-  updateOpportunitySummaryForGrantor,
-);
+const mockCreateAnnoucementSummary = jest.mocked(createAnnoucementSummary);
+const mockUpdateAnnoucementSummary = jest.mocked(updateAnnoucementSummary);
 const mockCreateOpportunityAttachment = jest.mocked(
   createAnnouncementAttachment,
 );
@@ -54,12 +50,12 @@ const mockDeleteOpportunityAttachment = jest.mocked(
 );
 
 const successfulSummaryUpdateResponse: Awaited<
-  ReturnType<typeof updateOpportunitySummaryForGrantor>
+  ReturnType<typeof updateAnnoucementSummary>
 > = {
   message: "success",
   status_code: 200,
   data: {
-    opportunity_summary_id: "sum-456",
+    announcement_summary_id: "sum-456",
     is_forecast: false,
     summary_description: "Summary text",
     is_cost_sharing: null,
@@ -97,7 +93,7 @@ const successfulSummaryUpdateResponse: Awaited<
 
 function buildValidFormData() {
   const formData = new FormData();
-  formData.set("opportunity_id", "opp-123");
+  formData.set("announcement_id", "opp-123");
   formData.set("opportunity_title", "Example opportunity");
   formData.set("caetgory", "discretionary");
   formData.set("summary_description", "Summary text");
@@ -120,16 +116,16 @@ function buildValidFormData() {
   return formData;
 }
 
-describe("saveOpportunityEditAction", () => {
+describe("saveAnnouncementEditAction", () => {
   beforeEach(() => {
     jest.resetAllMocks();
   });
 
   it("returns validation errors only for API-required fields when form is empty", async () => {
     const formData = new FormData();
-    formData.set("opportunity_id", "opp-123");
+    formData.set("announcement_id", "opp-123");
 
-    const result = await saveOpportunityEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(initialState, formData);
 
     expect(result.validationErrors).toEqual({
       post_date: ["publishDate"],
@@ -143,7 +139,7 @@ describe("saveOpportunityEditAction", () => {
     const formData = buildValidFormData();
     formData.set("agency_email_address", "not-an-email");
 
-    const result = await saveOpportunityEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(initialState, formData);
 
     expect(result.validationErrors).toEqual({
       agency_email_address: ["contactEmailInvalid"],
@@ -155,7 +151,7 @@ describe("saveOpportunityEditAction", () => {
     formData.set("award_floor", "5000");
     formData.set("award_ceiling", "1000");
 
-    const result = await saveOpportunityEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(initialState, formData);
 
     expect(result.validationErrors).toEqual({
       award_floor: ["awardMinLessThanMax"],
@@ -169,7 +165,7 @@ describe("saveOpportunityEditAction", () => {
     formData.set("award_floor", "5000");
     formData.set("award_ceiling", "6000");
 
-    const result = await saveOpportunityEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(initialState, formData);
 
     expect(result.validationErrors).toEqual({
       award_floor: ["awardMinLessThanTotal"],
@@ -182,7 +178,7 @@ describe("saveOpportunityEditAction", () => {
     formData.set("post_date", "2026-04-11");
     formData.set("close_date", "2026-03-11");
 
-    const result = await saveOpportunityEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(initialState, formData);
 
     expect(result.validationErrors).toEqual({
       closeDate: ["closeDateOrder"],
@@ -193,7 +189,7 @@ describe("saveOpportunityEditAction", () => {
     const formData = buildValidFormData();
     formData.set("post_date", "not-a-date");
 
-    const result = await saveOpportunityEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(initialState, formData);
 
     expect(result.validationErrors).toEqual({
       closeDate: ["closeDateOrder"],
@@ -204,103 +200,102 @@ describe("saveOpportunityEditAction", () => {
     const formData = buildValidFormData();
     formData.set("close_date", "not-a-date");
 
-    const result = await saveOpportunityEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(initialState, formData);
 
     expect(result.validationErrors).toEqual({
       closeDate: ["closeDateOrder"],
     });
   });
 
-  it("returns an error when opportunity_id is missing", async () => {
+  it("returns an error when announcement_id is missing", async () => {
     const formData = buildValidFormData();
-    formData.delete("opportunity_id"); // summary context is missing
+    formData.delete("announcement_id"); // summary context is missing
 
-    const result = await saveOpportunityEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(initialState, formData);
 
     expect(result).toEqual({
       errorMessage: "missingSummaryContext",
     });
   });
 
-  it("calls the summary create fetcher when no opportunity_summary_id and returns new summary ID", async () => {
+  it("calls the summary create fetcher when no announcement_summary_id and returns new summary ID", async () => {
     const formData = buildValidFormData();
-    formData.set("opportunity_id", "opp-123");
+    formData.set("announcement_id", "opp-123");
     formData.set("is_forecast", "true");
-    // opportunity_summary_id not set
+    // announcement_summary_id not set
 
-    const createResponse: Awaited<
-      ReturnType<typeof createOpportunitySummaryForGrantor>
-    > = {
-      message: "success",
-      status_code: 201,
-      data: {
-        opportunity_summary_id: "new-sum-789",
-        is_forecast: true,
-        summary_description: "Summary text",
-        is_cost_sharing: null,
-        post_date: "2026-03-11",
-        close_date: "2026-04-11",
-        close_date_description: null,
-        archive_date: null,
-        updated_at: "2026-03-11T00:00:00Z",
-        expected_number_of_awards: null,
-        estimated_total_program_funding: null,
-        award_floor: null,
-        award_ceiling: null,
-        additional_info_url: null,
-        additional_info_url_description: null,
-        funding_categories: [],
-        funding_category_description: null,
-        funding_instruments: [],
-        applicant_types: [],
-        applicant_eligibility_description: null,
-        agency_code: null,
-        agency_contact_description: null,
-        agency_email_address: "grants@example.com",
-        agency_email_address_description: null,
-        agency_name: null,
-        agency_phone_number: null,
-        forecasted_post_date: null,
-        forecasted_close_date: null,
-        forecasted_close_date_description: null,
-        forecasted_award_date: null,
-        forecasted_project_start_date: null,
-        fiscal_year: null,
-        version_number: null,
-      },
-    };
+    const createResponse: Awaited<ReturnType<typeof createAnnoucementSummary>> =
+      {
+        message: "success",
+        status_code: 201,
+        data: {
+          announcement_summary_id: "new-sum-789",
+          is_forecast: true,
+          summary_description: "Summary text",
+          is_cost_sharing: null,
+          post_date: "2026-03-11",
+          close_date: "2026-04-11",
+          close_date_description: null,
+          archive_date: null,
+          updated_at: "2026-03-11T00:00:00Z",
+          expected_number_of_awards: null,
+          estimated_total_program_funding: null,
+          award_floor: null,
+          award_ceiling: null,
+          additional_info_url: null,
+          additional_info_url_description: null,
+          funding_categories: [],
+          funding_category_description: null,
+          funding_instruments: [],
+          applicant_types: [],
+          applicant_eligibility_description: null,
+          agency_code: null,
+          agency_contact_description: null,
+          agency_email_address: "grants@example.com",
+          agency_email_address_description: null,
+          agency_name: null,
+          agency_phone_number: null,
+          forecasted_post_date: null,
+          forecasted_close_date: null,
+          forecasted_close_date_description: null,
+          forecasted_award_date: null,
+          forecasted_project_start_date: null,
+          fiscal_year: null,
+          version_number: null,
+        },
+      };
 
-    mockCreateOpportunitySummaryForGrantor.mockResolvedValue(createResponse);
+    mockCreateAnnoucementSummary.mockResolvedValue(createResponse);
 
-    const result = await saveOpportunityEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(initialState, formData);
 
-    const firstCall = mockCreateOpportunitySummaryForGrantor.mock.calls[0];
+    const firstCall = mockCreateAnnoucementSummary.mock.calls[0];
     expect(firstCall).toBeDefined();
-    expect(firstCall?.[0].opportunityId).toBe("opp-123");
+    expect(firstCall?.[0].announcementId).toBe("opp-123");
     expect(firstCall?.[0].body.is_forecast).toBe(true);
     expect(firstCall?.[0].body.summary_description).toBe("Summary text");
     expect(result).toEqual({
       successMessage: "success",
-      newOpportunitySummaryId: "new-sum-789",
+      announcementSummaryId: "new-sum-789",
     });
   });
 
   it("calls the summary update fetcher and returns success", async () => {
     const formData = buildValidFormData();
-    formData.set("opportunity_id", "opp-123");
-    formData.set("opportunity_summary_id", "sum-456");
+    formData.set("announcement_id", "opp-123");
+    formData.set("announcement_summary_id", "sum-456");
 
-    mockUpdateOpportunitySummaryForGrantor.mockResolvedValue(
+    mockUpdateAnnoucementSummary.mockResolvedValue(
       successfulSummaryUpdateResponse,
     );
 
-    const result = await saveOpportunityEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(initialState, formData);
 
-    const firstCall = mockUpdateOpportunitySummaryForGrantor.mock.calls[0];
+    const firstCall = mockUpdateAnnoucementSummary.mock.calls[0];
 
     expect(firstCall).toBeDefined();
-    expect(firstCall?.[0].opportunityId).toBe("opp-123");
-    expect(firstCall?.[0].opportunitySummaryId).toBe("sum-456");
+    expect(firstCall?.[0].announcementId).toBe("opp-123");
+    expect(firstCall?.[0].announcementSummaryId).toBe("sum-456");
     expect(firstCall?.[0].body.summary_description).toBe("Summary text");
     expect(firstCall?.[0].body.post_date).toBe("2026-03-11");
     expect(firstCall?.[0].body.close_date).toBe("2026-04-11");
@@ -312,14 +307,14 @@ describe("saveOpportunityEditAction", () => {
 
   it("maps 403 to a permission error", async () => {
     const formData = buildValidFormData();
-    formData.set("opportunity_id", "opp-123");
-    formData.set("opportunity_summary_id", "sum-456");
+    formData.set("announcement_id", "opp-123");
+    formData.set("announcement_summary_id", "sum-456");
 
-    mockUpdateOpportunitySummaryForGrantor.mockRejectedValue(
+    mockUpdateAnnoucementSummary.mockRejectedValue(
       new ApiRequestError("forbidden", "APIRequestError", 403),
     );
 
-    const result = await saveOpportunityEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(initialState, formData);
 
     expect(result).toEqual({
       errorMessage: "forbidden",
@@ -328,14 +323,14 @@ describe("saveOpportunityEditAction", () => {
 
   it("maps 404 to a not found error", async () => {
     const formData = buildValidFormData();
-    formData.set("opportunity_id", "opp-123");
-    formData.set("opportunity_summary_id", "sum-456");
+    formData.set("announcement_id", "opp-123");
+    formData.set("announcement_summary_id", "sum-456");
 
-    mockUpdateOpportunitySummaryForGrantor.mockRejectedValue(
+    mockUpdateAnnoucementSummary.mockRejectedValue(
       new ApiRequestError("missing", "APIRequestError", 404),
     );
 
-    const result = await saveOpportunityEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(initialState, formData);
 
     expect(result).toEqual({
       errorMessage: "notFound",
@@ -346,14 +341,14 @@ describe("saveOpportunityEditAction", () => {
     // A real 422 now resolves via allowedErrorStatuses rather than throwing (see tests
     // below). This covers the defensive fallback if one is ever thrown some other way.
     const formData = buildValidFormData();
-    formData.set("opportunity_id", "opp-123");
-    formData.set("opportunity_summary_id", "sum-456");
+    formData.set("announcement_id", "opp-123");
+    formData.set("announcement_summary_id", "sum-456");
 
-    mockUpdateOpportunitySummaryForGrantor.mockRejectedValue(
+    mockUpdateAnnoucementSummary.mockRejectedValue(
       new ApiRequestError("invalid", "APIRequestError", 422),
     );
 
-    const result = await saveOpportunityEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(initialState, formData);
 
     expect(result).toEqual({
       errorMessage: "genericError",
@@ -362,10 +357,10 @@ describe("saveOpportunityEditAction", () => {
 
   it("maps 422 response field errors to inline validationErrors", async () => {
     const formData = buildValidFormData();
-    formData.set("opportunity_id", "opp-123");
-    formData.set("opportunity_summary_id", "sum-456");
+    formData.set("announcement_id", "opp-123");
+    formData.set("announcement_summary_id", "sum-456");
 
-    mockUpdateOpportunitySummaryForGrantor.mockResolvedValue({
+    mockUpdateAnnoucementSummary.mockResolvedValue({
       ...successfulSummaryUpdateResponse,
       status_code: 422,
       errors: [
@@ -382,7 +377,7 @@ describe("saveOpportunityEditAction", () => {
       ],
     });
 
-    const result = await saveOpportunityEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(initialState, formData);
 
     expect(result).toEqual({
       validationErrors: {
@@ -395,22 +390,22 @@ describe("saveOpportunityEditAction", () => {
 
   it("maps 422 response errors with no matching form field to a top-level errorMessage", async () => {
     const formData = buildValidFormData();
-    formData.set("opportunity_id", "opp-123");
-    formData.set("opportunity_summary_id", "sum-456");
+    formData.set("announcement_id", "opp-123");
+    formData.set("announcement_summary_id", "sum-456");
 
-    mockUpdateOpportunitySummaryForGrantor.mockResolvedValue({
+    mockUpdateAnnoucementSummary.mockResolvedValue({
       ...successfulSummaryUpdateResponse,
       status_code: 422,
       errors: [
         {
-          field: "opportunity_summary_id",
+          field: "announcement_summary_id",
           message: "Only draft opportunity summaries can be updated.",
           type: "invalid",
         },
       ],
     });
 
-    const result = await saveOpportunityEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(initialState, formData);
 
     expect(result).toEqual({
       validationErrors: undefined,
@@ -423,17 +418,17 @@ describe("saveOpportunityEditAction", () => {
     // raise_flask_error with a message and no validation_issues, so errors comes back
     // empty and the real text lives only in the top-level message.
     const formData = buildValidFormData();
-    formData.set("opportunity_id", "opp-123");
-    formData.set("opportunity_summary_id", "sum-456");
+    formData.set("announcement_id", "opp-123");
+    formData.set("announcement_summary_id", "sum-456");
 
-    mockUpdateOpportunitySummaryForGrantor.mockResolvedValue({
+    mockUpdateAnnoucementSummary.mockResolvedValue({
       ...successfulSummaryUpdateResponse,
       status_code: 422,
       message: "Only opportunities created in Simpler Grants can be updated",
       errors: [],
     });
 
-    const result = await saveOpportunityEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(initialState, formData);
 
     expect(result).toEqual({
       validationErrors: undefined,
@@ -444,19 +439,19 @@ describe("saveOpportunityEditAction", () => {
 
   it("strips comma-formatted currency fields before sending the update request", async () => {
     const formData = buildValidFormData();
-    formData.set("opportunity_id", "opp-123");
-    formData.set("opportunity_summary_id", "sum-456");
+    formData.set("announcement_id", "opp-123");
+    formData.set("announcement_summary_id", "sum-456");
     formData.set("estimated_total_program_funding", "1,000,000");
     formData.set("award_floor", "100,000");
     formData.set("award_ceiling", "500,000");
 
-    mockUpdateOpportunitySummaryForGrantor.mockResolvedValue(
+    mockUpdateAnnoucementSummary.mockResolvedValue(
       successfulSummaryUpdateResponse,
     );
 
-    await saveOpportunityEditAction(initialState, formData);
+    await saveAnnouncementEditAction(initialState, formData);
 
-    const firstCall = mockUpdateOpportunitySummaryForGrantor.mock.calls[0];
+    const firstCall = mockUpdateAnnoucementSummary.mock.calls[0];
     expect(firstCall?.[0].body.estimated_total_program_funding).toBe(1000000);
     expect(firstCall?.[0].body.award_floor).toBe(100000);
     expect(firstCall?.[0].body.award_ceiling).toBe(500000);
@@ -464,23 +459,21 @@ describe("saveOpportunityEditAction", () => {
 
   it("strips comma-formatted currency fields before sending the create request", async () => {
     const formData = buildValidFormData();
-    formData.set("opportunity_id", "opp-123");
-    // opportunity_summary_id not set - takes the create path
+    formData.set("announcement_id", "opp-123");
+    // announcement_summary_id not set - takes the create path
     formData.set("estimated_total_program_funding", "1,000,000");
     formData.set("award_floor", "100,000");
     formData.set("award_ceiling", "500,000");
 
-    mockCreateOpportunitySummaryForGrantor.mockResolvedValue({
+    mockCreateAnnoucementSummary.mockResolvedValue({
       message: "success",
       status_code: 201,
-      data: { opportunity_summary_id: "new-sum-789" },
-    } as unknown as Awaited<
-      ReturnType<typeof createOpportunitySummaryForGrantor>
-    >);
+      data: { announcement_summary_id: "new-sum-789" },
+    } as unknown as Awaited<ReturnType<typeof createAnnoucementSummary>>);
 
-    await saveOpportunityEditAction(initialState, formData);
+    await saveAnnouncementEditAction(initialState, formData);
 
-    const firstCall = mockCreateOpportunitySummaryForGrantor.mock.calls[0];
+    const firstCall = mockCreateAnnoucementSummary.mock.calls[0];
     expect(firstCall?.[0].body.estimated_total_program_funding).toBe(1000000);
     expect(firstCall?.[0].body.award_floor).toBe(100000);
     expect(firstCall?.[0].body.award_ceiling).toBe(500000);
@@ -488,14 +481,14 @@ describe("saveOpportunityEditAction", () => {
 
   it("maps 401 to an unauthenticated error", async () => {
     const formData = buildValidFormData();
-    formData.set("opportunity_id", "opp-123");
-    formData.set("opportunity_summary_id", "sum-456");
+    formData.set("announcement_id", "opp-123");
+    formData.set("announcement_summary_id", "sum-456");
 
-    mockUpdateOpportunitySummaryForGrantor.mockRejectedValue(
+    mockUpdateAnnoucementSummary.mockRejectedValue(
       new ApiRequestError("unauthenticated", "APIRequestError", 401),
     );
 
-    const result = await saveOpportunityEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(initialState, formData);
 
     expect(result).toEqual({
       errorMessage: "unauthenticated",
@@ -504,14 +497,12 @@ describe("saveOpportunityEditAction", () => {
 
   it("maps unknown failures to a generic save error", async () => {
     const formData = buildValidFormData();
-    formData.set("opportunity_id", "opp-123");
-    formData.set("opportunity_summary_id", "sum-456");
+    formData.set("announcement_id", "opp-123");
+    formData.set("announcement_summary_id", "sum-456");
 
-    mockUpdateOpportunitySummaryForGrantor.mockRejectedValue(
-      new Error("unexpected"),
-    );
+    mockUpdateAnnoucementSummary.mockRejectedValue(new Error("unexpected"));
 
-    const result = await saveOpportunityEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(initialState, formData);
 
     expect(result).toEqual({
       errorMessage: "genericError",
@@ -521,14 +512,14 @@ describe("saveOpportunityEditAction", () => {
   describe("attachment processing", () => {
     it("does not call the attachment create or delete fetchers when no held or deleted ids are present", async () => {
       const formData = buildValidFormData();
-      formData.set("opportunity_id", "opp-123");
-      formData.set("opportunity_summary_id", "sum-456");
+      formData.set("announcement_id", "opp-123");
+      formData.set("announcement_summary_id", "sum-456");
 
-      mockUpdateOpportunitySummaryForGrantor.mockResolvedValue(
+      mockUpdateAnnoucementSummary.mockResolvedValue(
         successfulSummaryUpdateResponse,
       );
 
-      await saveOpportunityEditAction(initialState, formData);
+      await saveAnnouncementEditAction(initialState, formData);
 
       expect(mockCreateOpportunityAttachment).not.toHaveBeenCalled();
       expect(mockDeleteOpportunityAttachment).not.toHaveBeenCalled();
@@ -536,12 +527,12 @@ describe("saveOpportunityEditAction", () => {
 
     it("does not process attachments when the summary update itself returns a 422", async () => {
       const formData = buildValidFormData();
-      formData.set("opportunity_id", "opp-123");
-      formData.set("opportunity_summary_id", "sum-456");
+      formData.set("announcement_id", "opp-123");
+      formData.set("announcement_summary_id", "sum-456");
       formData.set("held_pending_file_ids", JSON.stringify(["pending-1"]));
       formData.set("deleted_attachment_ids", JSON.stringify(["attach-1"]));
 
-      mockUpdateOpportunitySummaryForGrantor.mockResolvedValue({
+      mockUpdateAnnoucementSummary.mockResolvedValue({
         ...successfulSummaryUpdateResponse,
         status_code: 422,
         errors: [
@@ -553,7 +544,7 @@ describe("saveOpportunityEditAction", () => {
         ],
       });
 
-      await saveOpportunityEditAction(initialState, formData);
+      await saveAnnouncementEditAction(initialState, formData);
 
       expect(mockCreateOpportunityAttachment).not.toHaveBeenCalled();
       expect(mockDeleteOpportunityAttachment).not.toHaveBeenCalled();
@@ -561,16 +552,16 @@ describe("saveOpportunityEditAction", () => {
 
     it("does not process attachments when the summary update itself throws", async () => {
       const formData = buildValidFormData();
-      formData.set("opportunity_id", "opp-123");
-      formData.set("opportunity_summary_id", "sum-456");
+      formData.set("announcement_id", "opp-123");
+      formData.set("announcement_summary_id", "sum-456");
       formData.set("held_pending_file_ids", JSON.stringify(["pending-1"]));
       formData.set("deleted_attachment_ids", JSON.stringify(["attach-1"]));
 
-      mockUpdateOpportunitySummaryForGrantor.mockRejectedValue(
+      mockUpdateAnnoucementSummary.mockRejectedValue(
         new ApiRequestError("forbidden", "APIRequestError", 403),
       );
 
-      await saveOpportunityEditAction(initialState, formData);
+      await saveAnnouncementEditAction(initialState, formData);
 
       expect(mockCreateOpportunityAttachment).not.toHaveBeenCalled();
       expect(mockDeleteOpportunityAttachment).not.toHaveBeenCalled();
@@ -578,12 +569,12 @@ describe("saveOpportunityEditAction", () => {
 
     it("does not process attachments when the summary create itself returns a 422", async () => {
       const formData = buildValidFormData();
-      formData.set("opportunity_id", "opp-123");
-      // opportunity_summary_id not set - takes the create path
+      formData.set("announcement_id", "opp-123");
+      // announcement_summary_id not set - takes the create path
       formData.set("held_pending_file_ids", JSON.stringify(["pending-1"]));
       formData.set("deleted_attachment_ids", JSON.stringify(["attach-1"]));
 
-      mockCreateOpportunitySummaryForGrantor.mockResolvedValue({
+      mockCreateAnnoucementSummary.mockResolvedValue({
         message: "invalid",
         status_code: 422,
         errors: [
@@ -593,11 +584,9 @@ describe("saveOpportunityEditAction", () => {
             type: "invalid",
           },
         ],
-      } as unknown as Awaited<
-        ReturnType<typeof createOpportunitySummaryForGrantor>
-      >);
+      } as unknown as Awaited<ReturnType<typeof createAnnoucementSummary>>);
 
-      await saveOpportunityEditAction(initialState, formData);
+      await saveAnnouncementEditAction(initialState, formData);
 
       expect(mockCreateOpportunityAttachment).not.toHaveBeenCalled();
       expect(mockDeleteOpportunityAttachment).not.toHaveBeenCalled();
@@ -605,14 +594,14 @@ describe("saveOpportunityEditAction", () => {
 
     it("calls createAnnouncementAttachment once per held pending file id on an update save", async () => {
       const formData = buildValidFormData();
-      formData.set("opportunity_id", "opp-123");
-      formData.set("opportunity_summary_id", "sum-456");
+      formData.set("announcement_id", "opp-123");
+      formData.set("announcement_summary_id", "sum-456");
       formData.set(
         "held_pending_file_ids",
         JSON.stringify(["pending-1", "pending-2"]),
       );
 
-      mockUpdateOpportunitySummaryForGrantor.mockResolvedValue(
+      mockUpdateAnnoucementSummary.mockResolvedValue(
         successfulSummaryUpdateResponse,
       );
       mockCreateOpportunityAttachment.mockResolvedValue({
@@ -620,7 +609,7 @@ describe("saveOpportunityEditAction", () => {
         status_code: 200,
       } as unknown as Awaited<ReturnType<typeof createAnnouncementAttachment>>);
 
-      const result = await saveOpportunityEditAction(initialState, formData);
+      const result = await saveAnnouncementEditAction(initialState, formData);
 
       expect(mockCreateOpportunityAttachment).toHaveBeenCalledTimes(2);
       expect(mockCreateOpportunityAttachment).toHaveBeenNthCalledWith(
@@ -638,14 +627,14 @@ describe("saveOpportunityEditAction", () => {
 
     it("calls deleteOpportunityAttachment once per deleted attachment id on an update save", async () => {
       const formData = buildValidFormData();
-      formData.set("opportunity_id", "opp-123");
-      formData.set("opportunity_summary_id", "sum-456");
+      formData.set("announcement_id", "opp-123");
+      formData.set("announcement_summary_id", "sum-456");
       formData.set(
         "deleted_attachment_ids",
         JSON.stringify(["attach-1", "attach-2"]),
       );
 
-      mockUpdateOpportunitySummaryForGrantor.mockResolvedValue(
+      mockUpdateAnnoucementSummary.mockResolvedValue(
         successfulSummaryUpdateResponse,
       );
       mockDeleteOpportunityAttachment.mockResolvedValue({
@@ -653,7 +642,7 @@ describe("saveOpportunityEditAction", () => {
         message: "success",
       });
 
-      await saveOpportunityEditAction(initialState, formData);
+      await saveAnnouncementEditAction(initialState, formData);
 
       expect(mockDeleteOpportunityAttachment).toHaveBeenCalledTimes(2);
       expect(mockDeleteOpportunityAttachment).toHaveBeenNthCalledWith(
@@ -670,18 +659,16 @@ describe("saveOpportunityEditAction", () => {
 
     it("processes held and deleted attachment ids on the summary create path too", async () => {
       const formData = buildValidFormData();
-      formData.set("opportunity_id", "opp-123");
-      // opportunity_summary_id not set - takes the create path
+      formData.set("announcement_id", "opp-123");
+      // announcement_summary_id not set - takes the create path
       formData.set("held_pending_file_ids", JSON.stringify(["pending-1"]));
       formData.set("deleted_attachment_ids", JSON.stringify(["attach-1"]));
 
-      mockCreateOpportunitySummaryForGrantor.mockResolvedValue({
+      mockCreateAnnoucementSummary.mockResolvedValue({
         message: "success",
         status_code: 201,
-        data: { opportunity_summary_id: "new-sum-789" },
-      } as unknown as Awaited<
-        ReturnType<typeof createOpportunitySummaryForGrantor>
-      >);
+        data: { announcement_summary_id: "new-sum-789" },
+      } as unknown as Awaited<ReturnType<typeof createAnnoucementSummary>>);
       mockCreateOpportunityAttachment.mockResolvedValue({
         message: "success",
         status_code: 200,
@@ -691,7 +678,7 @@ describe("saveOpportunityEditAction", () => {
         message: "success",
       });
 
-      await saveOpportunityEditAction(initialState, formData);
+      await saveAnnouncementEditAction(initialState, formData);
 
       expect(mockCreateOpportunityAttachment).toHaveBeenCalledWith(
         "opp-123",
@@ -705,67 +692,63 @@ describe("saveOpportunityEditAction", () => {
 
     it("still returns the newly created summary id when attachment processing fails on the create path, so a retry updates rather than duplicates the summary", async () => {
       const formData = buildValidFormData();
-      formData.set("opportunity_id", "opp-123");
-      // opportunity_summary_id not set - takes the create path
+      formData.set("announcement_id", "opp-123");
+      // announcement_summary_id not set - takes the create path
       formData.set("held_pending_file_ids", JSON.stringify(["pending-1"]));
 
-      mockCreateOpportunitySummaryForGrantor.mockResolvedValue({
+      mockCreateAnnoucementSummary.mockResolvedValue({
         message: "success",
         status_code: 201,
-        data: { opportunity_summary_id: "new-sum-789" },
-      } as unknown as Awaited<
-        ReturnType<typeof createOpportunitySummaryForGrantor>
-      >);
+        data: { announcement_summary_id: "new-sum-789" },
+      } as unknown as Awaited<ReturnType<typeof createAnnoucementSummary>>);
       mockCreateOpportunityAttachment.mockResolvedValue({
         message: "This pending file could not be attached.",
         status_code: 422,
         errors: [],
       } as unknown as Awaited<ReturnType<typeof createAnnouncementAttachment>>);
 
-      const result = await saveOpportunityEditAction(initialState, formData);
+      const result = await saveAnnouncementEditAction(initialState, formData);
 
       expect(result).toEqual({
         errorMessage: "This pending file could not be attached.",
-        newOpportunitySummaryId: "new-sum-789",
+        announcementSummaryId: "new-sum-789",
       });
     });
 
     it("still returns the newly created summary id when attachment processing throws (not just when it 422s) on the create path", async () => {
       const formData = buildValidFormData();
-      formData.set("opportunity_id", "opp-123");
-      // opportunity_summary_id not set - takes the create path
+      formData.set("announcement_id", "opp-123");
+      // announcement_summary_id not set - takes the create path
       formData.set("held_pending_file_ids", JSON.stringify(["pending-1"]));
 
-      mockCreateOpportunitySummaryForGrantor.mockResolvedValue({
+      mockCreateAnnoucementSummary.mockResolvedValue({
         message: "success",
         status_code: 201,
-        data: { opportunity_summary_id: "new-sum-789" },
-      } as unknown as Awaited<
-        ReturnType<typeof createOpportunitySummaryForGrantor>
-      >);
+        data: { announcement_summary_id: "new-sum-789" },
+      } as unknown as Awaited<ReturnType<typeof createAnnoucementSummary>>);
       mockCreateOpportunityAttachment.mockRejectedValue(
         new ApiRequestError("forbidden", "APIRequestError", 403),
       );
 
-      const result = await saveOpportunityEditAction(initialState, formData);
+      const result = await saveAnnouncementEditAction(initialState, formData);
 
       expect(result).toEqual({
         errorMessage: "forbidden",
-        newOpportunitySummaryId: "new-sum-789",
+        announcementSummaryId: "new-sum-789",
       });
     });
 
     it("ignores a malformed held_pending_file_ids value instead of throwing", async () => {
       const formData = buildValidFormData();
-      formData.set("opportunity_id", "opp-123");
-      formData.set("opportunity_summary_id", "sum-456");
+      formData.set("announcement_id", "opp-123");
+      formData.set("announcement_summary_id", "sum-456");
       formData.set("held_pending_file_ids", "not-json");
 
-      mockUpdateOpportunitySummaryForGrantor.mockResolvedValue(
+      mockUpdateAnnoucementSummary.mockResolvedValue(
         successfulSummaryUpdateResponse,
       );
 
-      const result = await saveOpportunityEditAction(initialState, formData);
+      const result = await saveAnnouncementEditAction(initialState, formData);
 
       expect(mockCreateOpportunityAttachment).not.toHaveBeenCalled();
       expect(result).toEqual({ successMessage: "success" });
@@ -773,33 +756,33 @@ describe("saveOpportunityEditAction", () => {
 
     it("maps a failed attachment create to a generic save error", async () => {
       const formData = buildValidFormData();
-      formData.set("opportunity_id", "opp-123");
-      formData.set("opportunity_summary_id", "sum-456");
+      formData.set("announcement_id", "opp-123");
+      formData.set("announcement_summary_id", "sum-456");
       formData.set("held_pending_file_ids", JSON.stringify(["pending-1"]));
 
-      mockUpdateOpportunitySummaryForGrantor.mockResolvedValue(
+      mockUpdateAnnoucementSummary.mockResolvedValue(
         successfulSummaryUpdateResponse,
       );
       mockCreateOpportunityAttachment.mockRejectedValue(
         new Error("attachment creation failed"),
       );
 
-      const result = await saveOpportunityEditAction(initialState, formData);
+      const result = await saveAnnouncementEditAction(initialState, formData);
 
       expect(result).toEqual({ errorMessage: "genericError" });
     });
 
     it("surfaces a create-attachment 422's own message instead of a generic one, and stops before processing further ids", async () => {
       const formData = buildValidFormData();
-      formData.set("opportunity_id", "opp-123");
-      formData.set("opportunity_summary_id", "sum-456");
+      formData.set("announcement_id", "opp-123");
+      formData.set("announcement_summary_id", "sum-456");
       formData.set(
         "held_pending_file_ids",
         JSON.stringify(["pending-1", "pending-2"]),
       );
       formData.set("deleted_attachment_ids", JSON.stringify(["attach-1"]));
 
-      mockUpdateOpportunitySummaryForGrantor.mockResolvedValue(
+      mockUpdateAnnoucementSummary.mockResolvedValue(
         successfulSummaryUpdateResponse,
       );
       mockCreateOpportunityAttachment.mockResolvedValue({
@@ -809,7 +792,7 @@ describe("saveOpportunityEditAction", () => {
         errors: [],
       } as unknown as Awaited<ReturnType<typeof createAnnouncementAttachment>>);
 
-      const result = await saveOpportunityEditAction(initialState, formData);
+      const result = await saveAnnouncementEditAction(initialState, formData);
 
       expect(result).toEqual({
         errorMessage:
@@ -822,11 +805,11 @@ describe("saveOpportunityEditAction", () => {
 
     it("surfaces a delete-attachment 422's own message instead of a generic one", async () => {
       const formData = buildValidFormData();
-      formData.set("opportunity_id", "opp-123");
-      formData.set("opportunity_summary_id", "sum-456");
+      formData.set("announcement_id", "opp-123");
+      formData.set("announcement_summary_id", "sum-456");
       formData.set("deleted_attachment_ids", JSON.stringify(["attach-1"]));
 
-      mockUpdateOpportunitySummaryForGrantor.mockResolvedValue(
+      mockUpdateAnnoucementSummary.mockResolvedValue(
         successfulSummaryUpdateResponse,
       );
       mockDeleteOpportunityAttachment.mockResolvedValue({
@@ -835,7 +818,7 @@ describe("saveOpportunityEditAction", () => {
         errors: [],
       });
 
-      const result = await saveOpportunityEditAction(initialState, formData);
+      const result = await saveAnnouncementEditAction(initialState, formData);
 
       expect(result).toEqual({
         errorMessage: "This attachment cannot be deleted after publication.",
@@ -844,18 +827,18 @@ describe("saveOpportunityEditAction", () => {
   });
 });
 
-describe("opportunityEditFormAction", () => {
+describe("announcementEditFormAction", () => {
   beforeEach(() => {
     jest.resetAllMocks();
   });
 
   it("returns validation errors and does not publish when save has validation errors", async () => {
     const formData = new FormData();
-    formData.set("opportunity_id", "opp-123");
-    formData.set("opportunity_summary_id", "sum-456");
+    formData.set("announcement_id", "opp-123");
+    formData.set("announcement_summary_id", "sum-456");
     // post_date missing - triggers validation error
 
-    const result = await opportunityEditFormAction(initialState, formData);
+    const result = await announcementEditFormAction(initialState, formData);
 
     expect(result.validationErrors).toEqual({
       post_date: ["publishDate"],
@@ -863,144 +846,144 @@ describe("opportunityEditFormAction", () => {
       funding_categories: ["fundingCategory"],
       applicant_types: ["eligibleApplicants"],
     });
-    expect(mockUpdateOpportunitySummaryForGrantor).not.toHaveBeenCalled();
+    expect(mockUpdateAnnoucementSummary).not.toHaveBeenCalled();
   });
 
   it("returns the publish error when save succeeds but publish fails with 403", async () => {
     const formData = buildValidFormData();
-    formData.set("opportunity_id", "opp-123");
-    formData.set("opportunity_summary_id", "sum-456");
+    formData.set("announcement_id", "opp-123");
+    formData.set("announcement_summary_id", "sum-456");
 
-    mockUpdateOpportunitySummaryForGrantor.mockResolvedValue(
+    mockUpdateAnnoucementSummary.mockResolvedValue(
       successfulSummaryUpdateResponse,
     );
-    mockUpdateOpportunitySummaryForGrantor.mockRejectedValue(
+    mockUpdateAnnoucementSummary.mockRejectedValue(
       new ApiRequestError("forbidden", "APIRequestError", 403),
     );
 
-    const result = await opportunityEditFormAction(initialState, formData);
+    const result = await announcementEditFormAction(initialState, formData);
 
     expect(result).toEqual({ errorMessage: "forbidden" });
   });
 
   it("returns the publish error when save succeeds but publish fails with 404", async () => {
     const formData = buildValidFormData();
-    formData.set("opportunity_id", "opp-123");
-    formData.set("opportunity_summary_id", "sum-456");
+    formData.set("announcement_id", "opp-123");
+    formData.set("announcement_summary_id", "sum-456");
 
-    mockUpdateOpportunitySummaryForGrantor.mockResolvedValue(
+    mockUpdateAnnoucementSummary.mockResolvedValue(
       successfulSummaryUpdateResponse,
     );
-    mockUpdateOpportunitySummaryForGrantor.mockRejectedValue(
+    mockUpdateAnnoucementSummary.mockRejectedValue(
       new ApiRequestError("not found", "APIRequestError", 404),
     );
 
-    const result = await opportunityEditFormAction(initialState, formData);
+    const result = await announcementEditFormAction(initialState, formData);
 
     expect(result).toEqual({ errorMessage: "notFound" });
   });
 
   it("maps 401 from publish to an unauthenticated error", async () => {
     const formData = buildValidFormData();
-    formData.set("opportunity_id", "opp-123");
-    formData.set("opportunity_summary_id", "sum-456");
+    formData.set("announcement_id", "opp-123");
+    formData.set("announcement_summary_id", "sum-456");
 
-    mockUpdateOpportunitySummaryForGrantor.mockResolvedValue(
+    mockUpdateAnnoucementSummary.mockResolvedValue(
       successfulSummaryUpdateResponse,
     );
-    mockUpdateOpportunitySummaryForGrantor.mockRejectedValue(
+    mockUpdateAnnoucementSummary.mockRejectedValue(
       new ApiRequestError("unauthenticated", "APIRequestError", 401),
     );
 
-    const result = await opportunityEditFormAction(initialState, formData);
+    const result = await announcementEditFormAction(initialState, formData);
 
     expect(result).toEqual({ errorMessage: "unauthenticated" });
   });
 });
 
-describe("opportunityEditFormAction", () => {
+describe("announcementEditFormAction", () => {
   beforeEach(() => {
     jest.resetAllMocks();
   });
 
-  it("delegates to saveOpportunityEditAction and redirects to the overview page when submitType = saveAndExit", async () => {
+  it("delegates to saveAnnouncementEditAction and redirects to the overview page when submitType = saveAndExit", async () => {
     const formData = buildValidFormData();
-    formData.set("opportunity_id", "opp-123");
-    formData.set("opportunity_summary_id", "sum-456");
+    formData.set("announcement_id", "opp-123");
+    formData.set("announcement_summary_id", "sum-456");
     formData.set("submitType", "saveAndExit");
 
-    mockUpdateOpportunitySummaryForGrantor.mockResolvedValue(
+    mockUpdateAnnoucementSummary.mockResolvedValue(
       successfulSummaryUpdateResponse,
     );
 
-    await opportunityEditFormAction(initialState, formData);
+    await announcementEditFormAction(initialState, formData);
 
-    expect(mockUpdateOpportunitySummaryForGrantor).toHaveBeenCalledTimes(1);
+    expect(mockUpdateAnnoucementSummary).toHaveBeenCalledTimes(1);
     expect(mockRedirect).toHaveBeenCalledWith("../overview");
   });
 
-  it("delegates to saveOpportunityEditAction and redirects to the overview page when submitType = saveAndGoBack", async () => {
+  it("delegates to saveAnnouncementEditAction and redirects to the overview page when submitType = saveAndGoBack", async () => {
     const formData = buildValidFormData();
-    formData.set("opportunity_id", "opp-123");
-    formData.set("opportunity_summary_id", "sum-456");
+    formData.set("announcement_id", "opp-123");
+    formData.set("announcement_summary_id", "sum-456");
     formData.set("submitType", "saveAndGoBack");
 
-    mockUpdateOpportunitySummaryForGrantor.mockResolvedValue(
+    mockUpdateAnnoucementSummary.mockResolvedValue(
       successfulSummaryUpdateResponse,
     );
 
-    await opportunityEditFormAction(initialState, formData);
+    await announcementEditFormAction(initialState, formData);
 
-    expect(mockUpdateOpportunitySummaryForGrantor).toHaveBeenCalledTimes(1);
+    expect(mockUpdateAnnoucementSummary).toHaveBeenCalledTimes(1);
     expect(mockRedirect).toHaveBeenCalledWith("../overview");
   });
 
-  it("delegates to saveOpportunityEditAction and redirects to the competition page when submitType = saveAndContinue", async () => {
+  it("delegates to saveAnnouncementEditAction and redirects to the competition page when submitType = saveAndContinue", async () => {
     const formData = buildValidFormData();
-    formData.set("opportunity_id", "opp-123");
-    formData.set("opportunity_summary_id", "sum-456");
+    formData.set("announcement_id", "opp-123");
+    formData.set("announcement_summary_id", "sum-456");
     formData.set("submitType", "saveAndContinue");
 
-    mockUpdateOpportunitySummaryForGrantor.mockResolvedValue(
+    mockUpdateAnnoucementSummary.mockResolvedValue(
       successfulSummaryUpdateResponse,
     );
 
-    await opportunityEditFormAction(initialState, formData);
+    await announcementEditFormAction(initialState, formData);
 
-    expect(mockUpdateOpportunitySummaryForGrantor).toHaveBeenCalledTimes(1);
+    expect(mockUpdateAnnoucementSummary).toHaveBeenCalledTimes(1);
     expect(mockRedirect).toHaveBeenCalledWith("../application-package");
   });
 
-  it("delegates to saveOpportunityEditAction and returns success when submitType none of three expected", async () => {
+  it("delegates to saveAnnouncementEditAction and returns success when submitType none of three expected", async () => {
     const formData = buildValidFormData();
-    formData.set("opportunity_id", "opp-123");
-    formData.set("opportunity_summary_id", "sum-456");
+    formData.set("announcement_id", "opp-123");
+    formData.set("announcement_summary_id", "sum-456");
     formData.set("submitType", "save");
 
-    mockUpdateOpportunitySummaryForGrantor.mockResolvedValue(
+    mockUpdateAnnoucementSummary.mockResolvedValue(
       successfulSummaryUpdateResponse,
     );
 
-    const result = await opportunityEditFormAction(initialState, formData);
+    const result = await announcementEditFormAction(initialState, formData);
 
-    expect(mockUpdateOpportunitySummaryForGrantor).toHaveBeenCalledTimes(1);
+    expect(mockUpdateAnnoucementSummary).toHaveBeenCalledTimes(1);
     expect(result).toEqual({ successMessage: "success" });
   });
 
-  it("delegates to saveOpportunityEditAction and returns errors and does not redirect", async () => {
+  it("delegates to saveAnnouncementEditAction and returns errors and does not redirect", async () => {
     const formData = buildValidFormData();
-    formData.set("opportunity_id", "opp-123");
-    formData.set("opportunity_summary_id", "sum-456");
+    formData.set("announcement_id", "opp-123");
+    formData.set("announcement_summary_id", "sum-456");
     formData.set("submitType", "saveAndContinue");
     formData.set("agency_email_address", "not-an-email");
 
-    mockUpdateOpportunitySummaryForGrantor.mockResolvedValue(
+    mockUpdateAnnoucementSummary.mockResolvedValue(
       successfulSummaryUpdateResponse,
     );
 
-    const result = await opportunityEditFormAction(initialState, formData);
+    const result = await announcementEditFormAction(initialState, formData);
 
-    expect(mockUpdateOpportunitySummaryForGrantor).not.toHaveBeenCalledTimes(1);
+    expect(mockUpdateAnnoucementSummary).not.toHaveBeenCalledTimes(1);
     expect(mockRedirect).not.toHaveBeenCalledWith("../application-package");
     expect(result.validationErrors).toEqual({
       agency_email_address: ["contactEmailInvalid"],

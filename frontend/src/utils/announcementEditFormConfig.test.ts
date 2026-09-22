@@ -1,17 +1,23 @@
 import { AnnouncementDetail } from "src/types/announcement/announcementResponseTypes";
 
-import { buildOpportunityEditInitialValues } from "./announcementEditFormConfig";
+import { buildAnnouncementEditInitialValues } from "./announcementEditFormConfig";
 
 function makeOpportunity(
   summaryOverrides: Partial<AnnouncementDetail["summary"]> = {},
   opportunityOverrides: Partial<AnnouncementDetail> = {},
 ): AnnouncementDetail {
   return {
+    //delete opportunity params
     opportunity_id: "opp-1",
-    legacy_opportunity_id: 1,
     opportunity_status: "posted",
     opportunity_title: "Test Opportunity",
     opportunity_number: "OPP-001",
+    legacy_opportunity_id: 1,
+    announcement_id: "opp-1",
+    announcement_status: "posted",
+    announcement_title: "Test Opportunity",
+    announcement_number: "OPP-001",
+    legacy_announcement_id: 1,
     category: "discretionary",
     category_explanation: null,
     agency_code: "TEST",
@@ -65,11 +71,11 @@ function makeOpportunity(
   };
 }
 
-describe("buildOpportunityEditInitialValues", () => {
+describe("buildAnnouncementEditInitialValues", () => {
   it("maps opportunity and summary fields to form values", () => {
-    const result = buildOpportunityEditInitialValues(makeOpportunity());
+    const result = buildAnnouncementEditInitialValues(makeOpportunity());
 
-    expect(result.opportunity_title).toBe("Test Opportunity");
+    expect(result.announcement_title).toBe("Test Opportunity");
     expect(result.category).toBe("discretionary");
     expect(result.summary_description).toBe("A test description");
     expect(result.funding_instruments).toBe("grant");
@@ -86,7 +92,7 @@ describe("buildOpportunityEditInitialValues", () => {
   });
 
   it("returns empty string for null numeric summary fields (numberToString null branch)", () => {
-    const result = buildOpportunityEditInitialValues(
+    const result = buildAnnouncementEditInitialValues(
       makeOpportunity({
         award_floor: null,
         award_ceiling: null,
@@ -101,16 +107,16 @@ describe("buildOpportunityEditInitialValues", () => {
     expect(result.expected_number_of_awards).toBe("");
   });
 
-  it("falls back to empty string when opportunity_title is null", () => {
-    const result = buildOpportunityEditInitialValues(
-      makeOpportunity({}, { opportunity_title: null }),
+  it("falls back to empty string when announcement_title is null", () => {
+    const result = buildAnnouncementEditInitialValues(
+      makeOpportunity({}, { announcement_title: null }),
     );
 
-    expect(result.opportunity_title).toBe("");
+    expect(result.announcement_title).toBe("");
   });
 
   it("returns empty string when funding_instruments array is empty", () => {
-    const result = buildOpportunityEditInitialValues(
+    const result = buildAnnouncementEditInitialValues(
       makeOpportunity({ funding_instruments: [] }),
     );
 
@@ -118,7 +124,7 @@ describe("buildOpportunityEditInitialValues", () => {
   });
 
   it("returns empty string when funding_instruments is null", () => {
-    const result = buildOpportunityEditInitialValues(
+    const result = buildAnnouncementEditInitialValues(
       makeOpportunity({ funding_instruments: null }),
     );
 
@@ -126,7 +132,7 @@ describe("buildOpportunityEditInitialValues", () => {
   });
 
   it("returns empty array when applicant_types is null", () => {
-    const result = buildOpportunityEditInitialValues(
+    const result = buildAnnouncementEditInitialValues(
       makeOpportunity({ applicant_types: null }),
     );
 
@@ -134,7 +140,7 @@ describe("buildOpportunityEditInitialValues", () => {
   });
 
   it("returns empty string when funding_categories is empty", () => {
-    const result = buildOpportunityEditInitialValues(
+    const result = buildAnnouncementEditInitialValues(
       makeOpportunity({ funding_categories: [] }),
     );
 

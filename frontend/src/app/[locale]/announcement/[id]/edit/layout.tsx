@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { getSession } from "src/services/auth/session";
-import { getOpportunityForGrantor } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
+import { getAnnouncement } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 import { LayoutProps } from "src/types/generalTypes";
 
 import { getTranslations } from "next-intl/server";
@@ -18,7 +18,7 @@ export async function generateMetadata({
   try {
     const session = await getSession();
     if (session?.token) {
-      const { data } = await getOpportunityForGrantor(id);
+      const { data } = await getAnnouncement(id);
       title = `${t("OpportunityEdit.pageTitle")} - ${data.opportunity_title || ""}`;
     }
   } catch {

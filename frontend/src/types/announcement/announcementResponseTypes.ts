@@ -56,7 +56,8 @@ export interface Summary extends MinimalSummary {
 }
 
 export interface AnnouncementSummaryDetail extends Summary {
-  opportunity_summary_id: string;
+  opportunity_summary_id?: string; // delete me
+  announcement_summary_id?: string;
 }
 
 // note that we're using a type with a union here because of awkwardness inferring index signatures
@@ -105,7 +106,9 @@ export type MinimalAnnouncement = {
   opportunity_id: string;
   announcement_id?: string;
   legacy_opportunity_id: number;
+  legacy_announcement_id?: number;
   opportunity_status: AnnouncementStatus;
+  announcement_status?: AnnouncementStatus;
   opportunity_title: string | null;
   announcement_title?: string | null;
   summary: MinimalSummary;

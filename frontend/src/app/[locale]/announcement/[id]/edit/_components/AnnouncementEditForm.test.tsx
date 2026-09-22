@@ -13,7 +13,7 @@ jest.mock("react", () => ({
 }));
 
 jest.mock("src/app/[locale]/announcement/[id]/edit/actions", () => ({
-  opportunityEditFormAction: jest.fn(),
+  announcementEditFormAction: jest.fn(),
 }));
 
 jest.mock("next-intl", () => ({
@@ -35,8 +35,8 @@ jest.mock("src/hooks/useClientFetch", () => ({
 }));
 
 const initialValues: AnnouncementEditFormValues = {
-  opportunity_number: "ABC-123",
-  opportunity_title: "Test opportunity",
+  announcement_number: "ABC-123",
+  announcement_title: "Test opportunity",
   category: "discretionary",
   category_explanation: "",
   summary_description: "Summary text",
@@ -60,13 +60,13 @@ const initialValues: AnnouncementEditFormValues = {
   agency_email_address_description: "Email the grants team",
 };
 
-const renderOpportunityEditForm = (
+const renderAnnouncementEditForm = (
   props: Partial<React.ComponentProps<typeof AnnouncementEditForm>> = {},
 ) =>
   render(
     <AnnouncementEditForm
-      opportunityId="opportunity-123"
-      opportunitySummaryId="summary-456"
+      announcementId="opportunity-123"
+      announcementSummaryId="summary-456"
       initialValues={initialValues}
       {...props}
     />,
@@ -88,7 +88,7 @@ describe("AnnouncementEditForm - rendering", () => {
   });
 
   it("renders enum-backed controls for the edit form", () => {
-    renderOpportunityEditForm();
+    renderAnnouncementEditForm();
 
     expect(
       screen.getByRole("combobox", { name: /labels\.fundingType/i }),
@@ -113,20 +113,20 @@ describe("AnnouncementEditForm - rendering", () => {
   });
 
   it("renders hidden fields for save context", () => {
-    renderOpportunityEditForm({ isForecast: true });
+    renderAnnouncementEditForm({ isForecast: true });
 
     expect(screen.getByDisplayValue("opportunity-123")).toHaveAttribute(
       "name",
-      "opportunity_id",
+      "announcement_id",
     );
     expect(screen.getByDisplayValue("summary-456")).toHaveAttribute(
       "name",
-      "opportunity_summary_id",
+      "announcement_summary_id",
     );
     expect(screen.getByTestId("isForecast-input")).toHaveValue("true");
     expect(screen.getByDisplayValue("Test opportunity")).toHaveAttribute(
       "name",
-      "opportunity_title",
+      "announcement_title",
     );
     expect(screen.getByDisplayValue("discretionary")).toHaveAttribute(
       "name",
@@ -143,8 +143,8 @@ describe("AnnouncementEditForm - rendering", () => {
     ]);
     render(
       <AnnouncementEditForm
-        opportunityId="opportunity-123"
-        opportunitySummaryId="summary-456"
+        announcementId="opportunity-123"
+        announcementSummaryId="summary-456"
         initialValues={{ ...initialValues, applicant_types: [] }}
       />,
     );
@@ -186,7 +186,7 @@ describe("AnnouncementEditForm - rendering", () => {
   });
 
   it("does not disable character-count fields (published opportunities are editable)", () => {
-    renderOpportunityEditForm();
+    renderAnnouncementEditForm();
 
     expect(
       screen.getByRole("textbox", { name: /labels\.description/i }),
@@ -209,7 +209,7 @@ describe("AnnouncementEditForm - rendering", () => {
   });
 
   it("does not disable fundingCategoryExplanation when fundingCategories is 'other'", () => {
-    renderOpportunityEditForm({
+    renderAnnouncementEditForm({
       initialValues: { ...initialValues, funding_categories: "other" },
     });
 
@@ -221,7 +221,7 @@ describe("AnnouncementEditForm - rendering", () => {
   });
 
   it("does not disable additionalEligibilityInfo when eligibleApplicants includes 'other'", () => {
-    renderOpportunityEditForm({
+    renderAnnouncementEditForm({
       initialValues: { ...initialValues, applicant_types: ["other"] },
     });
 
@@ -233,7 +233,7 @@ describe("AnnouncementEditForm - rendering", () => {
   });
 
   it("pre-checks eligibility checkboxes from initialValues", () => {
-    renderOpportunityEditForm();
+    renderAnnouncementEditForm();
 
     // initialValues.eligibleApplicants includes "individuals" - verify it renders checked
     const individualsCheckbox = screen.getByRole("checkbox", {
@@ -243,7 +243,7 @@ describe("AnnouncementEditForm - rendering", () => {
   });
 
   it("has no accessibility violations", async () => {
-    const { container } = renderOpportunityEditForm();
+    const { container } = renderAnnouncementEditForm();
     const results = await axe(container);
     expect(results).toHaveNoViolations();
   });
@@ -272,7 +272,7 @@ describe("AnnouncementEditForm - alert banners", () => {
       false,
     ]);
 
-    renderOpportunityEditForm();
+    renderAnnouncementEditForm();
 
     expect(screen.getByText("Save failed")).toBeInTheDocument();
   });
@@ -284,7 +284,7 @@ describe("AnnouncementEditForm - alert banners", () => {
       false,
     ]);
 
-    renderOpportunityEditForm();
+    renderAnnouncementEditForm();
 
     expect(screen.getByText("Changes saved")).toBeInTheDocument();
     expect(screen.getByText("content.alerts.successBody")).toBeInTheDocument();
@@ -302,7 +302,7 @@ describe("AnnouncementEditForm - alert banners", () => {
       false,
     ]);
 
-    renderOpportunityEditForm();
+    renderAnnouncementEditForm();
 
     expect(
       screen.getByText("content.alerts.validationErrorHeading"),
@@ -315,7 +315,7 @@ describe("AnnouncementEditForm - alert banners", () => {
   });
 
   it("does not show validation errors alert when validationErrors is empty", () => {
-    renderOpportunityEditForm();
+    renderAnnouncementEditForm();
 
     expect(
       screen.queryByText("content.alerts.validationWarningHeading"),
@@ -340,7 +340,7 @@ describe("AnnouncementEditForm - conditional fields", () => {
   });
 
   it("shows the funding category explanation textarea when fundingCategories is 'other'", () => {
-    renderOpportunityEditForm({
+    renderAnnouncementEditForm({
       initialValues: { ...initialValues, funding_categories: "other" },
     });
 
@@ -352,7 +352,7 @@ describe("AnnouncementEditForm - conditional fields", () => {
   });
 
   it("hides the funding category explanation textarea when fundingCategories is not 'other'", () => {
-    renderOpportunityEditForm();
+    renderAnnouncementEditForm();
 
     expect(
       screen.queryByRole("textbox", {
@@ -362,7 +362,7 @@ describe("AnnouncementEditForm - conditional fields", () => {
   });
 
   it("shows the close date explanation textarea when closeDate is empty", () => {
-    renderOpportunityEditForm({
+    renderAnnouncementEditForm({
       initialValues: { ...initialValues, close_date: "" },
     });
 
@@ -374,7 +374,7 @@ describe("AnnouncementEditForm - conditional fields", () => {
   });
 
   it("hides the close date explanation textarea when closeDate has a value", () => {
-    renderOpportunityEditForm();
+    renderAnnouncementEditForm();
 
     expect(
       screen.queryByRole("textbox", {
@@ -384,7 +384,7 @@ describe("AnnouncementEditForm - conditional fields", () => {
   });
 
   it("shows additional eligibility info textarea when 'other' is in eligibleApplicants", () => {
-    renderOpportunityEditForm({
+    renderAnnouncementEditForm({
       initialValues: { ...initialValues, applicant_types: ["other"] },
     });
 
@@ -396,7 +396,7 @@ describe("AnnouncementEditForm - conditional fields", () => {
   });
 
   it("shows additional eligibility info textarea when 'unrestricted' is in eligibleApplicants", () => {
-    renderOpportunityEditForm({
+    renderAnnouncementEditForm({
       initialValues: {
         ...initialValues,
         applicant_types: ["unrestricted"],
@@ -411,7 +411,7 @@ describe("AnnouncementEditForm - conditional fields", () => {
   });
 
   it("hides additional eligibility info textarea when neither 'other' nor 'unrestricted' is selected", () => {
-    renderOpportunityEditForm();
+    renderAnnouncementEditForm();
 
     expect(
       screen.queryByRole("textbox", {
@@ -437,7 +437,7 @@ describe("AnnouncementEditForm - eligibility checkboxes", () => {
   });
 
   it("renders eligibility checkboxes as checked when the value is in eligibleApplicants", () => {
-    renderOpportunityEditForm({
+    renderAnnouncementEditForm({
       initialValues: {
         ...initialValues,
         applicant_types: [
@@ -454,7 +454,7 @@ describe("AnnouncementEditForm - eligibility checkboxes", () => {
   });
 
   it("toggles an eligibility checkbox on then off", () => {
-    renderOpportunityEditForm({
+    renderAnnouncementEditForm({
       initialValues: { ...initialValues, applicant_types: [] },
     });
 
@@ -473,7 +473,7 @@ describe("AnnouncementEditForm - eligibility checkboxes", () => {
 
   it("clicking one checkbox from each eligibility group updates state independently", () => {
     // Exercises the onToggle lambda in all five EligibilityCheckboxGroup instances
-    renderOpportunityEditForm({
+    renderAnnouncementEditForm({
       initialValues: { ...initialValues, applicant_types: [] },
     });
 
@@ -513,27 +513,27 @@ describe("AnnouncementEditForm - eligibility checkboxes", () => {
 
 // ─── Save state ───────────────────────────────────────────────────────────────
 // When a save creates a new summary record, the returned ID is synced into
-// the hidden opportunitySummaryId input so subsequent saves target the correct record.
+// the hidden announcementSummaryId input so subsequent saves target the correct record.
 describe("AnnouncementEditForm - save state", () => {
   afterEach(() => {
     jest.resetAllMocks();
   });
 
-  it("updates the opportunitySummaryId hidden field when formState.newOpportunitySummaryId is set", () => {
+  it("updates the announcementSummaryId hidden field when formState.announcementSummaryId is set", () => {
     mockUseActionState.mockReturnValue([
       {
         validationErrors: {},
-        newOpportunitySummaryId: "new-summary-789",
+        announcementSummaryId: "new-summary-789",
       },
       jest.fn(),
       false,
     ]);
 
-    renderOpportunityEditForm();
+    renderAnnouncementEditForm();
 
     expect(screen.getByDisplayValue("new-summary-789")).toHaveAttribute(
       "name",
-      "opportunity_summary_id",
+      "announcement_summary_id",
     );
   });
 });
@@ -555,7 +555,7 @@ describe("AnnouncementEditForm - funding details interactions", () => {
   });
 
   it("updates funding_instruments when the Select value changes", () => {
-    renderOpportunityEditForm();
+    renderAnnouncementEditForm();
 
     const select = screen.getByRole("combobox", {
       name: /labels\.fundingType/i,
@@ -566,7 +566,7 @@ describe("AnnouncementEditForm - funding details interactions", () => {
   });
 
   it("updates is_cost_sharing to true when the Yes radio is clicked", () => {
-    renderOpportunityEditForm({
+    renderAnnouncementEditForm({
       initialValues: { ...initialValues, is_cost_sharing: false },
     });
 
@@ -577,7 +577,7 @@ describe("AnnouncementEditForm - funding details interactions", () => {
   });
 
   it("updates is_cost_sharing to false when the No radio is clicked", () => {
-    renderOpportunityEditForm({
+    renderAnnouncementEditForm({
       initialValues: { ...initialValues, is_cost_sharing: true },
     });
 
@@ -588,7 +588,7 @@ describe("AnnouncementEditForm - funding details interactions", () => {
   });
 
   it("updates fundingCategories when the category Select changes", () => {
-    renderOpportunityEditForm();
+    renderAnnouncementEditForm();
 
     const select = screen.getByRole("combobox", { name: /labels\.category/i });
     fireEvent.change(select, { target: { value: "health" } });
@@ -597,7 +597,7 @@ describe("AnnouncementEditForm - funding details interactions", () => {
   });
 
   it("updates expectedNumberOfAwards when the input changes", () => {
-    renderOpportunityEditForm();
+    renderAnnouncementEditForm();
 
     const input = screen.getByRole("textbox", {
       name: /labels\.expectedNumberOfAwards/i,
@@ -608,7 +608,7 @@ describe("AnnouncementEditForm - funding details interactions", () => {
   });
 
   it("formats estimatedTotalProgramFunding with commas from initialValues", () => {
-    renderOpportunityEditForm({
+    renderAnnouncementEditForm({
       initialValues: {
         ...initialValues,
         estimated_total_program_funding: "750000",
@@ -623,7 +623,7 @@ describe("AnnouncementEditForm - funding details interactions", () => {
   });
 
   it("updates awardMinimum when the input changes", () => {
-    renderOpportunityEditForm();
+    renderAnnouncementEditForm();
 
     const input = screen.getByRole("textbox", {
       name: /labels\.awardMinimum/i,
@@ -634,7 +634,7 @@ describe("AnnouncementEditForm - funding details interactions", () => {
   });
 
   it("formats awardMaximum with commas from initialValues", () => {
-    renderOpportunityEditForm({
+    renderAnnouncementEditForm({
       initialValues: { ...initialValues, award_ceiling: "5000" },
     });
 
@@ -646,7 +646,7 @@ describe("AnnouncementEditForm - funding details interactions", () => {
   });
 
   it("updates fundingCategoryExplanation when the textarea changes", () => {
-    renderOpportunityEditForm({
+    renderAnnouncementEditForm({
       initialValues: { ...initialValues, funding_categories: "other" },
     });
 
@@ -659,7 +659,7 @@ describe("AnnouncementEditForm - funding details interactions", () => {
   });
 
   it("updates closeDateExplanation when the textarea changes", () => {
-    renderOpportunityEditForm({
+    renderAnnouncementEditForm({
       initialValues: { ...initialValues, close_date: "" },
     });
 
@@ -689,7 +689,7 @@ describe("AnnouncementEditForm - eligibility and additional info interactions", 
   });
 
   it("updates additionalEligibilityInfo when the textarea changes", () => {
-    renderOpportunityEditForm({
+    renderAnnouncementEditForm({
       initialValues: { ...initialValues, applicant_types: ["other"] },
     });
 
@@ -702,7 +702,7 @@ describe("AnnouncementEditForm - eligibility and additional info interactions", 
   });
 
   it("updates description when the textarea changes", () => {
-    renderOpportunityEditForm();
+    renderAnnouncementEditForm();
 
     const textarea = screen.getByRole("textbox", {
       name: /labels\.description/i,
@@ -713,7 +713,7 @@ describe("AnnouncementEditForm - eligibility and additional info interactions", 
   });
 
   it("updates additionalInfoUrl when the input changes", () => {
-    renderOpportunityEditForm();
+    renderAnnouncementEditForm();
 
     const input = screen.getByRole("textbox", {
       name: "labels.additionalInfoUrl",
@@ -724,7 +724,7 @@ describe("AnnouncementEditForm - eligibility and additional info interactions", 
   });
 
   it("updates additionalInfoUrlText when the input changes", () => {
-    renderOpportunityEditForm();
+    renderAnnouncementEditForm();
 
     const input = screen.getByRole("textbox", {
       name: "labels.additionalInfoUrlText",
@@ -735,7 +735,7 @@ describe("AnnouncementEditForm - eligibility and additional info interactions", 
   });
 
   it("updates grantorContactDetails when the textarea changes", () => {
-    renderOpportunityEditForm();
+    renderAnnouncementEditForm();
 
     const textarea = screen.getByRole("textbox", {
       name: /labels\.grantorContactDetails/i,
@@ -746,7 +746,7 @@ describe("AnnouncementEditForm - eligibility and additional info interactions", 
   });
 
   it("updates contactEmail when the input changes", () => {
-    renderOpportunityEditForm();
+    renderAnnouncementEditForm();
 
     const input = screen.getByRole("textbox", {
       name: "labels.contactEmail",
@@ -757,7 +757,7 @@ describe("AnnouncementEditForm - eligibility and additional info interactions", 
   });
 
   it("updates contactEmailText when the input changes", () => {
-    renderOpportunityEditForm();
+    renderAnnouncementEditForm();
 
     const input = screen.getByRole("textbox", {
       name: "labels.contactEmailText",
@@ -804,7 +804,7 @@ describe("AnnouncementEditForm - inline validation errors", () => {
       false,
     ]);
 
-    renderOpportunityEditForm({
+    renderAnnouncementEditForm({
       initialValues: {
         ...initialValues,
         // show the additionalEligibilityInfo field so its inline error renders
@@ -837,7 +837,7 @@ describe("AnnouncementEditForm - number formatting edge cases", () => {
   });
 
   it("displays a non-numeric awardMinimum value as-is without formatting", () => {
-    renderOpportunityEditForm({
+    renderAnnouncementEditForm({
       initialValues: { ...initialValues, award_floor: "abc" },
     });
 
@@ -850,7 +850,7 @@ describe("AnnouncementEditForm - number formatting edge cases", () => {
   });
 
   it("displays an empty awardMaximum as an empty string without formatting", () => {
-    renderOpportunityEditForm({
+    renderAnnouncementEditForm({
       initialValues: { ...initialValues, award_ceiling: "" },
     });
 
@@ -880,7 +880,7 @@ describe("AnnouncementEditForm - action buttons", () => {
   });
 
   it("renders two Save buttons", () => {
-    renderOpportunityEditForm();
+    renderAnnouncementEditForm();
     // NOTE: the third save button is in the header
     expect(
       screen.getByRole("button", { name: "button.saveAndGoBack" }),
@@ -898,7 +898,7 @@ describe("AnnouncementEditForm - action buttons", () => {
       false,
     ]);
 
-    renderOpportunityEditForm();
+    renderAnnouncementEditForm();
 
     fireEvent.click(
       screen.getByRole("button", { name: "button.saveAndGoBack" }),
@@ -915,7 +915,7 @@ describe("AnnouncementEditForm - action buttons", () => {
       false,
     ]);
 
-    renderOpportunityEditForm();
+    renderAnnouncementEditForm();
 
     fireEvent.click(
       screen.getByRole("button", { name: "button.saveAndContinue" }),
@@ -943,7 +943,7 @@ describe("AnnouncementEditForm - field validations on exiting the field", () => 
 
   it("awardMinimum should show an error if the value is greater than the max allowed", async () => {
     const user = userEvent.setup();
-    renderOpportunityEditForm();
+    renderAnnouncementEditForm();
 
     const input = screen.getByRole("textbox", {
       name: /labels\.awardMinimum/i,
@@ -958,7 +958,7 @@ describe("AnnouncementEditForm - field validations on exiting the field", () => 
 
   it("awardMaximum should show an error if the value is greater than the max allowed", async () => {
     const user = userEvent.setup();
-    renderOpportunityEditForm();
+    renderAnnouncementEditForm();
 
     const input = screen.getByRole("textbox", {
       name: /labels\.awardMaximum/i,
@@ -973,7 +973,7 @@ describe("AnnouncementEditForm - field validations on exiting the field", () => 
 
   it("estimatedTotalProgramFunding should show an error if the value is greater than the max allowed", async () => {
     const user = userEvent.setup();
-    renderOpportunityEditForm();
+    renderAnnouncementEditForm();
 
     const input = screen.getByRole("textbox", {
       name: /labels\.estimatedTotalProgramFunding/i,
@@ -988,7 +988,7 @@ describe("AnnouncementEditForm - field validations on exiting the field", () => 
 
   it("awardMinimum should show an error if the value is less than 0", async () => {
     const user = userEvent.setup();
-    renderOpportunityEditForm();
+    renderAnnouncementEditForm();
 
     const input = screen.getByRole("textbox", {
       name: /labels\.awardMinimum/i,
@@ -1004,7 +1004,7 @@ describe("AnnouncementEditForm - field validations on exiting the field", () => 
 
   it("awardMaximum should show an error if the value is less than 0", async () => {
     const user = userEvent.setup();
-    renderOpportunityEditForm();
+    renderAnnouncementEditForm();
 
     const input = screen.getByRole("textbox", {
       name: /labels\.awardMaximum/i,
@@ -1020,7 +1020,7 @@ describe("AnnouncementEditForm - field validations on exiting the field", () => 
 
   it("estimatedTotalProgramFunding should show an error if the value is less than 0", async () => {
     const user = userEvent.setup();
-    renderOpportunityEditForm();
+    renderAnnouncementEditForm();
 
     const input = screen.getByRole("textbox", {
       name: /labels\.estimatedTotalProgramFunding/i,
