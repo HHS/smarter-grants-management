@@ -12,7 +12,7 @@ import {
   toDynamicAwardRecommendationEndpoint,
   toDynamicFilesEndpoint,
   toDynamicGrantorAgenciesEndpoint,
-  toDynamicGrantorOpportunityEndpoint,
+  toDynamicGrantorAnnouncementEndpoint,
   toDynamicUsersEndpoint,
   userLogoutEndpoint,
   userRefreshEndpoint,
@@ -146,9 +146,9 @@ export const postTokenRefresh = requesterForEndpoint(userRefreshEndpoint);
 
 export const fetchLocalUsers = requesterForEndpoint(getLocalUsersEndpoint);
 
-export const fetchGrantorOpportunityWithMethod = (
+export const fetchGrantorAnnouncementWithMethod = (
   type: "POST" | "DELETE" | "GET" | "PUT",
-) => requesterForEndpoint(toDynamicGrantorOpportunityEndpoint(type));
+) => requesterForEndpoint(toDynamicGrantorAnnouncementEndpoint(type));
 
 export const fetchGrantorAgenciesWithMethod = (
   type: "POST" | "GET" | "PUT" | "DELETE",

@@ -2,14 +2,12 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { axe } from "jest-axe";
 import { identity } from "lodash";
 import OpportunitiesListPage from "src/app/[locale]/announcements/page";
-import { UnauthorizedError } from "src/errors";
-import { BaseAnnouncement } from "src/types/announcement/announcementResponseTypes";
+import { MissingAuthError, UnauthorizedError } from "src/errors";
+import { AnnouncementListItem } from "src/types/announcement/announcementResponseTypes";
 import { UserSession } from "src/types/authTypes";
 import { LocalizedPageProps } from "src/types/intl";
 import { FeatureFlaggedPageWrapper } from "src/types/uiTypes";
-import { DeepPartial } from "src/utils/testing/commonTestUtils";
 import { localeParams, useTranslationsMock } from "src/utils/testing/intlMocks";
-import { UserPrivilegeResult } from "src/utils/userPrivileges";
 
 import { FunctionComponent, ReactNode } from "react";
 
@@ -30,17 +28,15 @@ jest.mock("next-intl/server", () => ({
   getTranslations: identity,
 }));
 
-const withFeatureFlagMock = jest
-  .fn()
-  .mockImplementation(
-    (
-      WrappedComponent: FunctionComponent<LocalizedPageProps>,
-      _featureFlagName: string,
-      _onEnabled: onEnabled,
-    ) =>
-      (props: { params: Promise<{ locale: string }> }) =>
-        WrappedComponent(props) as unknown,
-  );
+const withFeatureFlagMock = jest.fn().mockImplementation(
+  (
+    WrappedComponent: FunctionComponent<LocalizedPageProps>,
+    _featureFlagName: string,
+    _onEnabled: onEnabled,
+  ) =>
+    (props: { params: Promise<{ locale: string }> }) =>
+      WrappedComponent(props) as unknown,
+);
 
 jest.mock("src/services/featureFlags/withFeatureFlag", () => ({
   __esModule: true,
@@ -63,16 +59,6 @@ jest.mock("src/services/featureFlags/withFeatureFlag", () => ({
       )(props) as FunctionComponent<LocalizedPageProps>,
 }));
 
-// Minimal, test-only agency shape for this page's fixtures/mocks. Intentionally not
-// RelevantAgencyRecord (the real return type of getUserAgencies): these fixtures use
-// string agency_ids so they can flow through the `?agency=<id>` search-param assertions
-// below, whereas RelevantAgencyRecord.agency_id is numeric.
-interface UserAgency {
-  agency_id: string;
-  agency_name: string;
-  agency_code: string;
-}
-
 const redirectMock = jest.fn();
 
 jest.mock("next/navigation", () => ({
@@ -82,99 +68,21 @@ jest.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams("page=1"),
 }));
 
-jest.mock("src/app/[locale]/announcements/_components/AgencySelector", () => ({
-  AgencySelector: ({
-    agencies,
-    className,
-  }: {
-    agencies: UserAgency[];
-    className?: string;
-  }) => (
-    <div>
-      <label htmlFor="agency-selector-mock" data-testid="agency-selector-label">
-        Select Agency
-      </label>
-      <select
-        id="agency-selector-mock"
-        data-testid="agency-selector"
-        data-classname={className}
-      >
-        {agencies.map((a) => (
-          <option key={a.agency_id} value={a.agency_id}>
-            {a.agency_name}
-          </option>
-        ))}
-      </select>
-    </div>
-  ),
-}));
-
 const userSession: UserSession = {
   token: "fake token",
   user_id: "fake_user_id",
   session_duration_minutes: 15,
 };
-const userPrivileges: UserPrivilegeResult[] = [
-  {
-    resourceId: "agency-uuid-1",
-    resourceType: "agency",
-    privilege: "view_opportunity",
-    authorized: true,
-  },
-  {
-    resourceId: "agency-uuid-1",
-    resourceType: "agency",
-    privilege: "update_opportunity",
-    authorized: true,
-  },
-  {
-    resourceId: "agency-uuid-1",
-    resourceType: "agency",
-    privilege: "create_opportunity",
-    authorized: true,
-  },
-];
-const readOnlyPrivilege: UserPrivilegeResult[] = [
-  {
-    resourceId: "agency-uuid-1",
-    resourceType: "agency",
-    privilege: "view_opportunity",
-    authorized: true,
-  },
-  {
-    resourceId: "agency-uuid-1",
-    resourceType: "agency",
-    privilege: "update_opportunity",
-    authorized: false,
-  },
-  {
-    resourceId: "agency-uuid-1",
-    resourceType: "agency",
-    privilege: "create_opportunity",
-    authorized: false,
-  },
-];
 
-const mockSearchForOpportunities = jest.fn().mockResolvedValue({
+const mockSearchForAnnouncements = jest.fn().mockResolvedValue({
   data: [],
   pagination_info: { total_pages: 0, total_records: 0 },
 });
-const mockFetchUserAgencies = jest.fn().mockResolvedValue([]);
-const mockCheckUserPrivileges = jest.fn().mockResolvedValue(userPrivileges);
 const mockGetSession = jest.fn().mockResolvedValue(userSession);
 
 jest.mock("src/services/fetch/fetchers/grantorAnnouncementFetcher", () => ({
-  searchOpportunitiesByAgency: (arg: unknown): unknown =>
-    mockSearchForOpportunities(arg) as Promise<BaseAnnouncement[]>,
-}));
-
-jest.mock("src/services/fetch/fetchers/agenciesFetcher", () => ({
-  getUserAgencies: () => mockFetchUserAgencies() as Promise<UserAgency[]>,
-}));
-
-jest.mock("src/utils/userPrivileges", () => ({
-  checkRequiredPrivileges: () =>
-    mockCheckUserPrivileges() as Promise<UserPrivilegeResult[]>,
+  searchAccessibleAnnouncements: (arg: unknown): unknown =>
+    mockSearchForAnnouncements(arg) as Promise<AnnouncementListItem[]>,
 }));
 
 jest.mock("src/services/auth/session", () => ({
@@ -189,29 +97,22 @@ jest.mock("src/app/[locale]/error/page", () => ({
   ),
 }));
 
-const agency1: UserAgency = {
-  agency_id: "agency-uuid-1",
-  agency_name: "Agency One",
-  agency_code: "AGY1",
-};
-
-const agency2: UserAgency = {
-  agency_id: "agency-uuid-2",
-  agency_name: "Agency Two",
-  agency_code: "AGY2",
-};
-
-const basicOpportunity: DeepPartial<BaseAnnouncement> = {
-  agency_code: "AGY1",
-  agency_name: "Agency One",
-  opportunity_id: "89a44d32-0d90-4514-85a9-d5491f1c454d",
-  opportunity_status: "posted",
-  opportunity_title: "Test Opportunity",
-  opportunity_number: "FO-26-00001",
+const baseAnnouncement: AnnouncementListItem = {
+  announcement_id: "89a44d32-0d90-4514-85a9-d5491f1c454d",
+  announcement_title: "Test Announcement",
+  announcement_number: "FO-26-00001",
+  created_at: "2024-04-29T06:43:00Z",
   updated_at: "2024-04-29T06:43:00Z",
+  summary: {
+    close_timestamp: null,
+    is_forecast: false,
+    post_timestamp: "2024-04-29T06:43:00Z",
+    archive_timestamp: null,
+    funding_instruments: [],
+  },
 };
 
-describe("Opportunities", () => {
+describe("Announcements", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     withFeatureFlagMock.mockImplementation(
@@ -225,636 +126,148 @@ describe("Opportunities", () => {
     );
   });
 
-  describe("user has no agencies", () => {
-    beforeEach(() => {
-      mockFetchUserAgencies.mockResolvedValue([]);
-    });
+  it("renders no announcements message when list is empty", async () => {
+    const component = await OpportunitiesListPage({ params: localeParams });
+    render(component);
 
-    it("renders no agencies message", async () => {
-      const component = await OpportunitiesListPage({ params: localeParams });
-      render(component);
-
-      expect(await screen.findByTestId("alert")).toBeVisible();
-    });
-
-    it("passes accessibility scan", async () => {
-      const component = await OpportunitiesListPage({ params: localeParams });
-      const { container } = render(component);
-      const results = await waitFor(() => axe(container));
-
-      expect(results).toHaveNoViolations();
-    });
+    expect(await screen.findByText("primary")).toBeVisible();
   });
 
-  describe("no agency param in URL", () => {
-    beforeEach(() => {
-      mockFetchUserAgencies.mockResolvedValue([agency2, agency1]);
-    });
+  it("passes accessibility scan", async () => {
+    const component = await OpportunitiesListPage({ params: localeParams });
+    const { container } = render(component);
+    const results = await waitFor(() => axe(container));
 
-    it("redirects to deterministic default agency", async () => {
-      await OpportunitiesListPage({ params: localeParams });
-
-      expect(redirectMock).toHaveBeenCalledWith(`?agency=${agency1.agency_id}`);
-    });
+    expect(results).toHaveNoViolations();
   });
 
-  describe("agency param is not in user's agencies", () => {
-    beforeEach(() => {
-      mockFetchUserAgencies.mockResolvedValue([agency1]);
+  it("renders announcements from backend contract fields", async () => {
+    mockSearchForAnnouncements.mockResolvedValue({
+      data: [baseAnnouncement],
+      pagination_info: { total_pages: 1, total_records: 1 },
     });
 
-    it("renders not authorized message", async () => {
-      const component = await OpportunitiesListPage({
-        params: localeParams,
-        searchParams: Promise.resolve({ agency: "unknown-agency-uuid" }),
-      });
-      render(component);
+    const component = await OpportunitiesListPage({ params: localeParams });
+    render(component);
 
-      expect(await screen.findByTestId("alert")).toBeVisible();
-    });
+    expect(await screen.findByText("Test Announcement")).toBeVisible();
+    expect(await screen.findByText("FO-26-00001")).toBeVisible();
+    expect(mockSearchForAnnouncements).toHaveBeenCalled();
   });
 
-  describe("single agency user", () => {
-    beforeEach(() => {
-      mockFetchUserAgencies.mockResolvedValue([agency1]);
+  it("renders announcement count", async () => {
+    mockSearchForAnnouncements.mockResolvedValue({
+      data: [baseAnnouncement],
+      pagination_info: { total_pages: 1, total_records: 1 },
     });
 
-    it("does not render agency selector", async () => {
-      mockSearchForOpportunities.mockResolvedValue({
-        data: [basicOpportunity],
-        pagination_info: { total_pages: 1, total_records: 1 },
-      });
-      const component = await OpportunitiesListPage({
-        params: localeParams,
-        searchParams: Promise.resolve({ agency: agency1.agency_id }),
-      });
-      render(component);
+    const component = await OpportunitiesListPage({ params: localeParams });
+    render(component);
 
-      expect(screen.queryByTestId("agency-selector")).not.toBeInTheDocument();
-    });
-
-    it("renders opportunities filtered by agency", async () => {
-      mockSearchForOpportunities.mockResolvedValue({
-        data: [basicOpportunity],
-        pagination_info: { total_pages: 1, total_records: 1 },
-      });
-      const component = await OpportunitiesListPage({
-        params: localeParams,
-        searchParams: Promise.resolve({ agency: agency1.agency_id }),
-      });
-      render(component);
-
-      expect(await screen.findByText("Test Opportunity")).toBeVisible();
-    });
-
-    it("normalizes array agency search param by using first value", async () => {
-      mockSearchForOpportunities.mockResolvedValue({
-        data: [basicOpportunity],
-        pagination_info: { total_pages: 1, total_records: 1 },
-      });
-      const component = await OpportunitiesListPage({
-        params: localeParams,
-        searchParams: Promise.resolve({
-          agency: [agency1.agency_id, agency2.agency_id],
-        }) as unknown as Promise<Record<string, string | undefined>>,
-      });
-      render(component);
-
-      expect(await screen.findByText("Test Opportunity")).toBeVisible();
-      expect(mockSearchForOpportunities).toHaveBeenCalled();
-    });
-
-    it("renders both opportunity count and agency label", async () => {
-      mockSearchForOpportunities.mockResolvedValue({
-        data: [basicOpportunity],
-        pagination_info: { total_pages: 1, total_records: 1 },
-      });
-      const component = await OpportunitiesListPage({
-        params: localeParams,
-        searchParams: Promise.resolve({ agency: agency1.agency_id }),
-      });
-      render(component);
-
-      expect(await screen.findByText("numOpportunities")).toBeVisible();
-      expect(await screen.findByText("showingOpportunitiesFor")).toBeVisible();
-    });
-
-    it("renders no opportunities message when list is empty", async () => {
-      mockSearchForOpportunities.mockResolvedValue({
-        data: [],
-        pagination_info: { total_pages: 0, total_records: 0 },
-      });
-      const component = await OpportunitiesListPage({
-        params: localeParams,
-        searchParams: Promise.resolve({ agency: agency1.agency_id }),
-      });
-      render(component);
-
-      expect(await screen.findByText("primary")).toBeVisible();
-    });
-
-    it("redirects to the last available page when page param is out of range", async () => {
-      mockSearchForOpportunities.mockResolvedValue({
-        data: [],
-        pagination_info: { total_pages: 1, total_records: 7 },
-      });
-
-      await OpportunitiesListPage({
-        params: localeParams,
-        searchParams: Promise.resolve({ agency: agency1.agency_id, page: "2" }),
-      });
-
-      expect(redirectMock).toHaveBeenCalledWith(
-        `?agency=${agency1.agency_id}&page=1`,
-      );
-    });
-
-    it("renders create opportunity button when list is empty", async () => {
-      mockSearchForOpportunities.mockResolvedValue({
-        data: [],
-        pagination_info: { total_pages: 0, total_records: 0 },
-      });
-      const component = await OpportunitiesListPage({
-        params: localeParams,
-        searchParams: Promise.resolve({ agency: agency1.agency_id }),
-      });
-      render(component);
-
-      const createOpportunityLink = screen.getByRole("link", {
-        name: "createOpportunityButton",
-      });
-      expect(createOpportunityLink).toBeVisible();
-      expect(createOpportunityLink).toHaveAttribute(
-        "href",
-        "/announcements/create?agency=agency-uuid-1",
-      );
-    });
-
-    it("passes accessibility scan", async () => {
-      mockSearchForOpportunities.mockResolvedValue({
-        data: [basicOpportunity],
-        pagination_info: { total_pages: 1, total_records: 1 },
-      });
-      const component = await OpportunitiesListPage({
-        params: localeParams,
-        searchParams: Promise.resolve({ agency: agency1.agency_id }),
-      });
-      const { container } = render(component);
-      const results = await waitFor(() => axe(container));
-
-      expect(results).toHaveNoViolations();
-    });
+    expect(await screen.findByText("numOpportunities")).toBeVisible();
   });
 
-  describe("multi-agency user", () => {
-    beforeEach(() => {
-      mockFetchUserAgencies.mockResolvedValue([agency1, agency2]);
-      mockSearchForOpportunities.mockResolvedValue({
-        data: [],
-        pagination_info: { total_pages: 0, total_records: 0 },
-      });
+  it("redirects to last page when out of range", async () => {
+    mockSearchForAnnouncements.mockResolvedValue({
+      data: [],
+      pagination_info: { total_pages: 1, total_records: 7 },
     });
 
-    it("renders agency selector dropdown", async () => {
-      const component = await OpportunitiesListPage({
-        params: localeParams,
-        searchParams: Promise.resolve({ agency: agency1.agency_id }),
-      });
-      render(component);
-
-      expect(await screen.findByTestId("agency-selector")).toBeVisible();
+    await OpportunitiesListPage({
+      params: localeParams,
+      searchParams: Promise.resolve({ page: "2" }),
     });
 
-    it("renders create opportunity button alongside agency selector", async () => {
-      const component = await OpportunitiesListPage({
-        params: localeParams,
-        searchParams: Promise.resolve({ agency: agency1.agency_id }),
-      });
-      render(component);
-
-      expect(await screen.findByTestId("agency-selector")).toBeVisible();
-      expect(
-        await screen.findByRole("link", { name: "createOpportunityButton" }),
-      ).toBeVisible();
-    });
-
-    it("renders opportunity count above the selector row", async () => {
-      const component = await OpportunitiesListPage({
-        params: localeParams,
-        searchParams: Promise.resolve({ agency: agency1.agency_id }),
-      });
-      render(component);
-
-      expect(await screen.findByText("numOpportunities")).toBeVisible();
-    });
-
-    it("passes accessibility scan", async () => {
-      const component = await OpportunitiesListPage({
-        params: localeParams,
-        searchParams: Promise.resolve({ agency: agency1.agency_id }),
-      });
-      const { container } = render(component);
-      const results = await waitFor(() => axe(container));
-
-      expect(results).toHaveNoViolations();
-    });
+    expect(redirectMock).toHaveBeenCalledWith("?page=1");
   });
 
-  describe("error fetching agencies", () => {
-    it("renders error alert for general errors", async () => {
-      mockFetchUserAgencies.mockRejectedValue(new Error("network failure"));
-      const component = await OpportunitiesListPage({ params: localeParams });
-      render(component);
+  it("renders create announcement button", async () => {
+    const component = await OpportunitiesListPage({ params: localeParams });
+    render(component);
 
-      expect(await screen.findByTestId("alert")).toBeVisible();
+    const createAnnouncementLink = screen.getByRole("link", {
+      name: "createOpportunityButton",
     });
+    expect(createAnnouncementLink).toBeVisible();
+    expect(createAnnouncementLink).toHaveAttribute("href", "/announcements/create");
   });
 
-  describe("error fetching opportunities", () => {
-    beforeEach(() => {
-      mockFetchUserAgencies.mockResolvedValue([agency1]);
-    });
+  it("renders unauthenticated page for missing auth", async () => {
+    mockSearchForAnnouncements.mockRejectedValue(
+      new MissingAuthError("missing auth"),
+    );
 
-    it("renders error alert for general errors", async () => {
-      mockSearchForOpportunities.mockRejectedValue(new Error("failure"));
-      const component = await OpportunitiesListPage({
-        params: localeParams,
-        searchParams: Promise.resolve({ agency: agency1.agency_id }),
-      });
-      render(component);
+    const component = await OpportunitiesListPage({ params: localeParams });
+    render(component);
 
-      expect(await screen.findByTestId("alert")).toBeVisible();
-    });
-
-    it("unauthorized errors propagate up the stack", async () => {
-      mockSearchForOpportunities.mockRejectedValue(
-        new UnauthorizedError("No active session"),
-      );
-      await expect(
-        OpportunitiesListPage({
-          params: localeParams,
-          searchParams: Promise.resolve({ agency: agency1.agency_id }),
-        }),
-      ).rejects.toThrow();
-    });
+    expect(await screen.findByText("unauthenticated")).toBeVisible();
   });
 
-  describe("single agency opportunity list", () => {
-    beforeEach(() => {
-      mockFetchUserAgencies.mockResolvedValue([agency1]);
-      mockSearchForOpportunities.mockResolvedValue({
-        data: [basicOpportunity],
-        pagination_info: { total_pages: 1, total_records: 1 },
-      });
-    });
+  it("renders error alert for general fetch errors", async () => {
+    mockSearchForAnnouncements.mockRejectedValue(new Error("failure"));
+    const component = await OpportunitiesListPage({ params: localeParams });
+    render(component);
 
-    it("passes accessibility scan", async () => {
-      const component = await OpportunitiesListPage({
-        params: localeParams,
-        searchParams: Promise.resolve({ agency: agency1.agency_id }),
-      });
-      const { container } = render(component);
-      const results = await waitFor(() => axe(container));
-
-      expect(results).toHaveNoViolations();
-    });
-
-    it("renders headings", async () => {
-      const component = await OpportunitiesListPage({
-        params: localeParams,
-        searchParams: Promise.resolve({ agency: agency1.agency_id }),
-      });
-      render(component);
-
-      expect(screen.getAllByText("tableHeadings.title")).toHaveLength(2);
-      expect(screen.getAllByText("tableHeadings.oppNumber")).toHaveLength(2);
-      expect(
-        screen.getAllByText("tableHeadings.fundingInstrumentType"),
-      ).toHaveLength(2);
-      expect(screen.getAllByText("tableHeadings.lastUpdated")).toHaveLength(2);
-      expect(screen.getAllByText("tableHeadings.status")).toHaveLength(2);
-      expect(screen.getAllByText("tableHeadings.actions")).toHaveLength(2);
-    });
-
-    it("renders opportunity name and number", async () => {
-      const component = await OpportunitiesListPage({
-        params: localeParams,
-        searchParams: Promise.resolve({ agency: agency1.agency_id }),
-      });
-      render(component);
-
-      expect(await screen.findByText("Test Opportunity")).toBeVisible();
-      expect(await screen.findByText("FO-26-00001")).toBeVisible();
-    });
-
-    it("renders create opportunity button with placeholder URL", async () => {
-      const component = await OpportunitiesListPage({
-        params: localeParams,
-        searchParams: Promise.resolve({ agency: agency1.agency_id }),
-      });
-      render(component);
-
-      const createOpportunityLink = screen.getByRole("link", {
-        name: "createOpportunityButton",
-      });
-      expect(createOpportunityLink).toBeVisible();
-      expect(createOpportunityLink).toHaveAttribute(
-        "href",
-        "/announcements/create?agency=agency-uuid-1",
-      );
-    });
-
-    it("renders status tag", async () => {
-      const component = await OpportunitiesListPage({
-        params: localeParams,
-        searchParams: Promise.resolve({ agency: agency1.agency_id }),
-      });
-      render(component);
-
-      expect(await screen.findByTestId("opportunity-status-tag")).toBeVisible();
-    });
+    expect(await screen.findByTestId("alert")).toBeVisible();
   });
 
-  describe("user privileges", () => {
-    const draftOpportunity = {
-      ...basicOpportunity,
-      is_draft: true,
-      is_simpler_grants_opportunity: true,
-    };
-    draftOpportunity.opportunity_status = undefined;
-    beforeEach(() => {
-      mockFetchUserAgencies.mockResolvedValue([agency1]);
-      mockSearchForOpportunities.mockResolvedValue({
-        data: [draftOpportunity],
-        pagination_info: { total_pages: 1, total_records: 1 },
-      });
-    });
+  it("rethrows unauthorized errors", async () => {
+    mockSearchForAnnouncements.mockRejectedValue(
+      new UnauthorizedError("No active session"),
+    );
 
-    it("with read, update and create privileges", async () => {
-      const component = await OpportunitiesListPage({
+    await expect(
+      OpportunitiesListPage({
         params: localeParams,
-        searchParams: Promise.resolve({ agency: agency1.agency_id }),
-      });
-      render(component);
-
-      expect(
-        await screen.findByTestId("opportunity-status-draft"),
-      ).toBeVisible();
-
-      // Click the popover menu button to reveal Edit link
-      const popoverButton = screen.getByRole("button", { expanded: false });
-      fireEvent.click(popoverButton);
-
-      expect(
-        await screen.findByRole("link", { name: "actionButtons.edit" }),
-      ).toBeVisible();
-      expect(
-        await screen.findByRole("link", { name: "createOpportunityButton" }),
-      ).toBeVisible();
-
-      const editLink =
-        "/announcement/" + basicOpportunity.opportunity_id + "/edit";
-      const oppTitlelink = screen.getByRole("link", {
-        name: "Test Opportunity",
-      });
-      expect(oppTitlelink).toHaveAttribute("href", editLink);
-    });
-
-    it("with read only privilege", async () => {
-      mockCheckUserPrivileges.mockResolvedValue(readOnlyPrivilege);
-      const component = await OpportunitiesListPage({
-        params: localeParams,
-        searchParams: Promise.resolve({ agency: agency1.agency_id }),
-      });
-      render(component);
-
-      expect(
-        await screen.findByTestId("opportunity-status-draft"),
-      ).toBeVisible();
-      // the href link should not be displayed (no action menu for read-only)
-      expect(
-        screen.queryByRole("link", { name: "actionButtons.edit" }),
-      ).not.toBeInTheDocument();
-      // the opportunity title should not have any links
-      expect(
-        screen.queryByRole("link", { name: "Test Opportunity" }),
-      ).not.toBeInTheDocument();
-      // the create button should not be displayed
-      expect(
-        screen.queryByRole("link", { name: "createOpportunityButton" }),
-      ).not.toBeInTheDocument();
-    });
-
-    it("with no read/view privilege", async () => {
-      mockCheckUserPrivileges.mockResolvedValue([]);
-      mockSearchForOpportunities.mockResolvedValue({
-        data: [],
-        pagination_info: { total_pages: 0, total_records: 0 },
-      });
-
-      const component = await OpportunitiesListPage({
-        params: localeParams,
-        searchParams: Promise.resolve({ agency: agency1.agency_id }),
-      });
-      render(component);
-
-      expect(await screen.findByText("agencyNotAuthorized")).toBeVisible();
-    });
-
-    it("renders error alert for checkUserPrivileges", async () => {
-      mockCheckUserPrivileges.mockRejectedValue(new Error("failure"));
-      const component = await OpportunitiesListPage({
-        params: localeParams,
-        searchParams: Promise.resolve({ agency: agency1.agency_id }),
-      });
-      render(component);
-
-      expect(await screen.findByTestId("alert")).toBeVisible();
-    });
+      }),
+    ).rejects.toThrow();
   });
 
-  describe("different opportunity status", () => {
-    // start with a SGM draft opportunity
-    const sgmOpportunity = {
-      ...basicOpportunity,
-      is_draft: true,
-      is_simpler_grants_opportunity: true,
-    };
-    sgmOpportunity.opportunity_status = undefined;
-    beforeEach(() => {
-      mockCheckUserPrivileges.mockResolvedValue(userPrivileges);
-      mockFetchUserAgencies.mockResolvedValue([agency1]);
+  it("shows forecasted status tag for forecast announcements", async () => {
+    mockSearchForAnnouncements.mockResolvedValue({
+      data: [
+        {
+          ...baseAnnouncement,
+          summary: {
+            ...baseAnnouncement.summary,
+            is_forecast: true,
+          },
+        },
+      ],
+      pagination_info: { total_pages: 1, total_records: 1 },
     });
 
-    it("for SGM draft opportunities, render action menu with edit button", async () => {
-      mockSearchForOpportunities.mockResolvedValue({
-        data: [sgmOpportunity],
-        pagination_info: { total_pages: 1, total_records: 1 },
-      });
-      const component = await OpportunitiesListPage({
-        params: localeParams,
-        searchParams: Promise.resolve({ agency: agency1.agency_id }),
-      });
-      render(component);
+    const component = await OpportunitiesListPage({ params: localeParams });
+    render(component);
 
-      expect(
-        await screen.findByTestId("opportunity-status-draft"),
-      ).toBeVisible();
+    expect(await screen.findByTestId("opportunity-status-forecasted")).toBeVisible();
 
-      // Click the popover menu button to reveal Edit link
-      const popoverButton = screen.getByRole("button", { expanded: false });
-      fireEvent.click(popoverButton);
+    const popoverButton = screen.getByRole("button", { expanded: false });
+    fireEvent.click(popoverButton);
 
-      expect(screen.getByText(/actionButtons.edit/i)).toBeInTheDocument();
-      // TODO: Copy and Delete will be added in a separate ticket
+    expect(screen.getByText(/actionButtons.edit/i)).toBeInTheDocument();
+  });
+
+  it("shows posted status tag for active announcements", async () => {
+    mockSearchForAnnouncements.mockResolvedValue({
+      data: [baseAnnouncement],
+      pagination_info: { total_pages: 1, total_records: 1 },
     });
 
-    it("for SGM posted opportunities, render view opportunity link and action menu", async () => {
-      sgmOpportunity.is_draft = false;
-      sgmOpportunity.opportunity_status = "posted";
-      mockSearchForOpportunities.mockResolvedValue({
-        data: [sgmOpportunity],
-        pagination_info: { total_pages: 1, total_records: 1 },
-      });
-      const component = await OpportunitiesListPage({
-        params: localeParams,
-        searchParams: Promise.resolve({ agency: agency1.agency_id }),
-      });
-      render(component);
+    const component = await OpportunitiesListPage({ params: localeParams });
+    render(component);
 
-      expect(
-        await screen.findByTestId("opportunity-status-posted"),
-      ).toBeVisible();
-      const viewLink = "/announcement/" + sgmOpportunity.opportunity_id;
-      const oppTitlelink = screen.getByRole("link", {
-        name: "Test Opportunity",
-      });
-      expect(oppTitlelink).toHaveAttribute("href", viewLink);
+    expect(await screen.findByTestId("opportunity-status-posted")).toBeVisible();
 
-      // Click the popover menu button to reveal Edit link
-      const popoverButton = screen.getByRole("button", { expanded: false });
-      fireEvent.click(popoverButton);
-
-      expect(screen.getByText(/actionButtons.edit/i)).toBeInTheDocument();
+    const viewLink = "/announcement/" + baseAnnouncement.announcement_id;
+    const announcementTitleLink = screen.getByRole("link", {
+      name: "Test Announcement",
     });
+    expect(announcementTitleLink).toHaveAttribute("href", viewLink);
 
-    it("for SGM forecasted opportunities, render view opportunity link and action menu", async () => {
-      sgmOpportunity.is_draft = false;
-      sgmOpportunity.opportunity_status = "forecasted";
-      mockSearchForOpportunities.mockResolvedValue({
-        data: [sgmOpportunity],
-        pagination_info: { total_pages: 1, total_records: 1 },
-      });
-      const component = await OpportunitiesListPage({
-        params: localeParams,
-        searchParams: Promise.resolve({ agency: agency1.agency_id }),
-      });
-      render(component);
+    const popoverButton = screen.getByRole("button", { expanded: false });
+    fireEvent.click(popoverButton);
 
-      expect(
-        await screen.findByTestId("opportunity-status-forecasted"),
-      ).toBeVisible();
-      const viewLink = "/announcement/" + sgmOpportunity.opportunity_id;
-      const oppTitlelink = screen.getByRole("link", {
-        name: "Test Opportunity",
-      });
-      expect(oppTitlelink).toHaveAttribute("href", viewLink);
-
-      // Click the popover menu button to reveal Edit link
-      const popoverButton = screen.getByRole("button", { expanded: false });
-      fireEvent.click(popoverButton);
-
-      expect(screen.getByText(/actionButtons.edit/i)).toBeInTheDocument();
-    });
-
-    it("for SGM closed opportunities, render view opportunity link only", async () => {
-      sgmOpportunity.is_draft = false;
-      sgmOpportunity.opportunity_status = "closed";
-      mockSearchForOpportunities.mockResolvedValue({
-        data: [sgmOpportunity],
-        pagination_info: { total_pages: 1, total_records: 1 },
-      });
-      const component = await OpportunitiesListPage({
-        params: localeParams,
-        searchParams: Promise.resolve({ agency: agency1.agency_id }),
-      });
-      render(component);
-
-      expect(
-        await screen.findByTestId("opportunity-status-closed"),
-      ).toBeVisible();
-      const viewLink = "/announcement/" + sgmOpportunity.opportunity_id;
-      const oppTitlelink = screen.getByRole("link", {
-        name: "Test Opportunity",
-      });
-      expect(oppTitlelink).toHaveAttribute("href", viewLink);
-    });
-
-    it("for SGM archived opportunities, render view opportunity link only", async () => {
-      sgmOpportunity.is_draft = false;
-      sgmOpportunity.opportunity_status = "archived";
-      mockSearchForOpportunities.mockResolvedValue({
-        data: [sgmOpportunity],
-        pagination_info: { total_pages: 1, total_records: 1 },
-      });
-      const component = await OpportunitiesListPage({
-        params: localeParams,
-        searchParams: Promise.resolve({ agency: agency1.agency_id }),
-      });
-      render(component);
-
-      expect(
-        await screen.findByTestId("opportunity-status-archived"),
-      ).toBeVisible();
-      const viewLink = "/announcement/" + sgmOpportunity.opportunity_id;
-      const oppTitlelink = screen.getByRole("link", {
-        name: "Test Opportunity",
-      });
-      expect(oppTitlelink).toHaveAttribute("href", viewLink);
-    });
-
-    it("for Grants.gov posted opportunities, render view opportunity link and posted status", async () => {
-      basicOpportunity.opportunity_status = "posted";
-      mockSearchForOpportunities.mockResolvedValue({
-        data: [basicOpportunity],
-        pagination_info: { total_pages: 1, total_records: 1 },
-      });
-      const component = await OpportunitiesListPage({
-        params: localeParams,
-        searchParams: Promise.resolve({ agency: agency1.agency_id }),
-      });
-      render(component);
-
-      expect(
-        await screen.findByTestId("opportunity-status-posted"),
-      ).toBeVisible();
-      const viewLink = "/announcement/" + basicOpportunity.opportunity_id;
-      const oppTitlelink = screen.getByRole("link", {
-        name: "Test Opportunity",
-      });
-      expect(oppTitlelink).toHaveAttribute("href", viewLink);
-    });
-
-    it("for Grants.gov forecasted opportunities, render view opportunity link and forecasted status", async () => {
-      basicOpportunity.opportunity_status = "forecasted";
-      mockSearchForOpportunities.mockResolvedValue({
-        data: [basicOpportunity],
-        pagination_info: { total_pages: 1, total_records: 1 },
-      });
-      const component = await OpportunitiesListPage({
-        params: localeParams,
-        searchParams: Promise.resolve({ agency: agency1.agency_id }),
-      });
-      render(component);
-
-      expect(
-        await screen.findByTestId("opportunity-status-forecasted"),
-      ).toBeVisible();
-      const viewLink = "/announcement/" + basicOpportunity.opportunity_id;
-      const oppTitlelink = screen.getByRole("link", {
-        name: "Test Opportunity",
-      });
-      expect(oppTitlelink).toHaveAttribute("href", viewLink);
-    });
+    expect(screen.getByText(/actionButtons.edit/i)).toBeInTheDocument();
   });
 });

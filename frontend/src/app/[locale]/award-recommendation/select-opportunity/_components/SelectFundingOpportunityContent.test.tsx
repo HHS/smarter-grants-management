@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createAwardRecommendationAction } from "src/app/[locale]/award-recommendation/select-opportunity/actions";
-import { BaseAnnouncement } from "src/types/announcement/announcementResponseTypes";
+import { AnnouncementListItem } from "src/types/announcement/announcementResponseTypes";
 
 import { SelectFundingOpportunityContent } from "./SelectFundingOpportunityContent";
 
@@ -41,39 +41,34 @@ describe("SelectFundingOpportunityContent", () => {
     jest.clearAllMocks();
   });
 
-  const mockFundingOpportunity = (
-    overrides: Partial<BaseAnnouncement> = {},
-  ): BaseAnnouncement =>
+  const mockAnnouncement = (
+    overrides: Partial<AnnouncementListItem> = {},
+  ): AnnouncementListItem =>
     ({
-      opportunity_id: "opp-1",
-      opportunity_number: "OPP-001",
-      opportunity_title: "Test Opportunity",
-      submitted_application_count: 3,
-
-      agency_code: null,
-      agency_name: null,
-      category: null,
-      category_explanation: null,
+      announcement_id: "opp-1",
+      announcement_number: "OPP-001",
+      announcement_title: "Test Opportunity",
       created_at: "2026-06-23T00:00:00Z",
       updated_at: "2026-06-23T00:00:00Z",
-      opportunity_assistance_listings: [],
-      top_level_agency_name: null,
-      is_draft: false,
-      is_simpler_grants_opportunity: true,
-      saved_to_organizations: [],
-      summary: {} as BaseAnnouncement["summary"],
+      summary: {
+        close_timestamp: null,
+        is_forecast: false,
+        post_timestamp: "2026-06-23T00:00:00Z",
+        archive_timestamp: null,
+        funding_instruments: [],
+      },
 
       ...overrides,
-    }) as BaseAnnouncement;
+    }) as AnnouncementListItem;
 
-  const mockFundingOpportunities: BaseAnnouncement[] = [
-    mockFundingOpportunity(),
+  const mockAnnouncements: AnnouncementListItem[] = [
+    mockAnnouncement(),
   ];
 
   it("renders the funding opportunity heading", () => {
     render(
       <SelectFundingOpportunityContent
-        fundingOpportunities={mockFundingOpportunities}
+        announcements={mockAnnouncements}
       />,
     );
 
@@ -88,19 +83,19 @@ describe("SelectFundingOpportunityContent", () => {
   it("renders the funding opportunities table", () => {
     render(
       <SelectFundingOpportunityContent
-        fundingOpportunities={mockFundingOpportunities}
+        announcements={mockAnnouncements}
       />,
     );
 
     expect(screen.getByText("OPP-001")).toBeInTheDocument();
     expect(screen.getByText("Test Opportunity")).toBeInTheDocument();
-    expect(screen.getByText("3")).toBeInTheDocument();
+    expect(screen.getByText("0")).toBeInTheDocument();
   });
 
   it("renders the cancel button", () => {
     render(
       <SelectFundingOpportunityContent
-        fundingOpportunities={mockFundingOpportunities}
+        announcements={mockAnnouncements}
       />,
     );
 
@@ -116,7 +111,7 @@ describe("SelectFundingOpportunityContent", () => {
 
     render(
       <SelectFundingOpportunityContent
-        fundingOpportunities={mockFundingOpportunities}
+        announcements={mockAnnouncements}
       />,
     );
 
@@ -134,7 +129,7 @@ describe("SelectFundingOpportunityContent", () => {
 
     render(
       <SelectFundingOpportunityContent
-        fundingOpportunities={mockFundingOpportunities}
+        announcements={mockAnnouncements}
       />,
     );
 
