@@ -3,7 +3,13 @@
 # For more information on any settings you can specify, see the actions' documentation here
 # https://github.com/hadolint/hadolint#configure
 failure-threshold: warning
-ignored: []
+ignored:
+  # Ignores the dnf install <package>-<version> finding
+  - DL3041
+  # Ignores the multiple consecutive `RUN` instructions finding
+  - DL3059
+  # Ignores the unquoted for loop glob finding
+  - SC2231
 override:
   info:
     # Casts the apt-get install <package>=<version> finding as info

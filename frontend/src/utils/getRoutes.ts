@@ -29,10 +29,10 @@ export function getNextRoutes(src: string): string[] {
     const route = relativePath
       ? "/" +
         relativePath
-          .replace("/page.tsx", "")
+          .replace(/[\\/]page\.tsx$/, "")
           .replace(/\[locale\]/g, "")
           .replace(/\\/g, "/")
-          .replace(/\[id\]/g, "1") // for id-based routes like /opportunity/[id]
+          .replace(/\[id\]/g, "1") // for id-based routes like /announcement/[id]
       : "/";
     return route.replace(/\/\//g, "/");
   });

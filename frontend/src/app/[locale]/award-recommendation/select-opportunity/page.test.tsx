@@ -3,7 +3,7 @@ import SelectOpportunityPage, {
   generateMetadata,
 } from "src/app/[locale]/award-recommendation/select-opportunity/page";
 
-jest.mock("src/services/fetch/fetchers/grantorOpportunitiesFetcher", () => ({
+jest.mock("src/services/fetch/fetchers/grantorAnnouncementFetcher", () => ({
   searchAccessibleOpportunities: jest.fn(() =>
     Promise.resolve({
       data: [],

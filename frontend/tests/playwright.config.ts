@@ -1,9 +1,29 @@
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig, devices, Project } from "@playwright/test";
 
 import playwrightEnv from "./e2e/playwright-env";
 
-const { baseUrl, targetEnv, webServerEnv, isCi, totalShards, currentShard } =
-  playwrightEnv;
+const {
+  baseUrl,
+  targetEnv,
+  webServerEnv,
+  isCi,
+  totalShards,
+  currentShard,
+  playwrightProjects,
+} = playwrightEnv;
+
+// If playwrightProjects is set (e.g. "Chrome" on PR runs), only run the
+// requested projects. Leave blank to run every project defined below.
+const requestedProjectNames = playwrightProjects
+  ? playwrightProjects.split(",").map((name) => name.trim())
+  : null;
+const filterProjects = (allProjects: Project[]): Project[] =>
+  requestedProjectNames
+    ? allProjects.filter(
+        (project) =>
+          project.name && requestedProjectNames.includes(project.name),
+      )
+    : allProjects;
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -47,7 +67,7 @@ export default defineConfig({
     current: parseInt(currentShard || "1"),
   },
   /* Configure projects for major browsers */
-  projects:
+  projects: filterProjects(
     targetEnv === "staging"
       ? [
           {
@@ -95,6 +115,7 @@ export default defineConfig({
             },
           },
         ],
+  ),
 
   //  Only start the local dev server when running in the local environment.
   webServer:

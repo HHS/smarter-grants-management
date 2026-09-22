@@ -9,6 +9,7 @@ from src.api.schemas.extension import (
     fields,
     validators,
 )
+from src.api.schemas.file_schema import FileAttachmentDownloadSchema, FileAttachmentSchema
 from src.api.schemas.response_schema import AbstractResponseSchema, PaginationMixinSchema
 from src.constants.lookup_constants import (
     AnnouncementCategory,
@@ -18,6 +19,18 @@ from src.constants.lookup_constants import (
     FundingInstrument,
 )
 from src.pagination.pagination_schema import generate_pagination_schema
+
+
+class AnnouncementAttachmentSchema(FileAttachmentSchema):
+    announcement_attachment_id = fields.UUID(
+        metadata={"description": "The announcement attachment ID"}
+    )
+
+
+class AnnouncementAttachmentDownloadSchema(FileAttachmentDownloadSchema):
+    announcement_attachment_id = fields.UUID(
+        metadata={"description": "The announcement attachment ID"}
+    )
 
 
 class AnnouncementAssistanceListingSchema(Schema):
@@ -68,8 +81,6 @@ class ApplicationPackageSchema(Schema):
         fields.Nested(ApplicationPackageFormSchema()),
         metadata={"description": "List of forms required for this application package"},
     )
-
-    # TODO - competition instructions when added
 
     public_application_package_id = fields.String(
         allow_none=True,
@@ -383,6 +394,13 @@ class AnnouncementSchema(Schema):
         metadata={"description": "List of application packages associated with the announcement"},
     )
 
+    announcement_attachments = fields.List(
+        fields.Nested(AnnouncementAttachmentSchema),
+        metadata={
+            "description": "List of announcement attachments associated with the announcement - does not include download path"
+        },
+    )
+
     created_at = fields.DateTime(dump_only=True)
     updated_at = fields.DateTime(dump_only=True)
 
@@ -396,7 +414,6 @@ class AnnouncementSummaryBaseRequestSchema(Schema):
     )
     is_cost_sharing = fields.Boolean(
         required=True,
-        allow_none=True,
         metadata={
             "description": "Whether or not the announcement has a cost sharing/matching requirement",
         },
@@ -805,8 +822,137 @@ class AnnouncementListRequestSchema(Schema):
 
 
 class AnnouncementResponseSchema(AbstractResponseSchema):
-    data = fields.Nested(AnnouncementSchema)
+    data = fields.Nested(AnnouncementSchema())
 
 
 class AnnouncementListResponseSchema(AbstractResponseSchema, PaginationMixinSchema):
-    data = fields.List(fields.Nested(AnnouncementSchema))
+    data = fields.List(fields.Nested(AnnouncementSchema()))
+
+
+class ApplicationPackageRequestSchema(Schema):
+
+    application_package_title = fields.String(
+        required=True,
+        metadata={
+            "description": "The title of the application package",
+            "example": "Proposal for Advanced Research",
+        },
+    )
+
+    public_application_package_id = fields.String(
+        required=False,
+        metadata={
+            "description": "The public-facing identifier of the application package",
+            "example": "ABC-123-456",
+        },
+    )
+
+    opening_timestamp = fields.DateTime(
+        required=True,
+        allow_none=True,
+        metadata={
+            "description": "The opening date of the application package, the first day applications are accepted"
+        },
+    )
+    closing_timestamp = fields.DateTime(
+        required=True,
+        allow_none=True,
+        metadata={
+            "description": "The closing date of the application package, the last day applications are accepted"
+        },
+    )
+    grace_period = fields.Integer(
+        required=False,
+        allow_none=True,
+        validate=validators.Range(min=0),
+        metadata={
+            "description": "The number of days after the closing date that applications are still accepted",
+            "example": 5,
+        },
+    )
+    contact_info = fields.String(
+        required=True,
+        allow_none=True,
+        metadata={
+            "description": "Contact info getting assistance with the application package",
+            "example": "Bob Smith\nFakeMail@fake.com",
+        },
+    )
+
+    open_to_applicants = fields.List(
+        fields.Enum(ApplicationPackageOpenToApplicant),
+        required=True,
+        validate=validators.Length(min=1),
+        metadata={
+            "description": "List of applicant types who are eligible for this application package",
+            "example": [
+                ApplicationPackageOpenToApplicant.INDIVIDUAL,
+                ApplicationPackageOpenToApplicant.ORGANIZATION,
+            ],
+        },
+    )
+
+    @validates_schema
+    def validate_dates(self, data: dict, **kwargs: dict) -> None:
+        opening = data.get("opening_timestamp")
+        closing = data.get("closing_timestamp")
+        if opening and closing and closing < opening:
+            raise ValidationError(
+                [
+                    MarshmallowErrorContainer(
+                        SchemaValidationError.INVALID_DATE_ORDER,
+                        "Closing timestamp must be on or after opening timestamp.",
+                    )
+                ]
+            )
+
+
+class ApplicationPackageCreateRequestSchema(ApplicationPackageRequestSchema):
+    pass
+
+
+class ApplicationPackageUpdateRequestSchema(ApplicationPackageRequestSchema):
+    pass
+
+
+class FormReplaceSchema(Schema):
+    form_id = fields.Integer(
+        required=True, metadata={"description": "The primary key ID of the form"}
+    )
+    is_required = fields.Boolean(
+        required=True, metadata={"description": "Whether the form is required"}
+    )
+
+
+class ApplicationPackageFormsSetRequestSchema(Schema):
+    forms = fields.List(
+        fields.Nested(FormReplaceSchema),
+        required=True,
+        validate=validators.Length(min=1),
+        metadata={"description": "List of forms to set on the application package"},
+    )
+
+
+class ApplicationPackageWithInstructionSchema(ApplicationPackageSchema):
+
+    # Only add the instructions for certain endpoints, don't need them on all endpoints.
+    application_package_instructions = fields.List(fields.Nested(FileAttachmentDownloadSchema()))
+
+
+class ApplicationPackageResponseSchema(AbstractResponseSchema):
+    data = fields.Nested(ApplicationPackageWithInstructionSchema())
+
+
+class AnnouncementAttachmentGetResponseSchema(AbstractResponseSchema):
+    data = fields.Nested(AnnouncementAttachmentDownloadSchema())
+
+
+class AnnouncementAttachmentDeleteResponseSchema(AbstractResponseSchema):
+    data = fields.MixinField(metadata={"example": None})
+
+
+class AnnouncementAttachmentCreateFromPendingFileRequestSchema(Schema):
+    pending_file_id = fields.UUID(
+        required=True,
+        metadata={"description": "The ID of the pending (virus-scanned) file to attach"},
+    )

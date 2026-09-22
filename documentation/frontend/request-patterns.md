@@ -1,4 +1,4 @@
-# Simpler Grants Next JS Request Patterns
+# Smarter Grants Management Next JS Request Patterns
 
 ## Background
 
@@ -8,28 +8,28 @@ Patterns differ depending on where requests are originating. Because the NextJS 
 
 For the most part, patterns as set up in the following places:
 
-- For server requests - [the fetch service directory](https://github.com/HHS/simpler-grants-gov/tree/main/frontend/src/services/fetch)
+- For server requests - [the fetch service directory](../../frontend/src/services/fetch)
 
-  - [endpointConfigs](https://github.com/HHS/simpler-grants-gov/blob/main/frontend/src/services/fetch/endpointConfigs.ts)
-  - [fetchers](https://github.com/HHS/simpler-grants-gov/blob/main/frontend/src/services/fetch/fetchers/fetchers.ts)
+  - [endpointConfigs](../../frontend/src/services/fetch/endpointConfigs.ts)
+  - [fetchers](../../frontend/src/services/fetch/fetchers/fetchers.ts)
   - individual fetcher implementations
 
-- For client requests - [useClientFetch hook](https://github.com/HHS/simpler-grants-gov/blob/main/frontend/src/hooks/useClientFetch.ts)
+- For client requests - [useClientFetch hook](../../frontend/src/hooks/useClientFetch.ts)
 
 ## Server
 
-Server side requests can be made using fetcher functions defined by a config for each requested path that will be requested from the Simpler API. Each fetcher will, by default:
+Server side requests can be made using fetcher functions defined by a config for each requested path that will be requested from the API. Each fetcher will, by default:
 
-- insert the header for the Simpler API's API key
+- insert the header for the API key
 - format request body based on the type of body passed and request method
 - log, format and throw errors for non 200 requests and other errors
 
 ### Creating a Fetcher
 
 - Create a endpoint config
-  - Define the path and method for your request using the pattern found in [endpointConfigs](https://github.com/HHS/simpler-grants-gov/blob/main/frontend/src/services/fetch/endpointConfigs.ts)
+  - Define the path and method for your request using the pattern found in [endpointConfigs](../../frontend/src/services/fetch/endpointConfigs.ts)
 - Create a fetcher function by wrapping the endpoint config in the `requesterForEndpoint` function
-  - Follow the pattern in [fetchers](https://github.com/HHS/simpler-grants-gov/blob/main/frontend/src/services/fetch/fetchers/fetchers.ts) to define a function for your configuration
+  - Follow the pattern in [fetchers](../../frontend/src/services/fetch/fetchers/fetchers.ts) to define a function for your configuration
 
 ### Using a Fetcher
 
@@ -42,7 +42,7 @@ Once you have your fetcher function created, you can call it with any supported 
 
 Fetchers will return a raw response object on success.
 
-To format requests or responses beyond the fetcher itself, such as to format a request body or return a json object from the response, you can build a function to consume the fetcher. See the individual fetcher implementations in [the fetch services directory](https://github.com/HHS/simpler-grants-gov/tree/main/frontend/src/services/fetch) for examples.
+To format requests or responses beyond the fetcher itself, such as to format a request body or return a json object from the response, you can build a function to consume the fetcher. See the individual fetcher implementations in [the fetch services directory](../../frontend/src/services/fetch) for examples.
 
 ### Diagram
 

@@ -6,6 +6,10 @@ description: Composite action to run Playwright against specified environment
 # based on the do-chrome-install, do-firefox-install, and do-webkit-install inputs.
 # Only the browsers needed for the current test shard are installed, improving CI efficiency.
 # Chrome is cached outside this job, and will be available even if not instructed to install.
+#
+# `playwright_projects` narrows which browsers the run actually exercises (e.g. PR
+# runs pass "Chrome"). Keep it in sync with the do-*-install inputs: requesting a
+# project whose browser was never installed will fail at launch.
 # ---
 
 inputs:
@@ -71,6 +75,15 @@ inputs:
     default: ""
   staging_api_url:
     description: "api url for the staging environment"
+    default: ""
+  playwright_projects:
+    description: "comma separated list of Playwright project (browser) names to run (e.g. Chrome). Leave blank to run every project defined for the target"
+    default: ""
+  spec_files:
+    description: "paths to specific spec files to run, will separately, but in addition to any supplied `playwright_tags`"
+    default: ""
+  shard_label:
+    description: "unique name for this shard's blob report, used when a run shards more than one project/step and shard numbers would otherwise collide (e.g. chrome-1). Defaults to current_shard"
     default: ""
 
 outputs:
@@ -140,13 +153,36 @@ runs:
           echo "base_url=${{ inputs.staging_base_url }}" >> "$GITHUB_ENV"
           echo "api_url=${{ inputs.staging_api_url }}" >> "$GITHUB_ENV"
         fi
-    - name: Run all e2e tests (Shard ${{ inputs.current_shard }}/${{ inputs.total_shards }})
-      if: ${{ inputs.playwright_tags == '' }}
+    - name: Run specified e2e tests
+      if: ${{ inputs.spec_files != '' }}
       working-directory: ./frontend
       env:
         CI: true
         TOTAL_SHARDS: ${{ inputs.total_shards }}
         CURRENT_SHARD: ${{ inputs.current_shard }}
+        PLAYWRIGHT_PROJECTS: ${{ inputs.playwright_projects }}
+        PLAYWRIGHT_TARGET_ENV: ${{ inputs.target }}
+        PLAYWRIGHT_BASE_URL: ${{ env.base_url }}
+        PLAYWRIGHT_API_URL: ${{ env.api_url }}
+        PLAYWRIGHT_WORKERS: ${{ inputs.workers }}
+        STAGING_TEST_USER_EMAIL: ${{ inputs.staging_test_user_email }}
+        STAGING_TEST_USER_PASSWORD: ${{ inputs.staging_test_user_password }}
+        STAGING_TEST_USER_MFA_KEY: ${{ inputs.staging_test_user_mfa_key }}
+        SESSION_SECRET_OVERRIDE: ${{ inputs.staging_client_session_secret }}
+        TEST_USER_MANAGER_API_KEY: ${{ inputs.test_user_manager_api_key }}
+
+      run: |
+        npm run test:e2e -- ${{ inputs.spec_files }}
+      shell: bash
+
+    - name: Run all e2e tests (Shard ${{ inputs.current_shard }}/${{ inputs.total_shards }})
+      if: ${{ inputs.playwright_tags == '' && inputs.spec_files == '' }}
+      working-directory: ./frontend
+      env:
+        CI: true
+        TOTAL_SHARDS: ${{ inputs.total_shards }}
+        CURRENT_SHARD: ${{ inputs.current_shard }}
+        PLAYWRIGHT_PROJECTS: ${{ inputs.playwright_projects }}
         PLAYWRIGHT_TARGET_ENV: ${{ inputs.target }}
         PLAYWRIGHT_BASE_URL: ${{ env.base_url }}
         PLAYWRIGHT_API_URL: ${{ env.api_url }}
@@ -162,12 +198,13 @@ runs:
       shell: bash
 
     - name: Run e2e tests for ${{ inputs.playwright_tags }} (Shard ${{ inputs.current_shard }}/${{ inputs.total_shards }})
-      if: ${{ inputs.playwright_tags != '' }}
+      if: ${{ inputs.playwright_tags != '' && inputs.spec_files == '' }}
       working-directory: ./frontend
       env:
         CI: true
         TOTAL_SHARDS: ${{ inputs.total_shards }}
         CURRENT_SHARD: ${{ inputs.current_shard }}
+        PLAYWRIGHT_PROJECTS: ${{ inputs.playwright_projects }}
         PLAYWRIGHT_TARGET_ENV: ${{ inputs.target }}
         PLAYWRIGHT_BASE_URL: ${{ env.base_url }}
         PLAYWRIGHT_API_URL: ${{ env.api_url }}
@@ -199,17 +236,19 @@ runs:
       shell: bash
 
     - name: Verify Blob Report Directory
+      if: ${{ inputs.spec_files == '' }}
       working-directory: ./frontend
       run: |
         echo "Contents of blob-report directory:"
         ls -R blob-report || echo "blob-report directory not found"
       shell: bash
 
+    # skip the test report for specific file based runs
     - name: Upload Blob Report
       id: upload-blob-report
-      if: always()
+      if: ${{ inputs.spec_files == '' && always() || false }}
       uses: actions/upload-artifact@v7
       with:
-        name: blob-report-shard-${{ inputs.target }}-${{ inputs.current_shard }}
+        name: blob-report-shard-${{ inputs.target }}-${{ inputs.shard_label != '' && inputs.shard_label || inputs.current_shard }}
         path: ${{ github.workspace }}/frontend/blob-report
         retention-days: 1
