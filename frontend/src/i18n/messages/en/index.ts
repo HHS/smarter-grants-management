@@ -287,9 +287,9 @@ export const messages = {
       "We have encountered an error loading your opportunities, please try again later.",
     metaDescription: "View draft and published funding opportunities",
     noOpportunitiesMessage: {
-      primary: "You have not started any opportunities yet.",
+      primary: "You have not started any announcements yet.",
       secondary:
-        "Opportunities you start or work on will be saved here.  Return anytime to view, continue, or manage them.",
+        "Announcements you start or work on will be saved here.  Return anytime to view, continue, or manage them.",
     },
     showingOpportunitiesFor: "Showing opportunities for {agencyName}",
     agencySelector: "Select agency",

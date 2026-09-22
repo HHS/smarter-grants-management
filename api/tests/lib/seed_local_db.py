@@ -2,12 +2,14 @@ import logging
 import uuid
 
 import click
+from sqlalchemy import select
 
 import src.logs
 import tests.db.models.factories as f
 from src.adapters import db
 from src.adapters.db import PostgresDBClient
 from src.constants.lookup_constants import Privilege
+from src.db.models.announcement_models import Announcement
 from src.db.resource_automation.resource_automation import setup_resource_automation
 from src.util.local import error_if_not_local
 from tests.lib.seed_assistance_listings import create_assistance_listings
@@ -37,6 +39,8 @@ def run_seed_logic(db_session: db.Session) -> None:
     create_users(db_session)
 
     create_programs()
+
+    create_announcements(db_session)
 
     # Commit anything remaining that wasn't made with factories
     db_session.commit()
@@ -91,3 +95,50 @@ def create_programs() -> None:
     # Later work will add more specific scenarios
     logger.info("Creating programs")
     f.ProgramFactory.create_batch(size=5)
+
+
+def create_announcements(db_session: db.Session) -> None:
+    logger.info("Creating announcements")
+
+    announcements_to_seed = [
+        {
+            "announcement_number": "ANN-LOCAL-001",
+            "announcement_title": "Community Infrastructure Modernization",
+            "is_forecast": False,
+        },
+        {
+            "announcement_number": "ANN-LOCAL-002",
+            "announcement_title": "Rural Broadband Acceleration",
+            "is_forecast": True,
+        },
+        {
+            "announcement_number": "ANN-LOCAL-003",
+            "announcement_title": "Workforce Development Innovation",
+            "is_forecast": False,
+        },
+    ]
+
+    existing_numbers = set(
+        db_session.execute(
+            select(Announcement.announcement_number).where(
+                Announcement.announcement_number.in_(
+                    [a["announcement_number"] for a in announcements_to_seed]
+                )
+            )
+        )
+        .scalars()
+        .all()
+    )
+
+    for announcement_data in announcements_to_seed:
+        if announcement_data["announcement_number"] in existing_numbers:
+            continue
+
+        announcement = f.AnnouncementFactory.create(
+            announcement_number=announcement_data["announcement_number"],
+            announcement_title=announcement_data["announcement_title"],
+        )
+        f.AnnouncementSummaryFactory.create(
+            announcement=announcement,
+            is_forecast=announcement_data["is_forecast"],
+        )

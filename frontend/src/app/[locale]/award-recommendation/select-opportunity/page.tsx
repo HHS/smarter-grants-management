@@ -56,7 +56,7 @@ async function SelectOpportunityPageContent({
 
       <GridContainer>
         <SelectFundingOpportunityContent
-          fundingOpportunities={fundingOpportunities}
+          announcements={fundingOpportunities}
         />
       </GridContainer>
     </>
