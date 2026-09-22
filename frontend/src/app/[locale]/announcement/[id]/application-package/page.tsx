@@ -75,8 +75,8 @@ export default async function OpportunityCompetitionPage({
 
   // NOTE: Currently we are only supporting a single competition
   let competition: ApplicationPackage | undefined = undefined;
-  if (opportunityData.competitions?.[0]) {
-    competition = opportunityData.competitions[0];
+  if (opportunityData.application_packages?.[0]) {
+    competition = opportunityData.application_packages[0];
   }
 
   const navigationItems = [

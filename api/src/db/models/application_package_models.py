@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import UUID, BigInteger, ForeignKey, Integer, UniqueConstraint
+from sqlalchemy import UUID, BigInteger, ForeignKey, Integer, UniqueConstraint, and_
 from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -27,6 +27,8 @@ class ApplicationPackage(GrantorSchemaTable, TimestampMixin):
     announcement: Mapped[Announcement] = relationship(
         Announcement, back_populates="application_packages"
     )
+
+    is_deleted: Mapped[bool] = mapped_column(index=True, default=False, server_default="false")
 
     public_application_package_id: Mapped[str | None]
     application_package_title: Mapped[str | None]
@@ -73,6 +75,11 @@ class ApplicationPackage(GrantorSchemaTable, TimestampMixin):
         back_populates="application_package",
         uselist=True,
         cascade="all, delete-orphan",
+        primaryjoin=lambda: and_(
+            ApplicationPackage.application_package_id
+            == ApplicationPackageInstruction.application_package_id,
+            ApplicationPackageInstruction.is_deleted.is_(False),
+        ),
     )
 
 
@@ -146,3 +153,5 @@ class ApplicationPackageInstruction(GrantorSchemaTable, TimestampMixin):
         UUID, ForeignKey(FileAttachment.file_attachment_id), index=True
     )
     file_attachment: Mapped[FileAttachment] = relationship(FileAttachment)
+
+    is_deleted: Mapped[bool] = mapped_column(index=True, default=False, server_default="false")

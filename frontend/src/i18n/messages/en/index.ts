@@ -925,7 +925,7 @@ export const messages = {
       "Hard refresh your page when done changing Flags for the changes to fully apply.",
   },
   AnnouncementDetailsHeader: {
-    opportunityNumber: "Opportunity #: {number}",
+    opportunityNumber: "Announcement #: {number}",
     title: "Title:",
     agency: "Agency:",
     subAgency: "Sub-agency:",
@@ -933,9 +933,9 @@ export const messages = {
     lastUpdated: "Last updated:",
     backToOverview: "Back to overview page",
     alerts: {
-      newOpportunityHeading: "Opportunity draft started",
+      newOpportunityHeading: "Announcement draft started",
       newOpportunityBody:
-        "Your initial information has been saved. Complete the sections below to finish your opportunity details",
+        "Your initial information has been saved. Complete the sections below to finish your announcement details",
     },
   },
   AwardRecommendationSelectFundingOpportunity: {
