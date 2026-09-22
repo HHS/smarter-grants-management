@@ -217,7 +217,9 @@ def announcement_summary_update(
 @announcement_blueprint.get("/<uuid:announcement_id>/attachments/<uuid:announcement_attachment_id>")
 @announcement_blueprint.output(AnnouncementAttachmentGetResponseSchema)
 @announcement_blueprint.auth_required(jwt_or_api_user_key_multi_auth)
-@announcement_blueprint.doc(responses=[200, 403, 404, 422])
+@announcement_blueprint.doc(
+    summary="Get an Announcement Attachment", responses=[200, 401, 403, 404, 422]
+)
 @flask_db.with_db_session()
 def announcement_attachment_get(
     db_session: db.Session, announcement_id: uuid.UUID, announcement_attachment_id: uuid.UUID
@@ -244,7 +246,9 @@ def announcement_attachment_get(
 @announcement_blueprint.input(AnnouncementAttachmentCreateFromPendingFileRequestSchema)
 @announcement_blueprint.output(AnnouncementAttachmentGetResponseSchema)
 @announcement_blueprint.auth_required(jwt_or_api_user_key_multi_auth)
-@announcement_blueprint.doc(responses=[200, 403, 404, 422])
+@announcement_blueprint.doc(
+    summary="Create an Announcement Attachment", responses=[200, 401, 403, 404, 422]
+)
 @flask_db.with_db_session()
 def announcement_attachment_create(
     db_session: db.Session, announcement_id: uuid.UUID, json_data: dict
@@ -271,7 +275,9 @@ def announcement_attachment_create(
 )
 @announcement_blueprint.output(AnnouncementAttachmentDeleteResponseSchema)
 @announcement_blueprint.auth_required(jwt_or_api_user_key_multi_auth)
-@announcement_blueprint.doc(responses=[200, 403, 404, 422])
+@announcement_blueprint.doc(
+    summary="Delete an Announcement Attachment", responses=[200, 401, 403, 404, 422]
+)
 @flask_db.with_db_session()
 def announcement_attachment_delete(
     db_session: db.Session, announcement_id: uuid.UUID, announcement_attachment_id: uuid.UUID
