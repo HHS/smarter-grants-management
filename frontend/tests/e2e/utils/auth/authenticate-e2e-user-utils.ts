@@ -40,8 +40,21 @@ export const fetchE2eSessionToken = async (
     method: "GET",
   });
 
+  const maskedTestUserApiKey = testUserApiKey
+    ? `${testUserApiKey.slice(0, 4)}...${testUserApiKey.slice(-4)}`
+    : "empty";
+  const errorTimestamp = new Date().toISOString();
+
   if (!response.ok) {
-    throw new Error(`unable to fetch e2e user token: ${response.status}`);
+    throw new Error(
+      `unable to fetch e2e user token: ${response.status}. ` +
+        `Timestamp: ${errorTimestamp}. ` +
+        `Target environment: ${playwrightEnv.targetEnv || "unknown"}. ` +
+        `Current TEST_USER_API_KEY: ${maskedTestUserApiKey}. ` +
+        `Backend engineer: verify the API key is valid and active for /v1/internal/api-jwt in this environment. ` +
+        `Frontend engineer: verify the Playwright request is sending TEST_USER_API_KEY in the X-API-Key header. ` +
+        `Infra engineer: verify the CI secret or environment variable is populated for this run.`,
+    );
   }
 
   const json = (await response.json()) as { data: { jwt_token: string } };
@@ -68,6 +81,23 @@ export async function authenticateE2eUser(
   // request boundary.
   testUserApiKeyOverride: string = playwrightEnv.testUserApiKey,
 ): Promise<void> {
+  const maskedTestUserApiKey = testUserApiKeyOverride
+    ? `${testUserApiKeyOverride.slice(0, 4)}...${testUserApiKeyOverride.slice(-4)}`
+    : "empty";
+  const errorTimestamp = new Date().toISOString();
+
+  if (!testUserApiKeyOverride) {
+    throw new Error(
+      "Unable to spoof login: TEST_USER_API_KEY is not set for the direct /v1/internal/api-jwt E2E flow. " +
+        `Timestamp: ${errorTimestamp}. ` +
+        `Target environment: ${playwrightEnv.targetEnv || "unknown"}. ` +
+        `Current TEST_USER_API_KEY: ${maskedTestUserApiKey}. ` +
+        "Backend engineer: confirm the seeded test-user API key exists and is active in the target environment. " +
+        "Frontend engineer: confirm the value is passed through TEST_USER_API_KEY in the Playwright env. " +
+        "Infra engineer: confirm the GitHub secret or environment variable is populated for the CI job.",
+    );
+  }
+
   const userId = getTestUserId(testUserKey);
   void userId;
   const token = await fetchE2eSessionToken(testUserApiKeyOverride);
