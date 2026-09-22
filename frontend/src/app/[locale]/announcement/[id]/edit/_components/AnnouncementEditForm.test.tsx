@@ -42,9 +42,9 @@ const initialValues: AnnouncementEditFormValues = {
   summary_description: "Summary text",
   funding_instruments: "grant",
   is_cost_sharing: false,
-  post_date: "2026-03-11",
-  close_date: "2026-04-11",
-  close_date_description: "",
+  post_timestamp: "2026-03-11",
+  close_timestamp: "2026-04-11",
+  close_timestamp_description: "",
   funding_categories: "education",
   funding_category_description: "",
   expected_number_of_awards: "3",
@@ -295,7 +295,7 @@ describe("AnnouncementEditForm - alert banners", () => {
       {
         validationErrors: {
           funding_instruments: ["Funding type is required"],
-          close_date: ["Close date must be a valid date"],
+          close_timestamp: ["Close date must be a valid date"],
         },
       },
       jest.fn(),
@@ -363,7 +363,7 @@ describe("AnnouncementEditForm - conditional fields", () => {
 
   it("shows the close date explanation textarea when closeDate is empty", () => {
     renderAnnouncementEditForm({
-      initialValues: { ...initialValues, close_date: "" },
+      initialValues: { ...initialValues, close_timestamp: "" },
     });
 
     expect(
@@ -660,7 +660,7 @@ describe("AnnouncementEditForm - funding details interactions", () => {
 
   it("updates closeDateExplanation when the textarea changes", () => {
     renderAnnouncementEditForm({
-      initialValues: { ...initialValues, close_date: "" },
+      initialValues: { ...initialValues, close_timestamp: "" },
     });
 
     const textarea = screen.getByRole("textbox", {
@@ -786,8 +786,8 @@ describe("AnnouncementEditForm - inline validation errors", () => {
           estimated_total_program_funding: ["Must be a number"],
           award_floor: ["Award minimum invalid"],
           award_ceiling: ["Award maximum invalid"],
-          post_date: ["Publish date required"],
-          close_date: ["Close date required"],
+          post_timestamp: ["Publish date required"],
+          close_timestamp: ["Close date required"],
           applicant_types: ["Eligible applicants required"],
           summary_description: ["Description required"],
           additional_info_url: ["Invalid URL"],

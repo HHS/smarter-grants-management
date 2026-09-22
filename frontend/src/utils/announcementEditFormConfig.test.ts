@@ -33,9 +33,9 @@ function makeOpportunity(
     saved_to_organizations: [],
     submitted_application_count: 0,
     summary: {
-      close_date: "2026-06-01",
+      close_timestamp: "2026-06-01",
       is_forecast: false,
-      post_date: "2026-05-01",
+      post_timestamp: "2026-05-01",
       additional_info_url: "https://example.com",
       additional_info_url_description: "More info",
       agency_code: "TEST",
@@ -49,14 +49,14 @@ function makeOpportunity(
       archive_date: null,
       award_ceiling: 100000,
       award_floor: 1000,
-      close_date_description: null,
+      close_timestamp_description: null,
       estimated_total_program_funding: 500000,
       expected_number_of_awards: 5,
       fiscal_year: null,
       forecasted_award_date: null,
-      forecasted_close_date: null,
-      forecasted_close_date_description: null,
-      forecasted_post_date: null,
+      forecasted_close_timestamp: null,
+      forecasted_close_timestamp_description: null,
+      forecasted_post_timestamp: null,
       forecasted_project_start_date: null,
       funding_categories: ["education"],
       funding_category_description: null,
@@ -86,8 +86,8 @@ describe("buildAnnouncementEditInitialValues", () => {
     expect(result.expected_number_of_awards).toBe("5");
     expect(result.applicant_types).toEqual(["individuals"]);
     expect(result.is_cost_sharing).toBe(true);
-    expect(result.post_date).toBe("2026-05-01");
-    expect(result.close_date).toBe("2026-06-01");
+    expect(result.post_timestamp).toBe("2026-05-01");
+    expect(result.close_timestamp).toBe("2026-06-01");
     expect(result.agency_email_address).toBe("test@example.com");
   });
 

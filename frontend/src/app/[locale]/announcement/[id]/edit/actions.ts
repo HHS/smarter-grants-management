@@ -22,8 +22,8 @@ export type AnnouncementEditValidationErrors = {
   announcement_title?: string[];
   category?: string[];
   summary_description?: string[];
-  post_date?: string[];
-  close_date?: string[];
+  post_timestamp?: string[];
+  close_timestamp?: string[];
   agency_email_address?: string[];
   agency_email_address_description?: string[];
   award_floor?: string[];
@@ -57,9 +57,9 @@ const editOpportunityFormSchema = {
   estimated_total_program_funding: { type: "number" },
   award_floor: { type: "number" },
   award_ceiling: { type: "number" },
-  post_date: { type: "string" },
-  close_date: { type: "string" },
-  close_date_description: { type: "string" },
+  post_timestamp: { type: "string" },
+  close_timestamp: { type: "string" },
+  close_timestamp_description: { type: "string" },
   funding_instruments: { type: "string" },
   funding_categories: { type: "string" },
   applicant_types: { items: { type: "string" } }, // array
@@ -153,8 +153,8 @@ const EDIT_FORM_FIELD_NAMES = new Set<keyof AnnouncementEditValidationErrors>([
   "announcement_title",
   "category",
   "summary_description",
-  "post_date",
-  "close_date",
+  "post_timestamp",
+  "close_timestamp",
   "agency_email_address",
   "agency_email_address_description",
   "award_floor",
@@ -237,11 +237,11 @@ async function validateOpportunityEditForm(formData: FormData) {
       announcement_title: z.string().trim(),
       category: z.string().trim(),
       summary_description: z.string().trim(),
-      post_date: z
+      post_timestamp: z
         .string()
         .trim()
         .min(1, { message: validationErrors("publishDate") }),
-      close_date: z.string().trim(),
+      close_timestamp: z.string().trim(),
       agency_email_address: z
         .string()
         .trim()
@@ -274,14 +274,14 @@ async function validateOpportunityEditForm(formData: FormData) {
       additional_info_url_description: z.string().trim(),
       agency_contact_description: z.string().trim(),
     })
-    .superRefine(({ post_date, close_date }, ctx) => {
-      if (!post_date || !close_date) {
+    .superRefine(({ post_timestamp, close_timestamp }, ctx) => {
+      if (!post_timestamp || !close_timestamp) {
         return;
       }
 
       const dayjs = getConfiguredDayJs();
-      const close = dayjs(close_date, "YYYY-MM-DD", true);
-      const publish = dayjs(post_date, "YYYY-MM-DD", true);
+      const close = dayjs(close_timestamp, "YYYY-MM-DD", true);
+      const publish = dayjs(post_timestamp, "YYYY-MM-DD", true);
 
       if (!close.isValid() || !publish.isValid() || close.isBefore(publish)) {
         ctx.addIssue({
@@ -355,8 +355,8 @@ async function validateOpportunityEditForm(formData: FormData) {
     announcement_title: readStringValue(formData.get("announcement_title")),
     category: readStringValue(formData.get("category")),
     summary_description: readStringValue(formData.get("summary_description")),
-    post_date: readStringValue(formData.get("post_date")),
-    close_date: readStringValue(formData.get("close_date")),
+    post_timestamp: readStringValue(formData.get("post_timestamp")),
+    close_timestamp: readStringValue(formData.get("close_timestamp")),
     agency_email_address: readStringValue(formData.get("agency_email_address")),
     agency_email_address_description: readStringValue(
       formData.get("agency_email_address_description"),

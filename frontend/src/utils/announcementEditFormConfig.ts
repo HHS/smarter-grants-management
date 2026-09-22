@@ -8,9 +8,9 @@ export type AnnouncementEditFormValues = {
   summary_description: string;
   funding_instruments: string;
   is_cost_sharing: boolean | null;
-  post_date: string;
-  close_date: string;
-  close_date_description: string;
+  post_timestamp: string;
+  close_timestamp: string;
+  close_timestamp_description: string;
   funding_categories: string;
   funding_category_description: string;
   expected_number_of_awards: string;
@@ -44,9 +44,11 @@ export const buildAnnouncementEditInitialValues = (
     summary_description: emptyString(summary?.summary_description),
     funding_instruments: summary?.funding_instruments?.[0] ?? "",
     is_cost_sharing: summary?.is_cost_sharing ?? true,
-    post_date: emptyString(summary?.post_date),
-    close_date: emptyString(summary?.close_date),
-    close_date_description: emptyString(summary?.close_date_description),
+    post_timestamp: emptyString(summary?.post_timestamp),
+    close_timestamp: emptyString(summary?.close_timestamp),
+    close_timestamp_description: emptyString(
+      summary?.close_timestamp_description,
+    ),
     funding_categories: summary?.funding_categories?.[0] ?? "",
     funding_category_description: emptyString(
       summary?.funding_category_description,

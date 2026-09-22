@@ -117,7 +117,7 @@ export default function AnnouncementEditForm({
   const [fundingCategory, setFundingCategory] = useState(
     initialValues.funding_categories,
   );
-  const [closeDate, setCloseDate] = useState(initialValues.close_date);
+  const [closeDate, setCloseDate] = useState(initialValues.close_timestamp);
   const [selectedEligibility, setSelectedEligibility] = useState<string[]>(
     initialValues.applicant_types,
   );
@@ -525,39 +525,41 @@ export default function AnnouncementEditForm({
 
           <div className="grid-row grid-gap-lg">
             <div className="tablet:grid-col-6">
-              <FormGroup error={!!getFieldError("post_date")}>
+              <FormGroup error={!!getFieldError("post_timestamp")}>
                 <DynamicFieldLabel
-                  idFor="post_date"
+                  idFor="post_timestamp"
                   title={t("labels.publishDate")}
                   required
                   description={t("content.publishDateHint")}
                 />
-                {getFieldError("post_date") ? (
-                  <ErrorMessage>{getFieldError("post_date")}</ErrorMessage>
+                {getFieldError("post_timestamp") ? (
+                  <ErrorMessage>{getFieldError("post_timestamp")}</ErrorMessage>
                 ) : null}
                 <DatePicker
-                  id="post_date"
-                  name="post_date"
-                  defaultValue={initialValues.post_date}
+                  id="post_timestamp"
+                  name="post_timestamp"
+                  defaultValue={initialValues.post_timestamp}
                   placeholder="mm/dd/yyyy"
                   className="width-full"
                 />
               </FormGroup>
             </div>
             <div className="tablet:grid-col-6">
-              <FormGroup error={!!getFieldError("close_date")}>
+              <FormGroup error={!!getFieldError("close_timestamp")}>
                 <DynamicFieldLabel
-                  idFor="close_date"
+                  idFor="close_timestamp"
                   title={t("labels.closeDate")}
                   description={t("content.closeDateHint")}
                 />
-                {getFieldError("close_date") ? (
-                  <ErrorMessage>{getFieldError("close_date")}</ErrorMessage>
+                {getFieldError("close_timestamp") ? (
+                  <ErrorMessage>
+                    {getFieldError("close_timestamp")}
+                  </ErrorMessage>
                 ) : null}
                 <DatePicker
-                  id="close_date"
-                  name="close_date"
-                  defaultValue={initialValues.close_date}
+                  id="close_timestamp"
+                  name="close_timestamp"
+                  defaultValue={initialValues.close_timestamp}
                   placeholder="mm/dd/yyyy"
                   onChange={(value) => setCloseDate(value ?? "")}
                   className="width-full"
@@ -570,14 +572,14 @@ export default function AnnouncementEditForm({
             <div className="width-full">
               <FormGroup>
                 <DynamicFieldLabel
-                  idFor="close_date_description"
+                  idFor="close_timestamp_description"
                   title={t("labels.closeDateExplanation")}
                   description={t("content.closeDateExplanationHint")}
                 />
                 <Textarea
-                  id="close_date_description"
-                  name="close_date_description"
-                  defaultValue={initialValues.close_date_description}
+                  id="close_timestamp_description"
+                  name="close_timestamp_description"
+                  defaultValue={initialValues.close_timestamp_description}
                   rows={5}
                   className="width-full"
                 />

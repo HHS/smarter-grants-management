@@ -59,9 +59,9 @@ const successfulSummaryUpdateResponse: Awaited<
     is_forecast: false,
     summary_description: "Summary text",
     is_cost_sharing: null,
-    post_date: "2026-03-11",
-    close_date: "2026-04-11",
-    close_date_description: null,
+    post_timestamp: "2026-03-11",
+    close_timestamp: "2026-04-11",
+    close_timestamp_description: null,
     archive_date: null,
     updated_at: "2026-03-11T00:00:00Z",
     expected_number_of_awards: null,
@@ -81,9 +81,9 @@ const successfulSummaryUpdateResponse: Awaited<
     agency_email_address_description: null,
     agency_name: null,
     agency_phone_number: null,
-    forecasted_post_date: null,
-    forecasted_close_date: null,
-    forecasted_close_date_description: null,
+    forecasted_post_timestamp: null,
+    forecasted_close_timestamp: null,
+    forecasted_close_timestamp_description: null,
     forecasted_award_date: null,
     forecasted_project_start_date: null,
     fiscal_year: null,
@@ -97,8 +97,8 @@ function buildValidFormData() {
   formData.set("opportunity_title", "Example opportunity");
   formData.set("caetgory", "discretionary");
   formData.set("summary_description", "Summary text");
-  formData.set("post_date", "2026-03-11");
-  formData.set("close_date", "2026-04-11");
+  formData.set("post_timestamp", "2026-03-11");
+  formData.set("close_timestamp", "2026-04-11");
   formData.set("agency_email_address", "grants@example.com");
   formData.set("funding_instruments", "grant");
   formData.set("funding_categories", "health");
@@ -128,7 +128,7 @@ describe("saveAnnouncementEditAction", () => {
     const result = await saveAnnouncementEditAction(initialState, formData);
 
     expect(result.validationErrors).toEqual({
-      post_date: ["publishDate"],
+      post_timestamp: ["publishDate"],
       funding_instruments: ["fundingType"],
       funding_categories: ["fundingCategory"],
       applicant_types: ["eligibleApplicants"],
@@ -175,8 +175,8 @@ describe("saveAnnouncementEditAction", () => {
 
   it("returns a close date error when close date is before publish date", async () => {
     const formData = buildValidFormData();
-    formData.set("post_date", "2026-04-11");
-    formData.set("close_date", "2026-03-11");
+    formData.set("post_timestamp", "2026-04-11");
+    formData.set("close_timestamp", "2026-03-11");
 
     const result = await saveAnnouncementEditAction(initialState, formData);
 
@@ -185,9 +185,9 @@ describe("saveAnnouncementEditAction", () => {
     });
   });
 
-  it("maps an unparseable post_date to a closeDateOrder error (format failure)", async () => {
+  it("maps an unparseable post_timestamp to a closeDateOrder error (format failure)", async () => {
     const formData = buildValidFormData();
-    formData.set("post_date", "not-a-date");
+    formData.set("post_timestamp", "not-a-date");
 
     const result = await saveAnnouncementEditAction(initialState, formData);
 
@@ -196,9 +196,9 @@ describe("saveAnnouncementEditAction", () => {
     });
   });
 
-  it("maps an unparseable close_date to a closeDateOrder error (format failure)", async () => {
+  it("maps an unparseable close_timestamp to a closeDateOrder error (format failure)", async () => {
     const formData = buildValidFormData();
-    formData.set("close_date", "not-a-date");
+    formData.set("close_timestamp", "not-a-date");
 
     const result = await saveAnnouncementEditAction(initialState, formData);
 
@@ -233,9 +233,9 @@ describe("saveAnnouncementEditAction", () => {
           is_forecast: true,
           summary_description: "Summary text",
           is_cost_sharing: null,
-          post_date: "2026-03-11",
-          close_date: "2026-04-11",
-          close_date_description: null,
+          post_timestamp: "2026-03-11",
+          close_timestamp: "2026-04-11",
+          close_timestamp_description: null,
           archive_date: null,
           updated_at: "2026-03-11T00:00:00Z",
           expected_number_of_awards: null,
@@ -255,9 +255,9 @@ describe("saveAnnouncementEditAction", () => {
           agency_email_address_description: null,
           agency_name: null,
           agency_phone_number: null,
-          forecasted_post_date: null,
-          forecasted_close_date: null,
-          forecasted_close_date_description: null,
+          forecasted_post_timestamp: null,
+          forecasted_close_timestamp: null,
+          forecasted_close_timestamp_description: null,
           forecasted_award_date: null,
           forecasted_project_start_date: null,
           fiscal_year: null,
@@ -297,8 +297,8 @@ describe("saveAnnouncementEditAction", () => {
     expect(firstCall?.[0].announcementId).toBe("opp-123");
     expect(firstCall?.[0].announcementSummaryId).toBe("sum-456");
     expect(firstCall?.[0].body.summary_description).toBe("Summary text");
-    expect(firstCall?.[0].body.post_date).toBe("2026-03-11");
-    expect(firstCall?.[0].body.close_date).toBe("2026-04-11");
+    expect(firstCall?.[0].body.post_timestamp).toBe("2026-03-11");
+    expect(firstCall?.[0].body.close_timestamp).toBe("2026-04-11");
     expect(firstCall?.[0].body.agency_email_address).toBe("grants@example.com");
     expect(result).toEqual({
       successMessage: "success",
@@ -836,12 +836,12 @@ describe("announcementEditFormAction", () => {
     const formData = new FormData();
     formData.set("announcement_id", "opp-123");
     formData.set("announcement_summary_id", "sum-456");
-    // post_date missing - triggers validation error
+    // post_timestamp missing - triggers validation error
 
     const result = await announcementEditFormAction(initialState, formData);
 
     expect(result.validationErrors).toEqual({
-      post_date: ["publishDate"],
+      post_timestamp: ["publishDate"],
       funding_instruments: ["fundingType"],
       funding_categories: ["fundingCategory"],
       applicant_types: ["eligibleApplicants"],
