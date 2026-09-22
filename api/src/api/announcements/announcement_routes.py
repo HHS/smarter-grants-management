@@ -19,6 +19,9 @@ from src.api.announcements.announcement_schemas import (
     AnnouncementUpdateRequestSchema,
     ApplicationPackageCreateRequestSchema,
     ApplicationPackageFormsSetRequestSchema,
+    ApplicationPackageInstructionCreateFromPendingFileRequestSchema,
+    ApplicationPackageInstructionDeleteResponseSchema,
+    ApplicationPackageInstructionGetResponseSchema,
     ApplicationPackageResponseSchema,
     ApplicationPackageUpdateRequestSchema,
 )
@@ -33,7 +36,13 @@ from src.services.announcements.create_announcement_attachment import (
     create_announcement_attachment_from_pending_file,
 )
 from src.services.announcements.create_application_package import create_application_package
+from src.services.announcements.create_application_package_instruction import (
+    create_application_package_instruction,
+)
 from src.services.announcements.delete_announcement_attachment import delete_announcement_attachment
+from src.services.announcements.delete_application_package_instruction import (
+    delete_application_package_instruction,
+)
 from src.services.announcements.get_announcement import get_announcement_and_verify_access
 from src.services.announcements.get_announcement_attachment import (
     get_announcement_attachment_and_verify_access,
@@ -424,3 +433,83 @@ def put_application_package_forms(
         )
 
     return response.ApiResponse(message="Success", data=application_package)
+
+
+@announcement_blueprint.post(
+    "/<uuid:announcement_id>/application-packages/<uuid:application_package_id>/instructions"
+)
+@announcement_blueprint.input(ApplicationPackageInstructionCreateFromPendingFileRequestSchema)
+@announcement_blueprint.output(ApplicationPackageInstructionGetResponseSchema)
+@announcement_blueprint.auth_required(jwt_or_api_user_key_multi_auth)
+@announcement_blueprint.doc(
+    summary="Create an Application Package Instruction", responses=[200, 401, 403, 404, 422]
+)
+@flask_db.with_db_session()
+def application_package_instruction_create(
+    db_session: db.Session,
+    announcement_id: uuid.UUID,
+    application_package_id: uuid.UUID,
+    json_data: dict,
+) -> response.ApiResponse:
+    pending_file_id = json_data["pending_file_id"]
+    add_extra_data_to_current_request_logs(
+        {
+            "announcement_id": announcement_id,
+            "application_package_id": application_package_id,
+            "pending_file_id": pending_file_id,
+        }
+    )
+    logger.info(
+        "POST /v1/announcements/:announcement_id/application-packages/:application_package_id/instructions"
+    )
+
+    with db_session.begin():
+        user = jwt_or_api_user_key_multi_auth.get_user()
+        db_session.add(user)
+
+        application_package_instruction = create_application_package_instruction(
+            db_session, user, announcement_id, application_package_id, pending_file_id
+        )
+
+    return response.ApiResponse(message="Success", data=application_package_instruction)
+
+
+@announcement_blueprint.delete(
+    "/<uuid:announcement_id>/application-packages/<uuid:application_package_id>/instructions/<uuid:application_package_instruction_id>"
+)
+@announcement_blueprint.output(ApplicationPackageInstructionDeleteResponseSchema)
+@announcement_blueprint.auth_required(jwt_or_api_user_key_multi_auth)
+@announcement_blueprint.doc(
+    summary="Create an Application Package Instruction", responses=[200, 401, 403, 404]
+)
+@flask_db.with_db_session()
+def application_package_instruction_delete(
+    db_session: db.Session,
+    announcement_id: uuid.UUID,
+    application_package_id: uuid.UUID,
+    application_package_instruction_id: uuid.UUID,
+) -> response.ApiResponse:
+    add_extra_data_to_current_request_logs(
+        {
+            "announcement_id": announcement_id,
+            "application_package_id": application_package_id,
+            "application_package_instruction_id": application_package_instruction_id,
+        }
+    )
+    logger.info(
+        "DELETE /v1/announcements/:announcement_id/application-packages/:application_package_id/instructions/:application_package_instruction_id"
+    )
+
+    with db_session.begin():
+        user = jwt_or_api_user_key_multi_auth.get_user()
+        db_session.add(user)
+
+        delete_application_package_instruction(
+            db_session,
+            user,
+            announcement_id,
+            application_package_id,
+            application_package_instruction_id,
+        )
+
+    return response.ApiResponse(message="Instructions deleted successfully")
