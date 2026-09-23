@@ -43,33 +43,28 @@ describe("SelectFundingOpportunityContent", () => {
 
   const mockAnnouncement = (
     overrides: Partial<AnnouncementListItem> = {},
-  ): AnnouncementListItem =>
-    ({
-      announcement_id: "opp-1",
-      announcement_number: "OPP-001",
-      announcement_title: "Test Opportunity",
-      created_at: "2026-06-23T00:00:00Z",
-      updated_at: "2026-06-23T00:00:00Z",
-      summary: {
-        close_timestamp: null,
-        is_forecast: false,
-        post_timestamp: "2026-06-23T00:00:00Z",
-        archive_timestamp: null,
-        funding_instruments: [],
-      },
+  ): AnnouncementListItem => ({
+    announcement_id: "opp-1",
+    announcement_number: "OPP-001",
+    announcement_title: "Test Opportunity",
+    created_at: "2026-06-23T00:00:00Z",
+    updated_at: "2026-06-23T00:00:00Z",
+    summary: {
+      close_timestamp: null,
+      is_forecast: false,
+      post_timestamp: "2026-06-23T00:00:00Z",
+      archive_timestamp: null,
+      funding_instruments: [],
+    },
 
-      ...overrides,
-    });
+    ...overrides,
+  });
 
-  const mockAnnouncements: AnnouncementListItem[] = [
-    mockAnnouncement(),
-  ];
+  const mockAnnouncements: AnnouncementListItem[] = [mockAnnouncement()];
 
   it("renders the funding opportunity heading", () => {
     render(
-      <SelectFundingOpportunityContent
-        announcements={mockAnnouncements}
-      />,
+      <SelectFundingOpportunityContent announcements={mockAnnouncements} />,
     );
 
     expect(
@@ -82,9 +77,7 @@ describe("SelectFundingOpportunityContent", () => {
 
   it("renders the funding opportunities table", () => {
     render(
-      <SelectFundingOpportunityContent
-        announcements={mockAnnouncements}
-      />,
+      <SelectFundingOpportunityContent announcements={mockAnnouncements} />,
     );
 
     expect(screen.getByText("OPP-001")).toBeInTheDocument();
@@ -94,9 +87,7 @@ describe("SelectFundingOpportunityContent", () => {
 
   it("renders the cancel button", () => {
     render(
-      <SelectFundingOpportunityContent
-        announcements={mockAnnouncements}
-      />,
+      <SelectFundingOpportunityContent announcements={mockAnnouncements} />,
     );
 
     expect(
@@ -110,9 +101,7 @@ describe("SelectFundingOpportunityContent", () => {
     const user = userEvent.setup();
 
     render(
-      <SelectFundingOpportunityContent
-        announcements={mockAnnouncements}
-      />,
+      <SelectFundingOpportunityContent announcements={mockAnnouncements} />,
     );
 
     await user.click(screen.getByRole("button", { name: "Cancel" }));
@@ -128,9 +117,7 @@ describe("SelectFundingOpportunityContent", () => {
     });
 
     render(
-      <SelectFundingOpportunityContent
-        announcements={mockAnnouncements}
-      />,
+      <SelectFundingOpportunityContent announcements={mockAnnouncements} />,
     );
 
     await user.click(screen.getByRole("button", { name: /Start/i }));

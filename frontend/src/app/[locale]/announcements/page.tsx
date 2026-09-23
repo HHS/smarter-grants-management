@@ -40,11 +40,7 @@ type AnnouncementsAccessModel = {
 };
 
 type AnnouncementListPageStatus =
-  | "archived"
-  | "closed"
-  | "posted"
-  | "forecasted"
-  | "draft";
+  "archived" | "closed" | "posted" | "forecasted" | "draft";
 
 type AnnouncementListPageSummary = {
   close_timestamp: string | null;
@@ -259,9 +255,7 @@ const transformTableRowData = (
       { cellData: announcementType },
       { cellData: lastUpdated },
       {
-        cellData: (
-          <AnnouncementStatusTag status={status} />
-        ),
+        cellData: <AnnouncementStatusTag status={status} />,
       },
       {
         cellData: (
@@ -291,7 +285,10 @@ const AnnouncementsHeader = ({
         {t("numAnnouncements", { num: userAnnouncementsCount })}
       </div>
       {canCreate && (
-        <Link href="/announcements/create" className="usa-button margin-left-auto">
+        <Link
+          href="/announcements/create"
+          className="usa-button margin-left-auto"
+        >
           {t("createAnnouncementButton")}
         </Link>
       )}
@@ -609,11 +606,7 @@ export default async function AnnouncementsListPage(
     return <AnnouncementsErrorPage />;
   }
 
-  if (
-    !announcements.length &&
-    totalPages > 0 &&
-    currentPage > totalPages
-  ) {
+  if (!announcements.length && totalPages > 0 && currentPage > totalPages) {
     redirect(`?page=${totalPages}`);
   }
 
@@ -625,9 +618,7 @@ export default async function AnnouncementsListPage(
         canCreate={announcementsAccess.canCreate}
       />
 
-      {!announcements.length && (
-        <NoStartedAnnouncements />
-      )}
+      {!announcements.length && <NoStartedAnnouncements />}
 
       {announcements.length > 0 && (
         <>

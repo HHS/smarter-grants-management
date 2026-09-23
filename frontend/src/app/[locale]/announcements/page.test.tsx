@@ -28,15 +28,17 @@ jest.mock("next-intl/server", () => ({
   getTranslations: identity,
 }));
 
-const withFeatureFlagMock = jest.fn().mockImplementation(
-  (
-    WrappedComponent: FunctionComponent<LocalizedPageProps>,
-    _featureFlagName: string,
-    _onEnabled: onEnabled,
-  ) =>
-    (props: { params: Promise<{ locale: string }> }) =>
-      WrappedComponent(props) as unknown,
-);
+const withFeatureFlagMock = jest
+  .fn()
+  .mockImplementation(
+    (
+      WrappedComponent: FunctionComponent<LocalizedPageProps>,
+      _featureFlagName: string,
+      _onEnabled: onEnabled,
+    ) =>
+      (props: { params: Promise<{ locale: string }> }) =>
+        WrappedComponent(props) as unknown,
+  );
 
 jest.mock("src/services/featureFlags/withFeatureFlag", () => ({
   __esModule: true,
@@ -189,7 +191,10 @@ describe("Announcements", () => {
       name: "createAnnouncementButton",
     });
     expect(createAnnouncementLink).toBeVisible();
-    expect(createAnnouncementLink).toHaveAttribute("href", "/announcements/create");
+    expect(createAnnouncementLink).toHaveAttribute(
+      "href",
+      "/announcements/create",
+    );
   });
 
   it("renders unauthenticated page for missing auth", async () => {
@@ -240,7 +245,9 @@ describe("Announcements", () => {
     const component = await AnnouncementsListPage({ params: localeParams });
     render(component);
 
-    expect(await screen.findByTestId("announcement-status-forecasted")).toBeVisible();
+    expect(
+      await screen.findByTestId("announcement-status-forecasted"),
+    ).toBeVisible();
 
     const popoverButton = screen.getByRole("button", { expanded: false });
     fireEvent.click(popoverButton);
@@ -257,7 +264,9 @@ describe("Announcements", () => {
     const component = await AnnouncementsListPage({ params: localeParams });
     render(component);
 
-    expect(await screen.findByTestId("announcement-status-posted")).toBeVisible();
+    expect(
+      await screen.findByTestId("announcement-status-posted"),
+    ).toBeVisible();
 
     const viewLink = "/announcement/" + baseAnnouncement.announcement_id;
     const announcementTitleLink = screen.getByRole("link", {

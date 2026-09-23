@@ -55,9 +55,7 @@ async function SelectOpportunityPageContent({
       <CreateAwardRecommendationHeroContent />
 
       <GridContainer>
-        <SelectFundingOpportunityContent
-          announcements={fundingOpportunities}
-        />
+        <SelectFundingOpportunityContent announcements={fundingOpportunities} />
       </GridContainer>
     </>
   );

@@ -16,7 +16,9 @@ describe("AnnouncementStatusTag", () => {
 
   it("renders posted status", () => {
     render(<AnnouncementStatusTag status="posted" />);
-    expect(screen.getByTestId("announcement-status-posted")).toBeInTheDocument();
+    expect(
+      screen.getByTestId("announcement-status-posted"),
+    ).toBeInTheDocument();
     expect(screen.getByText("posted")).toBeInTheDocument();
   });
 

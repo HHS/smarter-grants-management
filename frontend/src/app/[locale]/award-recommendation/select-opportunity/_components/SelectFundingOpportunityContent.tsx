@@ -31,9 +31,7 @@ export const SelectFundingOpportunityContent = ({
     router.push("/");
   };
 
-  const handleCreateAwardRecommendation = async (
-    announcementId: string,
-  ) => {
+  const handleCreateAwardRecommendation = async (announcementId: string) => {
     setCreatingAnnouncementId(announcementId);
 
     try {
@@ -76,7 +74,9 @@ export const SelectFundingOpportunityContent = ({
             className="usa-button--outline margin-y-0"
             disabled={isCreating}
             onClick={() => {
-              void handleCreateAwardRecommendation(announcement.announcement_id);
+              void handleCreateAwardRecommendation(
+                announcement.announcement_id,
+              );
             }}
           >
             {t("startButtonText")} <span aria-hidden="true">→</span>
