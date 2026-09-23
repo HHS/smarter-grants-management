@@ -11,12 +11,14 @@ import {
 } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 import { AnnouncementSummaryUpdateRawData } from "src/types/announcement/announcementResponseTypes";
 import { FrontendErrorDetails } from "src/types/apiResponseTypes";
-import { getConfiguredDayJs } from "src/utils/dateUtil";
+import { dateToTimestamp, getConfiguredDayJs } from "src/utils/dateUtil";
 import { formDataToObject } from "src/utils/formData/formDataToJson";
 import { z } from "zod";
 
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
+
+const dayjs = getConfiguredDayJs();
 
 export type AnnouncementEditValidationErrors = {
   announcement_title?: string[];
@@ -236,7 +238,10 @@ async function validateOpportunityEditForm(formData: FormData) {
     .object({
       announcement_title: z.string().trim(),
       category: z.string().trim(),
-      summary_description: z.string().trim(),
+      summary_description: z
+        .string()
+        .trim()
+        .min(1, { message: validationErrors("description") }),
       post_timestamp: z
         .string()
         .trim()
@@ -279,9 +284,8 @@ async function validateOpportunityEditForm(formData: FormData) {
         return;
       }
 
-      const dayjs = getConfiguredDayJs();
-      const close = dayjs(close_timestamp, "YYYY-MM-DD", true);
-      const publish = dayjs(post_timestamp, "YYYY-MM-DD", true);
+      const close = dayjs(close_timestamp);
+      const publish = dayjs(post_timestamp);
 
       if (!close.isValid() || !publish.isValid() || close.isBefore(publish)) {
         ctx.addIssue({
@@ -433,6 +437,12 @@ export async function saveAnnouncementEditAction(
         ...rawBody,
         funding_categories: [rawBody.funding_categories],
         funding_instruments: [rawBody.funding_instruments],
+        close_timestamp: rawBody.close_timestamp
+          ? dateToTimestamp(rawBody.close_timestamp)
+          : null,
+        post_timestamp: rawBody.post_timestamp
+          ? dateToTimestamp(rawBody.post_timestamp)
+          : null,
       };
       const createResponse = await createAnnoucementSummary({
         announcementId,
@@ -490,6 +500,12 @@ export async function saveAnnouncementEditAction(
       ...rawBody,
       funding_categories: [rawBody.funding_categories],
       funding_instruments: [rawBody.funding_instruments],
+      close_timestamp: rawBody.close_timestamp
+        ? dateToTimestamp(rawBody.close_timestamp)
+        : null,
+      post_timestamp: rawBody.post_timestamp
+        ? dateToTimestamp(rawBody.post_timestamp)
+        : null,
     };
 
     const response = await updateAnnoucementSummary({

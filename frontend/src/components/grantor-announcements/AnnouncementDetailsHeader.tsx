@@ -8,7 +8,7 @@ import { Alert, Link } from "@trussworks/react-uswds";
 import { USWDSIcon } from "src/components/core/USWDSIcon";
 
 type OpportunityDetailsHeaderProps = {
-  opportunityData: GrantorAnnouncementDetail; // delete me
+  opportunityData: GrantorAnnouncementDetail;
   locale: string;
   children?: ReactNode;
   isNewlyCreated?: boolean;

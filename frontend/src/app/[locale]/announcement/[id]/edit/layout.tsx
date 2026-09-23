@@ -19,7 +19,7 @@ export async function generateMetadata({
     const session = await getSession();
     if (session?.token) {
       const { data } = await getAnnouncement(id);
-      title = `${t("OpportunityEdit.pageTitle")} - ${data.opportunity_title || ""}`;
+      title = `${t("OpportunityEdit.pageTitle")} - ${data.announcement_title || ""}`;
     }
   } catch {
     // fall back to static title

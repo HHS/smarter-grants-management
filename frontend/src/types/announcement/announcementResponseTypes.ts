@@ -116,7 +116,7 @@ export type MinimalAnnouncement = {
   announcement_id?: string;
   legacy_opportunity_id?: number;
   legacy_announcement_id?: number;
-  opportunity_status?: AnnouncementStatus;
+  opportunity_status: AnnouncementStatus;
   announcement_status?: AnnouncementStatus;
   opportunity_title: string | null;
   announcement_title?: string | null;

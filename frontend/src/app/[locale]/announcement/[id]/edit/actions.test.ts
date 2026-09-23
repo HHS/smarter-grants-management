@@ -132,6 +132,7 @@ describe("saveAnnouncementEditAction", () => {
       funding_instruments: ["fundingType"],
       funding_categories: ["fundingCategory"],
       applicant_types: ["eligibleApplicants"],
+      summary_description: ["description"],
     });
   });
 
@@ -297,8 +298,10 @@ describe("saveAnnouncementEditAction", () => {
     expect(firstCall?.[0].announcementId).toBe("opp-123");
     expect(firstCall?.[0].announcementSummaryId).toBe("sum-456");
     expect(firstCall?.[0].body.summary_description).toBe("Summary text");
-    expect(firstCall?.[0].body.post_timestamp).toBe("2026-03-11");
-    expect(firstCall?.[0].body.close_timestamp).toBe("2026-04-11");
+    expect(firstCall?.[0].body.post_timestamp).toBe("2026-03-11T00:00:00.000Z");
+    expect(firstCall?.[0].body.close_timestamp).toBe(
+      "2026-04-11T00:00:00.000Z",
+    );
     expect(firstCall?.[0].body.agency_email_address).toBe("grants@example.com");
     expect(result).toEqual({
       successMessage: "success",
@@ -845,6 +848,7 @@ describe("announcementEditFormAction", () => {
       funding_instruments: ["fundingType"],
       funding_categories: ["fundingCategory"],
       applicant_types: ["eligibleApplicants"],
+      summary_description: ["description"],
     });
     expect(mockUpdateAnnoucementSummary).not.toHaveBeenCalled();
   });
