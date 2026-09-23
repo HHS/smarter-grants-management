@@ -56,7 +56,8 @@ type AnnouncementListPageItem = {
   announcement_title: string | null;
   created_at: string;
   updated_at: string;
-  summary: AnnouncementListPageSummary | null;
+  forecast_summary: AnnouncementListPageSummary | null;
+  non_forecast_summary: AnnouncementListPageSummary | null;
 };
 
 export const AnnouncementsPageWrapper = ({ children }: PropsWithChildren) => {
@@ -192,9 +193,8 @@ const transformTableRowData = (
   _t: TFn,
 ) => {
   const getAnnouncementStatus = (
-    announcement: AnnouncementListPageItem,
+    summary: AnnouncementListPageSummary | null,
   ): AnnouncementListPageStatus => {
-    const summary = announcement.summary;
     if (!summary) {
       return "draft";
     }
@@ -221,14 +221,16 @@ const transformTableRowData = (
   };
 
   return announcements.map((announcement: AnnouncementListPageItem) => {
-    const status = getAnnouncementStatus(announcement);
+    const summary =
+      announcement.non_forecast_summary ?? announcement.forecast_summary;
+    const status = getAnnouncementStatus(summary);
     const announcementTitleUrl =
       status === "draft" && canUpdate
         ? `/announcement/${announcement.announcement_id}/edit`
         : `/announcement/${announcement.announcement_id}`;
 
     // Get funding instrument types from summary and format them
-    const fundingInstruments = announcement.summary?.funding_instruments || [];
+    const fundingInstruments = summary?.funding_instruments || [];
     const formattedInstruments = fundingInstruments.map((instrument) =>
       instrument
         .split("_")

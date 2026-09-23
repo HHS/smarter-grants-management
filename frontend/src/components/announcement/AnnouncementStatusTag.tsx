@@ -24,7 +24,7 @@ const STATUS_TAG_CLASSNAME =
 const STATUS_TAG_STYLE: CSSProperties = { whiteSpace: "nowrap" };
 
 const AnnouncementStatusTag = ({ status }: Props) => {
-  const t = useTranslations("Opportunities.statusTag");
+  const t = useTranslations("Announcements.statusTag");
 
   const statusTag = () => {
     switch (status) {

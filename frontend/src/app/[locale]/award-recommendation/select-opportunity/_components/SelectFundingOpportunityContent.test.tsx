@@ -49,7 +49,8 @@ describe("SelectFundingOpportunityContent", () => {
     announcement_title: "Test Opportunity",
     created_at: "2026-06-23T00:00:00Z",
     updated_at: "2026-06-23T00:00:00Z",
-    summary: {
+    forecast_summary: null,
+    non_forecast_summary: {
       close_timestamp: null,
       is_forecast: false,
       post_timestamp: "2026-06-23T00:00:00Z",

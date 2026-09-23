@@ -105,7 +105,8 @@ const baseAnnouncement: AnnouncementListItem = {
   announcement_number: "FO-26-00001",
   created_at: "2024-04-29T06:43:00Z",
   updated_at: "2024-04-29T06:43:00Z",
-  summary: {
+  forecast_summary: null,
+  non_forecast_summary: {
     close_timestamp: null,
     is_forecast: false,
     post_timestamp: "2024-04-29T06:43:00Z",
@@ -233,10 +234,11 @@ describe("Announcements", () => {
       data: [
         {
           ...baseAnnouncement,
-          summary: {
-            ...baseAnnouncement.summary,
+          forecast_summary: {
+            ...baseAnnouncement.non_forecast_summary,
             is_forecast: true,
           },
+          non_forecast_summary: null,
         },
       ],
       pagination_info: { total_pages: 1, total_records: 1 },

@@ -188,5 +188,6 @@ export interface AnnouncementListItem {
   announcement_title: string | null;
   created_at: string;
   updated_at: string;
-  summary: AnnouncementListSummary | null;
+  forecast_summary: AnnouncementListSummary | null;
+  non_forecast_summary: AnnouncementListSummary | null;
 }
