@@ -27,13 +27,13 @@ type PaginationBody = {
   pagination: PaginationRequestBody;
 };
 
-type UpdateAnnoucementSummaryParams = {
+type UpdateAnnouncementSummaryParams = {
   announcementId: string;
   announcementSummaryId: string;
   body: AnnouncementSummaryUpdateRequest;
 };
 
-type CreateAnnoucementSummaryParams = {
+type CreateAnnouncementSummaryParams = {
   announcementId: string;
   body: AnnouncementSummaryCreateRequest;
 };
@@ -82,10 +82,10 @@ export const createOpportunity = async (
   return json.data;
 };
 
-export async function createAnnoucementSummary({
+export async function createAnnouncementSummary({
   announcementId,
   body,
-}: CreateAnnoucementSummaryParams): Promise<AnnouncementSummaryDetailApiResponse> {
+}: CreateAnnouncementSummaryParams): Promise<AnnouncementSummaryDetailApiResponse> {
   const response = await fetchGrantorOpportunityWithMethod("POST")({
     subPath: `${announcementId}/summaries`,
     body,
@@ -96,11 +96,11 @@ export async function createAnnoucementSummary({
   return (await response.json()) as AnnouncementSummaryDetailApiResponse;
 }
 
-export async function updateAnnoucementSummary({
+export async function updateAnnouncementSummary({
   announcementId,
   announcementSummaryId,
   body,
-}: UpdateAnnoucementSummaryParams): Promise<AnnouncementSummaryDetailApiResponse> {
+}: UpdateAnnouncementSummaryParams): Promise<AnnouncementSummaryDetailApiResponse> {
   const response = await fetchGrantorOpportunityWithMethod("PUT")({
     subPath: `${announcementId}/summaries/${announcementSummaryId}`,
     body,

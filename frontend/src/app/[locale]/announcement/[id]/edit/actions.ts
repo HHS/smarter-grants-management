@@ -6,8 +6,8 @@ import {
   deleteOpportunityAttachment,
 } from "src/services/fetch/fetchers/announcementAttachmentFetcher";
 import {
-  createAnnoucementSummary,
-  updateAnnoucementSummary,
+  createAnnouncementSummary,
+  updateAnnouncementSummary,
 } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 import { AnnouncementSummaryUpdateRawData } from "src/types/announcement/announcementResponseTypes";
 import { FrontendErrorDetails } from "src/types/apiResponseTypes";
@@ -444,7 +444,7 @@ export async function saveAnnouncementEditAction(
           ? dateToTimestamp(rawBody.post_timestamp)
           : null,
       };
-      const createResponse = await createAnnoucementSummary({
+      const createResponse = await createAnnouncementSummary({
         announcementId,
         body: body,
       });
@@ -508,7 +508,7 @@ export async function saveAnnouncementEditAction(
         : null,
     };
 
-    const response = await updateAnnoucementSummary({
+    const response = await updateAnnouncementSummary({
       announcementId,
       announcementSummaryId,
       body,

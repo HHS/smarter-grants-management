@@ -5,8 +5,8 @@ import {
   deleteOpportunityAttachment,
 } from "src/services/fetch/fetchers/announcementAttachmentFetcher";
 import {
-  createAnnoucementSummary,
-  updateAnnoucementSummary,
+  createAnnouncementSummary,
+  updateAnnouncementSummary,
 } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 
 import {
@@ -20,8 +20,8 @@ jest.mock("next-intl/server", () => ({
 }));
 
 jest.mock("src/services/fetch/fetchers/grantorAnnouncementFetcher", () => ({
-  createAnnoucementSummary: jest.fn(),
-  updateAnnoucementSummary: jest.fn(),
+  createAnnouncementSummary: jest.fn(),
+  updateAnnouncementSummary: jest.fn(),
 }));
 
 jest.mock("src/services/fetch/fetchers/announcementAttachmentFetcher", () => ({
@@ -40,8 +40,8 @@ const initialState: OpportunityEditActionState = {
   validationErrors: {},
 };
 
-const mockCreateAnnoucementSummary = jest.mocked(createAnnoucementSummary);
-const mockUpdateAnnoucementSummary = jest.mocked(updateAnnoucementSummary);
+const mockCreateAnnouncementSummary = jest.mocked(createAnnouncementSummary);
+const mockUpdateAnnouncementSummary = jest.mocked(updateAnnouncementSummary);
 const mockCreateOpportunityAttachment = jest.mocked(
   createAnnouncementAttachment,
 );
@@ -50,7 +50,7 @@ const mockDeleteOpportunityAttachment = jest.mocked(
 );
 
 const successfulSummaryUpdateResponse: Awaited<
-  ReturnType<typeof updateAnnoucementSummary>
+  ReturnType<typeof updateAnnouncementSummary>
 > = {
   message: "success",
   status_code: 200,
@@ -225,52 +225,53 @@ describe("saveAnnouncementEditAction", () => {
     formData.set("is_forecast", "true");
     // announcement_summary_id not set
 
-    const createResponse: Awaited<ReturnType<typeof createAnnoucementSummary>> =
-      {
-        message: "success",
-        status_code: 201,
-        data: {
-          announcement_summary_id: "new-sum-789",
-          is_forecast: true,
-          summary_description: "Summary text",
-          is_cost_sharing: null,
-          post_timestamp: "2026-03-11",
-          close_timestamp: "2026-04-11",
-          close_timestamp_description: null,
-          archive_date: null,
-          updated_at: "2026-03-11T00:00:00Z",
-          expected_number_of_awards: null,
-          estimated_total_program_funding: null,
-          award_floor: null,
-          award_ceiling: null,
-          additional_info_url: null,
-          additional_info_url_description: null,
-          funding_categories: [],
-          funding_category_description: null,
-          funding_instruments: [],
-          applicant_types: [],
-          applicant_eligibility_description: null,
-          agency_code: null,
-          agency_contact_description: null,
-          agency_email_address: "grants@example.com",
-          agency_email_address_description: null,
-          agency_name: null,
-          agency_phone_number: null,
-          forecasted_post_timestamp: null,
-          forecasted_close_timestamp: null,
-          forecasted_close_timestamp_description: null,
-          forecasted_award_date: null,
-          forecasted_project_start_date: null,
-          fiscal_year: null,
-          version_number: null,
-        },
-      };
+    const createResponse: Awaited<
+      ReturnType<typeof createAnnouncementSummary>
+    > = {
+      message: "success",
+      status_code: 201,
+      data: {
+        announcement_summary_id: "new-sum-789",
+        is_forecast: true,
+        summary_description: "Summary text",
+        is_cost_sharing: null,
+        post_timestamp: "2026-03-11",
+        close_timestamp: "2026-04-11",
+        close_timestamp_description: null,
+        archive_date: null,
+        updated_at: "2026-03-11T00:00:00Z",
+        expected_number_of_awards: null,
+        estimated_total_program_funding: null,
+        award_floor: null,
+        award_ceiling: null,
+        additional_info_url: null,
+        additional_info_url_description: null,
+        funding_categories: [],
+        funding_category_description: null,
+        funding_instruments: [],
+        applicant_types: [],
+        applicant_eligibility_description: null,
+        agency_code: null,
+        agency_contact_description: null,
+        agency_email_address: "grants@example.com",
+        agency_email_address_description: null,
+        agency_name: null,
+        agency_phone_number: null,
+        forecasted_post_timestamp: null,
+        forecasted_close_timestamp: null,
+        forecasted_close_timestamp_description: null,
+        forecasted_award_date: null,
+        forecasted_project_start_date: null,
+        fiscal_year: null,
+        version_number: null,
+      },
+    };
 
-    mockCreateAnnoucementSummary.mockResolvedValue(createResponse);
+    mockCreateAnnouncementSummary.mockResolvedValue(createResponse);
 
     const result = await saveAnnouncementEditAction(initialState, formData);
 
-    const firstCall = mockCreateAnnoucementSummary.mock.calls[0];
+    const firstCall = mockCreateAnnouncementSummary.mock.calls[0];
     expect(firstCall).toBeDefined();
     expect(firstCall?.[0].announcementId).toBe("opp-123");
     expect(firstCall?.[0].body.is_forecast).toBe(true);
@@ -286,13 +287,13 @@ describe("saveAnnouncementEditAction", () => {
     formData.set("announcement_id", "opp-123");
     formData.set("announcement_summary_id", "sum-456");
 
-    mockUpdateAnnoucementSummary.mockResolvedValue(
+    mockUpdateAnnouncementSummary.mockResolvedValue(
       successfulSummaryUpdateResponse,
     );
 
     const result = await saveAnnouncementEditAction(initialState, formData);
 
-    const firstCall = mockUpdateAnnoucementSummary.mock.calls[0];
+    const firstCall = mockUpdateAnnouncementSummary.mock.calls[0];
 
     expect(firstCall).toBeDefined();
     expect(firstCall?.[0].announcementId).toBe("opp-123");
@@ -313,7 +314,7 @@ describe("saveAnnouncementEditAction", () => {
     formData.set("announcement_id", "opp-123");
     formData.set("announcement_summary_id", "sum-456");
 
-    mockUpdateAnnoucementSummary.mockRejectedValue(
+    mockUpdateAnnouncementSummary.mockRejectedValue(
       new ApiRequestError("forbidden", "APIRequestError", 403),
     );
 
@@ -329,7 +330,7 @@ describe("saveAnnouncementEditAction", () => {
     formData.set("announcement_id", "opp-123");
     formData.set("announcement_summary_id", "sum-456");
 
-    mockUpdateAnnoucementSummary.mockRejectedValue(
+    mockUpdateAnnouncementSummary.mockRejectedValue(
       new ApiRequestError("missing", "APIRequestError", 404),
     );
 
@@ -347,7 +348,7 @@ describe("saveAnnouncementEditAction", () => {
     formData.set("announcement_id", "opp-123");
     formData.set("announcement_summary_id", "sum-456");
 
-    mockUpdateAnnoucementSummary.mockRejectedValue(
+    mockUpdateAnnouncementSummary.mockRejectedValue(
       new ApiRequestError("invalid", "APIRequestError", 422),
     );
 
@@ -363,7 +364,7 @@ describe("saveAnnouncementEditAction", () => {
     formData.set("announcement_id", "opp-123");
     formData.set("announcement_summary_id", "sum-456");
 
-    mockUpdateAnnoucementSummary.mockResolvedValue({
+    mockUpdateAnnouncementSummary.mockResolvedValue({
       ...successfulSummaryUpdateResponse,
       status_code: 422,
       errors: [
@@ -396,7 +397,7 @@ describe("saveAnnouncementEditAction", () => {
     formData.set("announcement_id", "opp-123");
     formData.set("announcement_summary_id", "sum-456");
 
-    mockUpdateAnnoucementSummary.mockResolvedValue({
+    mockUpdateAnnouncementSummary.mockResolvedValue({
       ...successfulSummaryUpdateResponse,
       status_code: 422,
       errors: [
@@ -424,7 +425,7 @@ describe("saveAnnouncementEditAction", () => {
     formData.set("announcement_id", "opp-123");
     formData.set("announcement_summary_id", "sum-456");
 
-    mockUpdateAnnoucementSummary.mockResolvedValue({
+    mockUpdateAnnouncementSummary.mockResolvedValue({
       ...successfulSummaryUpdateResponse,
       status_code: 422,
       message: "Only opportunities created in Simpler Grants can be updated",
@@ -448,13 +449,13 @@ describe("saveAnnouncementEditAction", () => {
     formData.set("award_floor", "100,000");
     formData.set("award_ceiling", "500,000");
 
-    mockUpdateAnnoucementSummary.mockResolvedValue(
+    mockUpdateAnnouncementSummary.mockResolvedValue(
       successfulSummaryUpdateResponse,
     );
 
     await saveAnnouncementEditAction(initialState, formData);
 
-    const firstCall = mockUpdateAnnoucementSummary.mock.calls[0];
+    const firstCall = mockUpdateAnnouncementSummary.mock.calls[0];
     expect(firstCall?.[0].body.estimated_total_program_funding).toBe(1000000);
     expect(firstCall?.[0].body.award_floor).toBe(100000);
     expect(firstCall?.[0].body.award_ceiling).toBe(500000);
@@ -468,15 +469,15 @@ describe("saveAnnouncementEditAction", () => {
     formData.set("award_floor", "100,000");
     formData.set("award_ceiling", "500,000");
 
-    mockCreateAnnoucementSummary.mockResolvedValue({
+    mockCreateAnnouncementSummary.mockResolvedValue({
       message: "success",
       status_code: 201,
       data: { announcement_summary_id: "new-sum-789" },
-    } as unknown as Awaited<ReturnType<typeof createAnnoucementSummary>>);
+    });
 
     await saveAnnouncementEditAction(initialState, formData);
 
-    const firstCall = mockCreateAnnoucementSummary.mock.calls[0];
+    const firstCall = mockCreateAnnouncementSummary.mock.calls[0];
     expect(firstCall?.[0].body.estimated_total_program_funding).toBe(1000000);
     expect(firstCall?.[0].body.award_floor).toBe(100000);
     expect(firstCall?.[0].body.award_ceiling).toBe(500000);
@@ -487,7 +488,7 @@ describe("saveAnnouncementEditAction", () => {
     formData.set("announcement_id", "opp-123");
     formData.set("announcement_summary_id", "sum-456");
 
-    mockUpdateAnnoucementSummary.mockRejectedValue(
+    mockUpdateAnnouncementSummary.mockRejectedValue(
       new ApiRequestError("unauthenticated", "APIRequestError", 401),
     );
 
@@ -503,7 +504,7 @@ describe("saveAnnouncementEditAction", () => {
     formData.set("announcement_id", "opp-123");
     formData.set("announcement_summary_id", "sum-456");
 
-    mockUpdateAnnoucementSummary.mockRejectedValue(new Error("unexpected"));
+    mockUpdateAnnouncementSummary.mockRejectedValue(new Error("unexpected"));
 
     const result = await saveAnnouncementEditAction(initialState, formData);
 
@@ -518,7 +519,7 @@ describe("saveAnnouncementEditAction", () => {
       formData.set("announcement_id", "opp-123");
       formData.set("announcement_summary_id", "sum-456");
 
-      mockUpdateAnnoucementSummary.mockResolvedValue(
+      mockUpdateAnnouncementSummary.mockResolvedValue(
         successfulSummaryUpdateResponse,
       );
 
@@ -535,7 +536,7 @@ describe("saveAnnouncementEditAction", () => {
       formData.set("held_pending_file_ids", JSON.stringify(["pending-1"]));
       formData.set("deleted_attachment_ids", JSON.stringify(["attach-1"]));
 
-      mockUpdateAnnoucementSummary.mockResolvedValue({
+      mockUpdateAnnouncementSummary.mockResolvedValue({
         ...successfulSummaryUpdateResponse,
         status_code: 422,
         errors: [
@@ -560,7 +561,7 @@ describe("saveAnnouncementEditAction", () => {
       formData.set("held_pending_file_ids", JSON.stringify(["pending-1"]));
       formData.set("deleted_attachment_ids", JSON.stringify(["attach-1"]));
 
-      mockUpdateAnnoucementSummary.mockRejectedValue(
+      mockUpdateAnnouncementSummary.mockRejectedValue(
         new ApiRequestError("forbidden", "APIRequestError", 403),
       );
 
@@ -577,7 +578,7 @@ describe("saveAnnouncementEditAction", () => {
       formData.set("held_pending_file_ids", JSON.stringify(["pending-1"]));
       formData.set("deleted_attachment_ids", JSON.stringify(["attach-1"]));
 
-      mockCreateAnnoucementSummary.mockResolvedValue({
+      mockCreateAnnouncementSummary.mockResolvedValue({
         message: "invalid",
         status_code: 422,
         errors: [
@@ -587,7 +588,7 @@ describe("saveAnnouncementEditAction", () => {
             type: "invalid",
           },
         ],
-      } as unknown as Awaited<ReturnType<typeof createAnnoucementSummary>>);
+      });
 
       await saveAnnouncementEditAction(initialState, formData);
 
@@ -604,7 +605,7 @@ describe("saveAnnouncementEditAction", () => {
         JSON.stringify(["pending-1", "pending-2"]),
       );
 
-      mockUpdateAnnoucementSummary.mockResolvedValue(
+      mockUpdateAnnouncementSummary.mockResolvedValue(
         successfulSummaryUpdateResponse,
       );
       mockCreateOpportunityAttachment.mockResolvedValue({
@@ -637,7 +638,7 @@ describe("saveAnnouncementEditAction", () => {
         JSON.stringify(["attach-1", "attach-2"]),
       );
 
-      mockUpdateAnnoucementSummary.mockResolvedValue(
+      mockUpdateAnnouncementSummary.mockResolvedValue(
         successfulSummaryUpdateResponse,
       );
       mockDeleteOpportunityAttachment.mockResolvedValue({
@@ -667,11 +668,11 @@ describe("saveAnnouncementEditAction", () => {
       formData.set("held_pending_file_ids", JSON.stringify(["pending-1"]));
       formData.set("deleted_attachment_ids", JSON.stringify(["attach-1"]));
 
-      mockCreateAnnoucementSummary.mockResolvedValue({
+      mockCreateAnnouncementSummary.mockResolvedValue({
         message: "success",
         status_code: 201,
         data: { announcement_summary_id: "new-sum-789" },
-      } as unknown as Awaited<ReturnType<typeof createAnnoucementSummary>>);
+      });
       mockCreateOpportunityAttachment.mockResolvedValue({
         message: "success",
         status_code: 200,
@@ -699,11 +700,11 @@ describe("saveAnnouncementEditAction", () => {
       // announcement_summary_id not set - takes the create path
       formData.set("held_pending_file_ids", JSON.stringify(["pending-1"]));
 
-      mockCreateAnnoucementSummary.mockResolvedValue({
+      mockCreateAnnouncementSummary.mockResolvedValue({
         message: "success",
         status_code: 201,
         data: { announcement_summary_id: "new-sum-789" },
-      } as unknown as Awaited<ReturnType<typeof createAnnoucementSummary>>);
+      });
       mockCreateOpportunityAttachment.mockResolvedValue({
         message: "This pending file could not be attached.",
         status_code: 422,
@@ -724,11 +725,11 @@ describe("saveAnnouncementEditAction", () => {
       // announcement_summary_id not set - takes the create path
       formData.set("held_pending_file_ids", JSON.stringify(["pending-1"]));
 
-      mockCreateAnnoucementSummary.mockResolvedValue({
+      mockCreateAnnouncementSummary.mockResolvedValue({
         message: "success",
         status_code: 201,
         data: { announcement_summary_id: "new-sum-789" },
-      } as unknown as Awaited<ReturnType<typeof createAnnoucementSummary>>);
+      });
       mockCreateOpportunityAttachment.mockRejectedValue(
         new ApiRequestError("forbidden", "APIRequestError", 403),
       );
@@ -747,7 +748,7 @@ describe("saveAnnouncementEditAction", () => {
       formData.set("announcement_summary_id", "sum-456");
       formData.set("held_pending_file_ids", "not-json");
 
-      mockUpdateAnnoucementSummary.mockResolvedValue(
+      mockUpdateAnnouncementSummary.mockResolvedValue(
         successfulSummaryUpdateResponse,
       );
 
@@ -763,7 +764,7 @@ describe("saveAnnouncementEditAction", () => {
       formData.set("announcement_summary_id", "sum-456");
       formData.set("held_pending_file_ids", JSON.stringify(["pending-1"]));
 
-      mockUpdateAnnoucementSummary.mockResolvedValue(
+      mockUpdateAnnouncementSummary.mockResolvedValue(
         successfulSummaryUpdateResponse,
       );
       mockCreateOpportunityAttachment.mockRejectedValue(
@@ -785,7 +786,7 @@ describe("saveAnnouncementEditAction", () => {
       );
       formData.set("deleted_attachment_ids", JSON.stringify(["attach-1"]));
 
-      mockUpdateAnnoucementSummary.mockResolvedValue(
+      mockUpdateAnnouncementSummary.mockResolvedValue(
         successfulSummaryUpdateResponse,
       );
       mockCreateOpportunityAttachment.mockResolvedValue({
@@ -812,7 +813,7 @@ describe("saveAnnouncementEditAction", () => {
       formData.set("announcement_summary_id", "sum-456");
       formData.set("deleted_attachment_ids", JSON.stringify(["attach-1"]));
 
-      mockUpdateAnnoucementSummary.mockResolvedValue(
+      mockUpdateAnnouncementSummary.mockResolvedValue(
         successfulSummaryUpdateResponse,
       );
       mockDeleteOpportunityAttachment.mockResolvedValue({
@@ -850,7 +851,7 @@ describe("announcementEditFormAction", () => {
       applicant_types: ["eligibleApplicants"],
       summary_description: ["description"],
     });
-    expect(mockUpdateAnnoucementSummary).not.toHaveBeenCalled();
+    expect(mockUpdateAnnouncementSummary).not.toHaveBeenCalled();
   });
 
   it("returns the publish error when save succeeds but publish fails with 403", async () => {
@@ -858,10 +859,10 @@ describe("announcementEditFormAction", () => {
     formData.set("announcement_id", "opp-123");
     formData.set("announcement_summary_id", "sum-456");
 
-    mockUpdateAnnoucementSummary.mockResolvedValue(
+    mockUpdateAnnouncementSummary.mockResolvedValue(
       successfulSummaryUpdateResponse,
     );
-    mockUpdateAnnoucementSummary.mockRejectedValue(
+    mockUpdateAnnouncementSummary.mockRejectedValue(
       new ApiRequestError("forbidden", "APIRequestError", 403),
     );
 
@@ -875,10 +876,10 @@ describe("announcementEditFormAction", () => {
     formData.set("announcement_id", "opp-123");
     formData.set("announcement_summary_id", "sum-456");
 
-    mockUpdateAnnoucementSummary.mockResolvedValue(
+    mockUpdateAnnouncementSummary.mockResolvedValue(
       successfulSummaryUpdateResponse,
     );
-    mockUpdateAnnoucementSummary.mockRejectedValue(
+    mockUpdateAnnouncementSummary.mockRejectedValue(
       new ApiRequestError("not found", "APIRequestError", 404),
     );
 
@@ -892,10 +893,10 @@ describe("announcementEditFormAction", () => {
     formData.set("announcement_id", "opp-123");
     formData.set("announcement_summary_id", "sum-456");
 
-    mockUpdateAnnoucementSummary.mockResolvedValue(
+    mockUpdateAnnouncementSummary.mockResolvedValue(
       successfulSummaryUpdateResponse,
     );
-    mockUpdateAnnoucementSummary.mockRejectedValue(
+    mockUpdateAnnouncementSummary.mockRejectedValue(
       new ApiRequestError("unauthenticated", "APIRequestError", 401),
     );
 
@@ -916,13 +917,13 @@ describe("announcementEditFormAction", () => {
     formData.set("announcement_summary_id", "sum-456");
     formData.set("submitType", "saveAndExit");
 
-    mockUpdateAnnoucementSummary.mockResolvedValue(
+    mockUpdateAnnouncementSummary.mockResolvedValue(
       successfulSummaryUpdateResponse,
     );
 
     await announcementEditFormAction(initialState, formData);
 
-    expect(mockUpdateAnnoucementSummary).toHaveBeenCalledTimes(1);
+    expect(mockUpdateAnnouncementSummary).toHaveBeenCalledTimes(1);
     expect(mockRedirect).toHaveBeenCalledWith("../overview");
   });
 
@@ -932,13 +933,13 @@ describe("announcementEditFormAction", () => {
     formData.set("announcement_summary_id", "sum-456");
     formData.set("submitType", "saveAndGoBack");
 
-    mockUpdateAnnoucementSummary.mockResolvedValue(
+    mockUpdateAnnouncementSummary.mockResolvedValue(
       successfulSummaryUpdateResponse,
     );
 
     await announcementEditFormAction(initialState, formData);
 
-    expect(mockUpdateAnnoucementSummary).toHaveBeenCalledTimes(1);
+    expect(mockUpdateAnnouncementSummary).toHaveBeenCalledTimes(1);
     expect(mockRedirect).toHaveBeenCalledWith("../overview");
   });
 
@@ -948,13 +949,13 @@ describe("announcementEditFormAction", () => {
     formData.set("announcement_summary_id", "sum-456");
     formData.set("submitType", "saveAndContinue");
 
-    mockUpdateAnnoucementSummary.mockResolvedValue(
+    mockUpdateAnnouncementSummary.mockResolvedValue(
       successfulSummaryUpdateResponse,
     );
 
     await announcementEditFormAction(initialState, formData);
 
-    expect(mockUpdateAnnoucementSummary).toHaveBeenCalledTimes(1);
+    expect(mockUpdateAnnouncementSummary).toHaveBeenCalledTimes(1);
     expect(mockRedirect).toHaveBeenCalledWith("../application-package");
   });
 
@@ -964,13 +965,13 @@ describe("announcementEditFormAction", () => {
     formData.set("announcement_summary_id", "sum-456");
     formData.set("submitType", "save");
 
-    mockUpdateAnnoucementSummary.mockResolvedValue(
+    mockUpdateAnnouncementSummary.mockResolvedValue(
       successfulSummaryUpdateResponse,
     );
 
     const result = await announcementEditFormAction(initialState, formData);
 
-    expect(mockUpdateAnnoucementSummary).toHaveBeenCalledTimes(1);
+    expect(mockUpdateAnnouncementSummary).toHaveBeenCalledTimes(1);
     expect(result).toEqual({ successMessage: "success" });
   });
 
@@ -981,13 +982,13 @@ describe("announcementEditFormAction", () => {
     formData.set("submitType", "saveAndContinue");
     formData.set("agency_email_address", "not-an-email");
 
-    mockUpdateAnnoucementSummary.mockResolvedValue(
+    mockUpdateAnnouncementSummary.mockResolvedValue(
       successfulSummaryUpdateResponse,
     );
 
     const result = await announcementEditFormAction(initialState, formData);
 
-    expect(mockUpdateAnnoucementSummary).not.toHaveBeenCalledTimes(1);
+    expect(mockUpdateAnnouncementSummary).not.toHaveBeenCalledTimes(1);
     expect(mockRedirect).not.toHaveBeenCalledWith("../application-package");
     expect(result.validationErrors).toEqual({
       agency_email_address: ["contactEmailInvalid"],
