@@ -342,6 +342,15 @@ jobs:
           ../api/bin/wait-for-api.sh
         shell: bash
 
+      - name: Seed local E2E API keys
+        run: |
+          cd ../api
+          # The direct /v1/internal/api-jwt flow requires seeded local API keys to
+          # exist in the database; without this, the API rejects the request with 401
+          # even though the test runtime passes the correct key name.
+          docker compose exec -T grants-management-api db-seed-local
+        shell: bash
+
       # we shouldn't ever need to do this
       # - name: npm ci
       #   if: steps.npm-cache.outputs.cache-hit != 'true'
