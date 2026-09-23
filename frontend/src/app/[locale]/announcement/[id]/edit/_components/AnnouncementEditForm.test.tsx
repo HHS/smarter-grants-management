@@ -1033,4 +1033,43 @@ describe("AnnouncementEditForm - field validations on exiting the field", () => 
       screen.getByText("validationErrors.totalFundingCurrencyInput"),
     ).toBeInTheDocument();
   });
+
+  it("publishDate should show an error when set to a date in the past", async () => {
+    const user = userEvent.setup();
+    renderOpportunityEditForm();
+
+    const input = screen.getByRole("textbox", {
+      name: /labels\.publishDate/i,
+    });
+    await user.clear(input);
+    await user.type(input, "01/01/2020");
+    await user.tab();
+
+    expect(
+      screen.getByText("validationErrors.publishDatePast"),
+    ).toBeInTheDocument();
+  });
+
+  it("publishDate should clear its error when changed to a future date", async () => {
+    const user = userEvent.setup();
+    renderOpportunityEditForm();
+
+    const input = screen.getByRole("textbox", {
+      name: /labels\.publishDate/i,
+    });
+    await user.clear(input);
+    await user.type(input, "01/01/2020");
+    await user.tab();
+    expect(
+      screen.getByText("validationErrors.publishDatePast"),
+    ).toBeInTheDocument();
+
+    await user.clear(input);
+    await user.type(input, "01/01/2099");
+    await user.tab();
+
+    expect(
+      screen.queryByText("validationErrors.publishDatePast"),
+    ).not.toBeInTheDocument();
+  });
 });
