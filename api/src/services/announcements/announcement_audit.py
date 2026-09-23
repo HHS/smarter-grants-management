@@ -1,79 +1,49 @@
 import logging
 import uuid
-from collections.abc import Iterable, Sequence
-from typing import Any
 
 from src.adapters import db
 from src.constants.lookup_constants import AnnouncementAuditEvent
-from src.db.models.announcement_models import AnnouncementAudit
+from src.db.models.announcement_models import Announcement, AnnouncementAudit, AnnouncementSummary
+from src.db.models.application_package_models import ApplicationPackage
 from src.db.models.user_models import User
 from src.util.dict_util import diff_nested_dicts
-from src.util.json_util import json_encoder
 
 logger = logging.getLogger(__name__)
 
 
-def snapshot_fields(obj: object | None, fields: Sequence[str]) -> dict[str, Any]:
-    snapshot: dict[str, Any] = {}
-    for field in fields:
-        snapshot[field] = None if obj is None else getattr(obj, field)
-    return snapshot
-
-
-def _normalize(value: Any) -> Any:
-    if isinstance(value, dict):
-        return {key: _normalize(val) for key, val in value.items()}
-    if value is None or isinstance(value, (str, int, float, bool)):
-        return value
-    if isinstance(value, Iterable):
-        # Covers list/tuple/set plus SQLAlchemy association-proxy collections
-        # (e.g. _AssociationSet), which don't subclass the builtin set/list/tuple.
-        return [_normalize(val) for val in value]
-    return json_encoder(value)
-
-
-def build_changed_fields(before: dict, after: dict) -> dict:
-    normalized_before = _normalize(before)
-    normalized_after = _normalize(after)
-
-    diffs = diff_nested_dicts(normalized_before, normalized_after)
-
-    return {
-        "changed_fields": {
-            diff["field"]: {"before": diff["before"], "after": diff["after"]} for diff in diffs
-        }
-    }
-
-
 def record_announcement_audit(
+    *,
     db_session: db.Session,
     user: User,
-    announcement_id: uuid.UUID,
+    announcement: Announcement,
     audit_event: AnnouncementAuditEvent,
     before: dict,
     after: dict,
-    *,
-    announcement_summary_id: uuid.UUID | None = None,
-    application_package_id: uuid.UUID | None = None,
+    announcement_summary: AnnouncementSummary | None = None,
+    application_package: ApplicationPackage | None = None,
 ) -> AnnouncementAudit:
     audit = AnnouncementAudit(
         announcement_audit_id=uuid.uuid4(),
-        announcement_id=announcement_id,
-        user_id=user.user_id,
+        announcement=announcement,
+        user=user,
         announcement_audit_event=audit_event,
-        announcement_summary_id=announcement_summary_id,
-        application_package_id=application_package_id,
-        audit_metadata=build_changed_fields(before, after),
+        announcement_summary=announcement_summary,
+        application_package=application_package,
+        audit_metadata={"changed_fields": diff_nested_dicts(before, after)},
     )
     db_session.add(audit)
 
     logger.info(
         "Recorded announcement audit event",
         extra={
-            "announcement_id": announcement_id,
+            "announcement_id": announcement.announcement_id,
             "announcement_audit_event": audit_event,
-            "announcement_summary_id": announcement_summary_id,
-            "application_package_id": application_package_id,
+            "announcement_summary_id": (
+                announcement_summary.announcement_summary_id if announcement_summary else None
+            ),
+            "application_package_id": (
+                application_package.application_package_id if application_package else None
+            ),
         },
     )
 

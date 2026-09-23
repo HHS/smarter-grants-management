@@ -8,9 +8,10 @@ from src.api.route_utils import raise_flask_error
 from src.constants.lookup_constants import AnnouncementAuditEvent
 from src.db.models.announcement_models import Announcement, AnnouncementSummary
 from src.db.models.user_models import User
-from src.services.announcements.announcement_audit import record_announcement_audit, snapshot_fields
+from src.services.announcements.announcement_audit import record_announcement_audit
 from src.services.announcements.authorization import has_access
 from src.services.announcements.get_announcement import get_announcement
+from src.util.dict_util import snapshot_fields
 
 logger = logging.getLogger(__name__)
 
@@ -121,13 +122,13 @@ def create_announcement_summary(
     )
 
     record_announcement_audit(
-        db_session,
-        user,
-        announcement_id,
-        AnnouncementAuditEvent.ANNOUNCEMENT_SUMMARY_CREATED,
-        before,
-        after,
-        announcement_summary_id=summary.announcement_summary_id,
+        db_session=db_session,
+        user=user,
+        announcement=announcement,
+        audit_event=AnnouncementAuditEvent.ANNOUNCEMENT_SUMMARY_CREATED,
+        before=before,
+        after=after,
+        announcement_summary=summary,
     )
 
     return summary
@@ -167,13 +168,13 @@ def update_announcement_summary(
     )
 
     record_announcement_audit(
-        db_session,
-        user,
-        announcement_id,
-        AnnouncementAuditEvent.ANNOUNCEMENT_SUMMARY_UPDATED,
-        before,
-        after,
-        announcement_summary_id=announcement_summary_id,
+        db_session=db_session,
+        user=user,
+        announcement=announcement,
+        audit_event=AnnouncementAuditEvent.ANNOUNCEMENT_SUMMARY_UPDATED,
+        before=before,
+        after=after,
+        announcement_summary=summary,
     )
 
     return summary

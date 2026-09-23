@@ -94,13 +94,13 @@ def update_application_package_forms(
     after = {"application_package_forms": _snapshot_forms(application_package)}
 
     record_announcement_audit(
-        db_session,
-        user,
-        announcement_id,
-        AnnouncementAuditEvent.APPLICATION_PACKAGE_UPDATED,
-        before,
-        after,
-        application_package_id=application_package_id,
+        db_session=db_session,
+        user=user,
+        announcement=application_package.announcement,
+        audit_event=AnnouncementAuditEvent.APPLICATION_PACKAGE_UPDATED,
+        before=before,
+        after=after,
+        application_package=application_package,
     )
 
     return application_package

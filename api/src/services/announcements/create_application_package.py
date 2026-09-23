@@ -6,9 +6,10 @@ from src.api.route_utils import raise_flask_error
 from src.constants.lookup_constants import AnnouncementAuditEvent
 from src.db.models.application_package_models import ApplicationPackage
 from src.db.models.user_models import User
-from src.services.announcements.announcement_audit import record_announcement_audit, snapshot_fields
+from src.services.announcements.announcement_audit import record_announcement_audit
 from src.services.announcements.authorization import has_access
 from src.services.announcements.get_announcement import get_announcement_and_verify_access
+from src.util.dict_util import snapshot_fields
 
 logger = logging.getLogger(__name__)
 
@@ -70,13 +71,13 @@ def create_application_package(
     )
 
     record_announcement_audit(
-        db_session,
-        user,
-        announcement.announcement_id,
-        AnnouncementAuditEvent.APPLICATION_PACKAGE_CREATED,
-        before,
-        after,
-        application_package_id=application_package.application_package_id,
+        db_session=db_session,
+        user=user,
+        announcement=announcement,
+        audit_event=AnnouncementAuditEvent.APPLICATION_PACKAGE_CREATED,
+        before=before,
+        after=after,
+        application_package=application_package,
     )
 
     return application_package

@@ -6,9 +6,10 @@ from src.api.route_utils import raise_flask_error
 from src.constants.lookup_constants import AnnouncementAuditEvent
 from src.db.models.announcement_models import Announcement
 from src.db.models.user_models import User
-from src.services.announcements.announcement_audit import record_announcement_audit, snapshot_fields
+from src.services.announcements.announcement_audit import record_announcement_audit
 from src.services.announcements.authorization import has_access
 from src.services.announcements.get_announcement import get_announcement
+from src.util.dict_util import snapshot_fields
 
 logger = logging.getLogger(__name__)
 
@@ -42,12 +43,12 @@ def update_announcement(
     logger.info("Updated announcement", extra={"announcement_id": announcement_id})
 
     record_announcement_audit(
-        db_session,
-        user,
-        announcement_id,
-        AnnouncementAuditEvent.ANNOUNCEMENT_UPDATED,
-        before,
-        after,
+        db_session=db_session,
+        user=user,
+        announcement=announcement,
+        audit_event=AnnouncementAuditEvent.ANNOUNCEMENT_UPDATED,
+        before=before,
+        after=after,
     )
 
     return announcement
