@@ -50,6 +50,8 @@ test.describe("Grantor Opportunity Happy Path", () => {
         page,
         context,
         !!testInfo.project.name.match(/[Mm]obile/),
+        "primaryOrgAdmin",
+        playwrightEnv.testUserApiKey,
       );
 
       // Define commonly used values for assertions and form filling at the beginning of the test for better readability of the scenario steps.
