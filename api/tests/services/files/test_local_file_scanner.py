@@ -65,14 +65,13 @@ class TestProcessMetadataChange:
         file_scan_dynamodb_table,
         s3_scanner_user,
     ):
-        pending_file = factories.PendingFileFactory.create(file_scan_status=FileScanStatus.PENDING)
-        db_session.commit()
-
-        s3_client = boto3.client("s3", region_name="us-east-1")
-        unscanned_key = f"unscanned/{pending_file.pending_file_id}/resume.pdf"
-        s3_client.put_object(
-            Bucket=mock_file_scan_s3_bucket_name, Key=unscanned_key, Body=b"file contents"
+        pending_file = factories.PendingFileFactory.create(
+            file_scan_status=FileScanStatus.PENDING,
+            file_contents="file contents",
+            file_name="resume.pdf",
         )
+        unscanned_key = f"unscanned/{pending_file.pending_file_id}/resume.pdf"
+        s3_client = boto3.client("s3", region_name="us-east-1")
 
         metadata_path = _write_metadata(
             tmp_path / pending_file.pending_file_id.hex / "objectMetadata.json",
@@ -110,14 +109,13 @@ class TestProcessMetadataChange:
         file_scan_dynamodb_table,
         s3_scanner_user,
     ):
-        pending_file = factories.PendingFileFactory.create(file_scan_status=FileScanStatus.PENDING)
-        db_session.commit()
-
-        s3_client = boto3.client("s3", region_name="us-east-1")
-        unscanned_key = f"unscanned/{pending_file.pending_file_id}/scenario-infected-resume.pdf"
-        s3_client.put_object(
-            Bucket=mock_file_scan_s3_bucket_name, Key=unscanned_key, Body=b"file contents"
+        pending_file = factories.PendingFileFactory.create(
+            file_scan_status=FileScanStatus.PENDING,
+            file_contents="file contents",
+            file_name="scenario-infected-resume.pdf",
         )
+        unscanned_key = f"unscanned/{pending_file.pending_file_id}/scenario-infected-resume.pdf"
+        s3_client = boto3.client("s3", region_name="us-east-1")
 
         metadata_path = _write_metadata(
             tmp_path / pending_file.pending_file_id.hex / "objectMetadata.json",
@@ -154,14 +152,12 @@ class TestProcessMetadataChange:
         # Skip the actual 10s wait; we only care about the status sequence.
         monkeypatch.setenv("LOCAL_FILE_SCANNER_WAIT_SCENARIO_DELAY_SECONDS", "0")
 
-        pending_file = factories.PendingFileFactory.create(file_scan_status=FileScanStatus.PENDING)
-        db_session.commit()
-
-        s3_client = boto3.client("s3", region_name="us-east-1")
-        unscanned_key = f"unscanned/{pending_file.pending_file_id}/scenario-wait10s-cover.pdf"
-        s3_client.put_object(
-            Bucket=mock_file_scan_s3_bucket_name, Key=unscanned_key, Body=b"file contents"
+        pending_file = factories.PendingFileFactory.create(
+            file_scan_status=FileScanStatus.PENDING,
+            file_contents="file contents",
+            file_name="scenario-wait10s-cover.pdf",
         )
+        unscanned_key = f"unscanned/{pending_file.pending_file_id}/scenario-wait10s-cover.pdf"
 
         metadata_path = _write_metadata(
             tmp_path / pending_file.pending_file_id.hex / "objectMetadata.json",
@@ -190,7 +186,6 @@ class TestProcessMetadataChange:
         mock_file_scan_s3_bucket,
     ):
         pending_file = factories.PendingFileFactory.create(file_scan_status=FileScanStatus.PENDING)
-        db_session.commit()
 
         metadata_path = _write_metadata(
             tmp_path / "obj" / "objectMetadata.json",
