@@ -22,7 +22,7 @@ const mockFetchGrantorOpportunityWithMethod = jest.fn(
 jest.mock("src/services/fetch/fetchers/fetchers", () => ({
   fetchGrantorAgenciesWithMethod: (arg: unknown): unknown =>
     mockFetchGrantorAgenciesWithMethod(arg),
-  fetchGrantorAnnouncementWithMethod: (arg: unknown): unknown =>
+  fetchAnnouncementWithMethod: (arg: unknown): unknown =>
     mockFetchGrantorOpportunityWithMethod(arg),
 }));
 
@@ -232,7 +232,7 @@ describe("createCompetitionForGrantor", () => {
   });
   afterEach(() => jest.clearAllMocks());
 
-  it("calls fetchGrantorAnnouncementWithMethod with POST, the correct subPath, and returns the parsed JSON response", async () => {
+  it("calls fetchAnnouncementWithMethod with POST, the correct subPath, and returns the parsed JSON response", async () => {
     const result = await createCompetitionForGrantor(
       "opp-123",
       competitionData,
@@ -268,7 +268,7 @@ describe("updateCompetitionForGrantor", () => {
   });
   afterEach(() => jest.clearAllMocks());
 
-  it("calls fetchGrantorAnnouncementWithMethod with PUT and the correct subPath", async () => {
+  it("calls fetchAnnouncementWithMethod with PUT and the correct subPath", async () => {
     await updateCompetitionForGrantor(
       "opp-123",
       "compete-321",
@@ -322,7 +322,7 @@ describe("updateCompetitionForGrantor", () => {
 describe("saveCompetitionInstructions", () => {
   afterEach(() => jest.clearAllMocks());
 
-  it("calls fetchGrantorAnnouncementWithMethod with POST, the correct subPath and body, and returns the parsed JSON response", async () => {
+  it("calls fetchAnnouncementWithMethod with POST, the correct subPath and body, and returns the parsed JSON response", async () => {
     const responseBody = {
       data: {
         competition_instruction_id: "instruction-123",
@@ -361,7 +361,7 @@ describe("saveCompetitionInstructions", () => {
 describe("deleteCompetitionInstructions", () => {
   afterEach(() => jest.clearAllMocks());
 
-  it("calls fetchGrantorAnnouncementWithMethod with DELETE, the correct subPath, and returns the parsed JSON response", async () => {
+  it("calls fetchAnnouncementWithMethod with DELETE, the correct subPath, and returns the parsed JSON response", async () => {
     const responseBody = {
       message: "Instruction deleted successfully",
       status_code: 200,

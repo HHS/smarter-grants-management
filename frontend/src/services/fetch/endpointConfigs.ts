@@ -91,7 +91,7 @@ export const toDynamicGrantorAgenciesEndpoint = (
   };
 };
 
-export const toDynamicGrantorAnnouncementEndpoint = (
+export const toDynamicAnnouncementEndpoint = (
   type: "POST" | "DELETE" | "GET" | "PUT",
 ) => {
   return {

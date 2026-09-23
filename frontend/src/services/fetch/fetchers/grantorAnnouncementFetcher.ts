@@ -2,7 +2,7 @@
 
 import {
   fetchGrantorAgenciesWithMethod,
-  fetchGrantorAnnouncementWithMethod,
+  fetchAnnouncementWithMethod,
 } from "src/services/fetch/fetchers/fetchers";
 import {
   AnnouncementSummaryCreateRequest,
@@ -60,7 +60,7 @@ export const searchAccessibleAnnouncements = async (
   data: AnnouncementListResponseData;
   pagination_info: PaginationInfo;
 }> => {
-  const response = await fetchGrantorAnnouncementWithMethod("POST")({
+  const response = await fetchAnnouncementWithMethod("POST")({
     subPath: "list",
     body: { pagination: pageInputs },
   });
@@ -71,7 +71,7 @@ export const searchAccessibleAnnouncements = async (
 export async function getOpportunityForGrantor(
   opportunityId: string,
 ): Promise<GrantorAnnouncementApiResponse> {
-  const response = await fetchGrantorAnnouncementWithMethod("GET")({
+  const response = await fetchAnnouncementWithMethod("GET")({
     subPath: opportunityId,
   });
   return (await response.json()) as GrantorAnnouncementApiResponse;
@@ -80,7 +80,7 @@ export async function getOpportunityForGrantor(
 export const createOpportunity = async (
   createOppSchema: Record<string, string>,
 ): Promise<CreateAnnouncementRecord> => {
-  const response = await fetchGrantorAnnouncementWithMethod("POST")({
+  const response = await fetchAnnouncementWithMethod("POST")({
     body: createOppSchema,
   });
   const json = (await response.json()) as { data: CreateAnnouncementRecord };
@@ -91,7 +91,7 @@ export async function createOpportunitySummaryForGrantor({
   opportunityId,
   body,
 }: CreateOpportunitySummaryForGrantorParams): Promise<AnnouncementSummaryDetailApiResponse> {
-  const response = await fetchGrantorAnnouncementWithMethod("POST")({
+  const response = await fetchAnnouncementWithMethod("POST")({
     subPath: `${opportunityId}/summaries`,
     body,
     // want to allow responses with failed validations through so we can properly handle displaying validation errors
@@ -106,7 +106,7 @@ export async function updateOpportunitySummaryForGrantor({
   opportunitySummaryId,
   body,
 }: UpdateOpportunitySummaryForGrantorParams): Promise<AnnouncementSummaryDetailApiResponse> {
-  const response = await fetchGrantorAnnouncementWithMethod("PUT")({
+  const response = await fetchAnnouncementWithMethod("PUT")({
     subPath: `${opportunityId}/summaries/${opportunitySummaryId}`,
     body,
     // want to allow responses with failed validations through so we can properly handle displaying validation errors
@@ -119,7 +119,7 @@ export async function updateOpportunitySummaryForGrantor({
 export async function publishOpportunityForGrantor(
   opportunityId: string,
 ): Promise<GrantorAnnouncementApiResponse> {
-  const response = await fetchGrantorAnnouncementWithMethod("POST")({
+  const response = await fetchAnnouncementWithMethod("POST")({
     subPath: `${opportunityId}/publish`,
   });
 
@@ -130,7 +130,7 @@ export async function createCompetitionForGrantor(
   opportunityId: string,
   data: ApplicationPackageSaveRequest,
 ): Promise<ApplicationPackageSaveApiResponse> {
-  const response = await fetchGrantorAnnouncementWithMethod("POST")({
+  const response = await fetchAnnouncementWithMethod("POST")({
     subPath: `${opportunityId}/application-packages`,
     body: data,
   });
@@ -142,7 +142,7 @@ export async function updateCompetitionForGrantor(
   competitionId: string,
   data: ApplicationPackageSaveRequest,
 ): Promise<ApplicationPackageSaveApiResponse> {
-  const response = await fetchGrantorAnnouncementWithMethod("PUT")({
+  const response = await fetchAnnouncementWithMethod("PUT")({
     subPath: `${opportunityId}/application-packages/${competitionId}`,
     body: data,
   });
@@ -154,7 +154,7 @@ export async function saveCompetitionInstructions(
   competitionId: string,
   pendingFileId: string,
 ): Promise<ApplicationPackageInstructionsApiResponse> {
-  const response = await fetchGrantorAnnouncementWithMethod("POST")({
+  const response = await fetchAnnouncementWithMethod("POST")({
     subPath: `${opportunityId}/application-packages/${competitionId}/instructions`,
     body: { pending_file_id: pendingFileId },
   });
@@ -166,7 +166,7 @@ export async function deleteCompetitionInstructions(
   competitionId: string,
   competitionInstructionId: string,
 ): Promise<APIResponse> {
-  const response = await fetchGrantorAnnouncementWithMethod("DELETE")({
+  const response = await fetchAnnouncementWithMethod("DELETE")({
     subPath: `${opportunityId}/application-packages/${competitionId}/instructions/${competitionInstructionId}`,
   });
   return (await response.json()) as APIResponse;
