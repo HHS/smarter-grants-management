@@ -58,7 +58,9 @@ export const fetchE2eSessionToken = async (
         `Target environment: ${playwrightEnv.targetEnv || "unknown"}.`,
         `Request URL: ${requestUrl}.`,
         `Current TEST_USER_API_KEY: ${maskedTestUserApiKey}.`,
-        responseBody ? `Response body: ${responseBody}` : "Response body: empty.",
+        responseBody
+          ? `Response body: ${responseBody}`
+          : "Response body: empty.",
         statusSpecificHint,
       ].join("\n"),
     );
