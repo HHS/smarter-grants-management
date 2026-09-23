@@ -33,7 +33,7 @@ const { targetEnv } = playwrightEnv;
 let pageNetworkTracker: ReturnType<typeof createPageNetworkTracker> | undefined;
 
 test.describe("Grantor Opportunity Happy Path", () => {
-  test.beforeEach(async ({ page }, testInfo) => {
+  test.beforeEach(({ page }, testInfo) => {
     pageNetworkTracker = createPageNetworkTracker(page);
 
     if (targetEnv !== "local") {
@@ -44,21 +44,22 @@ test.describe("Grantor Opportunity Happy Path", () => {
     }
   });
 
-  test.afterEach(async ({ page }, testInfo) => {
+  test.afterEach(({ page }, testInfo) => {
     if (testInfo.status !== "failed" || !pageNetworkTracker) {
       pageNetworkTracker?.dispose();
       pageNetworkTracker = undefined;
       return;
     }
 
-    await attachPageFailureDebugArtifacts(
+    return attachPageFailureDebugArtifacts(
       testInfo,
       page,
       "grantor-opportunity-happy-path",
       pageNetworkTracker,
-    );
-    pageNetworkTracker.dispose();
-    pageNetworkTracker = undefined;
+    ).finally(() => {
+      pageNetworkTracker?.dispose();
+      pageNetworkTracker = undefined;
+    });
   });
 
   test(
