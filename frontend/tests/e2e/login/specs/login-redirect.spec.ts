@@ -7,6 +7,7 @@
 import { expect, Page, test } from "@playwright/test";
 import playwrightEnv from "tests/e2e/playwright-env";
 import { VALID_TAGS } from "tests/e2e/tags";
+import { createFailureDebugArtifactsCollector } from "tests/e2e/utils/common";
 
 const { AUTH, SMOKE, CORE_REGRESSION, FULL_REGRESSION } = VALID_TAGS;
 const { baseUrl, targetEnv } = playwrightEnv;
@@ -47,8 +48,17 @@ const setupLoginRedirectSpoof = async (page: Page) => {
 
 // these tests do not actually test logging in, but only the behavior of the /login page
 test.describe("Login Page Redirect", () => {
+  let failureDebugArtifactsCollector: ReturnType<
+    typeof createFailureDebugArtifactsCollector
+  >;
+
   test.beforeEach(async ({ page }) => {
     await setupLoginRedirectSpoof(page);
+    failureDebugArtifactsCollector = createFailureDebugArtifactsCollector(page);
+  });
+
+  test.afterEach(async (_fixtures, testInfo) => {
+    await failureDebugArtifactsCollector?.attachOnFailure(testInfo);
   });
 
   // Scenario: should redirect to home page when no redirect URL is stored
@@ -86,7 +96,7 @@ test.describe("Login Page Redirect", () => {
     async ({ page }) => {
       // Given I have stored "/" as the login redirect
       await page.evaluate(() => {
-        sessionStorage.setItem("login-redirect", "/");
+        sessionStorage.setItem("post-auth-redirect", "/");
       });
       // When I open the login page
       await page.goto("/login", { waitUntil: "domcontentloaded" });
@@ -103,7 +113,7 @@ test.describe("Login Page Redirect", () => {
     async ({ page }) => {
       // Given I have stored "https://external.com" as the login redirect
       await page.evaluate(() => {
-        sessionStorage.setItem("login-redirect", "https://external.com");
+        sessionStorage.setItem("post-auth-redirect", "https://external.com");
       });
       // When I open the login page
       await page.goto("/login", { waitUntil: "domcontentloaded" });
@@ -120,7 +130,7 @@ test.describe("Login Page Redirect", () => {
     async ({ page }) => {
       // Given I have stored "/announcements" as the login redirect
       await page.evaluate(() => {
-        sessionStorage.setItem("login-redirect", "/announcements");
+        sessionStorage.setItem("post-auth-redirect", "/announcements");
       });
 
       // When I open the login page

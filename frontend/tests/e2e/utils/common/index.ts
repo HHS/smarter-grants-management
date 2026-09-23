@@ -35,6 +35,10 @@ export {
   createPageWithStorageState,
   type AuthenticatedStorageState,
 } from "./auth-storage-state-utils";
+export {
+  createFailureDebugArtifactsCollector,
+  type FailureDebugArtifactsCollector,
+} from "./failure-debug-artifacts-utils";
 export { runSharedFieldFill } from "./shared-field-filling";
 export { runFieldFillBatch } from "./field-batch-filling";
 export { buildPageFieldsFromDefinitions } from "./build-page-fields-from-definitions";
