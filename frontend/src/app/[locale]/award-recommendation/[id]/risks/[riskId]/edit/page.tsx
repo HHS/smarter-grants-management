@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/error-boundaries */
 import { Metadata } from "next";
 import EditRiskForm from "src/app/[locale]/award-recommendation/[id]/risks/[riskId]/edit/_components/EditRiskForm";
 import { ApiRequestError, parseErrorStatus } from "src/errors";
