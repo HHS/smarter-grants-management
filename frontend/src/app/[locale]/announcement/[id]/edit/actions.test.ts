@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { identity } from "lodash";
 import { ApiRequestError } from "src/errors";
 import {
@@ -14,6 +15,12 @@ import {
   saveOpportunityEditAction,
   type OpportunityEditActionState,
 } from "./actions";
+
+// Computed relative to "today" (rather than hardcoded) so these stay valid
+// indefinitely - post_date must never be in the past for a valid submission.
+const today = dayjs().startOf("day");
+const validPostDate = today.add(30, "day").format("YYYY-MM-DD");
+const validCloseDate = today.add(60, "day").format("YYYY-MM-DD");
 
 jest.mock("next-intl/server", () => ({
   getTranslations: () => identity,
@@ -101,8 +108,8 @@ function buildValidFormData() {
   formData.set("opportunity_title", "Example opportunity");
   formData.set("caetgory", "discretionary");
   formData.set("summary_description", "Summary text");
-  formData.set("post_date", "2026-03-11");
-  formData.set("close_date", "2026-04-11");
+  formData.set("post_date", validPostDate);
+  formData.set("close_date", validCloseDate);
   formData.set("agency_email_address", "grants@example.com");
   formData.set("funding_instruments", "grant");
   formData.set("funding_categories", "health");
@@ -179,8 +186,9 @@ describe("saveOpportunityEditAction", () => {
 
   it("returns a close date error when close date is before publish date", async () => {
     const formData = buildValidFormData();
-    formData.set("post_date", "2026-04-11");
-    formData.set("close_date", "2026-03-11");
+    // Both still in the future - this test is only about their relative order.
+    formData.set("post_date", validCloseDate);
+    formData.set("close_date", validPostDate);
 
     const result = await saveOpportunityEditAction(initialState, formData);
 
@@ -209,6 +217,50 @@ describe("saveOpportunityEditAction", () => {
     expect(result.validationErrors).toEqual({
       closeDate: ["closeDateOrder"],
     });
+  });
+
+  it("returns a publishDatePast error when publish date is in the past", async () => {
+    const formData = buildValidFormData();
+    const pastPostDate = today.subtract(1, "day").format("YYYY-MM-DD");
+    formData.set("post_date", pastPostDate);
+    // Keep close_date after post_date so closeDateOrder doesn't also fire.
+    formData.set("close_date", validCloseDate);
+
+    const result = await saveOpportunityEditAction(initialState, formData);
+
+    expect(result.validationErrors).toEqual({
+      post_date: ["publishDatePast"],
+    });
+  });
+
+  it("accepts a publish date of today", async () => {
+    const formData = buildValidFormData();
+    formData.set("post_date", today.format("YYYY-MM-DD"));
+    formData.set("close_date", validCloseDate);
+
+    mockUpdateOpportunitySummaryForGrantor.mockResolvedValue(
+      successfulSummaryUpdateResponse,
+    );
+    formData.set("opportunity_summary_id", "sum-456");
+
+    const result = await saveOpportunityEditAction(initialState, formData);
+
+    expect(result.validationErrors).toBeUndefined();
+    expect(result.successMessage).toBe("success");
+  });
+
+  it("accepts a publish date in the future", async () => {
+    const formData = buildValidFormData();
+
+    mockUpdateOpportunitySummaryForGrantor.mockResolvedValue(
+      successfulSummaryUpdateResponse,
+    );
+    formData.set("opportunity_summary_id", "sum-456");
+
+    const result = await saveOpportunityEditAction(initialState, formData);
+
+    expect(result.validationErrors).toBeUndefined();
+    expect(result.successMessage).toBe("success");
   });
 
   it("returns an error when opportunity_id is missing", async () => {
@@ -302,8 +354,8 @@ describe("saveOpportunityEditAction", () => {
     expect(firstCall?.[0].opportunityId).toBe("opp-123");
     expect(firstCall?.[0].opportunitySummaryId).toBe("sum-456");
     expect(firstCall?.[0].body.summary_description).toBe("Summary text");
-    expect(firstCall?.[0].body.post_date).toBe("2026-03-11");
-    expect(firstCall?.[0].body.close_date).toBe("2026-04-11");
+    expect(firstCall?.[0].body.post_date).toBe(validPostDate);
+    expect(firstCall?.[0].body.close_date).toBe(validCloseDate);
     expect(firstCall?.[0].body.agency_email_address).toBe("grants@example.com");
     expect(result).toEqual({
       successMessage: "success",

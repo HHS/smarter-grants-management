@@ -61,7 +61,12 @@ jest.mock(
 );
 
 jest.mock("./_components/OverviewButtons", () => ({
-  OverviewButtons: ({ publishEnabled }: { publishEnabled: boolean }) => (
+  OverviewButtons: ({
+    publishEnabled,
+  }: {
+    publishEnabled: boolean;
+    postDate: string | null;
+  }) => (
     <div
       data-testid="overview-buttons"
       data-publish-enabled={String(publishEnabled)}

@@ -118,6 +118,8 @@ export const messages = {
       contactEmailInvalid: "Enter a valid contact email.",
       contactEmailText: "Enter email display text.",
       closeDateOrder: "Close date must be on or after publish date.",
+      publishDatePast:
+        "Publish date must be the current date or a future date.",
       awardMinimum: "Enter an award minimum.",
       awardMaximum: "Enter an award maximum.",
       fundingType: "Select a funding type.",
