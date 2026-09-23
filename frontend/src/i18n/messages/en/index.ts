@@ -279,22 +279,22 @@ export const messages = {
     signOff: "Thank you for your patience.",
     pageTitle: "Simpler.Grants.gov - Maintenance",
   },
-  Opportunities: {
-    createOpportunityButton: "Create Opportunity",
-    numOpportunities:
-      "{num, plural, =1 {1 opportunity} other {# opportunities}}",
+  Announcements: {
+    createAnnouncementButton: "Create Announcement",
+    numAnnouncements:
+      "{num, plural, =1 {1 announcement} other {# announcements}}",
     errorMessage:
-      "We have encountered an error loading your opportunities, please try again later.",
-    metaDescription: "View draft and published funding opportunities",
-    noOpportunitiesMessage: {
+      "We have encountered an error loading your announcements, please try again later.",
+    metaDescription: "View draft and published funding announcements",
+    noAnnouncementsMessage: {
       primary: "You have not started any announcements yet.",
       secondary:
         "Announcements you start or work on will be saved here.  Return anytime to view, continue, or manage them.",
     },
-    showingOpportunitiesFor: "Showing opportunities for {agencyName}",
+    showingAnnouncementsFor: "Showing announcements for {agencyName}",
     agencySelector: "Select agency",
     agencyNotAuthorized:
-      "You do not have access to this agency's opportunities.",
+      "You do not have access to this agency's announcements.",
     noAgencies: "You are not associated with any agencies.",
     pageHeading: "Announcements",
     pageTitle: "Announcements List",

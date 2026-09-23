@@ -64,7 +64,7 @@ type AnnouncementListPageItem = {
 };
 
 export const AnnouncementsPageWrapper = ({ children }: PropsWithChildren) => {
-  const t = useTranslations("Opportunities");
+  const t = useTranslations("Announcements");
   return (
     <GridContainer>
       <h1 className="margin-top-9 margin-bottom-7">{t("pageTitle")}</h1>
@@ -78,7 +78,7 @@ export const AnnouncementsPageWrapper = ({ children }: PropsWithChildren) => {
 // --------------------------------------------------
 
 const NoStartedAnnouncements = () => {
-  const t = useTranslations("Opportunities.noOpportunitiesMessage");
+  const t = useTranslations("Announcements.noAnnouncementsMessage");
   return (
     <div className="margin-bottom-15">
       <div className="font-sans-xl text-bold margin-bottom-3">
@@ -90,7 +90,7 @@ const NoStartedAnnouncements = () => {
 };
 
 const AnnouncementsErrorPage = () => {
-  const t = useTranslations("Opportunities");
+  const t = useTranslations("Announcements");
 
   return (
     <AnnouncementsPageWrapper>
@@ -111,7 +111,7 @@ const AnnouncementsErrorPage = () => {
 // }: {
 //   agencies: RelevantAgencyRecord[];
 // }) => {
-//   const t = useTranslations("Opportunities");
+//   const t = useTranslations("Announcements");
 //   return (
 //     <OpportunitiesPageWrapper>
 //       <div className="margin-bottom-5">
@@ -132,7 +132,7 @@ const AnnouncementsErrorPage = () => {
 // };
 //
 // const AgencyNotAuthorizedMessage = () => {
-//   const t = useTranslations("Opportunities");
+//   const t = useTranslations("Announcements");
 //   return (
 //     <div className="margin-bottom-15">
 //       <div className="font-sans-xl text-bold margin-bottom-3">
@@ -143,7 +143,7 @@ const AnnouncementsErrorPage = () => {
 // };
 //
 // const NoAgenciesPage = () => {
-//   const t = useTranslations("Opportunities");
+//   const t = useTranslations("Announcements");
 //
 //   return (
 //     <OpportunitiesPageWrapper>
@@ -165,7 +165,7 @@ const ActionMenu = ({
   announcementId: string;
   status: string;
 }) => {
-  const t = useTranslations("Opportunities");
+  const t = useTranslations("Announcements");
 
   // Only show action menu for editable opportunities
   const isEditable =
@@ -283,16 +283,16 @@ const AnnouncementsHeader = ({
   userAnnouncementsCount: number;
   canCreate: boolean;
 }) => {
-  const t = useTranslations("Opportunities");
+  const t = useTranslations("Announcements");
 
   return (
     <div className="display-flex flex-column gap-3 margin-bottom-4">
       <div className="font-sans-lg text-bold">
-        {t("numOpportunities", { num: userAnnouncementsCount })}
+        {t("numAnnouncements", { num: userAnnouncementsCount })}
       </div>
       {canCreate && (
         <Link href="/announcements/create" className="usa-button margin-left-auto">
-          {t("createOpportunityButton")}
+          {t("createAnnouncementButton")}
         </Link>
       )}
     </div>
@@ -317,21 +317,21 @@ const AnnouncementsHeader = ({
 //   isSingleAgency: boolean;
 //   canCreate: boolean;
 // }) => {
-//   const t = useTranslations("Opportunities");
+//   const t = useTranslations("Announcements");
 //   const showOpportunities = currentAgencyId !== "";
 //
 //   return (
 //     <div className="display-flex flex-column gap-3 margin-bottom-4">
 //       {showOpportunities && (
 //         <div className="font-sans-lg text-bold">
-//           {t("numOpportunities", { num: userOpportunitiesCount })}
+//           {t("numAnnouncements", { num: userOpportunitiesCount })}
 //         </div>
 //       )}
 //       <div className="display-flex flex-justify flex-align-end">
 //         <div className="maxw-mobile-lg width-full">
 //           {isSingleAgency ? (
 //             <div className="font-sans-md text-bold line-height-sans-3">
-//               {t("showingOpportunitiesFor", { agencyName })}
+//               {t("showingAnnouncementsFor", { agencyName })}
 //             </div>
 //           ) : (
 //             <AgencySelector
@@ -346,7 +346,7 @@ const AnnouncementsHeader = ({
 //             href={`/announcements/create?agency=${currentAgencyId}`}
 //             className="usa-button margin-left-auto"
 //           >
-//             {t("createOpportunityButton")}
+//             {t("createAnnouncementButton")}
 //           </Link>
 //         )}
 //       </div>
@@ -361,7 +361,7 @@ const AnnouncementsTable = ({
   announcements: AnnouncementListPageItem[];
   canUpdate: boolean;
 }) => {
-  const t = useTranslations("Opportunities");
+  const t = useTranslations("Announcements");
 
   const headerTitles: TableCellData[] = [
     { cellData: t("tableHeadings.title") },

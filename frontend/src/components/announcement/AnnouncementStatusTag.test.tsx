@@ -16,14 +16,14 @@ describe("AnnouncementStatusTag", () => {
 
   it("renders posted status", () => {
     render(<AnnouncementStatusTag status="posted" />);
-    expect(screen.getByTestId("opportunity-status-posted")).toBeInTheDocument();
+    expect(screen.getByTestId("announcement-status-posted")).toBeInTheDocument();
     expect(screen.getByText("posted")).toBeInTheDocument();
   });
 
   it("renders forecasted status", () => {
     render(<AnnouncementStatusTag status="forecasted" />);
     expect(
-      screen.getByTestId("opportunity-status-forecasted"),
+      screen.getByTestId("announcement-status-forecasted"),
     ).toBeInTheDocument();
     expect(screen.getByText("forecasted")).toBeInTheDocument();
   });

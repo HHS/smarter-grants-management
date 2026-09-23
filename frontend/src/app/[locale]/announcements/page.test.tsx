@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { axe } from "jest-axe";
 import { identity } from "lodash";
-import OpportunitiesListPage from "src/app/[locale]/announcements/page";
+import AnnouncementsListPage from "src/app/[locale]/announcements/page";
 import { MissingAuthError, UnauthorizedError } from "src/errors";
 import { AnnouncementListItem } from "src/types/announcement/announcementResponseTypes";
 import { UserSession } from "src/types/authTypes";
@@ -127,14 +127,14 @@ describe("Announcements", () => {
   });
 
   it("renders no announcements message when list is empty", async () => {
-    const component = await OpportunitiesListPage({ params: localeParams });
+    const component = await AnnouncementsListPage({ params: localeParams });
     render(component);
 
     expect(await screen.findByText("primary")).toBeVisible();
   });
 
   it("passes accessibility scan", async () => {
-    const component = await OpportunitiesListPage({ params: localeParams });
+    const component = await AnnouncementsListPage({ params: localeParams });
     const { container } = render(component);
     const results = await waitFor(() => axe(container));
 
@@ -147,7 +147,7 @@ describe("Announcements", () => {
       pagination_info: { total_pages: 1, total_records: 1 },
     });
 
-    const component = await OpportunitiesListPage({ params: localeParams });
+    const component = await AnnouncementsListPage({ params: localeParams });
     render(component);
 
     expect(await screen.findByText("Test Announcement")).toBeVisible();
@@ -161,10 +161,10 @@ describe("Announcements", () => {
       pagination_info: { total_pages: 1, total_records: 1 },
     });
 
-    const component = await OpportunitiesListPage({ params: localeParams });
+    const component = await AnnouncementsListPage({ params: localeParams });
     render(component);
 
-    expect(await screen.findByText("numOpportunities")).toBeVisible();
+    expect(await screen.findByText("numAnnouncements")).toBeVisible();
   });
 
   it("redirects to last page when out of range", async () => {
@@ -173,7 +173,7 @@ describe("Announcements", () => {
       pagination_info: { total_pages: 1, total_records: 7 },
     });
 
-    await OpportunitiesListPage({
+    await AnnouncementsListPage({
       params: localeParams,
       searchParams: Promise.resolve({ page: "2" }),
     });
@@ -182,11 +182,11 @@ describe("Announcements", () => {
   });
 
   it("renders create announcement button", async () => {
-    const component = await OpportunitiesListPage({ params: localeParams });
+    const component = await AnnouncementsListPage({ params: localeParams });
     render(component);
 
     const createAnnouncementLink = screen.getByRole("link", {
-      name: "createOpportunityButton",
+      name: "createAnnouncementButton",
     });
     expect(createAnnouncementLink).toBeVisible();
     expect(createAnnouncementLink).toHaveAttribute("href", "/announcements/create");
@@ -197,7 +197,7 @@ describe("Announcements", () => {
       new MissingAuthError("missing auth"),
     );
 
-    const component = await OpportunitiesListPage({ params: localeParams });
+    const component = await AnnouncementsListPage({ params: localeParams });
     render(component);
 
     expect(await screen.findByText("unauthenticated")).toBeVisible();
@@ -205,7 +205,7 @@ describe("Announcements", () => {
 
   it("renders error alert for general fetch errors", async () => {
     mockSearchForAnnouncements.mockRejectedValue(new Error("failure"));
-    const component = await OpportunitiesListPage({ params: localeParams });
+    const component = await AnnouncementsListPage({ params: localeParams });
     render(component);
 
     expect(await screen.findByTestId("alert")).toBeVisible();
@@ -217,7 +217,7 @@ describe("Announcements", () => {
     );
 
     await expect(
-      OpportunitiesListPage({
+      AnnouncementsListPage({
         params: localeParams,
       }),
     ).rejects.toThrow();
@@ -237,10 +237,10 @@ describe("Announcements", () => {
       pagination_info: { total_pages: 1, total_records: 1 },
     });
 
-    const component = await OpportunitiesListPage({ params: localeParams });
+    const component = await AnnouncementsListPage({ params: localeParams });
     render(component);
 
-    expect(await screen.findByTestId("opportunity-status-forecasted")).toBeVisible();
+    expect(await screen.findByTestId("announcement-status-forecasted")).toBeVisible();
 
     const popoverButton = screen.getByRole("button", { expanded: false });
     fireEvent.click(popoverButton);
@@ -254,10 +254,10 @@ describe("Announcements", () => {
       pagination_info: { total_pages: 1, total_records: 1 },
     });
 
-    const component = await OpportunitiesListPage({ params: localeParams });
+    const component = await AnnouncementsListPage({ params: localeParams });
     render(component);
 
-    expect(await screen.findByTestId("opportunity-status-posted")).toBeVisible();
+    expect(await screen.findByTestId("announcement-status-posted")).toBeVisible();
 
     const viewLink = "/announcement/" + baseAnnouncement.announcement_id;
     const announcementTitleLink = screen.getByRole("link", {

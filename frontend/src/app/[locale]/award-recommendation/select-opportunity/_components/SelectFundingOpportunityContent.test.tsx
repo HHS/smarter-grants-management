@@ -59,7 +59,7 @@ describe("SelectFundingOpportunityContent", () => {
       },
 
       ...overrides,
-    }) as AnnouncementListItem;
+    });
 
   const mockAnnouncements: AnnouncementListItem[] = [
     mockAnnouncement(),
