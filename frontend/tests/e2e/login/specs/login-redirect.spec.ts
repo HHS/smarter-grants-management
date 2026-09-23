@@ -47,7 +47,6 @@ const setupLoginRedirectSpoof = async (page: Page) => {
 
 // these tests do not actually test logging in, but only the behavior of the /login page
 test.describe("Login Page Redirect", () => {
-
   test.beforeEach(async ({ page }) => {
     await setupLoginRedirectSpoof(page);
   });
