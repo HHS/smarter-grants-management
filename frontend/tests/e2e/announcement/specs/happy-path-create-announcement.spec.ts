@@ -20,20 +20,45 @@ import playwrightEnv from "tests/e2e/playwright-env";
 import { VALID_TAGS } from "tests/e2e/tags";
 import { waitForOpportunityRowByStatus } from "tests/e2e/utils/announcements/table-row-utils";
 import { authenticateE2eUser } from "tests/e2e/utils/auth/authenticate-e2e-user-utils";
-import { assertButtonEnabledDisabledStates } from "tests/e2e/utils/common/index";
+import {
+  assertButtonEnabledDisabledStates,
+  attachPageFailureDebugArtifacts,
+  createPageNetworkTracker,
+} from "tests/e2e/utils/common/index";
 import { fillPageFields } from "tests/e2e/utils/pages/general-pages-filling";
 
 const { GRANTOR, OPPORTUNITY_MANAGEMENT, CORE_REGRESSION } = VALID_TAGS;
 const { targetEnv } = playwrightEnv;
 
+let pageNetworkTracker: ReturnType<typeof createPageNetworkTracker> | undefined;
+
 test.describe("Grantor Opportunity Happy Path", () => {
-  test.beforeEach(({ page: _ }, testInfo) => {
+  test.beforeEach(async ({ page }, testInfo) => {
+    pageNetworkTracker = createPageNetworkTracker(page);
+
     if (targetEnv !== "local") {
       test.skip(
         testInfo.project.name !== "Chrome",
         "Staging MFA login is limited to Chrome to avoid OTP rate-limiting",
       );
     }
+  });
+
+  test.afterEach(async ({ page }, testInfo) => {
+    if (testInfo.status !== "failed" || !pageNetworkTracker) {
+      pageNetworkTracker?.dispose();
+      pageNetworkTracker = undefined;
+      return;
+    }
+
+    await attachPageFailureDebugArtifacts(
+      testInfo,
+      page,
+      "grantor-opportunity-happy-path",
+      pageNetworkTracker,
+    );
+    pageNetworkTracker.dispose();
+    pageNetworkTracker = undefined;
   });
 
   test(
