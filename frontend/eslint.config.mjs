@@ -55,6 +55,7 @@ export default defineConfig(...vitalsPlugin, [
           ],
         },
       ],
+      "promise/catch-or-return": ["error", { allowFinally: true }],
     },
 
     settings: {
