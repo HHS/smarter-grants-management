@@ -2,9 +2,9 @@
  * authenticateE2eUser is a high-level helper for E2E test authentication.
  *
  * This flow temporarily bypasses the normal app login by creating a client-side
- * spoofed session. In SGM, the direct workaround is to fetch a JWT using a test
- * user's API key at /v1/internal/api-jwt and then encode that JWT into the
- * session cookie we expect the app to read.
+ * spoofed session. The supported workaround is to fetch a JWT directly from
+ * /v1/internal/api-jwt with the seeded test user's API key and then encode that
+ * JWT into the session cookie the app expects.
  *
  * Test users are chosen via a TestUserKey (see test-users.ts). Spoofing is the
  * only supported path — seeded test users have no login credentials or MFA — so
@@ -22,9 +22,7 @@ import {
 const { baseUrl, apiUrl } = playwrightEnv;
 
 // Fetches a JWT for a test user by calling the internal API-key JWT endpoint.
-// NOTE: This is intentionally using the direct user API key flow rather than the
-// legacy managed-user e2e-token endpoint. The old request is left below as a
-// commented fallback only.
+// This is the direct spoof-login path used by E2E runs.
 export const fetchE2eSessionToken = async (
   testUserApiKey: string,
 ): Promise<string> => {
@@ -32,7 +30,8 @@ export const fetchE2eSessionToken = async (
     throw new Error("Unable to spoof login: test user API key is not set");
   }
 
-  const response = await fetch(`${apiUrl}/v1/internal/api-jwt`, {
+  const requestUrl = `${apiUrl}/v1/internal/api-jwt`;
+  const response = await fetch(requestUrl, {
     headers: {
       "X-API-Key": testUserApiKey,
       "Content-Type": "application/json",
@@ -46,15 +45,21 @@ export const fetchE2eSessionToken = async (
   const errorTimestamp = new Date().toISOString();
 
   if (!response.ok) {
+    const responseBody = await response.text();
+    const statusSpecificHint =
+      response.status === 404
+        ? "Backend : verify the staging deployment exposes GET /v1/internal/api-jwt and that PLAYWRIGHT_API_URL points at the correct deployed API."
+        : "Backend : verify the API key is valid and active for /v1/internal/api-jwt in this environment.";
+
     throw new Error(
       [
         `unable to fetch e2e user token: response.status ${response.status}.`,
         `Timestamp: ${errorTimestamp}.`,
         `Target environment: ${playwrightEnv.targetEnv || "unknown"}.`,
+        `Request URL: ${requestUrl}.`,
         `Current TEST_USER_API_KEY: ${maskedTestUserApiKey}.`,
-        "Backend engineer: verify the API key is valid and active for /v1/internal/api-jwt in this environment.",
-        "Frontend engineer: verify the Playwright request is sending TEST_USER_API_KEY in the X-API-Key header.",
-        "Infra engineer: verify the CI secret or environment variable is populated for this run.",
+        responseBody ? `Response body: ${responseBody}` : "Response body: empty.",
+        statusSpecificHint,
       ].join("\n"),
     );
   }
@@ -63,7 +68,7 @@ export const fetchE2eSessionToken = async (
   return json.data.jwt_token;
 };
 
-// Legacy flow retained for rollback reference:
+// Legacy e2e-token flow retained only as a rollback reference.
 // const response = await fetch(`${apiUrl}/v1/internal/e2e-token`, {
 //   headers: {
 //     "X-API-Key": testUserManagerApiKey,
@@ -95,9 +100,6 @@ export async function authenticateE2eUser(
         `Timestamp: ${errorTimestamp}.`,
         `Target environment: ${playwrightEnv.targetEnv || "unknown"}.`,
         `Current TEST_USER_API_KEY: ${maskedTestUserApiKey}.`,
-        "Backend engineer: confirm the seeded test-user API key exists and is active in the target environment.",
-        "Frontend engineer: confirm the value is passed through TEST_USER_API_KEY in the Playwright env.",
-        "Infra engineer: confirm the GitHub secret or environment variable is populated for the CI job.",
       ].join("\n"),
     );
   }
@@ -107,9 +109,8 @@ export async function authenticateE2eUser(
   const token = await fetchE2eSessionToken(testUserApiKeyOverride);
   await createSpoofedSessionCookie(context, token);
 
-  // Give the spoofed session cookie a moment to settle before navigating, then
-  // let the page hydrate the authenticated state after load. Mobile needs longer
-  // waits due to slower rendering and session establishment on smaller viewports.
+  // Let the spoofed session cookie settle before navigating. Mobile keeps a
+  // longer delay because smaller viewports hydrate more slowly.
   const preNavWait = isMobile ? 2000 : 1000;
   const postNavWait = isMobile ? 4000 : 2000;
   await page.waitForTimeout(preNavWait);
