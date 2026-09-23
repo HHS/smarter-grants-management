@@ -277,7 +277,7 @@ describe("saveAnnouncementEditAction", () => {
     expect(firstCall?.[0].body.summary_description).toBe("Summary text");
     expect(result).toEqual({
       successMessage: "success",
-      announcementSummaryId: "new-sum-789",
+      newAnnouncementSummaryId: "new-sum-789",
     });
   });
 
@@ -714,7 +714,7 @@ describe("saveAnnouncementEditAction", () => {
 
       expect(result).toEqual({
         errorMessage: "This pending file could not be attached.",
-        announcementSummaryId: "new-sum-789",
+        newAnnouncementSummaryId: "new-sum-789",
       });
     });
 
@@ -737,7 +737,7 @@ describe("saveAnnouncementEditAction", () => {
 
       expect(result).toEqual({
         errorMessage: "forbidden",
-        announcementSummaryId: "new-sum-789",
+        newAnnouncementSummaryId: "new-sum-789",
       });
     });
 

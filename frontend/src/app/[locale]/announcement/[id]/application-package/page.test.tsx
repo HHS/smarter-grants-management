@@ -53,14 +53,14 @@ jest.mock(
   }),
 );
 
-const mockgetAnnouncement = jest.fn();
+const mockGetAnnouncement = jest.fn();
 const mockCreateCompetitionForGrantor = jest.fn();
 const mockAllForms = jest.fn();
 const mockApplicationPackageForms = jest.fn();
 
 jest.mock("src/services/fetch/fetchers/grantorAnnouncementFetcher", () => ({
   getAnnouncement: (...args: unknown[]) =>
-    mockgetAnnouncement(...args) as unknown,
+    mockGetAnnouncement(...args) as unknown,
 }));
 
 jest.mock("src/services/fetch/fetchers/allFormsFetcher", () => ({
@@ -80,7 +80,7 @@ describe("OpportunityCompetitionPage", () => {
 
   describe("when opportunity has no existing competition", () => {
     beforeEach(() => {
-      mockgetAnnouncement.mockResolvedValue({
+      mockGetAnnouncement.mockResolvedValue({
         data: { ...baseOpportunityData, application_packages: null },
       });
       mockCreateCompetitionForGrantor.mockResolvedValue({
@@ -130,7 +130,7 @@ describe("OpportunityCompetitionPage", () => {
 
   describe("when opportunity already has a competition", () => {
     beforeEach(() => {
-      mockgetAnnouncement.mockResolvedValue({
+      mockGetAnnouncement.mockResolvedValue({
         data: {
           ...baseOpportunityData,
           application_packages: [{ competition_id: "existing-competition-id" }],
@@ -163,7 +163,7 @@ describe("OpportunityCompetitionPage", () => {
 
   describe("MissingAuthError handling", () => {
     it("returns UnauthorizedMessage when getAnnouncement throws MissingAuthError", async () => {
-      mockgetAnnouncement.mockRejectedValue(
+      mockGetAnnouncement.mockRejectedValue(
         new MissingAuthError("Missing auth"),
       );
       const component = await OpportunityCompetitionPage({

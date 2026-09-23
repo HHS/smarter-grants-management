@@ -34,10 +34,10 @@ jest.mock("src/services/featureFlags/withFeatureFlag", () => ({
     WrappedComponent(props as never),
 }));
 
-const mockgetAnnouncement = jest.fn();
+const mockGetAnnouncement = jest.fn();
 jest.mock("src/services/fetch/fetchers/grantorAnnouncementFetcher", () => ({
   getAnnouncement: (...args: unknown[]) =>
-    mockgetAnnouncement(...args) as unknown,
+    mockGetAnnouncement(...args) as unknown,
 }));
 
 jest.mock(
@@ -147,7 +147,7 @@ describe("OpportunityOverviewPage", () => {
     it.each(["notStarted", "inProgress"] as const)(
       "shows %s status and links to the correct page",
       async (status) => {
-        mockgetAnnouncement.mockResolvedValue({
+        mockGetAnnouncement.mockResolvedValue({
           data: { ...baseOpportunityData, ...section.buildData(status) },
         });
 
@@ -175,7 +175,7 @@ describe("OpportunityOverviewPage", () => {
 
   describe("error handling", () => {
     it("calls notFound() on a 404", async () => {
-      mockgetAnnouncement.mockRejectedValue(new NotFoundError("not found"));
+      mockGetAnnouncement.mockRejectedValue(new NotFoundError("not found"));
 
       // The real Next.js notFound() throws to halt rendering; the mocked
       // version doesn't, so execution falls through to the page's final
@@ -192,7 +192,7 @@ describe("OpportunityOverviewPage", () => {
     });
 
     it("shows UnauthorizedMessage on a 403", async () => {
-      mockgetAnnouncement.mockRejectedValue(new ForbiddenError("forbidden"));
+      mockGetAnnouncement.mockRejectedValue(new ForbiddenError("forbidden"));
 
       const component = await OpportunityOverviewPage({
         params: pageParams,
@@ -204,7 +204,7 @@ describe("OpportunityOverviewPage", () => {
     });
 
     it("shows UnauthorizedMessage when getAnnouncement throws MissingAuthError", async () => {
-      mockgetAnnouncement.mockRejectedValue(
+      mockGetAnnouncement.mockRejectedValue(
         new MissingAuthError("missing auth"),
       );
 
@@ -221,7 +221,7 @@ describe("OpportunityOverviewPage", () => {
   describe("publishEnabled", () => {
     // TODO(#251): force-disabled - see announcementPublishEligibility.test.ts for the underlying logic tests
     it("stays disabled when a draft and both sections are complete", async () => {
-      mockgetAnnouncement.mockResolvedValue({
+      mockGetAnnouncement.mockResolvedValue({
         data: {
           ...baseOpportunityData,
           is_draft: true,
@@ -245,7 +245,7 @@ describe("OpportunityOverviewPage", () => {
 
   describe("isNewlyCreated", () => {
     it("passes isNewlyCreated through when fromCreate=true", async () => {
-      mockgetAnnouncement.mockResolvedValue({
+      mockGetAnnouncement.mockResolvedValue({
         data: { ...baseOpportunityData },
       });
 
@@ -262,7 +262,7 @@ describe("OpportunityOverviewPage", () => {
     });
 
     it("does not set isNewlyCreated when fromCreate is absent", async () => {
-      mockgetAnnouncement.mockResolvedValue({
+      mockGetAnnouncement.mockResolvedValue({
         data: { ...baseOpportunityData },
       });
 
@@ -281,7 +281,7 @@ describe("OpportunityOverviewPage", () => {
 
   describe("accessibility", () => {
     it("passes accessibility scan when nothing is started", async () => {
-      mockgetAnnouncement.mockResolvedValue({
+      mockGetAnnouncement.mockResolvedValue({
         data: {
           ...baseOpportunityData,
           summary: buildSummaryFixture("notStarted"),
@@ -300,7 +300,7 @@ describe("OpportunityOverviewPage", () => {
     });
 
     it("passes accessibility scan when both sections are complete", async () => {
-      mockgetAnnouncement.mockResolvedValue({
+      mockGetAnnouncement.mockResolvedValue({
         data: {
           ...baseOpportunityData,
           summary: buildSummaryFixture("complete"),

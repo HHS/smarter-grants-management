@@ -45,7 +45,7 @@ export type OpportunityEditActionState = {
   errorMessage?: string;
   successMessage?: string;
   validationErrors?: AnnouncementEditValidationErrors;
-  announcementSummaryId?: string;
+  newAnnouncementSummaryId?: string;
 };
 
 const editOpportunityFormSchema = {
@@ -472,14 +472,14 @@ export async function saveAnnouncementEditAction(
       if (attachmentError) {
         return {
           ...attachmentError,
-          announcementSummaryId: createResponse.data
+          newAnnouncementSummaryId: createResponse.data
             .announcement_summary_id as string, // delete type coersion
         };
       }
 
       return {
         successMessage: alerts("success"),
-        announcementSummaryId: createResponse.data
+        newAnnouncementSummaryId: createResponse.data
           .announcement_summary_id as string, // delete type coersion
       };
     }

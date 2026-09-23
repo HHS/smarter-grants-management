@@ -523,7 +523,7 @@ describe("AnnouncementEditForm - save state", () => {
     mockUseActionState.mockReturnValue([
       {
         validationErrors: {},
-        announcementSummaryId: "new-summary-789",
+        newAnnouncementSummaryId: "new-summary-789",
       },
       jest.fn(),
       false,

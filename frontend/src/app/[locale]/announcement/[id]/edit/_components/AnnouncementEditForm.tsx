@@ -212,12 +212,12 @@ export default function AnnouncementEditForm({
   }
 
   useEffect(() => {
-    if (formState.announcementSummaryId) {
+    if (formState.newAnnouncementSummaryId) {
       // TODO #9633
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setCurrentSummaryId(formState.announcementSummaryId);
+      setCurrentSummaryId(formState.newAnnouncementSummaryId);
     }
-  }, [formState.announcementSummaryId]);
+  }, [formState.newAnnouncementSummaryId]);
 
   const eligibilityGroups = ELIGIBILITY_OPTIONS.reduce(
     (acc, { label, value }) => {
