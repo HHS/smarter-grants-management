@@ -1,4 +1,4 @@
-import { summarizeNetworkEvents } from "../../tests/e2e/utils/common/failure-debug-artifacts-utils";
+import { summarizeNetworkEvents } from "tests/e2e/utils/common/failure-debug-artifacts-utils";
 
 describe("failure debug artifacts utils", () => {
   it("summarizes request and response events in a readable format", () => {
