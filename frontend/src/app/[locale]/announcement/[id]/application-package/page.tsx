@@ -5,7 +5,7 @@ import {
   parseErrorStatus,
 } from "src/errors";
 import { getForms } from "src/services/fetch/fetchers/allFormsFetcher";
-import { getOpportunityForGrantor } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
+import { getAnnouncement } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 import { ApplicationPackage } from "src/types/applicationPackageResponseTypes";
 
 import { useTranslations } from "next-intl";
@@ -57,7 +57,7 @@ export default async function OpportunityCompetitionPage({
 
   let opportunityData;
   try {
-    const response = await getOpportunityForGrantor(id);
+    const response = await getAnnouncement(id);
     opportunityData = response.data;
   } catch (error) {
     if (error instanceof MissingAuthError) {

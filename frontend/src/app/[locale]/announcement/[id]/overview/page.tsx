@@ -3,7 +3,7 @@ import {
   MissingAuthError,
   parseErrorStatus,
 } from "src/errors";
-import { getOpportunityForGrantor } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
+import { getAnnouncement } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 import {
   GrantorAnnouncementDetail,
   Summary,
@@ -44,7 +44,7 @@ export default async function OpportunityOverviewPage({
   });
   let opportunityData: GrantorAnnouncementDetail;
   try {
-    const response = await getOpportunityForGrantor(id);
+    const response = await getAnnouncement(id);
     opportunityData = response.data;
   } catch (error) {
     if (error instanceof MissingAuthError) {
