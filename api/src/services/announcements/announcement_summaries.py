@@ -22,6 +22,7 @@ def _check_existing_summary(
         select(AnnouncementSummary).where(
             AnnouncementSummary.announcement_id == announcement_id,
             AnnouncementSummary.is_forecast == is_forecast,
+            AnnouncementSummary.is_deleted.is_(False),
         )
     ).scalar_one_or_none()
 

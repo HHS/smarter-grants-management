@@ -24,7 +24,9 @@ class AnnouncementCreateRequest(BaseModel):
 
 
 def check_announcement_number_exists(db_session: db.Session, announcement_number: str) -> None:
-    stmt = select(Announcement).where(Announcement.announcement_number == announcement_number)
+    stmt = select(Announcement).where(
+        Announcement.announcement_number == announcement_number, Announcement.is_deleted.is_(False)
+    )
     existing_opportunity = db_session.execute(stmt).scalar_one_or_none()
 
     if existing_opportunity is not None:
