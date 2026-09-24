@@ -6,7 +6,7 @@
 // 4) Restore checkRequiredPrivileges and parseUserPrivileges usage.
 // 5) Switch header back to agency-aware version and restore agency selector UI.
 // 6) Switch fetchOpportunities back to agency-scoped endpoint.
-// 7) Replace temporary opportunitiesAccess with privilege-derived access.
+// 7) Replace temporary announcementsAccess with privilege-derived access.
 // 8) Update/expand tests to cover agency authorization behavior.
 
 import TopLevelError from "src/app/[locale]/error/page";
@@ -451,7 +451,7 @@ const AnnouncementsTable = ({
 // };
 
 // --------------------------------------------------
-// Fetch function: get the list of opportunities the user can access
+// Fetch function: get the list of announcements the user can access
 // --------------------------------------------------
 const fetchAnnouncements = async (page: number) => {
   const pageRequest: PaginationRequestBody = {

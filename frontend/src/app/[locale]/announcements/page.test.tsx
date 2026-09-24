@@ -217,7 +217,7 @@ describe("Announcements", () => {
     expect(await screen.findByTestId("alert")).toBeVisible();
   });
 
-  it("rethrows unauthenticated (401) errors", async () => {
+  it("rethrows UnauthorizedError (401 unauthenticated) errors", async () => {
     mockSearchForAnnouncements.mockRejectedValue(
       new UnauthorizedError("No active session"),
     );
@@ -226,7 +226,7 @@ describe("Announcements", () => {
       AnnouncementsListPage({
         params: localeParams,
       }),
-    ).rejects.toThrow();
+    ).rejects.toThrow(UnauthorizedError);
   });
 
   it("shows forecasted status tag for forecast announcements", async () => {
