@@ -11,7 +11,6 @@ import {
   type Page,
   type TestInfo,
 } from "@playwright/test";
-import { assertButtonEnabledDisabledStates } from "tests/e2e/utils/common/index";
 import {
   buildPageFieldsFromDefinitions,
   CREATE_OPPORTUNITY_FIELD_DEFINITIONS,
@@ -21,13 +20,14 @@ import playwrightEnv from "tests/e2e/playwright-env";
 import { VALID_TAGS } from "tests/e2e/tags";
 import { waitForOpportunityRowByStatus } from "tests/e2e/utils/announcements/table-row-utils";
 import { authenticateE2eUser } from "tests/e2e/utils/auth/authenticate-e2e-user-utils";
+import { assertButtonEnabledDisabledStates } from "tests/e2e/utils/common/index";
 import { fillPageFields } from "tests/e2e/utils/pages/general-pages-filling";
 
 const { GRANTOR, OPPORTUNITY_MANAGEMENT, CORE_REGRESSION } = VALID_TAGS;
 const { targetEnv } = playwrightEnv;
 
 test.describe("Grantor Opportunity Happy Path", () => {
-  test.beforeEach(({ page }, testInfo) => {
+  test.beforeEach((_, testInfo) => {
     if (targetEnv !== "local") {
       test.skip(
         testInfo.project.name !== "Chrome",
@@ -50,6 +50,7 @@ test.describe("Grantor Opportunity Happy Path", () => {
         page,
         context,
         !!testInfo.project.name.match(/[Mm]obile/),
+        // This is a temporary setup for authenticating the test user.
         "primaryOrgAdmin",
         playwrightEnv.testUserApiKey,
       );
