@@ -104,7 +104,7 @@ def test_announcement_summary_create_duplicate_type_is_deleted_200(
 ):
     announcement = AnnouncementFactory.create()
     # Add a deleted summary, this won't get seen and a new summary can be created.
-    AnnouncementSummaryFactory.create(is_forecast=True, is_deleted=True)
+    AnnouncementSummaryFactory.create(announcement=announcement, is_forecast=True, is_deleted=True)
 
     response = client.post(
         f"/v1/announcements/{announcement.announcement_id}/summaries",
