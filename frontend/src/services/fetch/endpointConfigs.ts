@@ -40,7 +40,7 @@ export const fetchFormsEndpoint = {
   basePath: environment.API_URL,
   version: "v1",
   namespace: "forms",
-  method: "GET" as ApiMethod,
+  method: "POST" as ApiMethod,
 };
 
 export const fetchCompetitionFormsEndpoint = {

@@ -121,24 +121,24 @@ export async function publishOpportunityForGrantor(
   return (await response.json()) as GrantorAnnouncementApiResponse;
 }
 
-export async function createCompetitionForGrantor(
-  opportunityId: string,
+export async function createApplicationPackage(
+  announcementId: string,
   data: ApplicationPackageSaveRequest,
 ): Promise<ApplicationPackageSaveApiResponse> {
   const response = await fetchGrantorOpportunityWithMethod("POST")({
-    subPath: `${opportunityId}/application-packages`,
+    subPath: `${announcementId}/application-packages`,
     body: data,
   });
   return (await response.json()) as ApplicationPackageSaveApiResponse;
 }
 
-export async function updateCompetitionForGrantor(
-  opportunityId: string,
-  competitionId: string,
+export async function updateApplicationPackage(
+  announcementId: string,
+  applicationPackageId: string,
   data: ApplicationPackageSaveRequest,
 ): Promise<ApplicationPackageSaveApiResponse> {
   const response = await fetchGrantorOpportunityWithMethod("PUT")({
-    subPath: `${opportunityId}/application-packages/${competitionId}`,
+    subPath: `${announcementId}/application-packages/${applicationPackageId}`,
     body: data,
   });
   return (await response.json()) as ApplicationPackageSaveApiResponse;

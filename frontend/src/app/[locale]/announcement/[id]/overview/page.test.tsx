@@ -89,12 +89,12 @@ function buildCompetitionFixture(
   status: ProgressStatus,
 ): DeepPartial<[ApplicationPackage]> | null {
   if (status === "notStarted") return null;
-  if (status === "inProgress") return [{ competition_id: "comp-1" }];
+  if (status === "inProgress") return [{ application_package_id: "comp-1" }];
   return [
     {
-      competition_id: "comp-1",
+      application_package_id: "comp-1",
       open_to_applicants: ["individual"],
-      competition_title: "comp-1",
+      application_package_title: "comp-1",
     },
   ];
 }
