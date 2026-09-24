@@ -1,5 +1,9 @@
 import uuid
 
+from sqlalchemy import select
+
+from src.constants.lookup_constants import AnnouncementAuditEvent
+from src.db.models.announcement_models import AnnouncementAudit
 from tests.db.models.factories import ApplicationPackageFactory, ApplicationPackageFormFactory
 
 
@@ -106,3 +110,51 @@ def test_application_package_form_update_no_api_key_401(client):
         f"/v1/announcements/{uuid.uuid4()}/application-packages/{uuid.uuid4()}/forms", json=request
     )
     assert resp.status_code == 401
+
+
+def test_application_package_form_update_records_audit(client, api_key_headers, db_session):
+    package = ApplicationPackageFactory.create(application_package_forms=[])
+
+    # 1 is going to be unmodified
+    # 2 will be new
+    # 3 will change to non-required
+    # 4 will be deleted
+    ApplicationPackageFormFactory.create(application_package=package, form_id=1, is_required=True)
+    ApplicationPackageFormFactory.create(application_package=package, form_id=3, is_required=True)
+    ApplicationPackageFormFactory.create(application_package=package, form_id=4, is_required=True)
+
+    request = {
+        "forms": [
+            {"form_id": 1, "is_required": True},
+            {"form_id": 2, "is_required": True},
+            {"form_id": 3, "is_required": False},
+        ]
+    }
+
+    resp = client.put(
+        f"/v1/announcements/{package.announcement_id}/application-packages/{package.application_package_id}/forms",
+        json=request,
+        headers=api_key_headers,
+    )
+    assert resp.status_code == 200
+
+    audit_rows = (
+        db_session.execute(
+            select(AnnouncementAudit).where(
+                AnnouncementAudit.announcement_id == package.announcement_id
+            )
+        )
+        .scalars()
+        .all()
+    )
+    assert len(audit_rows) == 1
+    audit = audit_rows[0]
+    assert audit.announcement_audit_event == AnnouncementAuditEvent.APPLICATION_PACKAGE_UPDATED
+    assert audit.application_package_id == package.application_package_id
+
+    forms_diff = audit.audit_metadata["changed_fields"]["application_package_forms"]
+    before_forms = {(f["form_id"], f["is_required"]) for f in forms_diff["before"]}
+    after_forms = {(f["form_id"], f["is_required"]) for f in forms_diff["after"]}
+
+    assert before_forms == {(1, True), (3, True), (4, True)}
+    assert after_forms == {(1, True), (2, True), (3, False)}

@@ -57,7 +57,6 @@ describe("SelectFundingOpportunityContent", () => {
       archive_timestamp: null,
       funding_instruments: [],
     },
-
     ...overrides,
   });
 
