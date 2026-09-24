@@ -240,7 +240,6 @@ export const NavLinks = ({
   );
 
   useEffect(() => {
-    // TODO #9633
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentNavItemIndex(getCurrentNavItemIndex(path));
   }, [path, getCurrentNavItemIndex]);

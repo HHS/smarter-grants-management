@@ -16,13 +16,7 @@ import { AnnouncementEditFormValues } from "src/utils/announcementEditFormConfig
 import { getNumericAmountFromString } from "src/utils/formatCurrencyUtil";
 
 import { useTranslations } from "next-intl";
-import {
-  startTransition,
-  useActionState,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { startTransition, useActionState, useRef, useState } from "react";
 import {
   Alert,
   Button,
@@ -211,13 +205,12 @@ export default function AnnouncementEditForm({
     return fieldErrors?.join(" ");
   }
 
-  useEffect(() => {
-    if (formState.newAnnouncementSummaryId) {
-      // TODO #9633
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setCurrentSummaryId(formState.newAnnouncementSummaryId);
-    }
-  }, [formState.newAnnouncementSummaryId]);
+  if (
+    formState.newAnnouncementSummaryId &&
+    formState.newAnnouncementSummaryId !== currentSummaryId
+  ) {
+    setCurrentSummaryId(formState.newAnnouncementSummaryId);
+  }
 
   const eligibilityGroups = ELIGIBILITY_OPTIONS.reduce(
     (acc, { label, value }) => {
