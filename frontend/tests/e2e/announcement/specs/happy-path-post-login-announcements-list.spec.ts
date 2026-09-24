@@ -41,7 +41,7 @@ test.describe("Grantor announcements list post-login happy path", () => {
     ) => {
       test.setTimeout(300_000);
 
-      // Authenticate a grantor user for this post-login navigation check.
+      // Given I am logged in as a grantor user.
       await authenticateE2eUser(
         page,
         context,
@@ -51,10 +51,24 @@ test.describe("Grantor announcements list post-login happy path", () => {
         playwrightEnv.testUserApiKey,
       );
 
-      // And I should not see the "Sign in" link.
+      // Then I should not see the "Sign in" link.
       await expect(
         page.getByRole("link", { name: "Sign in", exact: true }),
       ).not.toBeVisible();
+
+      // When I navigate to the announcements list page.
+      await page.goto("/announcements");
+
+      // Then I should be redirected to the announcements list page.
+      await expect(page).toHaveURL(/\/announcements/);
+
+      // And I should see the Announcements List heading.
+      await expect(
+        getAnnouncementListPageLocator(
+          page,
+          ANNOUNCEMENTS_LIST_PAGE_DEFINITIONS.pageHeading,
+        ),
+      ).toBeVisible();
     },
   );
 });
