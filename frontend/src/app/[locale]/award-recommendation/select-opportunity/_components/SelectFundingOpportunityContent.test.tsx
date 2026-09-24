@@ -61,7 +61,7 @@ describe("SelectFundingOpportunityContent", () => {
       is_draft: false,
       is_simpler_grants_opportunity: true,
       saved_to_organizations: [],
-      summary: {} as BaseAnnouncement["summary"],
+      summary: {},
 
       ...overrides,
     }) as BaseAnnouncement;
