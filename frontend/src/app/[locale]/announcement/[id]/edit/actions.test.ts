@@ -473,7 +473,7 @@ describe("saveAnnouncementEditAction", () => {
       message: "success",
       status_code: 201,
       data: { announcement_summary_id: "new-sum-789" },
-    });
+    } as unknown as Awaited<ReturnType<typeof createAnnouncementSummary>>);
 
     await saveAnnouncementEditAction(initialState, formData);
 
@@ -588,7 +588,7 @@ describe("saveAnnouncementEditAction", () => {
             type: "invalid",
           },
         ],
-      });
+      } as unknown as Awaited<ReturnType<typeof createAnnouncementSummary>>);
 
       await saveAnnouncementEditAction(initialState, formData);
 
@@ -672,7 +672,8 @@ describe("saveAnnouncementEditAction", () => {
         message: "success",
         status_code: 201,
         data: { announcement_summary_id: "new-sum-789" },
-      });
+      } as unknown as Awaited<ReturnType<typeof createAnnouncementSummary>>);
+
       mockCreateOpportunityAttachment.mockResolvedValue({
         message: "success",
         status_code: 200,
@@ -704,7 +705,8 @@ describe("saveAnnouncementEditAction", () => {
         message: "success",
         status_code: 201,
         data: { announcement_summary_id: "new-sum-789" },
-      });
+      } as unknown as Awaited<ReturnType<typeof createAnnouncementSummary>>);
+
       mockCreateOpportunityAttachment.mockResolvedValue({
         message: "This pending file could not be attached.",
         status_code: 422,
@@ -729,7 +731,8 @@ describe("saveAnnouncementEditAction", () => {
         message: "success",
         status_code: 201,
         data: { announcement_summary_id: "new-sum-789" },
-      });
+      } as unknown as Awaited<ReturnType<typeof createAnnouncementSummary>>);
+
       mockCreateOpportunityAttachment.mockRejectedValue(
         new ApiRequestError("forbidden", "APIRequestError", 403),
       );
