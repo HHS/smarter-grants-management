@@ -45,7 +45,7 @@ def get_application_package_instruction_and_verify_access(
             f"Could not find application package instruction with id {application_package_instruction_id}",
         )
 
-    if not has_access(user, application_package_instruction, "read"):
+    if not has_access(user, application_package_instruction.application_package, "read"):
         raise_flask_error(
             403, "User does not have read access to this application package instruction"
         )

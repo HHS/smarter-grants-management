@@ -480,7 +480,7 @@ def application_package_instruction_create(
 @announcement_blueprint.output(ApplicationPackageInstructionDeleteResponseSchema)
 @announcement_blueprint.auth_required(jwt_or_api_user_key_multi_auth)
 @announcement_blueprint.doc(
-    summary="Create an Application Package Instruction", responses=[200, 401, 403, 404]
+    summary="Delete an Application Package Instruction", responses=[200, 401, 403, 404]
 )
 @flask_db.with_db_session()
 def application_package_instruction_delete(

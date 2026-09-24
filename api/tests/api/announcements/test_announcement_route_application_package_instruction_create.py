@@ -144,9 +144,7 @@ def test_package_instruction_create_announcement_deleted_404(
     assert resp.status_code == 404
 
 
-def test_package_instruction_create_package_package_deleted_404(
-    client, s3_config, enable_factory_create
-):
+def test_package_instruction_create_package_deleted_404(client, s3_config, enable_factory_create):
     api_key = UserApiKeyFactory.create()
 
     pending_file = PendingFileFactory.create(
@@ -171,7 +169,7 @@ def test_package_instruction_create_scan_not_complete_422(
     api_key = UserApiKeyFactory.create()
 
     pending_file = PendingFileFactory.create(file_scan_status=status, user=api_key.user)
-    application_package = ApplicationPackageFactory.create(is_deleted=True)
+    application_package = ApplicationPackageFactory.create()
 
     request = {"pending_file_id": pending_file.pending_file_id}
 
@@ -180,7 +178,7 @@ def test_package_instruction_create_scan_not_complete_422(
         json=request,
         headers={"X-API-Key": api_key.key_id},
     )
-    assert resp.status_code == 404
+    assert resp.status_code == 422
 
 
 def test_package_instruction_create_bad_api_key_401(client):
