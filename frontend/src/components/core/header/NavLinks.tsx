@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import { LOGIN_URL } from "src/constants/auth";
+import { useLoginModal } from "src/services/auth/LoginModalProvider";
 import { useUser } from "src/services/auth/useUser";
 import { IndexType } from "src/types/generalTypes";
 import { isCurrentPath, isExternalLink } from "src/utils/generalUtils";
@@ -16,7 +17,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { PrimaryNav } from "@trussworks/react-uswds";
+import { ModalToggleButton, PrimaryNav } from "@trussworks/react-uswds";
 
 import NavDropdown from "src/components/core/header/NavDropdown";
 import { USWDSIcon } from "src/components/core/USWDSIcon";
@@ -185,6 +186,12 @@ export const NavLinks = ({
 
   const path = usePathname();
   const { user } = useUser();
+  const { loginModalRef } = useLoginModal({
+    helpText: "Enter an API key to login to Simpler Grants Management",
+    titleText: "Login With API Key",
+    buttonText: "Login",
+    closeText: "Cancel",
+  });
 
   const closeMobileNav = useCallback(() => {
     if (mobileExpanded) {
@@ -263,30 +270,22 @@ export const NavLinks = ({
     if (!user?.token) {
       if (useApiKeyLogin) {
         items.push(
-          <a
-            href={LOGIN_URL}
-            key="sign-in"
-            className={clsx({
-              "usa-nav__link": true,
-              "text-normal": true,
-            })}
-            onClick={() => {
-              storeCurrentPage(location.pathname, location.search);
-              closeDropdownAndMobileNav();
-            }}
+          <ModalToggleButton
+            id="login-modal-toggle"
+            modalRef={loginModalRef}
+            opener
+            className="usa-button--unstyled usa-nav__link text-normal"
+            aria-label="open login modal"
           >
             {t("login")}
-          </a>,
+          </ModalToggleButton>,
         );
       } else {
         items.push(
           <a
             href={LOGIN_URL}
             key="sign-in"
-            className={clsx({
-              "usa-nav__link": true,
-              "text-normal": true,
-            })}
+            className="usa-nav__link text-normal"
             onClick={() => {
               storeCurrentPage(location.pathname, location.search);
               closeDropdownAndMobileNav();
@@ -333,6 +332,7 @@ export const NavLinks = ({
     setActiveNavDropdownIndex,
     user?.token,
     loggedInNavConfig,
+    loginModalRef,
   ]);
 
   return (

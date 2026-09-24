@@ -10,7 +10,6 @@ import {
 
 import { LoginLink } from "src/components/core/LoginButton";
 import { SimplerModal } from "src/components/core/SimplerModal";
-import { USWDSIcon } from "src/components/core/USWDSIcon";
 
 export const LoginModal = ({
   modalRef,
@@ -66,14 +65,7 @@ const LoginModalBody = ({
       <p className="font-sans-2xs margin-y-4">{descriptionText}</p>
       <ModalFooter>
         <ButtonGroup>
-          <LoginLink className="usa-button">
-            {buttonText}
-            <USWDSIcon
-              className="usa-icon margin-right-05 margin-left-neg-05"
-              name="launch"
-              key="login-gov-link-icon"
-            />
-          </LoginLink>
+          <LoginLink className="usa-button">{buttonText}</LoginLink>
           <ModalToggleButton
             modalRef={modalRef}
             closer
