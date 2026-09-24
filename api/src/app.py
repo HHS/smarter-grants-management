@@ -34,6 +34,7 @@ from src.auth.auth_utils import get_app_security_scheme
 from src.auth.login_gov_jwt_auth import initialize_login_gov_config
 from src.constants.lookup_constants import ResourceType
 from src.db.resource_automation.resource_automation import setup_resource_automation
+from src.services.files.local_file_scanner import setup_local_file_scanner
 from src.task.task_blueprint import task_blueprint
 from src.util.env_config import PydanticBaseEnvConfig
 from src.util.local import error_if_not_local
@@ -74,6 +75,8 @@ def create_app() -> APIFlask:
 
     register_index(app)
     register_robots_txt(app)
+
+    setup_local_file_scanner()
 
     logger.info("Finished setting up Flask app")
     return app

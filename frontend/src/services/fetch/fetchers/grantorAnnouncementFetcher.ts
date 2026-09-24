@@ -27,14 +27,14 @@ type PaginationBody = {
   pagination: PaginationRequestBody;
 };
 
-type UpdateOpportunitySummaryForGrantorParams = {
-  opportunityId: string;
-  opportunitySummaryId: string;
+type UpdateAnnouncementSummaryParams = {
+  announcementId: string;
+  announcementSummaryId: string;
   body: AnnouncementSummaryUpdateRequest;
 };
 
-type CreateOpportunitySummaryForGrantorParams = {
-  opportunityId: string;
+type CreateAnnouncementSummaryParams = {
+  announcementId: string;
   body: AnnouncementSummaryCreateRequest;
 };
 
@@ -63,7 +63,7 @@ export const searchAccessibleOpportunities = async (
   return (await response.json()) as SearchAPIResponse;
 };
 
-export async function getOpportunityForGrantor(
+export async function getAnnouncement(
   opportunityId: string,
 ): Promise<GrantorAnnouncementApiResponse> {
   const response = await fetchGrantorOpportunityWithMethod("GET")({
@@ -82,12 +82,12 @@ export const createOpportunity = async (
   return json.data;
 };
 
-export async function createOpportunitySummaryForGrantor({
-  opportunityId,
+export async function createAnnouncementSummary({
+  announcementId,
   body,
-}: CreateOpportunitySummaryForGrantorParams): Promise<AnnouncementSummaryDetailApiResponse> {
+}: CreateAnnouncementSummaryParams): Promise<AnnouncementSummaryDetailApiResponse> {
   const response = await fetchGrantorOpportunityWithMethod("POST")({
-    subPath: `${opportunityId}/summaries`,
+    subPath: `${announcementId}/summaries`,
     body,
     // want to allow responses with failed validations through so we can properly handle displaying validation errors
     allowedErrorStatuses: [422],
@@ -96,13 +96,13 @@ export async function createOpportunitySummaryForGrantor({
   return (await response.json()) as AnnouncementSummaryDetailApiResponse;
 }
 
-export async function updateOpportunitySummaryForGrantor({
-  opportunityId,
-  opportunitySummaryId,
+export async function updateAnnouncementSummary({
+  announcementId,
+  announcementSummaryId,
   body,
-}: UpdateOpportunitySummaryForGrantorParams): Promise<AnnouncementSummaryDetailApiResponse> {
+}: UpdateAnnouncementSummaryParams): Promise<AnnouncementSummaryDetailApiResponse> {
   const response = await fetchGrantorOpportunityWithMethod("PUT")({
-    subPath: `${opportunityId}/summaries/${opportunitySummaryId}`,
+    subPath: `${announcementId}/summaries/${announcementSummaryId}`,
     body,
     // want to allow responses with failed validations through so we can properly handle displaying validation errors
     allowedErrorStatuses: [422],

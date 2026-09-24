@@ -49,3 +49,7 @@ export const isExpiring = (expiration?: number) =>
   !isExpired(expiration) &&
   !!expiration &&
   expiration < Date.now() + clientTokenRefreshInterval;
+
+// '2026-09-23' -> '2026-09-23T00:00:00.000Z'
+export const dateToTimestamp = (dateStr: string): string =>
+  new Date(dateStr).toISOString();

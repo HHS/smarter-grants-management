@@ -2,8 +2,8 @@
 
 import { AnnouncementAttachmentUploadInput } from "src/app/[locale]/announcement/[id]/edit/_components/AnnouncementAttachmentUploadInput";
 import {
-  opportunityEditFormAction,
-  type OpportunityEditValidationErrors,
+  announcementEditFormAction,
+  type AnnouncementEditValidationErrors,
 } from "src/app/[locale]/announcement/[id]/edit/actions";
 import {
   categoryOptions,
@@ -86,47 +86,48 @@ function EligibilityCheckboxGroup({
 }
 
 type AnnouncementEditFormProps = {
-  opportunityId: string;
-  opportunitySummaryId: string;
+  announcementId: string;
+  announcementSummaryId: string;
   isForecast?: boolean;
   initialValues: AnnouncementEditFormValues;
   initialAttachments?: AnnouncementAttachment[];
 };
 
 export default function AnnouncementEditForm({
-  opportunityId,
-  opportunitySummaryId,
+  announcementId,
+  announcementSummaryId,
   isForecast = false,
   initialValues,
   initialAttachments = [],
 }: AnnouncementEditFormProps) {
   const t = useTranslations("OpportunityEdit");
   const formRef = useRef<HTMLFormElement>(null);
-  const [currentSummaryId, setCurrentSummaryId] =
-    useState(opportunitySummaryId);
+  const [currentSummaryId, setCurrentSummaryId] = useState(
+    announcementSummaryId,
+  );
 
   // State for fields that drive conditional show/hide rendering and
   // the publish button enabled state.
   const [fundingCategory, setFundingCategory] = useState(
     initialValues.funding_categories,
   );
-  const [closeDate, setCloseDate] = useState(initialValues.close_date);
+  const [closeDate, setCloseDate] = useState(initialValues.close_timestamp);
   const [selectedEligibility, setSelectedEligibility] = useState<string[]>(
     initialValues.applicant_types,
   );
-  const [formState, formAction] = useActionState(opportunityEditFormAction, {
+  const [formState, formAction] = useActionState(announcementEditFormAction, {
     validationErrors: {},
   });
 
-  const validationErrors: OpportunityEditValidationErrors | undefined =
+  const validationErrors: AnnouncementEditValidationErrors | undefined =
     formState.validationErrors;
 
   //--- Validations for Award Minimum, Award Maximum and Total Program Funding ---
   const [frontendErrors, setFrontendErrors] =
-    useState<OpportunityEditValidationErrors>({});
+    useState<AnnouncementEditValidationErrors>({});
 
   function setSingleFrontendError<
-    K extends keyof OpportunityEditValidationErrors,
+    K extends keyof AnnouncementEditValidationErrors,
   >(fieldname: K, error: string | null) {
     if (!error) {
       // clear the list of errors for this field
@@ -195,7 +196,7 @@ export default function AnnouncementEditForm({
   }
 
   function getFieldError(
-    fieldName: keyof OpportunityEditValidationErrors,
+    fieldName: keyof AnnouncementEditValidationErrors,
   ): string | undefined {
     let fieldErrors = validationErrors?.[fieldName];
     if (!fieldErrors) {
@@ -205,10 +206,10 @@ export default function AnnouncementEditForm({
   }
 
   if (
-    formState.newOpportunitySummaryId &&
-    formState.newOpportunitySummaryId !== currentSummaryId
+    formState.newAnnouncementSummaryId &&
+    formState.newAnnouncementSummaryId !== currentSummaryId
   ) {
-    setCurrentSummaryId(formState.newOpportunitySummaryId);
+    setCurrentSummaryId(formState.newAnnouncementSummaryId);
   }
 
   const eligibilityGroups = ELIGIBILITY_OPTIONS.reduce(
@@ -226,7 +227,7 @@ export default function AnnouncementEditForm({
   return (
     <form
       ref={formRef}
-      id="opportunity-edit-form"
+      id="announcement-edit-form"
       onSubmit={(e) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
@@ -235,10 +236,10 @@ export default function AnnouncementEditForm({
       }}
       noValidate
     >
-      <input type="hidden" name="opportunity_id" value={opportunityId} />
+      <input type="hidden" name="announcement_id" value={announcementId} />
       <input
         type="hidden"
-        name="opportunity_summary_id"
+        name="announcement_summary_id"
         value={currentSummaryId}
       />
       <input
@@ -249,8 +250,8 @@ export default function AnnouncementEditForm({
       />
       <input
         type="hidden"
-        name="opportunity_title"
-        value={initialValues.opportunity_title}
+        name="announcement_title"
+        value={initialValues.announcement_title}
       />
       <input type="hidden" name="category" value={initialValues.category} />
 
@@ -517,39 +518,41 @@ export default function AnnouncementEditForm({
 
           <div className="grid-row grid-gap-lg">
             <div className="tablet:grid-col-6">
-              <FormGroup error={!!getFieldError("post_date")}>
+              <FormGroup error={!!getFieldError("post_timestamp")}>
                 <DynamicFieldLabel
-                  idFor="post_date"
+                  idFor="post_timestamp"
                   title={t("labels.publishDate")}
                   required
                   description={t("content.publishDateHint")}
                 />
-                {getFieldError("post_date") ? (
-                  <ErrorMessage>{getFieldError("post_date")}</ErrorMessage>
+                {getFieldError("post_timestamp") ? (
+                  <ErrorMessage>{getFieldError("post_timestamp")}</ErrorMessage>
                 ) : null}
                 <DatePicker
-                  id="post_date"
-                  name="post_date"
-                  defaultValue={initialValues.post_date}
+                  id="post_timestamp"
+                  name="post_timestamp"
+                  defaultValue={initialValues.post_timestamp}
                   placeholder="mm/dd/yyyy"
                   className="width-full"
                 />
               </FormGroup>
             </div>
             <div className="tablet:grid-col-6">
-              <FormGroup error={!!getFieldError("close_date")}>
+              <FormGroup error={!!getFieldError("close_timestamp")}>
                 <DynamicFieldLabel
-                  idFor="close_date"
+                  idFor="close_timestamp"
                   title={t("labels.closeDate")}
                   description={t("content.closeDateHint")}
                 />
-                {getFieldError("close_date") ? (
-                  <ErrorMessage>{getFieldError("close_date")}</ErrorMessage>
+                {getFieldError("close_timestamp") ? (
+                  <ErrorMessage>
+                    {getFieldError("close_timestamp")}
+                  </ErrorMessage>
                 ) : null}
                 <DatePicker
-                  id="close_date"
-                  name="close_date"
-                  defaultValue={initialValues.close_date}
+                  id="close_timestamp"
+                  name="close_timestamp"
+                  defaultValue={initialValues.close_timestamp}
                   placeholder="mm/dd/yyyy"
                   onChange={(value) => setCloseDate(value ?? "")}
                   className="width-full"
@@ -562,14 +565,14 @@ export default function AnnouncementEditForm({
             <div className="width-full">
               <FormGroup>
                 <DynamicFieldLabel
-                  idFor="close_date_description"
+                  idFor="close_timestamp_description"
                   title={t("labels.closeDateExplanation")}
                   description={t("content.closeDateExplanationHint")}
                 />
                 <Textarea
-                  id="close_date_description"
-                  name="close_date_description"
-                  defaultValue={initialValues.close_date_description}
+                  id="close_timestamp_description"
+                  name="close_timestamp_description"
+                  defaultValue={initialValues.close_timestamp_description}
                   rows={5}
                   className="width-full"
                 />
