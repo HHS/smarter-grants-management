@@ -27,7 +27,7 @@ const { GRANTOR, OPPORTUNITY_MANAGEMENT, CORE_REGRESSION } = VALID_TAGS;
 const { targetEnv } = playwrightEnv;
 
 test.describe("Grantor Opportunity Happy Path", () => {
-  test.beforeEach((_, testInfo) => {
+  test.beforeEach(({ page }, testInfo) => {
     if (targetEnv !== "local") {
       test.skip(
         testInfo.project.name !== "Chrome",
