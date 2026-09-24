@@ -1,6 +1,10 @@
 import uuid
 from datetime import datetime
 
+from sqlalchemy import select
+
+from src.constants.lookup_constants import AnnouncementAuditEvent
+from src.db.models.announcement_models import AnnouncementAudit
 from tests.api.announcements.conftest import create_application_package_request
 from tests.db.models.factories import AnnouncementFactory
 
@@ -292,3 +296,55 @@ def test_application_package_no_api_key_401(client):
     request = create_application_package_request()
     resp = client.post(f"/v1/announcements/{uuid.uuid4()}/application-packages", json=request)
     assert resp.status_code == 401
+
+
+def test_application_package_create_records_audit(client, db_session, api_key_headers):
+    announcement = AnnouncementFactory.create()
+    request = create_application_package_request()
+
+    resp = client.post(
+        f"/v1/announcements/{announcement.announcement_id}/application-packages",
+        json=request,
+        headers=api_key_headers,
+    )
+    assert resp.status_code == 200
+
+    application_package_id = uuid.UUID(resp.get_json()["data"]["application_package_id"])
+
+    audit_rows = (
+        db_session.execute(
+            select(AnnouncementAudit).where(
+                AnnouncementAudit.announcement_id == announcement.announcement_id
+            )
+        )
+        .scalars()
+        .all()
+    )
+    assert len(audit_rows) == 1
+    audit = audit_rows[0]
+    assert audit.announcement_audit_event == AnnouncementAuditEvent.APPLICATION_PACKAGE_CREATED
+    assert audit.application_package_id == application_package_id
+    assert audit.announcement_summary_id is None
+
+    changed_fields = audit.audit_metadata["changed_fields"]
+    assert changed_fields["application_package_title"] == {
+        "before": None,
+        "after": request["application_package_title"],
+    }
+    assert changed_fields["public_application_package_id"] == {
+        "before": None,
+        "after": request["public_application_package_id"],
+    }
+    assert changed_fields["grace_period"] == {"before": None, "after": request["grace_period"]}
+    assert changed_fields["contact_info"] == {
+        "before": None,
+        "after": request["contact_info"],
+    }
+    assert changed_fields["opening_timestamp"]["before"] is None
+    assert changed_fields["closing_timestamp"]["before"] is None
+    assert set(changed_fields["open_to_applicants"]["after"]) == set(request["open_to_applicants"])
+    assert changed_fields["announcement_assistance_listing_id"]["before"] is None
+    assert changed_fields["announcement_assistance_listing_id"]["after"] in [
+        str(al.announcement_assistance_listing_id)
+        for al in announcement.announcement_assistance_listings
+    ]

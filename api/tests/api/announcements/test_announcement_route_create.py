@@ -2,8 +2,12 @@ import uuid
 
 from sqlalchemy import select
 
-from src.constants.lookup_constants import AnnouncementCategory
-from src.db.models.announcement_models import Announcement, AnnouncementAssistanceListing
+from src.constants.lookup_constants import AnnouncementAuditEvent, AnnouncementCategory
+from src.db.models.announcement_models import (
+    Announcement,
+    AnnouncementAssistanceListing,
+    AnnouncementAudit,
+)
 
 
 def test_announcement_create_200(
@@ -121,3 +125,50 @@ def test_announcement_create_no_auth_401(client, announcement_request):
     response = client.post("/v1/announcements", json=announcement_request)
 
     assert response.status_code == 401
+
+
+def test_announcement_create_records_audit(
+    client, db_session, api_key_headers, announcement_request, assistance_listing
+):
+    response = client.post(
+        "/v1/announcements",
+        json=announcement_request,
+        headers=api_key_headers,
+    )
+
+    assert response.status_code == 200
+
+    announcement_id = uuid.UUID(response.get_json()["data"]["announcement_id"])
+
+    audit_rows = (
+        db_session.execute(
+            select(AnnouncementAudit).where(AnnouncementAudit.announcement_id == announcement_id)
+        )
+        .scalars()
+        .all()
+    )
+    assert len(audit_rows) == 1
+    audit = audit_rows[0]
+    assert audit.announcement_audit_event == AnnouncementAuditEvent.ANNOUNCEMENT_CREATED
+    assert audit.announcement_summary_id is None
+    assert audit.application_package_id is None
+    assert audit.audit_metadata["changed_fields"] == {
+        "announcement_number": {
+            "before": None,
+            "after": announcement_request["announcement_number"],
+        },
+        "announcement_title": {
+            "before": None,
+            "after": announcement_request["announcement_title"],
+        },
+        "tagline": {"before": None, "after": announcement_request["tagline"]},
+        "purpose_statement": {
+            "before": None,
+            "after": announcement_request["purpose_statement"],
+        },
+        "category": {"before": None, "after": announcement_request["category"]},
+        "assistance_listing_number": {
+            "before": None,
+            "after": announcement_request["assistance_listing_number"],
+        },
+    }
