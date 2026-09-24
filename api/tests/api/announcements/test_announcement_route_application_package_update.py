@@ -1,6 +1,10 @@
 import uuid
 from datetime import datetime
 
+from sqlalchemy import select
+
+from src.constants.lookup_constants import AnnouncementAuditEvent, ApplicationPackageOpenToApplicant
+from src.db.models.announcement_models import AnnouncementAudit
 from tests.api.announcements.conftest import create_application_package_request
 from tests.db.models.factories import AnnouncementFactory, ApplicationPackageFactory
 
@@ -272,3 +276,111 @@ def test_application_package_update_no_api_key_401(client):
         f"/v1/announcements/{uuid.uuid4()}/application-packages/{uuid.uuid4()}", json=request
     )
     assert resp.status_code == 401
+
+
+def test_application_package_update_records_audit_single_field(client, db_session, api_key_headers):
+    package = ApplicationPackageFactory.create(
+        application_package_title="Proposal for Rural Health Access Expansion",
+        public_application_package_id="ABC-134-56789",
+        grace_period=5,
+        contact_info="Bob Smith - Program Office",
+        open_to_applicants=[
+            ApplicationPackageOpenToApplicant.INDIVIDUAL,
+            ApplicationPackageOpenToApplicant.ORGANIZATION,
+        ],
+    )
+    original_title = package.application_package_title
+
+    request = create_application_package_request(
+        application_package_title="Proposal for Rural Health Access Expansion (Revised)",
+        public_application_package_id=package.public_application_package_id,
+        grace_period=package.grace_period,
+        opening_timestamp=package.opening_timestamp,
+        closing_timestamp=package.closing_timestamp,
+        contact_info=package.contact_info,
+        open_to_applicants=list(package.open_to_applicants),
+    )
+
+    resp = client.put(
+        f"/v1/announcements/{package.announcement_id}/application-packages/{package.application_package_id}",
+        json=request,
+        headers=api_key_headers,
+    )
+    assert resp.status_code == 200
+
+    audit_rows = (
+        db_session.execute(
+            select(AnnouncementAudit).where(
+                AnnouncementAudit.announcement_id == package.announcement_id
+            )
+        )
+        .scalars()
+        .all()
+    )
+    assert len(audit_rows) == 1
+    audit = audit_rows[0]
+    assert audit.announcement_audit_event == AnnouncementAuditEvent.APPLICATION_PACKAGE_UPDATED
+    assert audit.application_package_id == package.application_package_id
+    assert audit.audit_metadata["changed_fields"] == {
+        "application_package_title": {
+            "before": original_title,
+            "after": "Proposal for Rural Health Access Expansion (Revised)",
+        },
+    }
+
+
+def test_application_package_update_records_audit_multiple_fields(
+    client, db_session, api_key_headers
+):
+    package = ApplicationPackageFactory.create(
+        application_package_title="Proposal for Rural Health Access Expansion",
+        public_application_package_id="ABC-134-56789",
+        grace_period=5,
+        contact_info="Bob Smith - Program Office",
+        open_to_applicants=[
+            ApplicationPackageOpenToApplicant.INDIVIDUAL,
+            ApplicationPackageOpenToApplicant.ORGANIZATION,
+        ],
+    )
+    original_title = package.application_package_title
+    original_grace_period = package.grace_period
+
+    request = create_application_package_request(
+        application_package_title="Proposal for Rural Health Access Expansion (Revised)",
+        public_application_package_id=package.public_application_package_id,
+        grace_period=original_grace_period + 10,
+        opening_timestamp=package.opening_timestamp,
+        closing_timestamp=package.closing_timestamp,
+        contact_info=package.contact_info,
+        open_to_applicants=list(package.open_to_applicants),
+    )
+
+    resp = client.put(
+        f"/v1/announcements/{package.announcement_id}/application-packages/{package.application_package_id}",
+        json=request,
+        headers=api_key_headers,
+    )
+    assert resp.status_code == 200
+
+    audit_rows = (
+        db_session.execute(
+            select(AnnouncementAudit).where(
+                AnnouncementAudit.announcement_id == package.announcement_id
+            )
+        )
+        .scalars()
+        .all()
+    )
+    assert len(audit_rows) == 1
+    audit = audit_rows[0]
+    assert audit.announcement_audit_event == AnnouncementAuditEvent.APPLICATION_PACKAGE_UPDATED
+    assert audit.audit_metadata["changed_fields"] == {
+        "application_package_title": {
+            "before": original_title,
+            "after": "Proposal for Rural Health Access Expansion (Revised)",
+        },
+        "grace_period": {
+            "before": original_grace_period,
+            "after": original_grace_period + 10,
+        },
+    }

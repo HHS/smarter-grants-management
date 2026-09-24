@@ -9,13 +9,28 @@ on:
       - infra/**
       - .github/workflows/**
   pull_request:
-    paths:
-      - bin/**
-      - infra/**
-      - .github/workflows/**
 
 jobs:
+  changes:
+    name: Check for infra changes
+    runs-on: ubuntu-22.04
+    outputs:
+      infra: ${{ steps.changed-infra-files.outputs.any_changed }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get changed infra files
+        id: changed-infra-files
+        uses: tj-actions/changed-files@v47.0.6
+        with:
+          files: |
+            bin/**
+            infra/**
+            .github/workflows/**
+
   lint-github-actions:
+    needs: changes
+    if: ${{ github.event_name != 'pull_request' || needs.changes.outputs.infra == 'true' }}
     # Lint github actions files using https://github.com/rhysd/actionlint
     # This job configuration is largely copied from https://github.com/rhysd/actionlint/blob/main/docs/usage.md#use-actionlint-on-github-actions
     name: Lint GitHub Actions workflows
@@ -31,6 +46,8 @@ jobs:
         shell: bash
 
   lint-scripts:
+    needs: changes
+    if: ${{ github.event_name != 'pull_request' || needs.changes.outputs.infra == 'true' }}
     name: Lint scripts
     runs-on: ubuntu-22.04
     steps:
@@ -39,6 +56,8 @@ jobs:
         run: make infra-lint-scripts
 
   check-terraform-format:
+    needs: changes
+    if: ${{ github.event_name != 'pull_request' || needs.changes.outputs.infra == 'true' }}
     name: Check Terraform format
     runs-on: ubuntu-22.04
     steps:
@@ -53,6 +72,8 @@ jobs:
           make infra-lint-terraform
 
   validate-terraform:
+    needs: changes
+    if: ${{ github.event_name != 'pull_request' || needs.changes.outputs.infra == 'true' }}
     name: Validate Terraform modules and root layers
     runs-on: ubuntu-22.04
     steps:
@@ -69,6 +90,8 @@ jobs:
         run: make infra-validate
 
   unit-test-terraform-modules:
+    needs: changes
+    if: ${{ github.event_name != 'pull_request' || needs.changes.outputs.infra == 'true' }}
     name: Unit test Terraform modules
     runs-on: ubuntu-22.04
     steps:
@@ -81,6 +104,8 @@ jobs:
         run: make infra-test-modules
 
   check-compliance-with-checkov:
+    needs: changes
+    if: ${{ github.event_name != 'pull_request' || needs.changes.outputs.infra == 'true' }}
     name: Check compliance with checkov
     runs-on: ubuntu-22.04
     steps:
@@ -100,6 +125,8 @@ jobs:
           quiet: true # only displays failed checks
 
   check-compliance-with-trivy:
+    needs: changes
+    if: ${{ github.event_name != 'pull_request' || needs.changes.outputs.infra == 'true' }}
     name: Check IaC compliance with Trivy
     runs-on: ubuntu-22.04
 
