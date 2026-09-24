@@ -24,11 +24,22 @@ type LoginModalContextValue = {
 
 const LoginModalContext = createContext<LoginModalContextValue | null>(null);
 
-export const useLoginModal = () => {
+export const useLoginModal = ({
+  helpText = "",
+  titleText = "",
+  descriptionText = "",
+  buttonText = "",
+  closeText = "",
+}) => {
   const ctx = useContext(LoginModalContext);
   if (ctx === null) {
     throw new Error("useLoginModal must be used within <LoginModalProvider>");
   }
+  ctx.setHelpText(helpText);
+  ctx.setTitleText(titleText);
+  ctx.setDescriptionText(descriptionText);
+  ctx.setButtonText(buttonText);
+  ctx.setCloseText(closeText);
   return ctx;
 };
 
