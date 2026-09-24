@@ -2,6 +2,7 @@ import uuid
 
 from tests.db.models.factories import (
     AnnouncementAssistanceListingFactory,
+    AnnouncementAttachmentFactory,
     AnnouncementFactory,
     AnnouncementSummaryFactory,
     ApplicationPackageFactory,
@@ -58,6 +59,7 @@ def test_announcement_get_with_package_and_forms(
         announcement=announcement,
         announcement_assistance_listing=announcement.announcement_assistance_listings[0],
     )
+    announcement_attachment = AnnouncementAttachmentFactory.create(announcement=announcement)
 
     response = client.get(
         f"/v1/announcements/{announcement.announcement_id}",
@@ -216,6 +218,33 @@ def test_announcement_get_with_package_and_forms(
         application_package_resp["announcement_assistance_listing"]["assistance_listing_number"]
         == application_package.announcement_assistance_listing.assistance_listing.assistance_listing_number
     )
+
+    assert len(data["announcement_attachments"]) == 1
+    announcement_attachment_resp = data["announcement_attachments"][0]
+    assert announcement_attachment_resp["announcement_attachment_id"] == str(
+        announcement_attachment.announcement_attachment_id
+    )
+    assert (
+        announcement_attachment_resp["file_name"]
+        == announcement_attachment.file_attachment.file_name
+    )
+    assert (
+        announcement_attachment_resp["file_description"]
+        == announcement_attachment.file_attachment.file_description
+    )
+    assert (
+        announcement_attachment_resp["mime_type"]
+        == announcement_attachment.file_attachment.mime_type
+    )
+    assert (
+        announcement_attachment_resp["file_size_bytes"]
+        == announcement_attachment.file_attachment.file_size_bytes
+    )
+    assert (
+        announcement_attachment_resp["created_at"]
+        == announcement_attachment.file_attachment.created_at.isoformat()
+    )
+    assert "download_path" not in announcement_attachment_resp
 
 
 def test_announcement_get_404(
