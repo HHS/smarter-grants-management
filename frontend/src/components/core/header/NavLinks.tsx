@@ -35,6 +35,9 @@ export type LoggedInNavConfig = {
 
 const homeRegexp = /^\/(?:e[ns])?$/;
 
+// temporarily using API keys directly for login rather than a centralized login service
+const useApiKeyLogin = true;
+
 /*
   nav links going to external sites need to:
   - not be preloaded
@@ -258,22 +261,41 @@ export const NavLinks = ({
     ));
     // add user account nav depending on login status
     if (!user?.token) {
-      items.push(
-        <a
-          href={LOGIN_URL}
-          key="sign-in"
-          className={clsx({
-            "usa-nav__link": true,
-            "text-normal": true,
-          })}
-          onClick={() => {
-            storeCurrentPage(location.pathname, location.search);
-            closeDropdownAndMobileNav();
-          }}
-        >
-          {t("login")}
-        </a>,
-      );
+      if (useApiKeyLogin) {
+        items.push(
+          <a
+            href={LOGIN_URL}
+            key="sign-in"
+            className={clsx({
+              "usa-nav__link": true,
+              "text-normal": true,
+            })}
+            onClick={() => {
+              storeCurrentPage(location.pathname, location.search);
+              closeDropdownAndMobileNav();
+            }}
+          >
+            {t("login")}
+          </a>,
+        );
+      } else {
+        items.push(
+          <a
+            href={LOGIN_URL}
+            key="sign-in"
+            className={clsx({
+              "usa-nav__link": true,
+              "text-normal": true,
+            })}
+            onClick={() => {
+              storeCurrentPage(location.pathname, location.search);
+              closeDropdownAndMobileNav();
+            }}
+          >
+            {t("login")}
+          </a>,
+        );
+      }
     } else if (loggedInNavConfig) {
       const accountIndex = navLinkList.length;
       items.push(
