@@ -80,9 +80,6 @@ const isACdnTestRequest = (request: NextRequest): boolean => {
 
 export default function proxy(request: NextRequest): NextResponse {
   const cacheControl: string[] = [];
-
-  console.log("2!!", request.cookies.getAll());
-
   // only allow for cdn testing/troubleshooting in lower envs
 
   if (isACdnTestRequest(request)) {

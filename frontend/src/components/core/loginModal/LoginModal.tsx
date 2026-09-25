@@ -14,7 +14,7 @@ import {
 } from "@trussworks/react-uswds";
 
 import { SimplerModal } from "src/components/core/SimplerModal";
-import { apiKeyLoginAction } from "./action";
+import { apiKeyLoginAction } from "./actions";
 
 export const LoginModal = ({
   modalRef,
@@ -51,9 +51,6 @@ export const LoginModal = ({
   );
 };
 
-const toggleModal = (modalRef: RefObject<ModalRef>) =>
-  modalRef.current.toggleModal();
-
 const LoginModalBody = ({
   buttonText,
   closeText,
@@ -71,10 +68,7 @@ const LoginModalBody = ({
   if (formState.token) {
     redirect(`/api/auth/callback?token=${formState.token}`);
   }
-  // // may need to check logged in state here to make sure we can open up the modal after login/logout
-  // if (formState.success && modalRef) {
-  //   toggleModal(modalRef as RefObject<ModalRef>);
-  // }
+
   return (
     <>
       <p>{helpText}</p>
