@@ -24,33 +24,49 @@ type LoginModalContextValue = {
 
 const LoginModalContext = createContext<LoginModalContextValue | null>(null);
 
-export const useLoginModal = ({
+// export const useLoginModal = ({
+//   helpText = "",
+//   titleText = "",
+//   descriptionText = "",
+//   buttonText = "",
+//   closeText = "",
+// }) => {
+export const useLoginModal = () => {
+  const ctx = useContext(LoginModalContext);
+  if (ctx === null) {
+    throw new Error("useLoginModal must be used within <LoginModalProvider>");
+  }
+  // ctx.setHelpText(helpText);
+  // ctx.setTitleText(titleText);
+  // ctx.setDescriptionText(descriptionText);
+  // ctx.setButtonText(buttonText);
+  // ctx.setCloseText(closeText);
+  return ctx;
+};
+
+interface LoginProviderProps extends PropsWithChildren {
+  helpText?: string;
+  titleText?: string;
+  descriptionText?: string;
+  buttonText?: string;
+  closeText?: string;
+}
+export function LoginModalProvider({
+  children,
   helpText = "",
   titleText = "",
   descriptionText = "",
   buttonText = "",
   closeText = "",
-}) => {
-  const ctx = useContext(LoginModalContext);
-  if (ctx === null) {
-    throw new Error("useLoginModal must be used within <LoginModalProvider>");
-  }
-  ctx.setHelpText(helpText);
-  ctx.setTitleText(titleText);
-  ctx.setDescriptionText(descriptionText);
-  ctx.setButtonText(buttonText);
-  ctx.setCloseText(closeText);
-  return ctx;
-};
-
-export function LoginModalProvider({ children }: PropsWithChildren) {
+}: LoginProviderProps) {
   const loginModalRef = useRef<ModalRef | null>(null);
 
-  const [helpText, setHelpText] = useState<string>("");
-  const [titleText, setTitleText] = useState<string>("");
-  const [descriptionText, setDescriptionText] = useState<string>("");
-  const [buttonText, setButtonText] = useState<string>("");
-  const [closeText, setCloseText] = useState<string>("");
+  const [dynamicHelpText, setHelpText] = useState<string>(helpText);
+  const [dynamicTitleText, setTitleText] = useState<string>(titleText);
+  const [dynamicDescriptionText, setDescriptionText] =
+    useState<string>(descriptionText);
+  const [dynamicButtonText, setButtonText] = useState<string>(buttonText);
+  const [dynamicCloseText, setCloseText] = useState<string>(closeText);
 
   const contextValue = useMemo(
     () => ({
@@ -75,11 +91,11 @@ export function LoginModalProvider({ children }: PropsWithChildren) {
     <>
       <LoginModal
         modalRef={loginModalRef as RefObject<ModalRef>}
-        helpText={helpText}
-        titleText={titleText}
-        descriptionText={descriptionText}
-        buttonText={buttonText}
-        closeText={closeText}
+        helpText={dynamicHelpText}
+        titleText={dynamicTitleText}
+        descriptionText={dynamicDescriptionText}
+        buttonText={dynamicButtonText}
+        closeText={dynamicCloseText}
         modalId={"simpler-login-modal"}
       />
       <LoginModalContext.Provider value={contextValue}>

@@ -2,6 +2,7 @@ import "server-only";
 
 import { ApiRequestError } from "src/errors";
 import {
+  apiKeyLoginEndpoint,
   EndpointConfig,
   fetchAwardRecommendationEndpoint,
   fetchCompetitionEndpoint,
@@ -158,3 +159,5 @@ export const fetchFileUploadWithMethod = (type: "POST" | "GET") =>
   requesterForEndpoint(toDynamicFilesEndpoint(type));
 
 export const fetchWorkflow = cache(requesterForEndpoint(fetchWorkflowEndpoint));
+
+export const fetchApiKeyLogin = requesterForEndpoint(apiKeyLoginEndpoint);

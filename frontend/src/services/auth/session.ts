@@ -77,7 +77,7 @@ export const getSession = async (): Promise<UserSession | null> => {
     initializeSessionSecrets();
   }
   const cookie = await cookies();
-  const clientSessionToken = cookie.get("session")?.value;
+  const clientSessionToken = cookie.get("sgm-session")?.value;
   if (!clientSessionToken) return null;
   const payload = await decryptClientToken(clientSessionToken);
   if (!payload) {

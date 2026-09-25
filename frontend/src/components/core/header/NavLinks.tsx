@@ -186,12 +186,7 @@ export const NavLinks = ({
 
   const path = usePathname();
   const { user } = useUser();
-  const { loginModalRef } = useLoginModal({
-    helpText: "Enter an API key to login to Simpler Grants Management",
-    titleText: "Login With API Key",
-    buttonText: "Login",
-    closeText: "Cancel",
-  });
+  const { loginModalRef } = useLoginModal();
 
   const closeMobileNav = useCallback(() => {
     if (mobileExpanded) {
