@@ -8,7 +8,6 @@ from src.services.announcements.authorization import has_access
 from src.services.announcements.get_announcement_attachment import (
     get_announcement_attachment_and_verify_access,
 )
-from src.util import file_util
 
 logger = logging.getLogger(__name__)
 
@@ -27,12 +26,10 @@ def delete_announcement_attachment(
     if not has_access(user, announcement_attachment.announcement, "update"):
         raise_flask_error(403, "User does not have access to update this announcement attachment")
 
-    db_session.delete(announcement_attachment)
-    db_session.delete(announcement_attachment.file_attachment)
-    file_util.delete_file(announcement_attachment.file_attachment.file_location)
+    announcement_attachment.is_deleted = True
 
     logger.info(
-        "Deleted announcement attachment",
+        "Soft-deleted announcement attachment",
         extra={
             "announcement_id": announcement_id,
             "announcement_attachment_id": announcement_attachment_id,

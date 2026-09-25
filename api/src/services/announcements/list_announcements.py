@@ -21,7 +21,11 @@ def list_announcements(
 ) -> tuple[Sequence[Announcement], PaginationInfo]:
     params = AnnouncementListRequest.model_validate(json_data)
 
-    stmt = select(Announcement).options(*announcement_response_options())
+    stmt = (
+        select(Announcement)
+        .options(*announcement_response_options())
+        .where(Announcement.is_deleted.is_(False))
+    )
 
     stmt = apply_sorting(stmt, params.pagination.sort_order, Announcement)
 
