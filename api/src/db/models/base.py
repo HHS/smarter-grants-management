@@ -56,12 +56,12 @@ class Base(DeclarativeBase):
     def get_table_name(cls) -> str:
         return cls.__tablename__
 
-    def _dict(self) -> dict:
+    def as_dict(self) -> dict:
         return {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
 
     def for_json(self) -> dict:
         json_valid_dict = {}
-        dictionary = self._dict()
+        dictionary = self.as_dict()
         for key, value in dictionary.items():
             if isinstance(value, UUID) or isinstance(value, Decimal):
                 json_valid_dict[key] = str(value)
@@ -84,7 +84,7 @@ class Base(DeclarativeBase):
 
         See https://rich.readthedocs.io/en/latest/pretty.html#rich-repr-protocol
         """
-        return self._dict().items()
+        return self.as_dict().items()
 
     def get_primary_key_value(self) -> tuple:
         """Get the primary key value for the model as a tuple."""

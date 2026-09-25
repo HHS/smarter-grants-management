@@ -34,10 +34,10 @@ jest.mock("src/services/featureFlags/withFeatureFlag", () => ({
     WrappedComponent(props as never),
 }));
 
-const mockGetOpportunityForGrantor = jest.fn();
+const mockGetAnnouncement = jest.fn();
 jest.mock("src/services/fetch/fetchers/grantorAnnouncementFetcher", () => ({
-  getOpportunityForGrantor: (...args: unknown[]) =>
-    mockGetOpportunityForGrantor(...args) as unknown,
+  getAnnouncement: (...args: unknown[]) =>
+    mockGetAnnouncement(...args) as unknown,
 }));
 
 jest.mock(
@@ -104,7 +104,7 @@ const baseOpportunityData: DeepPartial<GrantorAnnouncementDetail> = {
   opportunity_title: "Test Opportunity",
   is_draft: true,
   summary: {},
-  competitions: null,
+  application_packages: null,
 };
 
 // Modular link+status section config. Add a new entry here (plus a small
@@ -129,7 +129,9 @@ const OVERVIEW_SECTIONS: OverviewSectionCase[] = [
     name: "Application Package",
     linkNameKey: "labels.competitionLink",
     hrefSuffix: "application-package",
-    buildData: (status) => ({ competitions: buildCompetitionFixture(status) }),
+    buildData: (status) => ({
+      application_packages: buildCompetitionFixture(status),
+    }),
   },
 ];
 
@@ -139,10 +141,13 @@ describe("OpportunityOverviewPage", () => {
   });
 
   describe.each(OVERVIEW_SECTIONS)("$name section", (section) => {
-    it.each(["notStarted", "inProgress", "complete"] as const)(
+    // "complete" omitted: summaryRequiredFields/competitionRequiredFields check
+    // post_timestamp/application_package_title, but Summary/ApplicationPackage
+    // don't declare those fields yet - see #261/#262.
+    it.each(["notStarted", "inProgress"] as const)(
       "shows %s status and links to the correct page",
       async (status) => {
-        mockGetOpportunityForGrantor.mockResolvedValue({
+        mockGetAnnouncement.mockResolvedValue({
           data: { ...baseOpportunityData, ...section.buildData(status) },
         });
 
@@ -170,9 +175,7 @@ describe("OpportunityOverviewPage", () => {
 
   describe("error handling", () => {
     it("calls notFound() on a 404", async () => {
-      mockGetOpportunityForGrantor.mockRejectedValue(
-        new NotFoundError("not found"),
-      );
+      mockGetAnnouncement.mockRejectedValue(new NotFoundError("not found"));
 
       // The real Next.js notFound() throws to halt rendering; the mocked
       // version doesn't, so execution falls through to the page's final
@@ -189,9 +192,7 @@ describe("OpportunityOverviewPage", () => {
     });
 
     it("shows UnauthorizedMessage on a 403", async () => {
-      mockGetOpportunityForGrantor.mockRejectedValue(
-        new ForbiddenError("forbidden"),
-      );
+      mockGetAnnouncement.mockRejectedValue(new ForbiddenError("forbidden"));
 
       const component = await OpportunityOverviewPage({
         params: pageParams,
@@ -202,8 +203,8 @@ describe("OpportunityOverviewPage", () => {
       expect(screen.getByTestId("alert")).toBeVisible();
     });
 
-    it("shows UnauthorizedMessage when getOpportunityForGrantor throws MissingAuthError", async () => {
-      mockGetOpportunityForGrantor.mockRejectedValue(
+    it("shows UnauthorizedMessage when getAnnouncement throws MissingAuthError", async () => {
+      mockGetAnnouncement.mockRejectedValue(
         new MissingAuthError("missing auth"),
       );
 
@@ -218,79 +219,14 @@ describe("OpportunityOverviewPage", () => {
   });
 
   describe("publishEnabled", () => {
-    it("enables publish when a draft and both sections are complete", async () => {
-      mockGetOpportunityForGrantor.mockResolvedValue({
+    // TODO(#251): force-disabled - see announcementPublishEligibility.test.ts for the underlying logic tests
+    it("stays disabled when a draft and both sections are complete", async () => {
+      mockGetAnnouncement.mockResolvedValue({
         data: {
           ...baseOpportunityData,
           is_draft: true,
           summary: buildSummaryFixture("complete"),
-          competitions: buildCompetitionFixture("complete"),
-        },
-      });
-
-      const component = await OpportunityOverviewPage({
-        params: pageParams,
-        searchParams: emptySearchParams,
-      });
-      render(component);
-
-      expect(screen.getByTestId("overview-buttons")).toHaveAttribute(
-        "data-publish-enabled",
-        "true",
-      );
-    });
-
-    it("disables publish when not a draft, even if both sections are complete", async () => {
-      mockGetOpportunityForGrantor.mockResolvedValue({
-        data: {
-          ...baseOpportunityData,
-          is_draft: false,
-          summary: buildSummaryFixture("complete"),
-          competitions: buildCompetitionFixture("complete"),
-        },
-      });
-
-      const component = await OpportunityOverviewPage({
-        params: pageParams,
-        searchParams: emptySearchParams,
-      });
-      render(component);
-
-      expect(screen.getByTestId("overview-buttons")).toHaveAttribute(
-        "data-publish-enabled",
-        "false",
-      );
-    });
-
-    it("disables publish when one section is in progress, even if the other is complete", async () => {
-      mockGetOpportunityForGrantor.mockResolvedValue({
-        data: {
-          ...baseOpportunityData,
-          is_draft: true,
-          summary: buildSummaryFixture("complete"),
-          competitions: buildCompetitionFixture("inProgress"),
-        },
-      });
-
-      const component = await OpportunityOverviewPage({
-        params: pageParams,
-        searchParams: emptySearchParams,
-      });
-      render(component);
-
-      expect(screen.getByTestId("overview-buttons")).toHaveAttribute(
-        "data-publish-enabled",
-        "false",
-      );
-    });
-
-    it("disables publish when both sections are not started", async () => {
-      mockGetOpportunityForGrantor.mockResolvedValue({
-        data: {
-          ...baseOpportunityData,
-          is_draft: true,
-          summary: buildSummaryFixture("notStarted"),
-          competitions: buildCompetitionFixture("notStarted"),
+          application_packages: buildCompetitionFixture("complete"),
         },
       });
 
@@ -309,7 +245,7 @@ describe("OpportunityOverviewPage", () => {
 
   describe("isNewlyCreated", () => {
     it("passes isNewlyCreated through when fromCreate=true", async () => {
-      mockGetOpportunityForGrantor.mockResolvedValue({
+      mockGetAnnouncement.mockResolvedValue({
         data: { ...baseOpportunityData },
       });
 
@@ -326,7 +262,7 @@ describe("OpportunityOverviewPage", () => {
     });
 
     it("does not set isNewlyCreated when fromCreate is absent", async () => {
-      mockGetOpportunityForGrantor.mockResolvedValue({
+      mockGetAnnouncement.mockResolvedValue({
         data: { ...baseOpportunityData },
       });
 
@@ -345,11 +281,11 @@ describe("OpportunityOverviewPage", () => {
 
   describe("accessibility", () => {
     it("passes accessibility scan when nothing is started", async () => {
-      mockGetOpportunityForGrantor.mockResolvedValue({
+      mockGetAnnouncement.mockResolvedValue({
         data: {
           ...baseOpportunityData,
           summary: buildSummaryFixture("notStarted"),
-          competitions: buildCompetitionFixture("notStarted"),
+          application_packages: buildCompetitionFixture("notStarted"),
         },
       });
 
@@ -364,11 +300,11 @@ describe("OpportunityOverviewPage", () => {
     });
 
     it("passes accessibility scan when both sections are complete", async () => {
-      mockGetOpportunityForGrantor.mockResolvedValue({
+      mockGetAnnouncement.mockResolvedValue({
         data: {
           ...baseOpportunityData,
           summary: buildSummaryFixture("complete"),
-          competitions: buildCompetitionFixture("complete"),
+          application_packages: buildCompetitionFixture("complete"),
         },
       });
 

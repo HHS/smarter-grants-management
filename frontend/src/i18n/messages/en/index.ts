@@ -279,22 +279,22 @@ export const messages = {
     signOff: "Thank you for your patience.",
     pageTitle: "Simpler.Grants.gov - Maintenance",
   },
-  Opportunities: {
-    createOpportunityButton: "Create Opportunity",
-    numOpportunities:
-      "{num, plural, =1 {1 opportunity} other {# opportunities}}",
+  Announcements: {
+    createAnnouncementButton: "Create Announcement",
+    numAnnouncements:
+      "{num, plural, =1 {1 announcement} other {# announcements}}",
     errorMessage:
-      "We have encountered an error loading your opportunities, please try again later.",
-    metaDescription: "View draft and published funding opportunities",
-    noOpportunitiesMessage: {
-      primary: "You have not started any opportunities yet.",
+      "We have encountered an error loading your announcements, please try again later.",
+    metaDescription: "View draft and published funding announcements",
+    noAnnouncementsMessage: {
+      primary: "You have not started any announcements yet.",
       secondary:
-        "Opportunities you start or work on will be saved here.  Return anytime to view, continue, or manage them.",
+        "Announcements you start or work on will be saved here.  Return anytime to view, continue, or manage them.",
     },
-    showingOpportunitiesFor: "Showing opportunities for {agencyName}",
+    showingAnnouncementsFor: "Showing announcements for {agencyName}",
     agencySelector: "Select agency",
     agencyNotAuthorized:
-      "You do not have access to this agency's opportunities.",
+      "You do not have access to this agency's announcements.",
     noAgencies: "You are not associated with any agencies.",
     pageHeading: "Announcements",
     pageTitle: "Announcements List",
@@ -925,7 +925,7 @@ export const messages = {
       "Hard refresh your page when done changing Flags for the changes to fully apply.",
   },
   AnnouncementDetailsHeader: {
-    opportunityNumber: "Opportunity #: {number}",
+    opportunityNumber: "Announcement #: {number}",
     title: "Title:",
     agency: "Agency:",
     subAgency: "Sub-agency:",
@@ -933,9 +933,9 @@ export const messages = {
     lastUpdated: "Last updated:",
     backToOverview: "Back to overview page",
     alerts: {
-      newOpportunityHeading: "Opportunity draft started",
+      newOpportunityHeading: "Announcement draft started",
       newOpportunityBody:
-        "Your initial information has been saved. Complete the sections below to finish your opportunity details",
+        "Your initial information has been saved. Complete the sections below to finish your announcement details",
     },
   },
   AwardRecommendationSelectFundingOpportunity: {

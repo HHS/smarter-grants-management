@@ -3,11 +3,12 @@ import {
   MissingAuthError,
   parseErrorStatus,
 } from "src/errors";
-import { getOpportunityForGrantor } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
+import { getAnnouncement } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 import {
   GrantorAnnouncementDetail,
   Summary,
 } from "src/types/announcement/announcementResponseTypes";
+import { computeAnnouncementPublishEligibility } from "src/utils/announcement/announcementPublishEligibility";
 
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -18,7 +19,6 @@ import { AnnouncementDetailsHeader } from "src/components/grantor-announcements/
 import {
   getProgress,
   ProgressChecker,
-  progressType,
 } from "src/components/grantor-announcements/ProgressChecker";
 import { OverviewButtons } from "./_components/OverviewButtons";
 import {
@@ -44,7 +44,7 @@ export default async function OpportunityOverviewPage({
   });
   let opportunityData: GrantorAnnouncementDetail;
   try {
-    const response = await getOpportunityForGrantor(id);
+    const response = await getAnnouncement(id);
     opportunityData = response.data;
   } catch (error) {
     if (error instanceof MissingAuthError) {
@@ -66,20 +66,26 @@ export default async function OpportunityOverviewPage({
     opportunityData.non_forecast_summary ??
     opportunityData.forecast_summary;
   let competition = {};
-  if (opportunityData.competitions && opportunityData.competitions.length > 0) {
-    // For now, use the first competition
-    competition = opportunityData.competitions[0];
+  if (
+    opportunityData.application_packages &&
+    opportunityData.application_packages.length > 0
+  ) {
+    // For now, use the first application package
+    competition = opportunityData.application_packages[0];
   }
 
   const summaryStatus = getProgress(summaryRequiredFields, summary);
   const competitionStatus = getProgress(competitionRequiredFields, competition);
 
+  // TODO(#251): re-enable once the backend implements POST /v1/announcements/{id}/publish
+  const isPublishSupportedByBackend: boolean = false;
   const publishEnabled =
-    opportunityData.is_draft &&
-    (summaryStatus === progressType.complete ||
-      competitionStatus === progressType.complete) &&
-    summaryStatus !== progressType.inProgress &&
-    competitionStatus !== progressType.inProgress;
+    isPublishSupportedByBackend &&
+    computeAnnouncementPublishEligibility(
+      opportunityData.is_draft,
+      summaryStatus,
+      competitionStatus,
+    );
 
   return (
     <div className="bg-white">

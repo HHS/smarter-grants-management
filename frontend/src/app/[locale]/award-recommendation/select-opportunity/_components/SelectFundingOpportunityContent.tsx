@@ -1,7 +1,7 @@
 "use client";
 
 import { createAwardRecommendationAction } from "src/app/[locale]/award-recommendation/select-opportunity/actions";
-import { BaseAnnouncement } from "src/types/announcement/announcementResponseTypes";
+import { AnnouncementListItem } from "src/types/announcement/announcementResponseTypes";
 
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -15,15 +15,15 @@ import {
 } from "src/components/core/TableWithResponsiveHeader";
 
 type SelectFundingOpportunityContentProps = {
-  fundingOpportunities: BaseAnnouncement[];
+  announcements: AnnouncementListItem[];
 };
 
 export const SelectFundingOpportunityContent = ({
-  fundingOpportunities,
+  announcements,
 }: SelectFundingOpportunityContentProps) => {
   const t = useTranslations("AwardRecommendationSelectFundingOpportunity");
   const router = useRouter();
-  const [creatingOpportunityId, setCreatingOpportunityId] = useState<
+  const [creatingAnnouncementId, setCreatingAnnouncementId] = useState<
     string | null
   >(null);
 
@@ -31,18 +31,16 @@ export const SelectFundingOpportunityContent = ({
     router.push("/");
   };
 
-  const handleCreateAwardRecommendation = async (
-    fundingOpportunityId: string,
-  ) => {
-    setCreatingOpportunityId(fundingOpportunityId);
+  const handleCreateAwardRecommendation = async (announcementId: string) => {
+    setCreatingAnnouncementId(announcementId);
 
     try {
       const { awardRecommendationId } =
-        await createAwardRecommendationAction(fundingOpportunityId);
+        await createAwardRecommendationAction(announcementId);
 
       router.push(`/award-recommendation/${awardRecommendationId}/edit`);
     } finally {
-      setCreatingOpportunityId(null);
+      setCreatingAnnouncementId(null);
     }
   };
 
@@ -53,43 +51,40 @@ export const SelectFundingOpportunityContent = ({
     { cellData: t("columns.action") },
   ];
 
-  const tableRowData: TableCellData[][] = fundingOpportunities.map(
-    (fundingOpportunity) => {
-      const isCreating =
-        creatingOpportunityId === fundingOpportunity.opportunity_id;
+  const tableRowData: TableCellData[][] = announcements.map((announcement) => {
+    const isCreating = creatingAnnouncementId === announcement.announcement_id;
 
-      return [
-        {
-          cellData: (
-            <Link
-              href={`/announcement/${fundingOpportunity.opportunity_id}`}
-              className="usa-link"
-            >
-              {fundingOpportunity.opportunity_number}
-            </Link>
-          ),
-        },
-        { cellData: fundingOpportunity.opportunity_title },
-        { cellData: fundingOpportunity.submitted_application_count ?? 0 },
-        {
-          cellData: (
-            <Button
-              type="button"
-              className="usa-button--outline margin-y-0"
-              disabled={isCreating}
-              onClick={() => {
-                void handleCreateAwardRecommendation(
-                  fundingOpportunity.opportunity_id,
-                );
-              }}
-            >
-              {t("startButtonText")} <span aria-hidden="true">→</span>
-            </Button>
-          ),
-        },
-      ];
-    },
-  );
+    return [
+      {
+        cellData: (
+          <Link
+            href={`/announcement/${announcement.announcement_id}`}
+            className="usa-link"
+          >
+            {announcement.announcement_number}
+          </Link>
+        ),
+      },
+      { cellData: announcement.announcement_title },
+      { cellData: 0 },
+      {
+        cellData: (
+          <Button
+            type="button"
+            className="usa-button--outline margin-y-0"
+            disabled={isCreating}
+            onClick={() => {
+              void handleCreateAwardRecommendation(
+                announcement.announcement_id,
+              );
+            }}
+          >
+            {t("startButtonText")} <span aria-hidden="true">→</span>
+          </Button>
+        ),
+      },
+    ];
+  });
 
   return (
     <>

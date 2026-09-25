@@ -2,7 +2,7 @@ import uuid
 from datetime import date, datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import UUID, BigInteger, ForeignKey, UniqueConstraint
+from sqlalchemy import UUID, BigInteger, ForeignKey, Index, UniqueConstraint, and_
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -51,6 +51,8 @@ class Announcement(GrantorSchemaTable, TimestampMixin, AbstractResourceTableMixi
     announcement_number: Mapped[str]
     announcement_title: Mapped[str]
 
+    is_deleted: Mapped[bool] = mapped_column(index=True, default=False, server_default="false")
+
     tagline: Mapped[str | None]
     purpose_statement: Mapped[str | None]
 
@@ -66,17 +68,33 @@ class Announcement(GrantorSchemaTable, TimestampMixin, AbstractResourceTableMixi
         back_populates="announcement", uselist=True, cascade="all, delete-orphan"
     )
     announcement_summaries: Mapped[list[AnnouncementSummary]] = relationship(
-        back_populates="announcement", uselist=True, cascade="all, delete-orphan"
+        back_populates="announcement",
+        uselist=True,
+        cascade="all, delete-orphan",
+        primaryjoin=lambda: and_(
+            Announcement.announcement_id == AnnouncementSummary.announcement_id,
+            AnnouncementSummary.is_deleted.is_(False),
+        ),
     )
     application_packages: Mapped[list[ApplicationPackage]] = relationship(
         "ApplicationPackage",
         back_populates="announcement",
         uselist=True,
         cascade="all, delete-orphan",
+        # Because we only import ApplicationPackage for type checking
+        # to avoid a circular dependency, we have to define the join
+        # as a string that it evaluates rather than use the types directly.
+        primaryjoin="and_(Announcement.announcement_id == ApplicationPackage.announcement_id, ApplicationPackage.is_deleted.is_(False))",
     )
 
     announcement_attachments: Mapped[list[AnnouncementAttachment]] = relationship(
-        back_populates="announcement", uselist=True, cascade="all, delete-orphan"
+        back_populates="announcement",
+        uselist=True,
+        cascade="all, delete-orphan",
+        primaryjoin=lambda: and_(
+            Announcement.announcement_id == AnnouncementAttachment.announcement_id,
+            AnnouncementAttachment.is_deleted.is_(False),
+        ),
     )
 
     announcement_audits: Mapped[list[AnnouncementAudit]] = relationship(
@@ -138,7 +156,13 @@ class AnnouncementSummary(GrantorSchemaTable, TimestampMixin):
     __tablename__ = "announcement_summary"
 
     __table_args__ = (
-        UniqueConstraint("is_forecast", "announcement_id"),
+        Index(
+            "announcement_summary_is_forecast_idx",
+            "is_forecast",
+            "announcement_id",
+            unique=True,
+            postgresql_where="is_deleted = false",
+        ),
         GrantorSchemaTable.__table_args__,
     )
 
@@ -152,6 +176,8 @@ class AnnouncementSummary(GrantorSchemaTable, TimestampMixin):
     announcement: Mapped[Announcement] = relationship(
         Announcement, back_populates="announcement_summaries"
     )
+
+    is_deleted: Mapped[bool] = mapped_column(index=True, default=False, server_default="false")
 
     summary_description: Mapped[str]
 
@@ -305,6 +331,8 @@ class AnnouncementAttachment(GrantorSchemaTable, TimestampMixin):
         UUID, ForeignKey(FileAttachment.file_attachment_id), index=True
     )
     file_attachment: Mapped[FileAttachment] = relationship(FileAttachment)
+
+    is_deleted: Mapped[bool] = mapped_column(index=True, default=False, server_default="false")
 
 
 class AnnouncementAudit(GrantorSchemaTable, TimestampMixin):

@@ -53,14 +53,14 @@ jest.mock(
   }),
 );
 
-const mockGetOpportunityForGrantor = jest.fn();
+const mockGetAnnouncement = jest.fn();
 const mockCreateCompetitionForGrantor = jest.fn();
 const mockAllForms = jest.fn();
 const mockApplicationPackageForms = jest.fn();
 
 jest.mock("src/services/fetch/fetchers/grantorAnnouncementFetcher", () => ({
-  getOpportunityForGrantor: (...args: unknown[]) =>
-    mockGetOpportunityForGrantor(...args) as unknown,
+  getAnnouncement: (...args: unknown[]) =>
+    mockGetAnnouncement(...args) as unknown,
 }));
 
 jest.mock("src/services/fetch/fetchers/allFormsFetcher", () => ({
@@ -70,7 +70,7 @@ jest.mock("src/services/fetch/fetchers/allFormsFetcher", () => ({
 const baseOpportunityData: DeepPartial<GrantorAnnouncementDetail> = {
   opportunity_id: "opp-abc-123",
   opportunity_title: "Test Opportunity",
-  competitions: null,
+  application_packages: null,
 };
 
 describe("OpportunityCompetitionPage", () => {
@@ -80,8 +80,8 @@ describe("OpportunityCompetitionPage", () => {
 
   describe("when opportunity has no existing competition", () => {
     beforeEach(() => {
-      mockGetOpportunityForGrantor.mockResolvedValue({
-        data: { ...baseOpportunityData, competitions: null },
+      mockGetAnnouncement.mockResolvedValue({
+        data: { ...baseOpportunityData, application_packages: null },
       });
       mockCreateCompetitionForGrantor.mockResolvedValue({
         data: { competition_id: "new-competition-id" },
@@ -130,10 +130,10 @@ describe("OpportunityCompetitionPage", () => {
 
   describe("when opportunity already has a competition", () => {
     beforeEach(() => {
-      mockGetOpportunityForGrantor.mockResolvedValue({
+      mockGetAnnouncement.mockResolvedValue({
         data: {
           ...baseOpportunityData,
-          competitions: [{ competition_id: "existing-competition-id" }],
+          application_packages: [{ competition_id: "existing-competition-id" }],
         },
       });
     });
@@ -162,8 +162,8 @@ describe("OpportunityCompetitionPage", () => {
   });
 
   describe("MissingAuthError handling", () => {
-    it("returns UnauthorizedMessage when getOpportunityForGrantor throws MissingAuthError", async () => {
-      mockGetOpportunityForGrantor.mockRejectedValue(
+    it("returns UnauthorizedMessage when getAnnouncement throws MissingAuthError", async () => {
+      mockGetAnnouncement.mockRejectedValue(
         new MissingAuthError("Missing auth"),
       );
       const component = await OpportunityCompetitionPage({
