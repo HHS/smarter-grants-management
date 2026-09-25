@@ -22,7 +22,7 @@ import {
 } from "src/components/grantor-announcements/ProgressChecker";
 import { OverviewButtons } from "./_components/OverviewButtons";
 import {
-  competitionRequiredFields,
+  applicationPackageRequiredFields,
   summaryRequiredFields,
 } from "./RequiredFields";
 
@@ -60,22 +60,25 @@ export default async function OpportunityOverviewPage({
     throw error;
   }
   const editUrl = "../" + id + "/edit";
-  const competitionUrl = "../" + id + "/application-package";
+  const applicationPackageUrl = "../" + id + "/application-package";
   const summary: Summary =
     opportunityData.summary ??
     opportunityData.non_forecast_summary ??
     opportunityData.forecast_summary;
-  let competition = {};
+  let applicationPackage = {};
   if (
     opportunityData.application_packages &&
     opportunityData.application_packages.length > 0
   ) {
     // For now, use the first application package
-    competition = opportunityData.application_packages[0];
+    applicationPackage = opportunityData.application_packages[0];
   }
 
   const summaryStatus = getProgress(summaryRequiredFields, summary);
-  const competitionStatus = getProgress(competitionRequiredFields, competition);
+  const applicationPackageStatus = getProgress(
+    applicationPackageRequiredFields,
+    applicationPackage,
+  );
 
   // TODO(#251): re-enable once the backend implements POST /v1/announcements/{id}/publish
   const isPublishSupportedByBackend: boolean = false;
@@ -84,7 +87,7 @@ export default async function OpportunityOverviewPage({
     computeAnnouncementPublishEligibility(
       opportunityData.is_draft,
       summaryStatus,
-      competitionStatus,
+      applicationPackageStatus,
     );
 
   return (
@@ -117,12 +120,14 @@ export default async function OpportunityOverviewPage({
           data-testid="overview-row-application-package"
         >
           <div className="tablet:grid-col">
-            <Link href={competitionUrl}>{t("labels.competitionLink")}</Link>
+            <Link href={applicationPackageUrl}>
+              {t("labels.applicationPackageLink")}
+            </Link>
           </div>
           <div className="tablet:grid-col">
             <ProgressChecker
-              requiredFields={competitionRequiredFields}
-              dataToCheck={competition}
+              requiredFields={applicationPackageRequiredFields}
+              dataToCheck={applicationPackage}
             />{" "}
           </div>
         </div>

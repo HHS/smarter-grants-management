@@ -1,17 +1,18 @@
 import { readError } from "src/errors";
-import { getCompetitionDetails } from "src/services/fetch/fetchers/competitionsFetcher";
+import { getApplicationPackageDetails } from "src/services/fetch/fetchers/applicationPackagesFetcher";
 
 import { NextRequest } from "next/server";
 
-export const getCompetition = async (
+export const getApplicationPackage = async (
   _request: NextRequest,
   { params }: { params: Promise<{ applicationPackageId: string }> },
 ): Promise<Response> => {
   const { applicationPackageId } = await params;
 
   try {
-    const competition = await getCompetitionDetails(applicationPackageId);
-    return new Response(JSON.stringify(competition), {
+    const applicationPackage =
+      await getApplicationPackageDetails(applicationPackageId);
+    return new Response(JSON.stringify(applicationPackage), {
       status: 200,
       headers: {
         "Content-Type": "application/json",

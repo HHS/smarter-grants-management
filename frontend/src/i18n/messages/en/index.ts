@@ -774,7 +774,7 @@ export const messages = {
     metaDescription: "Opportunity publishing progress overview",
     labels: {
       editOpportunityLink: "Opportunity Summary",
-      competitionLink: "Application Package",
+      applicationPackageLink: "Application Package",
       previewButton: "Preview",
       publishButton: "Publish",
     },
@@ -849,11 +849,12 @@ export const messages = {
       header: "Submission set-up",
       subHeader:
         "An application package is one apply-window inside an announcement. Most announcements have only one.",
-      publicCompetitionId: "Application package ID",
-      publicCompetitionIdHint:
+      publicApplicationPackageId: "Application package ID",
+      publicApplicationPackageIdHint:
         "An ID if this announcement has multiple application packages.",
-      competitionTitle: "Application package title",
-      competitionTitleHint: "Shown to applicants. Plain language is best.",
+      applicationPackageTitle: "Application package title",
+      applicationPackageTitleHint:
+        "Shown to applicants. Plain language is best.",
       whoCanApply: "Who can apply?",
       whoCanApplyHint:
         "Applicants who don't match this type won't see the application package in search.",

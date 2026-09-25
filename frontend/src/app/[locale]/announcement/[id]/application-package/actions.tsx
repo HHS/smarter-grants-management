@@ -1,28 +1,38 @@
 "use server";
 
 import { ApiRequestError, parseErrorStatus } from "src/errors";
-import { updateCompetitionForms } from "src/services/fetch/fetchers/competitionFormsFetcher";
+import { updateApplicationPackageForms } from "src/services/fetch/fetchers/applicationPackageFormsFetcher";
 import {
-  createCompetitionForGrantor,
-  saveCompetitionInstructions,
-  updateCompetitionForGrantor,
+  createApplicationPackageForGrantor,
+  saveApplicationPackageInstructions,
+  updateApplicationPackageForGrantor,
 } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
-import { FrontendErrorDetails } from "src/types/apiResponseTypes";
 import {
   ApplicantTypes,
   ApplicationPackageFormsSubmitApi,
   ApplicationPackageSaveRequest,
 } from "src/types/applicationPackageResponseTypes";
+import { mapApiValidationErrors } from "src/utils/validationUtils";
 
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
-export type CompetitionActionState = {
+export type ApplicationPackageActionState = {
   errorMessage?: string;
   successMessage?: string;
-  validationErrors?: string[];
-  newCompetitionId?: string;
+  validationErrors?: { [field: string]: string[] };
+  newApplicationPackageId?: string;
 };
+
+const COMPETITION_FORM_FIELDS = [
+  "applicationPackage_title",
+  "opening_date",
+  "closing_date",
+  "grace_period",
+  "public_applicationPackage_id",
+  "contact_info",
+  "open_to_applicants",
+] as const;
 
 // Make sure to return null in cases of empty string
 function getFieldValue(formData: FormData, fieldName: string) {
@@ -63,44 +73,34 @@ function buildRequestBody(formData: FormData) {
 
   // Build the request body which should match the ApplicationPackageSaveRequest
   const requestBody: ApplicationPackageSaveRequest = {
-    competition_title: getFieldValue(formData, "competition_title"),
+    applicationPackage_title: getFieldValue(
+      formData,
+      "applicationPackage_title",
+    ),
     opening_date: getFieldValue(formData, "opening_date"),
     closing_date: getFieldValue(formData, "closing_date"),
     grace_period: (() => {
       const gracePeriod = getFieldValue(formData, "grace_period");
       return gracePeriod === null ? null : Number(gracePeriod);
     })(),
-    public_competition_id: getFieldValue(formData, "public_competition_id"),
+    public_applicationPackage_id: getFieldValue(
+      formData,
+      "public_applicationPackage_id",
+    ),
     contact_info: contactInfo,
     open_to_applicants: openToApplicants,
   };
   return requestBody;
 }
 
-export interface FrontendErrorCause {
-  // The details area actually under the cause
-  details: FrontendErrorDetails;
-}
-
-function formatValidationErrors(error: unknown) {
-  const formatedErrors: string[] = [];
-  if (error instanceof ApiRequestError) {
-    const cause = error.cause as FrontendErrorCause;
-    const details = cause.details;
-    // NOTE: currently this only returning one error at a time (no list)
-    const errorMessage = details.field + ": " + details.message;
-    return [errorMessage];
-  }
-  return formatedErrors;
-}
-
-export async function updateCompetition(
+export async function updateApplicationPackage(
   formData: FormData,
   requiredForms: ApplicationPackageFormsSubmitApi,
-): Promise<CompetitionActionState> {
+): Promise<ApplicationPackageActionState> {
   const t = await getTranslations("OpportunityCompetition.alerts");
   const announcementId = formData.get("announcementId") as string | null;
-  let competitionId = formData.get("competitionId") as string | null;
+  let applicationPackageId = formData.get("applicationPackageId") as
+    string | null;
   let apiResponse;
 
   // This should never be the case here,
@@ -110,34 +110,46 @@ export async function updateCompetition(
   const requestBody = buildRequestBody(formData);
 
   try {
-    if (!competitionId) {
-      apiResponse = await createCompetitionForGrantor(
+    if (!applicationPackageId) {
+      apiResponse = await createApplicationPackageForGrantor(
         announcementId,
         requestBody,
       );
-      competitionId = apiResponse.data.competition_id;
+      applicationPackageId = apiResponse.data.applicationPackage_id;
     } else {
-      apiResponse = await updateCompetitionForGrantor(
+      apiResponse = await updateApplicationPackageForGrantor(
         announcementId,
-        competitionId,
+        applicationPackageId,
         requestBody,
       );
+    }
+
+    if (apiResponse.status_code === 422) {
+      const { validationErrors, errorMessage } = mapApiValidationErrors(
+        apiResponse,
+        t("validationErrors"),
+        COMPETITION_FORM_FIELDS,
+      );
+      return {
+        errorMessage,
+        validationErrors,
+      };
     }
 
     // If the record was successfully created or updated,
     // then save the application instructions file (attachment)
     const pendingFileId = formData.get("pending-file-id") as string | null;
     if (pendingFileId) {
-      await saveCompetitionInstructions(
+      await saveApplicationPackageInstructions(
         announcementId,
-        competitionId,
+        applicationPackageId,
         pendingFileId,
       );
     }
 
     if (requiredForms) {
-      await updateCompetitionForms({
-        competitionId,
+      await updateApplicationPackageForms({
+        applicationPackageId,
         body: { forms: requiredForms },
       });
     }
@@ -155,25 +167,24 @@ export async function updateCompetition(
         return { errorMessage: t("forbidden") };
       case 404:
         return { errorMessage: t("notFound") };
-      case 422:
-        return {
-          errorMessage: t("validationErrors"),
-          validationErrors: formatValidationErrors(error),
-        };
       default:
         return { errorMessage: t("genericError") };
     }
   }
 }
 
-export async function competitionFormAction(
+export async function applicationPackageFormAction(
   submitType: string,
   requiredForms: ApplicationPackageFormsSubmitApi,
   formData: FormData,
-): Promise<CompetitionActionState> {
+): Promise<ApplicationPackageActionState> {
   // 1. Save the form; if there are API errors, display them
-  const saveResult = await updateCompetition(formData, requiredForms);
-  if (saveResult.errorMessage) {
+  const saveResult = await updateApplicationPackage(formData, requiredForms);
+  if (
+    saveResult.errorMessage ||
+    (saveResult.validationErrors &&
+      Object.keys(saveResult.validationErrors).length)
+  ) {
     return saveResult;
   }
 

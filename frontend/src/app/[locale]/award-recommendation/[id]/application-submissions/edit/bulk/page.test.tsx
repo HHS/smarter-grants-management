@@ -235,7 +235,7 @@ describe("BulkEditRecommendationsPage", () => {
                 total_requested_amount: "100000.00",
                 application: {
                   application_id: "app-1",
-                  competition_id: "comp-1",
+                  applicationPackage_id: "comp-1",
                 },
               },
               submission_detail: {
@@ -291,7 +291,7 @@ describe("BulkEditRecommendationsPage", () => {
                 total_requested_amount: "100000.00",
                 application: {
                   application_id: "app-1",
-                  competition_id: "comp-1",
+                  applicationPackage_id: "comp-1",
                 },
               },
               submission_detail: {
@@ -308,7 +308,7 @@ describe("BulkEditRecommendationsPage", () => {
                 total_requested_amount: "50000.00",
                 application: {
                   application_id: "app-2",
-                  competition_id: "comp-1",
+                  applicationPackage_id: "comp-1",
                 },
               },
               submission_detail: {

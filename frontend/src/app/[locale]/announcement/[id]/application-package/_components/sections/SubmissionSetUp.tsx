@@ -10,14 +10,14 @@ import {
 } from "src/components/core/forms/CommonFormFields";
 
 type SubmissionSetUpProps = {
-  publicCompetitionId?: string | null;
-  competitionTitle?: string | null;
+  publicApplicationPackageId?: string | null;
+  applicationPackageTitle?: string | null;
   openToApplicants?: ApplicantTypes[];
 };
 
 export function SubmissionSetUp({
-  publicCompetitionId,
-  competitionTitle,
+  publicApplicationPackageId,
+  applicationPackageTitle,
   openToApplicants = [],
 }: SubmissionSetUpProps) {
   const t = useTranslations("OpportunityCompetition.sectionSubmissionSetUp");
@@ -44,24 +44,24 @@ export function SubmissionSetUp({
       <div className="grid-row grid-gap-2">
         <div className="tablet:grid-col">
           <CommonTextInput
-            fieldId="public_competition_id"
-            labelText={t("publicCompetitionId")}
-            description={t("publicCompetitionIdHint")}
+            fieldId="public_applicationPackage_id"
+            labelText={t("publicApplicationPackageId")}
+            description={t("publicApplicationPackageIdHint")}
             isRequired={false}
             fieldMaxLength={255}
             onTextChange={() => {}}
-            defaultValue={publicCompetitionId ?? ""}
+            defaultValue={publicApplicationPackageId ?? ""}
           />
         </div>
         <div className="tablet:grid-col">
           <CommonTextInput
-            fieldId="competition_title"
-            labelText={t("competitionTitle")}
-            description={t("competitionTitleHint")}
+            fieldId="applicationPackage_title"
+            labelText={t("applicationPackageTitle")}
+            description={t("applicationPackageTitleHint")}
             isRequired={true}
             fieldMaxLength={255}
             onTextChange={() => {}}
-            defaultValue={competitionTitle ?? ""}
+            defaultValue={applicationPackageTitle ?? ""}
           />
         </div>
       </div>
