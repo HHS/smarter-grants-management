@@ -257,10 +257,7 @@ describe("createApplicationPackage", () => {
       public_application_package_id: "PUBLIC-COMP-789",
     };
 
-    await createApplicationPackage(
-      "opp-123",
-      applicationPackageWithPublicId,
-    );
+    await createApplicationPackage("opp-123", applicationPackageWithPublicId);
 
     expect(mockFetcher).toHaveBeenCalledWith({
       subPath: "opp-123/application-packages",
@@ -321,7 +318,11 @@ describe("updateApplicationPackage", () => {
 
     // verify that it throws the error
     await expect(
-      updateApplicationPackage("opp-123", "compete-321", applicationPackageData),
+      updateApplicationPackage(
+        "opp-123",
+        "compete-321",
+        applicationPackageData,
+      ),
     ).rejects.toThrow(ApiRequestError);
   });
 });

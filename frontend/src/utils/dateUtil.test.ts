@@ -1,5 +1,6 @@
 import { identity } from "lodash";
 import {
+  dateToTimestampOrNull,
   formatDate,
   formatDateWithNoPreformattedExpectations,
   isExpired,
@@ -81,5 +82,22 @@ describe("toShortMonthDate", () => {
   });
   it("returns an empty string if input is invalid", () => {
     expect(toShortMonthDate("January 25th Twenty Twenty FIve")).toEqual("");
+  });
+});
+
+describe("dateToTimestampOrNull", () => {
+  it("converts a date string to a full ISO timestamp", () => {
+    expect(dateToTimestampOrNull("2026-09-23")).toEqual(
+      "2026-09-23T00:00:00.000Z",
+    );
+  });
+  it("returns null for a null input", () => {
+    expect(dateToTimestampOrNull(null)).toBeNull();
+  });
+  it("returns null for an undefined input", () => {
+    expect(dateToTimestampOrNull(undefined)).toBeNull();
+  });
+  it("returns null for an empty string", () => {
+    expect(dateToTimestampOrNull("")).toBeNull();
   });
 });
