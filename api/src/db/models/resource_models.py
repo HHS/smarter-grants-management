@@ -15,6 +15,7 @@ from src.db.models.user_models import User
 if TYPE_CHECKING:
     # Imported for the relationship annotations below only - the grantor organization
     # models import this module at runtime, so a real import would be circular.
+    from src.db.models.announcement_models import Announcement
     from src.db.models.grantor_organization_models import GrantorOrganization, Partner, Program
 
 ########################
@@ -41,6 +42,7 @@ class Resource(GrantorSchemaTable, TimestampMixin):
         "GrantorOrganization", viewonly=True
     )
     program: Mapped[Program | None] = relationship("Program", viewonly=True)
+    announcement: Mapped[Announcement | None] = relationship("Announcement", viewonly=True)
 
     @property
     def concrete_resource(self) -> AbstractResourceTableMixin:
@@ -60,6 +62,8 @@ class Resource(GrantorSchemaTable, TimestampMixin):
             concrete_resource = self.grantor_organization
         elif self.resource_type == ResourceType.PROGRAM:
             concrete_resource = self.program
+        elif self.resource_type == ResourceType.ANNOUNCEMENT:
+            concrete_resource = self.announcement
         else:
             # A valid resource type that has no table yet - opportunity, today.
             raise ValueError(f"Resource type {self.resource_type} has no table behind it")

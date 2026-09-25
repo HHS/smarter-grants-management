@@ -76,7 +76,7 @@ const headers = [
   },
   // opportunity pages are stored 10 mins, stale 1 min, stale if error 5 mins
   {
-    source: "/opportunity/:id(\\d{1,})",
+    source: "/announcement/:id(\\d{1,})",
     headers: [
       {
         key: "Cache-Control",

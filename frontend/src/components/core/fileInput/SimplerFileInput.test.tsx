@@ -1107,32 +1107,6 @@ describe("SimplerFileInput", () => {
       const errorMessage = screen.getByText("deleteError");
       expect(errorMessage).toBeInTheDocument();
     });
-    // visibility is not testable given the formatting of the Trussworks modal - no aria-hidden attribute
-    it.skip("toggles modal on delete button click", async () => {
-      const mockOnDelete = jest.fn().mockRejectedValue(new Error());
-      render(
-        <SimplerFileInput
-          onDelete={mockOnDelete}
-          postUploadAction={() => Promise.resolve(undefined)}
-          postUploadActionProgressMessage="post upload action in progress"
-          postUploadActionSuccessMessage="post upload action success"
-          postUploadActionErrorMessage="post upload action error"
-          id="file-input-test"
-          describedByIds={["file-input-label"]}
-          existingFiles={[fakeExistingFile]}
-        />,
-      );
-      const deleteButton = screen.getByRole("button", {
-        name: "delete",
-      });
-      expect(deleteButton).toBeInTheDocument();
-      // open the modal
-      expect(
-        screen.getByLabelText("cautionDeletingAttachment"),
-      ).not.toBeVisible();
-      await userEvent.click(deleteButton);
-      expect(screen.getByLabelText("cautionDeletingAttachment")).toBeVisible();
-    });
   });
   describe("Accessibility", () => {
     // deliberately render native input
@@ -1520,41 +1494,5 @@ describe("SimplerFileInput", () => {
         await screen.findAllByTestId("file-upload-status-display"),
       ).toHaveLength(2);
     });
-  });
-  // not able to test this since the only way to really hide this for now is with CSS, which is not
-  // testable using testing-library tools.
-  // aria-hidden seems to be the way to do this for testing, but is that possible?
-  // - not really without doing old school DOM element targeting - we have a ref but only to the input itself, not the previews
-  // or do we just remove it? use mutation observer? not worry about testing, and rely on the css?
-  it.skip("does not display the Trussworks file preview", async () => {
-    const trigger = createAdvanceStreamTrigger();
-    clientFetchMock.mockResolvedValue(
-      new Response(makeAdvanceableTestStreamForTrigger([], trigger)),
-    );
-    render(
-      <SimplerFileInput
-        onDelete={() => Promise.resolve()}
-        postUploadAction={() => Promise.resolve(undefined)}
-        postUploadActionProgressMessage="post upload action in progress"
-        postUploadActionSuccessMessage="post upload action success"
-        postUploadActionErrorMessage="post upload action error"
-        id="file-input-test"
-        describedByIds={["file-input-label"]}
-      />,
-    );
-    const input = await screen.findByTestId("file-input-input");
-    await userEvent.upload(
-      input,
-      new File(["test content"], "test.txt", {
-        type: "text/plain",
-      }),
-    );
-    screen.debug();
-    const trussworksPreviewImages = screen.queryByTestId(
-      "file-input-preview-image",
-    );
-    const trussworksPreviews = screen.queryByTestId("file-input-preview");
-    expect(trussworksPreviewImages).not.toBeVisible();
-    expect(trussworksPreviews).not.toBeVisible();
   });
 });

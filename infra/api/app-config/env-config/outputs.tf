@@ -20,6 +20,7 @@ output "service_config" {
     service_name                    = "${local.prefix}${var.app_name}-${var.environment}"
     domain_name                     = var.domain_name
     secondary_domain_names          = var.secondary_domain_names
+    scanner_callback_domain_name    = var.scanner_callback_domain_name
     s3_cdn_domain_name              = var.s3_cdn_domain_name
     mtls_domain_name                = var.mtls_domain_name
     enable_https                    = var.enable_https
@@ -31,6 +32,7 @@ output "service_config" {
     newrelic_entity_guid            = var.service_newrelic_entity_guid
     newrelic_mtls_entity_guid       = var.service_newrelic_mtls_entity_guid
     newrelic_host_entity_guid       = var.api_host_newrelic_entity_guid
+    scanner_provisioned_concurrency = var.scanner_provisioned_concurrency
 
     extra_environment_variables = merge(
       local.default_extra_environment_variables,

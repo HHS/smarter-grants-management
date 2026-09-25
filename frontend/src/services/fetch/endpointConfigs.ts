@@ -91,13 +91,13 @@ export const toDynamicGrantorAgenciesEndpoint = (
   };
 };
 
-export const toDynamicGrantorOpportunityEndpoint = (
+export const toDynamicAnnouncementEndpoint = (
   type: "POST" | "DELETE" | "GET" | "PUT",
 ) => {
   return {
     basePath: environment.API_URL,
     version: "v1",
-    namespace: "grantors/opportunities",
+    namespace: "announcements",
     method: type as ApiMethod,
     requiresAuth: true,
   };

@@ -94,13 +94,11 @@ export default function AwardRecommendationsListTable({
   };
 
   useEffect(() => {
-    // TODO #9633
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setPage(1);
   }, [currentAgencyId]);
 
   useEffect(() => {
-    // TODO #9633
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void fetchAwardRecommendations();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -160,7 +158,7 @@ export default function AwardRecommendationsListTable({
         {
           cellData: (
             <Link
-              href={`/opportunity/${opportunity.opportunity_id}`}
+              href={`/announcement/${opportunity.opportunity_id}`}
               className="usa-link"
             >
               {opportunity.opportunity_title}

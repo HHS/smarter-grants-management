@@ -103,7 +103,7 @@ describe("AwardRecommendationsListTable", () => {
       }),
     ).toHaveAttribute(
       "href",
-      `/opportunity/${mockAwardRecommendationListItem.opportunity.opportunity_id}`,
+      `/announcement/${mockAwardRecommendationListItem.opportunity.opportunity_id}`,
     );
     expect(
       screen.getByText(

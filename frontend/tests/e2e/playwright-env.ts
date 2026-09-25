@@ -38,7 +38,7 @@ const isLocal = targetEnv === "local";
 const baseUrl =
   process.env.PLAYWRIGHT_BASE_URL || (isLocal ? "http://127.0.0.1:3000" : "");
 const apiUrl =
-  process.env.PLAYWRIGHT_API_URL || (isLocal ? "http://127.0.0.1:8080" : "");
+  process.env.PLAYWRIGHT_API_URL || (isLocal ? "http://127.0.0.1:8089" : "");
 
 // this does what it can to prevent the app from starting with mismatched target env and url variable assignments
 if (!baseUrl || !apiUrl) {
@@ -70,6 +70,9 @@ const playwrightEnv = {
   isCi: process.env.CI,
   totalShards: process.env.TOTAL_SHARDS,
   currentShard: process.env.CURRENT_SHARD,
+  // Comma separated list of Playwright project (browser) names to run (e.g.
+  // "Chrome"). Blank means run every project defined for the target.
+  playwrightProjects: process.env.PLAYWRIGHT_PROJECTS || "",
   clientSessionSecret:
     process.env.SESSION_SECRET_OVERRIDE || process.env.SESSION_SECRET,
   testUserEmail: process.env.STAGING_TEST_USER_EMAIL || "",

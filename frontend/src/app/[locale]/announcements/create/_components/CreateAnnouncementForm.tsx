@@ -1,0 +1,278 @@
+"use client";
+
+import { createOpportunityAction } from "src/app/[locale]/announcements/create/actions";
+
+import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { useActionState, useEffect, useState } from "react";
+import { Alert, Button, Link } from "@trussworks/react-uswds";
+
+import {
+  CommonCharacterCount,
+  CommonSelectInput,
+} from "src/components/core/forms/CommonFormFields";
+
+// Category options
+const categoryList = {
+  discretionary: "Discretionary",
+  mandatory: "Mandatory",
+  continuation: "Continuation",
+  earmark: "Earmark",
+  other: "Other",
+};
+
+// ----- Main Form -----
+export function CreateAnnouncementForm({
+  defaultAgencyId,
+  userAgencies,
+}: {
+  defaultAgencyId: string;
+  userAgencies: { [key: string]: string };
+}) {
+  const t = useTranslations("CreateOpportunity");
+
+  // Define states for required fields and flags to show/hide or enable/disable components
+  const [selectedAgencyId, setAgencyId] = useState<string>(defaultAgencyId);
+  const [opportunityNumber, setOppNbr] = useState<string>("");
+  const [opportunityTitle, setOppTitle] = useState<string>("");
+  const [tagline, setTagline] = useState<string>("");
+  const [purposeStatement, setPurposeStatement] = useState<string>("");
+  const [selectedCategoryId, setCategory] = useState<string>("");
+  const [categoryExplanation, setExplain] = useState<string>("");
+  const [assistanceListingNumber, setAssistanceListingNumber] =
+    useState<string>("");
+  const [showExplain, setShowExplain] = useState<boolean>(false);
+  const [disableSave, setDisableSave] = useState<boolean>(true);
+
+  const [response, formAction, isPending] = useActionState(
+    createOpportunityAction,
+    {
+      validationErrors: {},
+    },
+  );
+
+  // Use useEffect to detect success and redirect
+  const router = useRouter();
+  useEffect(() => {
+    // If success, redirect to the edit page (Part 2 of create)
+    if (response?.success && response.data?.opportunity_id) {
+      router.push(
+        `/announcement/${response.data.opportunity_id}/overview?fromCreate=true`,
+      );
+    } else if (response?.errorMessage) {
+      // Scroll to top to show the error message
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setDisableSave(true);
+      if (selectedCategoryId.trim() !== "other") {
+        setExplain(""); // need to manually set this for checks below to work correctly
+      }
+    }
+  }, [response, router, selectedCategoryId]);
+
+  // Use useEffect to check fields when inputs change
+  useEffect(
+    () => {
+      // Category: if Other then show the Explanation field
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setShowExplain(selectedCategoryId.trim() === "other");
+      // Check for required fields to enable the Save button
+      const allReqFieldsFilled =
+        opportunityNumber.trim() !== "" &&
+        opportunityTitle.trim() !== "" &&
+        tagline.trim() !== "" &&
+        purposeStatement.trim() !== "" &&
+        assistanceListingNumber.trim() !== "" &&
+        selectedAgencyId.trim() !== "" &&
+        ((selectedCategoryId.trim() !== "" &&
+          selectedCategoryId.trim() !== "other") ||
+          (selectedCategoryId.trim() === "other" &&
+            categoryExplanation.trim() !== ""));
+      setDisableSave(!allReqFieldsFilled);
+    }, // Dependencies: run whenever these fields change
+    [
+      opportunityNumber,
+      opportunityTitle,
+      tagline,
+      purposeStatement,
+      selectedAgencyId,
+      selectedCategoryId,
+      categoryExplanation,
+      assistanceListingNumber,
+    ],
+  );
+
+  // Update state on change
+  const onOppNbrChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setOppNbr(e.target.value);
+  };
+  const onOppTitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setOppTitle(e.target.value);
+  };
+  const onTaglineChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setTagline(e.target.value);
+  };
+  const onPurposeStatementChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>,
+  ) => {
+    setPurposeStatement(e.target.value);
+  };
+  const onAgencySelection = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setAgencyId(e.target.value);
+  };
+  const onCategorySelection = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setCategory(e.target.value);
+  };
+  const onExplanationChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setExplain(e.target.value);
+  };
+  const onAlnChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setAssistanceListingNumber(e.target.value);
+  };
+
+  // Display the form
+  return (
+    <>
+      {response?.errorMessage && (
+        <Alert heading={t("errorHeading")} headingLevel="h2" type="error">
+          {response?.errorMessage}
+        </Alert>
+      )}
+      <h2>{t("keyInfo")}</h2>
+      <div className="display-flex flex-justify">
+        <div>{t("basicInstructions")}</div>
+      </div>
+
+      <form
+        action={formAction}
+        className="flex-1 margin-top-2 simpler-apply-form"
+      >
+        <div data-testid="formGroup" className="width-full">
+          <div className="grid-row grid-gap">
+            {/* Opportunity Number */}
+            <div className="tablet:grid-col-6">
+              <CommonCharacterCount
+                labelText={t("CreateAnnouncementForm.opportunityNumber")}
+                description={t("CreateAnnouncementForm.opportunityNumberDesc")}
+                fieldId="opportunityNumber"
+                fieldMaxLength={40}
+                isRequired={true}
+                onTextChange={onOppNbrChange}
+                defaultValue={response?.data?.opportunity_number || ""}
+              />
+            </div>
+
+            {/* Assistance Listing Number (ALN) placed to the right */}
+            <div className="tablet:grid-col-6">
+              <CommonCharacterCount
+                labelText={t("CreateAnnouncementForm.assistanceListingNumber")}
+                description={t(
+                  "CreateAnnouncementForm.assistanceListingNumberDesc",
+                )}
+                fieldId="assistanceListingNumber"
+                fieldMaxLength={6}
+                isRequired={true}
+                onTextChange={onAlnChange}
+                defaultValue={response?.data?.assistance_listing_number || ""}
+              />
+            </div>
+          </div>
+
+          {/* Opportunity Title */}
+          <CommonCharacterCount
+            isTextArea={true}
+            labelText={t("CreateAnnouncementForm.opportunityTitle")}
+            description={t("CreateAnnouncementForm.opportunityTitleDesc")}
+            fieldId="opportunityTitle"
+            fieldMaxLength={255}
+            isRequired={true}
+            onTextChange={onOppTitleChange}
+            defaultValue={response?.data?.opportunity_title || ""}
+          />
+
+          {/* Tagline */}
+          <CommonCharacterCount
+            labelText={t("CreateAnnouncementForm.tagline")}
+            description={t("CreateAnnouncementForm.taglineDesc")}
+            fieldId="tagline"
+            fieldMaxLength={255}
+            isRequired={true}
+            onTextChange={onTaglineChange}
+            defaultValue={response?.data?.tagline || ""}
+          />
+
+          {/* Purpose Statement */}
+          <CommonCharacterCount
+            labelText={t("CreateAnnouncementForm.purposeStatement")}
+            description={t("CreateAnnouncementForm.purposeStatementDesc")}
+            fieldId="purposeStatement"
+            fieldMaxLength={255}
+            isRequired={true}
+            onTextChange={onPurposeStatementChange}
+            defaultValue={response?.data?.purpose_statement || ""}
+          />
+
+          {/* Agency */}
+          <CommonSelectInput
+            labelText={t("CreateAnnouncementForm.agency")}
+            description={""}
+            fieldId="agencyId"
+            isRequired={true}
+            listKeyValuePairs={userAgencies}
+            defaultSelection={response?.data?.agency_id || selectedAgencyId}
+            onSelectionChange={onAgencySelection}
+          />
+
+          {/* Category */}
+          <CommonSelectInput
+            labelText={t("CreateAnnouncementForm.category")}
+            description={t("CreateAnnouncementForm.categoryDesc")}
+            fieldId="category"
+            isRequired={true}
+            listKeyValuePairs={categoryList}
+            defaultSelection={response?.data?.category || ""}
+            onSelectionChange={onCategorySelection}
+          />
+
+          {/* Category-Other Explanation */}
+          {showExplain && (
+            <CommonCharacterCount
+              isTextArea={true}
+              labelText={t("CreateAnnouncementForm.categoryExplanation")}
+              description={t("CreateAnnouncementForm.categoryExplanationDesc")}
+              fieldId="categoryExplanation"
+              fieldMaxLength={255}
+              isRequired={true}
+              onTextChange={onExplanationChange}
+              defaultValue={response?.data?.category_explanation || ""}
+            />
+          )}
+
+          {/* ALN moved above to align with Opportunity Number */}
+        </div>
+
+        <div className="display-flex flex-left margin-top-5">
+          <Link href="/announcements">
+            <Button
+              type="button"
+              name="cancel_button"
+              className="usa-button--outline"
+            >
+              {t("cancel")}
+            </Button>
+          </Link>
+          <Button
+            disabled={disableSave || isPending}
+            type="submit"
+            name="save_button"
+          >
+            {t(isPending ? "pending" : "saveAndContinue")}
+          </Button>
+        </div>
+      </form>
+    </>
+  );
+}

@@ -67,7 +67,7 @@ const OpportunitySection = ({
               {t("fundingOppName")}
             </p>
             <Link
-              href={`/opportunity/${opportunityData.opportunity_id}`}
+              href={`/announcement/${opportunityData.opportunity_id}`}
               className="text-decoration-none"
             >
               <p className="text-primary-darker hover:text-primary margin-top-0">

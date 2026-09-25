@@ -34,7 +34,6 @@ export default function UserProvider({
   // a workaround, as setting this in default state value results in hydration error
   useEffect(() => {
     const flagsFromCookie = JSON.parse(cookie) as FeatureFlags;
-    // TODO #9633
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setUserFeatureFlags(flagsFromCookie);
   }, [cookie]);
@@ -83,7 +82,6 @@ export default function UserProvider({
   // fetch user on hook startup
   useEffect(() => {
     if (localUser) return;
-    // TODO #9633
     // eslint-disable-next-line react-hooks/set-state-in-effect
     getUserSession().then(noop).catch(noop);
   }, [localUser, getUserSession]);

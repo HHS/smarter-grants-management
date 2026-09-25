@@ -2,14 +2,17 @@ import logging
 import uuid
 
 import click
+from sqlalchemy import select
 
 import src.logs
 import tests.db.models.factories as f
 from src.adapters import db
 from src.adapters.db import PostgresDBClient
 from src.constants.lookup_constants import Privilege
+from src.db.models.announcement_models import Announcement
 from src.db.resource_automation.resource_automation import setup_resource_automation
 from src.util.local import error_if_not_local
+from tests.lib.seed_assistance_listings import create_assistance_listings
 from tests.lib.seed_data_utils import UserBuilder
 
 logger = logging.getLogger(__name__)
@@ -31,9 +34,13 @@ def seed_local_db() -> None:
 
 
 def run_seed_logic(db_session: db.Session) -> None:
+    create_assistance_listings(db_session)
+
     create_users(db_session)
 
     create_programs()
+
+    create_announcements(db_session)
 
     # Commit anything remaining that wasn't made with factories
     db_session.commit()
@@ -82,9 +89,68 @@ def create_users(db_session: db.Session) -> None:
         role_name="Local Workflow Event Sender",
     ).build()
 
+    # A user for the local file scanner to authenticate as when updating scan status.
+    # The scanner needs INTERNAL_S3_SCAN privilege to call the scan status endpoint.
+    UserBuilder(
+        user_id=uuid.UUID("bc7a4d76-39d4-4f4f-9c64-c11b7c2a7c0a"),
+        db_session=db_session,
+        scenario_name="Local File Scanner",
+    ).with_api_key("local_file_scanner_user_key").with_internal_privileges(
+        role_id=uuid.UUID("e5f6a7b8-c9d0-4e5f-9a0b-4c5d6e7f8091"),
+        privileges=[Privilege.INTERNAL_S3_SCAN],
+        role_name="Local File Scanner",
+    ).build()
+
 
 def create_programs() -> None:
     # Create a few programs just to have something to work with.
     # Later work will add more specific scenarios
     logger.info("Creating programs")
     f.ProgramFactory.create_batch(size=5)
+
+
+def create_announcements(db_session: db.Session) -> None:
+    logger.info("Creating announcements")
+
+    announcements_to_seed = [
+        {
+            "announcement_number": "ANN-LOCAL-001",
+            "announcement_title": "Community Infrastructure Modernization",
+            "is_forecast": False,
+        },
+        {
+            "announcement_number": "ANN-LOCAL-002",
+            "announcement_title": "Rural Broadband Acceleration",
+            "is_forecast": True,
+        },
+        {
+            "announcement_number": "ANN-LOCAL-003",
+            "announcement_title": "Workforce Development Innovation",
+            "is_forecast": False,
+        },
+    ]
+
+    existing_numbers = set(
+        db_session.execute(
+            select(Announcement.announcement_number).where(
+                Announcement.announcement_number.in_(
+                    [a["announcement_number"] for a in announcements_to_seed]
+                )
+            )
+        )
+        .scalars()
+        .all()
+    )
+
+    for announcement_data in announcements_to_seed:
+        if announcement_data["announcement_number"] in existing_numbers:
+            continue
+
+        announcement = f.AnnouncementFactory.create(
+            announcement_number=announcement_data["announcement_number"],
+            announcement_title=announcement_data["announcement_title"],
+        )
+        f.AnnouncementSummaryFactory.create(
+            announcement=announcement,
+            is_forecast=announcement_data["is_forecast"],
+        )

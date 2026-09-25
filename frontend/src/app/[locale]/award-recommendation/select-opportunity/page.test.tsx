@@ -3,8 +3,8 @@ import SelectOpportunityPage, {
   generateMetadata,
 } from "src/app/[locale]/award-recommendation/select-opportunity/page";
 
-jest.mock("src/services/fetch/fetchers/grantorOpportunitiesFetcher", () => ({
-  searchAccessibleOpportunities: jest.fn(() =>
+jest.mock("src/services/fetch/fetchers/grantorAnnouncementFetcher", () => ({
+  searchAccessibleAnnouncements: jest.fn(() =>
     Promise.resolve({
       data: [],
       pagination_info: undefined,

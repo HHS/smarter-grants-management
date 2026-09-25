@@ -189,6 +189,12 @@ variable "secondary_domain_names" {
   default     = []
 }
 
+variable "scanner_callback_domain_name" {
+  type        = string
+  description = "Host the ClamAV scanner posts scan results to. Falls back to domain_name, and then to the ALB's own DNS name when neither is set."
+  default     = null
+}
+
 variable "sqs_visibility_timeout_seconds" {
   description = "The visibility timeout for the SQS queue in seconds"
   type        = number
@@ -229,6 +235,12 @@ variable "workflow_service_desired_count" {
   description = "Workflow services counter count"
   type        = number
   default     = 1
+}
+
+variable "scanner_provisioned_concurrency" {
+  description = "Number of execution environments to keep warm for the ClamAV scanner Lambda via provisioned concurrency."
+  type        = number
+  default     = 0
 }
 
 variable "service_newrelic_entity_guid" {

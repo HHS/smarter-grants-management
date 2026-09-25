@@ -1,5 +1,8 @@
+import {
+  AnnouncementListItem,
+  BaseAnnouncement,
+} from "src/types/announcement/announcementResponseTypes";
 import { APIResponse, PaginationInfo } from "src/types/apiResponseTypes";
-import { BaseOpportunity } from "src/types/opportunity/opportunityResponseTypes";
 
 import { BackendFilterNames } from "./searchFilterTypes";
 import { FilterQueryParamData } from "./searchQueryTypes";
@@ -77,7 +80,8 @@ export type SavedSearchRecord = {
   search_query: SavedSearchQuery;
 };
 
-export type SearchResponseData = BaseOpportunity[];
+export type SearchResponseData = BaseAnnouncement[];
+export type AnnouncementListResponseData = AnnouncementListItem[];
 
 export type FacetCounts = {
   [key in BackendFilterNames]: {
@@ -92,6 +96,11 @@ export interface SearchAPIResponse extends APIResponse {
   // these are set on the frontend after fetch, not coming back from API
   actionType?: SearchFetcherActionType;
   fieldChanged?: string;
+}
+
+export interface AnnouncementListAPIResponse extends APIResponse {
+  data: AnnouncementListResponseData;
+  pagination_info: PaginationInfo;
 }
 
 // used for now in the process of performing a search request. To be deprecated.

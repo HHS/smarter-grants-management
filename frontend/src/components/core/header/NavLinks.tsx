@@ -206,7 +206,7 @@ export const NavLinks = ({
 
     return anonymousNavLinks.toSpliced(anonymousNavLinks.length, 0, {
       text: t("opportunities"),
-      href: "/opportunities",
+      href: "/announcements",
     });
   }, [t, user?.token]);
 
@@ -240,7 +240,6 @@ export const NavLinks = ({
   );
 
   useEffect(() => {
-    // TODO #9633
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentNavItemIndex(getCurrentNavItemIndex(path));
   }, [path, getCurrentNavItemIndex]);

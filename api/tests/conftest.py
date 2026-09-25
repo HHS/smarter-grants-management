@@ -20,7 +20,9 @@ from src.adapters.aws import S3Config
 from src.adapters.oauth.login_gov.mock_login_gov_oauth_client import MockLoginGovOauthClient
 from src.adapters.simpler_grants import client as simpler_grants_client
 from src.adapters.simpler_grants.mock_client import MockSimplerGrantsClient
+from src.auth.api_jwt_auth import create_jwt_for_user
 from src.auth.internal_resource import create_internal_resource
+from src.constants.lookup_constants import Privilege, ResourceType
 from src.db import models
 from src.db.models.lookup.sync_lookup_values import sync_lookup_values
 from src.db.resource_automation.resource_automation import setup_resource_automation
@@ -171,7 +173,8 @@ def internal_resource(monkeypatch_session, db_client):
     monkeypatch_session.setenv("INTERNAL_RESOURCE_ID", "2a9c7e50-6b1e-4c8f-9d3a-5e7f1b2c4d6e")
 
     with db_client.get_session() as db_session, db_session.begin():
-        create_internal_resource(db_session)
+        resource = create_internal_resource(db_session)
+        return resource
 
 
 @pytest.fixture
@@ -331,83 +334,76 @@ def reset_aws_env_vars(monkeypatch):
 
 
 @pytest.fixture
-def mock_s3(reset_aws_env_vars):
-    # https://docs.getmoto.org/en/stable/docs/configuration/index.html#whitelist-services
-    with moto.mock_aws(config={"core": {"service_whitelist": ["s3"]}}):
-        yield boto3.resource("s3")
-
-
-@pytest.fixture
-def s3_config(mock_s3_bucket, other_mock_s3_bucket, mock_file_scan_s3_bucket):
+def s3_config(mock_s3_bucket_name, mock_other_s3_bucket_name, mock_file_scan_s3_bucket_name):
+    """Configure S3 with draft and file scan buckets."""
     return S3Config(
-        PUBLIC_FILES_BUCKET=f"s3://{mock_s3_bucket}",
-        DRAFT_FILES_BUCKET=f"s3://{other_mock_s3_bucket}",
-        FILE_SCAN_BUCKET=f"s3://{mock_file_scan_s3_bucket}",
+        PUBLIC_FILES_BUCKET=f"s3://{mock_other_s3_bucket_name}",
+        DRAFT_FILES_BUCKET=f"s3://{mock_s3_bucket_name}",
+        FILE_SCAN_BUCKET=f"s3://{mock_file_scan_s3_bucket_name}",
     )
 
 
 @pytest.fixture
-def mock_s3_bucket_resource(mock_s3):
-    bucket = mock_s3.Bucket("local-mock-public-bucket")
-    bucket.create()
-    return bucket
+def mock_aws(reset_aws_env_vars):
+    """Base AWS mock enabling multiple services.
 
-
-@pytest.fixture
-def mock_s3_bucket(mock_s3_bucket_resource):
-    return mock_s3_bucket_resource.name
-
-
-@pytest.fixture
-def other_mock_s3_bucket_resource(mock_s3):
-    # This second bucket exists for tests where we want there to be multiple buckets
-    # and/or test behavior when moving files between buckets.
-    bucket = mock_s3.Bucket("local-mock-draft-bucket")
-    bucket.create()
-    return bucket
-
-
-@pytest.fixture
-def mock_file_scan_s3_bucket_resource(mock_s3):
-    bucket = mock_s3.Bucket("local-mock-file-scan-bucket")
-    bucket.create()
-    return bucket
-
-
-@pytest.fixture
-def mock_file_scan_s3_bucket(mock_file_scan_s3_bucket_resource):
-    return mock_file_scan_s3_bucket_resource.name
-
-
-@pytest.fixture
-def other_mock_s3_bucket(other_mock_s3_bucket_resource):
-    return other_mock_s3_bucket_resource.name
-
-
-@pytest.fixture
-def mock_sqs(reset_aws_env_vars):
-    with moto.mock_aws(config={"core": {"service_whitelist": ["sqs"]}}):
+    This enables mocking for DynamoDB, S3, SQS, SES, and SESv2.
+    Individual resource fixtures depend on this base fixture.
+    """
+    with moto.mock_aws(
+        config={"core": {"service_whitelist": ["dynamodb", "s3", "sqs", "ses", "sesv2"]}}
+    ):
         yield
 
 
 @pytest.fixture
-def mock_dynamodb(reset_aws_env_vars):
-    with moto.mock_aws(config={"core": {"service_whitelist": ["dynamodb"]}}):
-        yield
+def mock_s3_bucket(mock_aws):
+    s3 = boto3.resource("s3")
+    bucket = s3.Bucket("local-mock-draft-bucket")
+    bucket.create()
+    return bucket
 
 
 @pytest.fixture
-def file_scan_dynamodb_table(mock_dynamodb, monkeypatch):
-    dynamodb = boto3.client("dynamodb", region_name="us-east-1")
+def mock_s3_bucket_name(mock_s3_bucket):
+    return mock_s3_bucket.name
+
+
+@pytest.fixture
+def mock_other_s3_bucket(mock_aws):
+    s3 = boto3.resource("s3")
+    bucket = s3.Bucket("local-mock-public-bucket")
+    bucket.create()
+    return bucket
+
+
+@pytest.fixture
+def mock_other_s3_bucket_name(mock_other_s3_bucket):
+    return mock_other_s3_bucket.name
+
+
+@pytest.fixture
+def mock_file_scan_s3_bucket(mock_aws):
+    s3 = boto3.resource("s3")
+    bucket = s3.Bucket("local-mock-file-scan-bucket")
+    bucket.create()
+    return bucket
+
+
+@pytest.fixture
+def mock_file_scan_s3_bucket_name(mock_file_scan_s3_bucket):
+    return mock_file_scan_s3_bucket.name
+
+
+@pytest.fixture
+def file_scan_dynamodb_table(mock_aws, monkeypatch):
+    """Create DynamoDB table for tests."""
+    dynamodb_client = boto3.client("dynamodb", region_name="us-east-1")
     table_name = "test-local-virus-scan"
-    dynamodb.create_table(
+    dynamodb_client.create_table(
         TableName=table_name,
-        KeySchema=[
-            {"AttributeName": "file_id", "KeyType": "HASH"},
-        ],
-        AttributeDefinitions=[
-            {"AttributeName": "file_id", "AttributeType": "S"},
-        ],
+        KeySchema=[{"AttributeName": "file_id", "KeyType": "HASH"}],
+        AttributeDefinitions=[{"AttributeName": "file_id", "AttributeType": "S"}],
         BillingMode="PAY_PER_REQUEST",
     )
     monkeypatch.setenv("FILE_SCAN_CACHE_TABLE_NAME", table_name)
@@ -415,17 +411,15 @@ def file_scan_dynamodb_table(mock_dynamodb, monkeypatch):
 
 
 @pytest.fixture
-def ses_client(monkeypatch, reset_aws_env_vars):
+def ses_client(monkeypatch, reset_aws_env_vars, mock_aws):
     """Create a mocked SESv2 client using moto."""
     # The SES adapter logs instead of sending when running against local AWS, so
     # turn that off or nothing reaches the mocked backend.
     monkeypatch.setenv("IS_LOCAL_AWS", "0")
 
-    # to access ses_backends, need to add ses to the whitelist
-    with moto.mock_aws(config={"core": {"service_whitelist": ["ses", "sesv2"]}}):
-        ses_client = boto3.client("sesv2", region_name="us-east-1")
-        ses_client.create_email_identity(EmailIdentity=os.getenv("AWS_SES_FROM_EMAIL"))
-        yield ses_client
+    ses_client = boto3.client("sesv2", region_name="us-east-1")
+    ses_client.create_email_identity(EmailIdentity=os.getenv("AWS_SES_FROM_EMAIL"))
+    return ses_client
 
 
 @pytest.fixture
@@ -438,7 +432,7 @@ def get_sent_emails():
 
 
 @pytest.fixture
-def workflow_sqs_queue(mock_sqs, monkeypatch):
+def workflow_sqs_queue(mock_aws, monkeypatch):
     sqs = boto3.client("sqs", region_name="us-east-1")
     queue = sqs.create_queue(QueueName="test-workflow-queue")
     # Set the env var of this queue so the SQSConfig picks it up
@@ -456,3 +450,112 @@ def mock_simpler_grants_client(monkeypatch):
     mock_client = MockSimplerGrantsClient()
     monkeypatch.setattr(simpler_grants_client, "SimplerGrantsClient", lambda config: mock_client)
     return mock_client
+
+
+####################
+# File Upload Test Fixtures
+####################
+
+
+@pytest.fixture
+def user(db_session, enable_factory_create):
+    """Create a standard test user."""
+    user = factories.UserFactory.create()
+    return user
+
+
+@pytest.fixture
+def user_auth_token(user, db_session):
+    """Create a JWT token for the test user."""
+    token, user_token_session = create_jwt_for_user(user, db_session)
+    db_session.commit()
+    return token
+
+
+@pytest.fixture
+def user_api_key(user, db_session, enable_factory_create):
+    """Create an API key for the test user."""
+    api_key = factories.UserApiKeyFactory.create(user=user)
+    return api_key
+
+
+@pytest.fixture
+def user_api_key_id(user_api_key):
+    """Return just the API key ID string."""
+    return user_api_key.key_id
+
+
+@pytest.fixture
+def s3_scanner_user(db_session, enable_factory_create, internal_resource, monkeypatch):
+    """Create a user with INTERNAL_S3_SCAN privilege for file scanner tests."""
+
+    scanner_user = factories.UserFactory.create()
+
+    # Create a role with INTERNAL_S3_SCAN privilege
+    role = factories.RoleFactory.create(
+        role_name="Test File Scanner Role",
+        privileges=[Privilege.INTERNAL_S3_SCAN],
+        resource_types=[ResourceType.INTERNAL],
+    )
+
+    # Connect user to internal resource with this role
+    resource_user = factories.ResourceUserFactory.create(
+        resource=internal_resource.resource,
+        user=scanner_user,
+    )
+    factories.ResourceUserRoleFactory.create(
+        resource_user=resource_user,
+        role=role,
+    )
+
+    monkeypatch.setenv("LOCAL_FILE_SCANNER_USER_ID", str(scanner_user.user_id))
+    return scanner_user
+
+
+####################
+# Class-based testing
+####################
+
+
+class BaseTestClass:
+    """
+    A base class to derive a test class from. This lets
+    us have a set of fixtures with a scope greater than
+    an individual test, but that need to be more granular than
+    session scoping.
+
+    Useful for avoiding repetition in setup of tests which
+    can be clearer or provide better performance.
+
+    See: https://docs.pytest.org/en/7.1.x/how-to/fixtures.html#fixture-scopes
+
+    For example:
+
+    class TestExampleClass(BaseTestClass):
+
+        @pytest.fixture(scope="class")
+        def setup_data(db_session):
+            # note that the db_session here would be the one created in this class
+            # as it will pull from the class scope instead
+
+            examples = ExampleFactory.create_batch(size=100)
+    """
+
+    @pytest.fixture(scope="class")
+    @classmethod
+    def db_session(cls, db_client, monkeypatch_class):
+        # Note this shadows the db_session fixture for tests in this class
+        with db_client.get_session() as db_session:
+            yield db_session
+
+    @pytest.fixture(scope="class")
+    @classmethod
+    def enable_factory_create(cls, monkeypatch_class, db_session):
+        """
+        Allows the create method of factories to be called. By default, the create
+            throws an exception to prevent accidental creation of database objects for tests
+            that do not need persistence. This fixture only allows the create method to be
+            called for the current class of tests. Each test that needs to call Factory.create should pull in
+            this fixture.
+        """
+        monkeypatch_class.setattr(factories, "_db_session", db_session)

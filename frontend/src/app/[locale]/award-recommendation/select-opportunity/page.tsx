@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { SelectFundingOpportunityContent } from "src/app/[locale]/award-recommendation/select-opportunity/_components/SelectFundingOpportunityContent";
 import withFeatureFlag from "src/services/featureFlags/withFeatureFlag";
-import { searchAccessibleOpportunities } from "src/services/fetch/fetchers/grantorOpportunitiesFetcher";
+import { searchAccessibleAnnouncements } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 import { WithFeatureFlagProps } from "src/types/uiTypes";
 
 import { getTranslations } from "next-intl/server";
@@ -27,7 +27,7 @@ export async function generateMetadata({
 }
 
 const fetchFundingOpportunities = async () => {
-  const json = await searchAccessibleOpportunities({
+  const json = await searchAccessibleAnnouncements({
     page_offset: 1,
     page_size: 25,
     sort_order: [
@@ -55,9 +55,7 @@ async function SelectOpportunityPageContent({
       <CreateAwardRecommendationHeroContent />
 
       <GridContainer>
-        <SelectFundingOpportunityContent
-          fundingOpportunities={fundingOpportunities}
-        />
+        <SelectFundingOpportunityContent announcements={fundingOpportunities} />
       </GridContainer>
     </>
   );

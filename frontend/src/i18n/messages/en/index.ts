@@ -178,7 +178,7 @@ export const messages = {
       login: "Sign in",
       logout: "Sign out",
       menuToggle: "Menu",
-      opportunities: "Opportunities",
+      opportunities: "Announcements",
       settings: "Settings",
       notifications: "Notifications",
       testApplication: "Test application",
@@ -279,25 +279,25 @@ export const messages = {
     signOff: "Thank you for your patience.",
     pageTitle: "Simpler.Grants.gov - Maintenance",
   },
-  Opportunities: {
-    createOpportunityButton: "Create Opportunity",
-    numOpportunities:
-      "{num, plural, =1 {1 opportunity} other {# opportunities}}",
+  Announcements: {
+    createAnnouncementButton: "Create Announcement",
+    numAnnouncements:
+      "{num, plural, =1 {1 announcement} other {# announcements}}",
     errorMessage:
-      "We have encountered an error loading your opportunities, please try again later.",
-    metaDescription: "View draft and published funding opportunities",
-    noOpportunitiesMessage: {
-      primary: "You have not started any opportunities yet.",
+      "We have encountered an error loading your announcements, please try again later.",
+    metaDescription: "View draft and published funding announcements",
+    noAnnouncementsMessage: {
+      primary: "You have not started any announcements yet.",
       secondary:
-        "Opportunities you start or work on will be saved here.  Return anytime to view, continue, or manage them.",
+        "Announcements you start or work on will be saved here.  Return anytime to view, continue, or manage them.",
     },
-    showingOpportunitiesFor: "Showing opportunities for {agencyName}",
+    showingAnnouncementsFor: "Showing announcements for {agencyName}",
     agencySelector: "Select agency",
     agencyNotAuthorized:
-      "You do not have access to this agency's opportunities.",
+      "You do not have access to this agency's announcements.",
     noAgencies: "You are not associated with any agencies.",
-    pageHeading: "Opportunities",
-    pageTitle: "Opportunities List",
+    pageHeading: "Announcements",
+    pageTitle: "Announcements List",
     pageApplication: "Smarter Grants Management",
     tableContents: {
       agency: "Agency: ",
@@ -768,7 +768,7 @@ export const messages = {
       next: "Next",
     },
   },
-  OpportunityOverview: {
+  AnnouncementOverview: {
     pageTitle: "Opportunity Overview",
     pageApplication: "Smarter Grants Management",
     metaDescription: "Opportunity publishing progress overview",
@@ -793,7 +793,7 @@ export const messages = {
     pending: "Pending...",
     errorHeading: "Error",
     successHeading: "Success",
-    CreateOpportunityForm: {
+    CreateAnnouncementForm: {
       opportunityNumber: "Opportunity number",
       opportunityNumberDesc:
         "Enter the unique ID assigned to this funding opportunity.",
@@ -819,8 +819,9 @@ export const messages = {
     },
   },
   OpportunityCompetition: {
-    pageTitle: "Competition",
-    metaDescription: "Set up competition details for this opportunity.",
+    pageTitle: "Application Package",
+    metaDescription:
+      "Set up application package details for this announcement.",
     leftNavTitle: "On this page",
     applicationRequirements: "Application requirements",
     applicationRequirementsSubheader:
@@ -834,10 +835,12 @@ export const messages = {
     alerts: {
       success: "Saved successfully",
       successBody: "Your changes have been saved.",
-      genericError: "Unable to save competition updates.",
-      unauthenticated: "You must be signed in to update this competition.",
-      forbidden: "You do not have permission to update this competition.",
-      notFound: "This competition could not be found.",
+      genericError: "Unable to save application package updates.",
+      unauthenticated:
+        "You must be signed in to update this application package.",
+      forbidden:
+        "You do not have permission to update this application package.",
+      notFound: "This application package could not be found.",
       networkError: "A network error occurred.",
       validationErrors: "Errors Found",
       validationErrorBody: "Please correct the following errors:",
@@ -845,15 +848,15 @@ export const messages = {
     sectionSubmissionSetUp: {
       header: "Submission set-up",
       subHeader:
-        "A competition is one apply-window inside an opportunity. Most opportunities have only one.",
-      publicCompetitionId: "Competition ID",
+        "An application package is one apply-window inside an announcement. Most announcements have only one.",
+      publicCompetitionId: "Application package ID",
       publicCompetitionIdHint:
-        "An ID if this opportunity has multiple competitions.",
-      competitionTitle: "Competition title",
+        "An ID if this announcement has multiple application packages.",
+      competitionTitle: "Application package title",
       competitionTitleHint: "Shown to applicants. Plain language is best.",
       whoCanApply: "Who can apply?",
       whoCanApplyHint:
-        "Applicants who don't match this type won't see the competition in search.",
+        "Applicants who don't match this type won't see the application package in search.",
       whoCanApplyOrganizationsOnly: "Organizations only",
       whoCanApplyIndividualsOnly: "Individuals only",
       whoCanApplyBoth: "Both organizations and individuals",
@@ -911,6 +914,8 @@ export const messages = {
         success:
           "Success: File scan complete. “Save” this form to attach the file.",
         uploading: "Uploading...",
+        deleteConfirmation:
+          "Are you sure you want to delete this Application Instructions file?",
       },
     },
   },
@@ -919,8 +924,8 @@ export const messages = {
     alertMessage:
       "Hard refresh your page when done changing Flags for the changes to fully apply.",
   },
-  OpportunityDetailsHeader: {
-    opportunityNumber: "Opportunity #: {number}",
+  AnnouncementDetailsHeader: {
+    opportunityNumber: "Announcement #: {number}",
     title: "Title:",
     agency: "Agency:",
     subAgency: "Sub-agency:",
@@ -928,9 +933,9 @@ export const messages = {
     lastUpdated: "Last updated:",
     backToOverview: "Back to overview page",
     alerts: {
-      newOpportunityHeading: "Opportunity draft started",
+      newOpportunityHeading: "Announcement draft started",
       newOpportunityBody:
-        "Your initial information has been saved. Complete the sections below to finish your opportunity details",
+        "Your initial information has been saved. Complete the sections below to finish your announcement details",
     },
   },
   AwardRecommendationSelectFundingOpportunity: {

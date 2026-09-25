@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createAwardRecommendationAction } from "src/app/[locale]/award-recommendation/select-opportunity/actions";
-import { BaseOpportunity } from "src/types/opportunity/opportunityResponseTypes";
+import { AnnouncementListItem } from "src/types/announcement/announcementResponseTypes";
 
 import { SelectFundingOpportunityContent } from "./SelectFundingOpportunityContent";
 
@@ -41,40 +41,30 @@ describe("SelectFundingOpportunityContent", () => {
     jest.clearAllMocks();
   });
 
-  const mockFundingOpportunity = (
-    overrides: Partial<BaseOpportunity> = {},
-  ): BaseOpportunity =>
-    ({
-      opportunity_id: "opp-1",
-      opportunity_number: "OPP-001",
-      opportunity_title: "Test Opportunity",
-      submitted_application_count: 3,
+  const mockAnnouncement = (
+    overrides: Partial<AnnouncementListItem> = {},
+  ): AnnouncementListItem => ({
+    announcement_id: "opp-1",
+    announcement_number: "OPP-001",
+    announcement_title: "Test Opportunity",
+    created_at: "2026-06-23T00:00:00Z",
+    updated_at: "2026-06-23T00:00:00Z",
+    forecast_summary: null,
+    non_forecast_summary: {
+      close_timestamp: null,
+      is_forecast: false,
+      post_timestamp: "2026-06-23T00:00:00Z",
+      archive_timestamp: null,
+      funding_instruments: [],
+    },
+    ...overrides,
+  });
 
-      agency_code: null,
-      agency_name: null,
-      category: null,
-      category_explanation: null,
-      created_at: "2026-06-23T00:00:00Z",
-      updated_at: "2026-06-23T00:00:00Z",
-      opportunity_assistance_listings: [],
-      top_level_agency_name: null,
-      is_draft: false,
-      is_simpler_grants_opportunity: true,
-      saved_to_organizations: [],
-      summary: {} as BaseOpportunity["summary"],
-
-      ...overrides,
-    }) as BaseOpportunity;
-
-  const mockFundingOpportunities: BaseOpportunity[] = [
-    mockFundingOpportunity(),
-  ];
+  const mockAnnouncements: AnnouncementListItem[] = [mockAnnouncement()];
 
   it("renders the funding opportunity heading", () => {
     render(
-      <SelectFundingOpportunityContent
-        fundingOpportunities={mockFundingOpportunities}
-      />,
+      <SelectFundingOpportunityContent announcements={mockAnnouncements} />,
     );
 
     expect(
@@ -87,21 +77,17 @@ describe("SelectFundingOpportunityContent", () => {
 
   it("renders the funding opportunities table", () => {
     render(
-      <SelectFundingOpportunityContent
-        fundingOpportunities={mockFundingOpportunities}
-      />,
+      <SelectFundingOpportunityContent announcements={mockAnnouncements} />,
     );
 
     expect(screen.getByText("OPP-001")).toBeInTheDocument();
     expect(screen.getByText("Test Opportunity")).toBeInTheDocument();
-    expect(screen.getByText("3")).toBeInTheDocument();
+    expect(screen.getByText("0")).toBeInTheDocument();
   });
 
   it("renders the cancel button", () => {
     render(
-      <SelectFundingOpportunityContent
-        fundingOpportunities={mockFundingOpportunities}
-      />,
+      <SelectFundingOpportunityContent announcements={mockAnnouncements} />,
     );
 
     expect(
@@ -115,9 +101,7 @@ describe("SelectFundingOpportunityContent", () => {
     const user = userEvent.setup();
 
     render(
-      <SelectFundingOpportunityContent
-        fundingOpportunities={mockFundingOpportunities}
-      />,
+      <SelectFundingOpportunityContent announcements={mockAnnouncements} />,
     );
 
     await user.click(screen.getByRole("button", { name: "Cancel" }));
@@ -133,9 +117,7 @@ describe("SelectFundingOpportunityContent", () => {
     });
 
     render(
-      <SelectFundingOpportunityContent
-        fundingOpportunities={mockFundingOpportunities}
-      />,
+      <SelectFundingOpportunityContent announcements={mockAnnouncements} />,
     );
 
     await user.click(screen.getByRole("button", { name: /Start/i }));
