@@ -44,7 +44,7 @@ def apply_filters(stmt: Select, filters: AnnouncementAuditFilters | None) -> Sel
 
 def get_announcement_audits(
     db_session: db.Session, user: User, announcement_id: uuid.UUID, request: dict
-) -> tuple[list[dict], PaginationInfo]:
+) -> tuple[Sequence[AnnouncementAudit], PaginationInfo]:
     """List an announcement's audit history, paginated.
 
     Raises:
@@ -81,24 +81,4 @@ def get_announcement_audits(
     paginated_results = paginator.page_at(page_offset=params.pagination.page_offset)
     pagination_info = PaginationInfo.from_pagination_params(params.pagination, paginator)
 
-    return _transform_audit_events(paginated_results), pagination_info
-
-
-def _transform_audit_events(audit_events: Sequence[AnnouncementAudit]) -> list[dict]:
-    results = []
-    for audit_event in audit_events:
-        results.append(
-            {
-                "announcement_audit_id": audit_event.announcement_audit_id,
-                "announcement_audit_event": audit_event.announcement_audit_event,
-                "user": audit_event.user,
-                "announcement_summary": audit_event.announcement_summary,
-                "announcement_attachment": audit_event.announcement_attachment,
-                "application_package": audit_event.application_package,
-                "application_package_instruction": audit_event.application_package_instruction,
-                "audit_metadata": audit_event.audit_metadata,
-                "created_at": audit_event.created_at,
-            }
-        )
-
-    return results
+    return paginated_results, pagination_info
