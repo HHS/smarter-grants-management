@@ -9,6 +9,8 @@ from src.api.announcements.announcement_schemas import (
     AnnouncementAttachmentCreateFromPendingFileRequestSchema,
     AnnouncementAttachmentDeleteResponseSchema,
     AnnouncementAttachmentGetResponseSchema,
+    AnnouncementAuditRequestSchema,
+    AnnouncementAuditResponseSchema,
     AnnouncementCreateRequestSchema,
     AnnouncementListRequestSchema,
     AnnouncementListResponseSchema,
@@ -38,6 +40,7 @@ from src.services.announcements.get_announcement import get_announcement_and_ver
 from src.services.announcements.get_announcement_attachment import (
     get_announcement_attachment_and_verify_access,
 )
+from src.services.announcements.get_announcement_audits import get_announcement_audits
 from src.services.announcements.get_application_package import (
     get_application_package_and_verify_access,
 )
@@ -424,3 +427,32 @@ def put_application_package_forms(
         )
 
     return response.ApiResponse(message="Success", data=application_package)
+
+
+@announcement_blueprint.post("/<uuid:announcement_id>/audit_events")
+@announcement_blueprint.input(AnnouncementAuditRequestSchema, location="json")
+@announcement_blueprint.output(AnnouncementAuditResponseSchema)
+@announcement_blueprint.doc(
+    summary="Get Announcement Audit History",
+    description="Get an announcement's audit history, paginated.",
+    responses=[200, 401, 403, 404, 422],
+)
+@announcement_blueprint.auth_required(jwt_or_api_user_key_multi_auth)
+@flask_db.with_db_session()
+def announcement_audit_events(
+    db_session: db.Session, announcement_id: uuid.UUID, json_data: dict
+) -> response.ApiResponse:
+    add_extra_data_to_current_request_logs({"announcement_id": announcement_id})
+    logger.info("POST /v1/announcements/:announcement_id/audit_events")
+
+    with db_session.begin():
+        user = jwt_or_api_user_key_multi_auth.get_user()
+        db_session.add(user)
+
+        audit_events, pagination_info = get_announcement_audits(
+            db_session, user, announcement_id, json_data
+        )
+
+    return response.ApiResponse(
+        message="Success", data=audit_events, pagination_info=pagination_info
+    )

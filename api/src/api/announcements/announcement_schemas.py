@@ -11,7 +11,9 @@ from src.api.schemas.extension import (
 )
 from src.api.schemas.file_schema import FileAttachmentDownloadSchema, FileAttachmentSchema
 from src.api.schemas.response_schema import AbstractResponseSchema, PaginationMixinSchema
+from src.api.schemas.search_schema import StrSearchSchemaBuilder
 from src.constants.lookup_constants import (
+    AnnouncementAuditEvent,
     AnnouncementCategory,
     ApplicantType,
     ApplicationPackageOpenToApplicant,
@@ -941,6 +943,135 @@ class ApplicationPackageWithInstructionSchema(ApplicationPackageSchema):
 
 class ApplicationPackageResponseSchema(AbstractResponseSchema):
     data = fields.Nested(ApplicationPackageWithInstructionSchema())
+
+
+class AnnouncementAuditUserSchema(Schema):
+    user_id = fields.UUID(metadata={"description": "The user's unique identifier"})
+    email = fields.String(
+        allow_none=True,
+        metadata={"description": "The user's email address, null if they have no login"},
+    )
+
+
+class AnnouncementAuditSummarySchema(Schema):
+    announcement_summary_id = fields.UUID(
+        metadata={"description": "The announcement summary's unique identifier"}
+    )
+    is_forecast = fields.Boolean(
+        metadata={"description": "Whether the announcement summary is a forecast"}
+    )
+    post_timestamp = fields.DateTime(
+        allow_none=True, metadata={"description": "The date the announcement was posted"}
+    )
+    close_timestamp = fields.DateTime(
+        allow_none=True, metadata={"description": "The date the announcement will close"}
+    )
+
+
+class AnnouncementAuditAttachmentSchema(Schema):
+    announcement_attachment_id = fields.UUID(
+        metadata={"description": "The announcement attachment's unique identifier"}
+    )
+    file_name = fields.String(
+        attribute="file_attachment.file_name",
+        metadata={"description": "The name of the attachment file"},
+    )
+
+
+class AnnouncementAuditApplicationPackageSchema(Schema):
+    application_package_id = fields.UUID(
+        metadata={"description": "The application package's unique identifier"}
+    )
+    application_package_title = fields.String(
+        allow_none=True, metadata={"description": "The title of the application package"}
+    )
+    opening_timestamp = fields.DateTime(
+        allow_none=True,
+        metadata={"description": "The opening date of the application package"},
+    )
+    closing_timestamp = fields.DateTime(
+        allow_none=True,
+        metadata={"description": "The closing date of the application package"},
+    )
+
+
+class AnnouncementAuditApplicationPackageInstructionSchema(Schema):
+    application_package_instruction_id = fields.UUID(
+        metadata={"description": "The application package instruction's unique identifier"}
+    )
+    file_name = fields.String(
+        attribute="file_attachment.file_name",
+        metadata={"description": "The name of the instruction file"},
+    )
+
+
+class AnnouncementAuditEventSchema(Schema):
+    announcement_audit_id = fields.UUID(
+        metadata={"description": "The audit record's unique identifier"}
+    )
+    announcement_audit_event = fields.Enum(
+        AnnouncementAuditEvent,
+        metadata={
+            "description": "The type of change that occurred",
+            "example": AnnouncementAuditEvent.ANNOUNCEMENT_CREATED,
+        },
+    )
+    user = fields.Nested(
+        AnnouncementAuditUserSchema, metadata={"description": "The user who made the change"}
+    )
+    announcement_summary = fields.Nested(
+        AnnouncementAuditSummarySchema,
+        allow_none=True,
+        metadata={"description": "The announcement summary affected, if applicable"},
+    )
+    announcement_attachment = fields.Nested(
+        AnnouncementAuditAttachmentSchema,
+        allow_none=True,
+        metadata={"description": "The announcement attachment affected, if applicable"},
+    )
+    application_package = fields.Nested(
+        AnnouncementAuditApplicationPackageSchema,
+        allow_none=True,
+        metadata={"description": "The application package affected, if applicable"},
+    )
+    application_package_instruction = fields.Nested(
+        AnnouncementAuditApplicationPackageInstructionSchema,
+        allow_none=True,
+        metadata={"description": "The application package instruction affected, if applicable"},
+    )
+    audit_metadata = fields.Dict(
+        allow_none=True,
+        metadata={"description": "Additional freeform metadata recorded with the change"},
+    )
+    created_at = fields.DateTime(metadata={"description": "When the audit event occurred"})
+
+
+class AnnouncementAuditFilterSchema(Schema):
+    announcement_audit_event = fields.Nested(
+        StrSearchSchemaBuilder("AnnouncementAuditEventOneOfSchema")
+        .with_one_of(allowed_values=AnnouncementAuditEvent)
+        .build(),
+        metadata={"description": "Only return audit events of these types"},
+    )
+
+
+class AnnouncementAuditRequestSchema(Schema):
+    filters = fields.Nested(AnnouncementAuditFilterSchema())
+
+    pagination = fields.Nested(
+        generate_pagination_schema(
+            "AnnouncementAuditPaginationSchema",
+            ["created_at"],
+            default_sort_order=[{"order_by": "created_at", "sort_direction": "descending"}],
+            default_page_size=25,
+            default_page_offset=1,
+        ),
+        required=True,
+    )
+
+
+class AnnouncementAuditResponseSchema(AbstractResponseSchema, PaginationMixinSchema):
+    data = fields.List(fields.Nested(AnnouncementAuditEventSchema))
 
 
 class AnnouncementAttachmentGetResponseSchema(AbstractResponseSchema):
