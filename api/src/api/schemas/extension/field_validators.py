@@ -3,7 +3,7 @@ import re
 import typing
 
 from apiflask import validators  # ruff: ignore[banned-api]
-from marshmallow import ValidationError
+from marshmallow import ValidationError, missing
 from marshmallow.validate import _SizedT  # ruff: ignore[banned-api]
 
 from src.api.schemas.extension.schema_common import MarshmallowErrorContainer
@@ -39,7 +39,7 @@ class Regexp(validators.Regexp):
     def __call__(self, value: str | bytes) -> str | bytes:
         if self.regex.match(value) is None:  # type: ignore
             raise ValidationError(
-                [MarshmallowErrorContainer(SchemaValidationError.FORMAT, self.error)]
+                [MarshmallowErrorContainer(SchemaValidationError.FORMAT, self.error, value=value)]
             )
 
         return value
@@ -75,7 +75,7 @@ class Length(validators.Length):
         ),
     }
 
-    def _make_error(self, key: str) -> ValidationError:
+    def _make_error(self, key: str, value: _SizedT) -> ValidationError:
         try:
             # Make a copy of the error mapping so we aren't modifying
             # the class-level configurations above when we do formatting
@@ -91,6 +91,8 @@ class Length(validators.Length):
         error_container.message = error_container.message.format(
             min=self.min, max=self.max, equal=self.equal
         )
+        error_container.value = value
+        error_container.metadata = {"minimum": self.min, "maximum": self.max, "equal": self.equal}
 
         return ValidationError([error_container])
 
@@ -99,16 +101,16 @@ class Length(validators.Length):
 
         if self.equal is not None:
             if length != self.equal:
-                raise self._make_error("message_equal")
+                raise self._make_error("message_equal", value)
             return value
 
         if self.min is not None and length < self.min:
             key = "message_min" if self.max is None else "message_all"
-            raise self._make_error(key)
+            raise self._make_error(key, value)
 
         if self.max is not None and length > self.max:
             key = "message_max" if self.min is None else "message_all"
-            raise self._make_error(key)
+            raise self._make_error(key, value)
 
         return value
 
@@ -158,7 +160,7 @@ class WordLimit(validators.Validator):
         self.max = max
         self.equal = equal
 
-    def _make_error(self, key: str) -> ValidationError:
+    def _make_error(self, key: str, value: str) -> ValidationError:
         try:
             # Make a copy of the error mapping so we aren't modifying
             # the class-level configurations above when we do formatting
@@ -174,6 +176,8 @@ class WordLimit(validators.Validator):
         error_container.message = error_container.message.format(
             min=self.min, max=self.max, equal=self.equal
         )
+        error_container.value = value
+        error_container.metadata = {"minimum": self.min, "maximum": self.max, "equal": self.equal}
 
         return ValidationError([error_container])
 
@@ -182,16 +186,16 @@ class WordLimit(validators.Validator):
 
         if self.equal is not None:
             if length != self.equal:
-                raise self._make_error("message_equal")
+                raise self._make_error("message_equal", value)
             return value
 
         if self.min is not None and length < self.min:
             key = "message_min" if self.max is None else "message_all"
-            raise self._make_error(key)
+            raise self._make_error(key, value)
 
         if self.max is not None and length > self.max:
             key = "message_max" if self.min is None else "message_all"
-            raise self._make_error(key)
+            raise self._make_error(key, value)
 
         return value
 
@@ -211,6 +215,8 @@ class Email(validators.Email):
             return super().__call__(value)
         except ValidationError:
             # Fix the validation error to have our format
+            error_container = copy.copy(self.EMAIL_ERROR)
+            error_container.value = value
             raise ValidationError([self.EMAIL_ERROR]) from None
 
 
@@ -221,7 +227,9 @@ class URL(validators.URL):
         try:
             return super().__call__(value)
         except ValidationError:
-            raise ValidationError([self.URL_ERROR]) from None
+            error_container = copy.copy(self.URL_ERROR)
+            error_container.value = value
+            raise ValidationError([error_container]) from None
 
 
 class OneOf(validators.OneOf):
@@ -239,6 +247,8 @@ class OneOf(validators.OneOf):
         if value not in self.choices:
             error_container = copy.copy(self.CONTAINS_ONLY_ERROR)
             error_container.message = error_container.message.format(choices_text=self.choices_text)
+            error_container.value = value
+            error_container.metadata = {"choices": self.choices}
             raise ValidationError([error_container])
 
         return value
@@ -262,4 +272,16 @@ class Range(validators.Range):
         else:  # must be max, init requires you set something
             error_type = SchemaValidationError.MAX_VALUE
 
-        return [MarshmallowErrorContainer(error_type, super()._format_error(value, message))]
+        return [
+            MarshmallowErrorContainer(
+                error_type,
+                super()._format_error(value, message),
+                value=value,
+                metadata={
+                    "minimum": self.min,
+                    "maximum": self.max,
+                    "minimum_exclusive": self.min_inclusive,
+                    "maximum_exclusive": self.max_inclusive,
+                },
+            )
+        ]
