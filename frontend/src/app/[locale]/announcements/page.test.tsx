@@ -270,7 +270,7 @@ describe("Announcements", () => {
       await screen.findByTestId("announcement-status-posted"),
     ).toBeVisible();
 
-    const viewLink = "/announcement/" + baseAnnouncement.announcement_id;
+    const viewLink = "/announcement/" + baseAnnouncement.announcement_id + "/overview";
     const announcementTitleLink = screen.getByRole("link", {
       name: "Test Announcement",
     });
