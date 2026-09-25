@@ -127,7 +127,7 @@ const headers = [
   // don't cache if users has a session cookie
   {
     source: "/:path*",
-    has: [{ type: "cookie", key: "session" }],
+    has: [{ type: "cookie", key: "sgm-session" }],
     headers: [
       {
         key: "Cache-Control",

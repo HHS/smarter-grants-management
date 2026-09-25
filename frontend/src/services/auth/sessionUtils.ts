@@ -56,7 +56,7 @@ export const encrypt = async (
 
 export async function deleteSession() {
   const cookie = await cookies();
-  cookie.delete("session");
+  cookie.delete("sgm-session");
 }
 
 export async function setLogoutTokenCookie(token: string) {

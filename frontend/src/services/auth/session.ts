@@ -61,7 +61,7 @@ export const createSession = async (token: string, expiration: Date) => {
   }
   const session = await encrypt(token, expiration, clientJwtKey);
   const cookie = await cookies();
-  cookie.set("session", session, {
+  cookie.set("sgm-session", session, {
     httpOnly: true,
     secure: environment.ENVIRONMENT === "prod",
     expires: expiration,

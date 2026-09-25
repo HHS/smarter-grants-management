@@ -6,7 +6,7 @@ import playwrightEnv from "tests/e2e/playwright-env";
 
   this file contains functionality for creating client side cookies to spoof a logged in user
   for use in locally running Playwright targeted environments.
-  
+
   this won't work in any deployed environment
 
   most of this is copied from src/services/auth/session in order to keep app logic and test logic separate
@@ -77,7 +77,7 @@ export const createSpoofedSessionCookie = async (
   //    logging the spoofed user out on the client.
   await context.addCookies([
     {
-      name: "session",
+      name: "sgm-session",
       value: token,
       url: playwrightEnv.baseUrl,
       httpOnly: true,

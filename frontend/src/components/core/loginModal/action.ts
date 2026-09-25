@@ -3,12 +3,11 @@
 import { UnauthorizedError } from "src/errors";
 import { getJWTWithApiKeyLogin } from "src/services/fetch/fetchers/apiKeyLoginFetcher";
 
-import { redirect } from "next/navigation";
-
 type ApiKeyLoginActionState = {
   error?: boolean;
   success?: boolean;
   unauthenticated?: boolean;
+  token?: string;
 };
 
 export const apiKeyLoginAction = async (
@@ -25,6 +24,7 @@ export const apiKeyLoginAction = async (
     if (!token) {
       throw new Error("no token!");
     }
+    return { token };
   } catch (e) {
     console.error("Failed login", e);
     // I know, this should be an unauthenticated error, but fixing that is out of scope rn
@@ -36,5 +36,4 @@ export const apiKeyLoginAction = async (
       success: false,
     };
   }
-  redirect(`/api/auth/callback?token=${token}`);
 };
