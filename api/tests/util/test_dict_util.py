@@ -1,6 +1,16 @@
+import uuid
+from datetime import datetime
+from enum import StrEnum
+from types import SimpleNamespace
+
 import pytest
 
-from src.util.dict_util import diff_nested_dicts, flatten_dict, get_nested_value
+from src.util.dict_util import diff_nested_dicts, flatten_dict, get_nested_value, snapshot_fields
+
+
+class _Color(StrEnum):
+    RED = "red"
+    BLUE = "blue"
 
 
 @pytest.mark.parametrize(
@@ -66,12 +76,12 @@ def test_flatten_dict(data, expected_output):
                 "d": "dog",  # new field added
             },
             # expected output
-            [
-                {"field": "a", "before": "apple", "after": None},
-                {"field": "b.y", "before": 2, "after": 3},
-                {"field": "c", "before": 100, "after": 200},
-                {"field": "d", "before": None, "after": "dog"},
-            ],
+            {
+                "a": {"before": "apple", "after": None},
+                "b.y": {"before": 2, "after": 3},
+                "c": {"before": 100, "after": 200},
+                "d": {"before": None, "after": "dog"},
+            },
         ),
         (
             # dict1
@@ -83,10 +93,10 @@ def test_flatten_dict(data, expected_output):
                 "e": "elephant",  # no change
             },
             # expected output
-            [
-                {"field": "a", "before": "ball", "after": "bat"},
-                {"field": "b.q", "before": 10, "after": 1.1},
-            ],
+            {
+                "a": {"before": "ball", "after": "bat"},
+                "b.q": {"before": 10, "after": 1.1},
+            },
         ),
         (
             # dict1
@@ -98,7 +108,7 @@ def test_flatten_dict(data, expected_output):
                 "z": {"m": "mouse", "n": False},  # no change  # changed n
             },
             # expected output
-            [{"field": "z.n", "before": True, "after": False}],
+            {"z.n": {"before": True, "after": False}},
         ),
         (
             # dict1
@@ -106,7 +116,7 @@ def test_flatten_dict(data, expected_output):
             # dict2
             {"x": {"x": {"x": [1, 2, True]}}},  # no change
             # expected output
-            [],
+            {},
         ),
         (
             # dict1
@@ -114,7 +124,7 @@ def test_flatten_dict(data, expected_output):
             # dict2
             {"x": {"x": {"x": [1, True, 2]}}},  # re-ordered list
             # expected output
-            [],
+            {},
         ),
         (
             # dict1
@@ -122,23 +132,84 @@ def test_flatten_dict(data, expected_output):
             # dict2
             {"x": {"y": [1, 2], "z": 4}},  # missing x
             # expected output
-            [
-                {"field": "x.x", "before": [1, 2], "after": None},
-                {"field": "x.y", "before": None, "after": [1, 2]},
-                {"field": "x.z", "before": None, "after": 4},
-            ],
+            {
+                "x.x": {"before": [1, 2], "after": None},
+                "x.y": {"before": None, "after": [1, 2]},
+                "x.z": {"before": None, "after": 4},
+            },
         ),
     ],
 )
 def test_diff_nested_dicts(dict1, dict2, expected_output):
     result = diff_nested_dicts(dict1, dict2)
 
-    assert len(result) == len(expected_output)
+    assert result == expected_output
 
-    expected_sorted = sorted(expected_output, key=lambda x: x["field"])
-    sorted_result = sorted(result, key=lambda x: x["field"])
 
-    assert expected_sorted == sorted_result
+def test_snapshot_fields_none_object_returns_all_none():
+    result = snapshot_fields(None, ["name", "count"])
+
+    assert result == {"name": None, "count": None}
+
+
+def test_snapshot_fields_reads_plain_attributes():
+    obj = SimpleNamespace(name="widget", count=3)
+
+    result = snapshot_fields(obj, ["name", "count"])
+
+    assert result == {"name": "widget", "count": 3}
+
+
+def test_snapshot_fields_normalizes_uuid():
+    item_id = uuid.uuid4()
+    obj = SimpleNamespace(item_id=item_id)
+
+    result = snapshot_fields(obj, ["item_id"])
+
+    assert result == {"item_id": str(item_id)}
+
+
+def test_snapshot_fields_normalizes_datetime():
+    created_at = datetime(2026, 1, 1, 0, 0, 0)
+    obj = SimpleNamespace(created_at=created_at)
+
+    result = snapshot_fields(obj, ["created_at"])
+
+    assert result == {"created_at": created_at.isoformat()}
+
+
+def test_snapshot_fields_normalizes_str_enum():
+    obj = SimpleNamespace(color=_Color.RED)
+
+    result = snapshot_fields(obj, ["color"])
+
+    assert result == {"color": _Color.RED.value}
+
+
+def test_snapshot_fields_normalizes_set_as_list():
+    obj = SimpleNamespace(tags={"alpha"})
+
+    result = snapshot_fields(obj, ["tags"])
+
+    assert result == {"tags": ["alpha"]}
+
+
+def test_snapshot_fields_normalizes_nested_list_of_dicts():
+    obj = SimpleNamespace(
+        items=[
+            {"id": 1, "active": True},
+            {"id": 2, "active": False},
+        ]
+    )
+
+    result = snapshot_fields(obj, ["items"])
+
+    assert result == {
+        "items": [
+            {"id": 1, "active": True},
+            {"id": 2, "active": False},
+        ]
+    }
 
 
 # Test data for get_nested_value tests

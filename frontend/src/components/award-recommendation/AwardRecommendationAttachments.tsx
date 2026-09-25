@@ -71,7 +71,6 @@ export const AwardRecommendationAttachments = ({
   };
 
   useEffect(() => {
-    // TODO #9633
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void fetchRisks();
     // eslint-disable-next-line react-hooks/exhaustive-deps

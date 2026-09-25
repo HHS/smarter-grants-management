@@ -38,11 +38,18 @@ class FileAttachmentSchema(Schema):
         of the many-to-many table in the response.
         """
 
-        # Only return the file_attachment if its set + actually a file attachment,
-        # otherwise just return the record as-is.
+        # If the record has a file_attachment record associated with it,
+        # we'll merge the file_attachment & whatever was passed in
         file_attachment = getattr(record, "file_attachment", None)
         if file_attachment is not None and isinstance(file_attachment, FileAttachment):
-            return file_attachment
+            data = record.as_dict() | file_attachment.as_dict()
+            # If download_path is a declared field (like in FileAttachmentDownloadSchema below)
+            # also add it to the response. It wouldn't be grabbed by as_dict
+            # since that only grabs columns and download_path is a property.
+            if "download_path" in self.declared_fields:
+                data["download_path"] = file_attachment.download_path
+
+            return data
 
         return record
 

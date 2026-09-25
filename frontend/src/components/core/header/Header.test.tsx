@@ -142,35 +142,6 @@ describe("Header", () => {
     expect(homeLink).toHaveClass("usa-current");
   });
 
-  // it("closes an open subnav on the next click", async () => {
-  //   userEvent.setup({ skipHover: true });
-  //   render(<Header {...props} />);
-
-  //   const workspaceButton = screen.getByRole("button", {
-  //     name: "workspace",
-  //   });
-  //   expect(workspaceButton).toHaveAttribute("aria-expanded", "false");
-  //   // the submenu assertions are not strictly necessary, but I could not get the timing to work right
-  //   // to get tests to pass correctly without them, so leaving them in
-  //   const subMenu = workspaceButton.nextSibling;
-  //   expect(subMenu).not.toBeVisible();
-
-  //   await userEvent.click(workspaceButton);
-
-  //   await waitFor(() =>
-  //     expect(workspaceButton).toHaveAttribute("aria-expanded", "true"),
-  //   );
-  //   await waitFor(() => expect(subMenu).toBeVisible());
-
-  //   const anywhereElse = screen.getByText("home");
-  //   await userEvent.click(anywhereElse);
-
-  //   await waitFor(() =>
-  //     expect(workspaceButton).toHaveAttribute("aria-expanded", "false"),
-  //   );
-  //   await waitFor(() => expect(subMenu).not.toBeVisible());
-  // });
-
   it("shows snackbar if user has been logged out", () => {
     mockUseUser.mockReturnValue({
       user: {

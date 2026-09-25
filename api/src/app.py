@@ -18,6 +18,7 @@ from src.api.grantor_organizations.grantor_organization_blueprint import (
     grantor_organization_blueprint,
 )
 from src.api.healthcheck.healthcheck_blueprint import healthcheck_blueprint
+from src.api.internal.internal_blueprint import internal_blueprint
 from src.api.local import local_blueprint
 from src.api.partners.partner_blueprint import partner_blueprint
 from src.api.proof_of_concept.proof_of_concept_blueprint import proof_of_concept_blueprint
@@ -33,6 +34,7 @@ from src.auth.auth_utils import get_app_security_scheme
 from src.auth.login_gov_jwt_auth import initialize_login_gov_config
 from src.constants.lookup_constants import ResourceType
 from src.db.resource_automation.resource_automation import setup_resource_automation
+from src.services.files.local_file_scanner import setup_local_file_scanner
 from src.task.task_blueprint import task_blueprint
 from src.util.env_config import PydanticBaseEnvConfig
 from src.util.local import error_if_not_local
@@ -74,6 +76,8 @@ def create_app() -> APIFlask:
     register_index(app)
     register_robots_txt(app)
 
+    setup_local_file_scanner()
+
     logger.info("Finished setting up Flask app")
     return app
 
@@ -111,6 +115,7 @@ def register_blueprints(app: APIFlask) -> None:
     app.register_blueprint(file_blueprint)
     app.register_blueprint(announcement_blueprint)
     app.register_blueprint(assistance_listing_blueprint)
+    app.register_blueprint(internal_blueprint)
     app.register_blueprint(form_blueprint)
     # Local endpoints for development, will error
     # if this is ever enabled non-locally.

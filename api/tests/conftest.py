@@ -1,6 +1,5 @@
 import os
 import uuid
-from types import SimpleNamespace
 
 import _pytest.monkeypatch
 import boto3
@@ -23,6 +22,7 @@ from src.adapters.simpler_grants import client as simpler_grants_client
 from src.adapters.simpler_grants.mock_client import MockSimplerGrantsClient
 from src.auth.api_jwt_auth import create_jwt_for_user
 from src.auth.internal_resource import create_internal_resource
+from src.constants.lookup_constants import Privilege, ResourceType
 from src.db import models
 from src.db.models.lookup.sync_lookup_values import sync_lookup_values
 from src.db.resource_automation.resource_automation import setup_resource_automation
@@ -486,17 +486,30 @@ def user_api_key_id(user_api_key):
 
 
 @pytest.fixture
-def mock_dynamodb_and_s3(mock_file_scan_s3_bucket_name, file_scan_dynamodb_table):
-    """Convenience fixture bundling S3 bucket and DynamoDB table for file scan tests.
+def s3_scanner_user(db_session, enable_factory_create, internal_resource, monkeypatch):
+    """Create a user with INTERNAL_S3_SCAN privilege for file scanner tests."""
 
-    Yields a namespace with ``table_name``, ``bucket``, and a ``dynamodb_client``
-    for seeding scan records.
-    """
-    return SimpleNamespace(
-        table_name=file_scan_dynamodb_table,
-        bucket=mock_file_scan_s3_bucket_name,
-        dynamodb_client=boto3.client("dynamodb", region_name="us-east-1"),
+    scanner_user = factories.UserFactory.create()
+
+    # Create a role with INTERNAL_S3_SCAN privilege
+    role = factories.RoleFactory.create(
+        role_name="Test File Scanner Role",
+        privileges=[Privilege.INTERNAL_S3_SCAN],
+        resource_types=[ResourceType.INTERNAL],
     )
+
+    # Connect user to internal resource with this role
+    resource_user = factories.ResourceUserFactory.create(
+        resource=internal_resource.resource,
+        user=scanner_user,
+    )
+    factories.ResourceUserRoleFactory.create(
+        resource_user=resource_user,
+        role=role,
+    )
+
+    monkeypatch.setenv("LOCAL_FILE_SCANNER_USER_ID", str(scanner_user.user_id))
+    return scanner_user
 
 
 ####################

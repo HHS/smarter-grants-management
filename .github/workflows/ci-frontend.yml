@@ -8,9 +8,6 @@ on:
         default: false
         description: Skip the guts of this workflow, but we have to run the workflow for dependency reasons when calling from CD workflows
   pull_request:
-    paths:
-      - frontend/**
-      - .github/workflows/ci-frontend.yml
 
 defaults:
   run:
@@ -26,8 +23,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    name: Check for frontend changes
+    runs-on: ubuntu-22.04
+    outputs:
+      frontend: ${{ steps.changed-frontend-files.outputs.any_changed }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get changed frontend files
+        id: changed-frontend-files
+        uses: tj-actions/changed-files@v47.0.6
+        with:
+          files: |
+            frontend/**
+            .github/workflows/ci-frontend.yml
+
   tests:
-    if: ${{ inputs.skip_checks == null || inputs.skip_checks == false }}
+    needs: changes
+    if: ${{ (inputs.skip_checks == null || inputs.skip_checks == false) && (github.event_name != 'pull_request' || needs.changes.outputs.frontend == 'true') }}
     name: FE Lint, Type Check, Format & Tests
     runs-on: ubuntu-22.04
 
@@ -63,7 +77,8 @@ jobs:
 
   # Confirms the front end still builds successfully
   check-frontend-builds:
-    if: ${{ inputs.skip_checks == null || inputs.skip_checks == false }}
+    needs: changes
+    if: ${{ (inputs.skip_checks == null || inputs.skip_checks == false) && (github.event_name != 'pull_request' || needs.changes.outputs.frontend == 'true') }}
     name: FE Build Check
     runs-on: ubuntu-22.04
 
@@ -107,7 +122,8 @@ jobs:
   #     - run: npm run storybook-build
 
   skip-checks:
-    if: ${{ inputs.skip_checks != null && inputs.skip_checks == true }}
+    needs: changes
+    if: ${{ (inputs.skip_checks != null && inputs.skip_checks == true) || (github.event_name == 'pull_request' && needs.changes.outputs.frontend != 'true') }}
     name: Skip Checks
     runs-on: ubuntu-22.04
     steps:

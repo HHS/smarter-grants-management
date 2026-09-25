@@ -9,6 +9,7 @@ from src.api.route_utils import raise_flask_error
 from src.db.models.announcement_models import (
     Announcement,
     AnnouncementAssistanceListing,
+    AnnouncementAttachment,
     AnnouncementSummary,
 )
 from src.db.models.application_package_models import ApplicationPackage
@@ -31,6 +32,9 @@ def announcement_response_options() -> tuple[ORMOption, ...]:
             selectinload(ApplicationPackage.announcement_assistance_listing),
             selectinload(ApplicationPackage.link_application_package_open_to_applicant),
         ),
+        selectinload(Announcement.announcement_attachments).selectinload(
+            AnnouncementAttachment.file_attachment
+        ),
     )
 
 
@@ -38,6 +42,7 @@ def get_announcement(db_session: db.Session, announcement_id: uuid.UUID) -> Anno
     announcement = db_session.execute(
         select(Announcement)
         .where(Announcement.announcement_id == announcement_id)
+        .where(Announcement.is_deleted.is_(False))
         .options(*announcement_response_options())
     ).scalar_one_or_none()
 
