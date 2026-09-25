@@ -28,6 +28,7 @@ const CopyIcon = ({
             setTimeout(() => {
               setCopied(false);
             }, 2000);
+            return null;
           })
           .catch((e) => {
             console.error("Error copying to clipboard", e);
