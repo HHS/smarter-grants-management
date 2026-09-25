@@ -24,7 +24,7 @@ export function ApplicationInstructions({
   existingFiles = [],
 }: ApplicationInstructionsProps) {
   const t = useTranslations(
-    "OpportunityApplicationPackage.sectionApplicationInstructions",
+    "OpportunityCompetition.sectionApplicationInstructions",
   );
   const { clientFetch } = useClientFetch<Response>(
     "Error deleting the application instructions file",

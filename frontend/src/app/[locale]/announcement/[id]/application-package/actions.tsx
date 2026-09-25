@@ -97,7 +97,7 @@ export async function updateApplicationPackage(
   formData: FormData,
   requiredForms: ApplicationPackageFormsSubmitApi,
 ): Promise<ApplicationPackageActionState> {
-  const t = await getTranslations("OpportunityApplicationPackage.alerts");
+  const t = await getTranslations("OpportunityCompetition.alerts");
   const announcementId = formData.get("announcementId") as string | null;
   let applicationPackageId = formData.get("applicationPackageId") as
     string | null;

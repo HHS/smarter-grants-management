@@ -42,7 +42,7 @@ export function ApplicationPackageForm({
   applicationPackage,
   forms,
 }: ApplicationPackageFormProps) {
-  const t = useTranslations("OpportunityApplicationPackage");
+  const t = useTranslations("OpportunityCompetition");
 
   const applicationPackageId: string =
     applicationPackage?.applicationPackage_id || "";

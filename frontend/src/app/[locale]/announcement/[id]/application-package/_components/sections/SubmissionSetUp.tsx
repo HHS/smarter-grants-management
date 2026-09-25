@@ -20,9 +20,7 @@ export function SubmissionSetUp({
   applicationPackageTitle,
   openToApplicants = [],
 }: SubmissionSetUpProps) {
-  const t = useTranslations(
-    "OpportunityApplicationPackage.sectionSubmissionSetUp",
-  );
+  const t = useTranslations("OpportunityCompetition.sectionSubmissionSetUp");
   const applicantSelection =
     openToApplicants.length === 2
       ? "both"

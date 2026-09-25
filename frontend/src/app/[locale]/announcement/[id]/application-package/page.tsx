@@ -28,7 +28,7 @@ export const dynamic = "force-dynamic";
 const blockedForms = ["cf355a4d-d840-43fd-a78f-729edf41ab4c"];
 
 const ButtonSaveAndExit = () => {
-  const t = useTranslations("OpportunityApplicationPackage");
+  const t = useTranslations("OpportunityCompetition");
   return (
     <>
       <Button
@@ -52,7 +52,7 @@ export default async function OpportunityApplicationPackagePage({
   });
   const t = await getTranslations({
     locale,
-    namespace: "OpportunityApplicationPackage",
+    namespace: "OpportunityCompetition",
   });
 
   let opportunityData;

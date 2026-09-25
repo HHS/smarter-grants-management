@@ -818,7 +818,7 @@ export const messages = {
       successMessage: "Opportunity started. Continuing shortly...",
     },
   },
-  OpportunityApplicationPackage: {
+  OpportunityCompetition: {
     pageTitle: "Application Package",
     metaDescription:
       "Set up application package details for this announcement.",

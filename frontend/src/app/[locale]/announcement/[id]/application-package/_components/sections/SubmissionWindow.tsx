@@ -16,9 +16,7 @@ export function SubmissionWindow({
   closingDate,
   gracePeriod,
 }: SubmissionWindowProps) {
-  const t = useTranslations(
-    "OpportunityApplicationPackage.sectionSubmissionWindow",
-  );
+  const t = useTranslations("OpportunityCompetition.sectionSubmissionWindow");
 
   return (
     <div
