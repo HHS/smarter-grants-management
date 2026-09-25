@@ -13,7 +13,9 @@ type AgencyContactProps = {
 };
 
 export function AgencyContact({ contactInfo }: AgencyContactProps) {
-  const t = useTranslations("OpportunityCompetition.sectionAgencyContact");
+  const t = useTranslations(
+    "OpportunityApplicationPackage.sectionAgencyContact",
+  );
   const contactValues = contactInfo?.split(" | ") ?? [];
   const [
     contactName = "",

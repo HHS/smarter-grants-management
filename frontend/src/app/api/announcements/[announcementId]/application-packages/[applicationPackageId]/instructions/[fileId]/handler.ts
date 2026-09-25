@@ -1,6 +1,6 @@
 import { readError } from "src/errors";
 import { getSession } from "src/services/auth/session";
-import { deleteCompetitionInstructions } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
+import { deleteApplicationPackageInstructions } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 
 import { NextRequest, NextResponse } from "next/server";
 
@@ -9,15 +9,15 @@ export async function DELETE(
   context: {
     params: Promise<{
       announcementId: string;
-      competitionId: string;
+      applicationPackageId: string;
       fileId: string;
     }>;
   },
 ) {
   const {
     announcementId,
-    competitionId: applicationPackageId,
-    fileId: competitionInstructionId,
+    applicationPackageId: applicationPackageId,
+    fileId: applicationPackageInstructionId,
   } = await context.params;
 
   if (!announcementId) {
@@ -32,7 +32,7 @@ export async function DELETE(
       { status: 400 },
     );
   }
-  if (!competitionInstructionId) {
+  if (!applicationPackageInstructionId) {
     return NextResponse.json(
       { error: "ApplicationPackage Instruction ID is required" },
       { status: 400 },
@@ -42,21 +42,27 @@ export async function DELETE(
   const currentSession = await getSession();
   if (!currentSession) {
     return NextResponse.json(
-      { error: "Not logged in, cannot delete competition instructions file" },
+      {
+        error:
+          "Not logged in, cannot delete applicationPackage instructions file",
+      },
       { status: 401 },
     );
   }
 
   try {
-    const response = await deleteCompetitionInstructions(
+    const response = await deleteApplicationPackageInstructions(
       announcementId,
       applicationPackageId,
-      competitionInstructionId,
+      applicationPackageInstructionId,
     );
 
     return NextResponse.json({ data: response });
   } catch (error) {
-    console.error("Error deleting competition instructions file:", error);
+    console.error(
+      "Error deleting applicationPackage instructions file:",
+      error,
+    );
     const { status, message, cause } = readError(error as Error, 500);
 
     return NextResponse.json(

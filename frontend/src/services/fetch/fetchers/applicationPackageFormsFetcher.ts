@@ -1,17 +1,17 @@
 import { ApplicationPackageFormsApiResponse } from "src/types/applicationPackageFormsResponseTypes";
 import { ApplicationPackageFormsSubmitApi } from "src/types/applicationPackageResponseTypes";
 
-import { fetchCompetitionForms } from "./fetchers";
+import { fetchApplicationPackageForms } from "./fetchers";
 
-export async function updateCompetitionForms({
-  competitionId,
+export async function updateApplicationPackageForms({
+  applicationPackageId,
   body,
 }: {
-  competitionId: string;
+  applicationPackageId: string;
   body: { forms: ApplicationPackageFormsSubmitApi };
 }): Promise<ApplicationPackageFormsApiResponse> {
-  const response = await fetchCompetitionForms({
-    subPath: `${competitionId}/forms`,
+  const response = await fetchApplicationPackageForms({
+    subPath: `${applicationPackageId}/forms`,
     body,
   });
 

@@ -16,7 +16,7 @@ export function mapApiValidationErrors(
   for (const rawError of response.errors ?? []) {
     const error = rawError as FrontendErrorDetails;
     const message = error.message ?? genericMessage;
-    const field = error.field;
+    const field = error.field?.replace(/\.\d*/g, "");
 
     if (field && validFields.includes(field)) {
       validationErrors[field] = [...(validationErrors[field] ?? []), message];

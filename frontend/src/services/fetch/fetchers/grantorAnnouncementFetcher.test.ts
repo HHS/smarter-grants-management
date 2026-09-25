@@ -1,11 +1,11 @@
 import { ApiRequestError } from "src/errors";
 import {
-  createCompetitionForGrantor,
+  createApplicationPackageForGrantor,
   createOpportunity,
-  deleteCompetitionInstructions,
-  saveCompetitionInstructions,
+  deleteApplicationPackageInstructions,
+  saveApplicationPackageInstructions,
   searchOpportunitiesByAgency,
-  updateCompetitionForGrantor,
+  updateApplicationPackageForGrantor,
 } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 import { ApplicationPackageSaveRequest } from "src/types/applicationPackageResponseTypes";
 import { PaginationRequestBody } from "src/types/search/searchRequestTypes";
@@ -213,75 +213,82 @@ describe("createOpportunity", () => {
 });
 
 // ---------------------------------------------
-// Tests for opportunity competitions
+// Tests for opportunity applicationPackages
 // ---------------------------------------------
-const competitionData: ApplicationPackageSaveRequest = {
-  competition_title: "",
+const applicationPackageData: ApplicationPackageSaveRequest = {
+  applicationPackage_title: "",
   opening_date: null,
   closing_date: null,
   contact_info: null,
   open_to_applicants: ["individual", "organization"],
 };
 
-describe("createCompetitionForGrantor", () => {
+describe("createApplicationPackageForGrantor", () => {
   beforeEach(() => {
     mockFetcher.mockResolvedValue({
       json: () =>
-        Promise.resolve({ data: { competition_id: "new-competition-id" } }),
+        Promise.resolve({
+          data: { applicationPackage_id: "new-applicationPackage-id" },
+        }),
     });
   });
   afterEach(() => jest.clearAllMocks());
 
   it("calls fetchAnnouncementWithMethod with POST, the correct subPath, and returns the parsed JSON response", async () => {
-    const result = await createCompetitionForGrantor(
+    const result = await createApplicationPackageForGrantor(
       "opp-123",
-      competitionData,
+      applicationPackageData,
     );
 
     expect(mockFetchGrantorOpportunityWithMethod).toHaveBeenCalledTimes(1);
     expect(mockFetchGrantorOpportunityWithMethod).toHaveBeenCalledWith("POST");
     expect(mockFetcher).toHaveBeenCalledWith({
       subPath: "opp-123/application-packages",
-      body: competitionData,
+      body: applicationPackageData,
       allowedErrorStatuses: [422],
     });
-    expect(result).toEqual({ data: { competition_id: "new-competition-id" } });
+    expect(result).toEqual({
+      data: { applicationPackage_id: "new-applicationPackage-id" },
+    });
   });
 
-  it("includes public_competition_id in the request body", async () => {
-    const competitionWithPublicId: ApplicationPackageSaveRequest = {
-      ...competitionData,
-      public_competition_id: "PUBLIC-COMP-789",
+  it("includes public_applicationPackage_id in the request body", async () => {
+    const applicationPackageWithPublicId: ApplicationPackageSaveRequest = {
+      ...applicationPackageData,
+      public_applicationPackage_id: "PUBLIC-COMP-789",
     };
 
-    await createCompetitionForGrantor("opp-123", competitionWithPublicId);
+    await createApplicationPackageForGrantor(
+      "opp-123",
+      applicationPackageWithPublicId,
+    );
 
     expect(mockFetcher).toHaveBeenCalledWith({
       subPath: "opp-123/application-packages",
-      body: competitionWithPublicId,
+      body: applicationPackageWithPublicId,
       allowedErrorStatuses: [422],
     });
   });
 });
 
-describe("updateCompetitionForGrantor", () => {
+describe("updateApplicationPackageForGrantor", () => {
   beforeEach(() => {
     mockFetcher.mockResolvedValue({ json: () => Promise.resolve({}) });
   });
   afterEach(() => jest.clearAllMocks());
 
   it("calls fetchAnnouncementWithMethod with PUT and the correct subPath", async () => {
-    await updateCompetitionForGrantor(
+    await updateApplicationPackageForGrantor(
       "opp-123",
       "compete-321",
-      competitionData,
+      applicationPackageData,
     );
 
     expect(mockFetchGrantorOpportunityWithMethod).toHaveBeenCalledTimes(1);
     expect(mockFetchGrantorOpportunityWithMethod).toHaveBeenCalledWith("PUT");
     expect(mockFetcher).toHaveBeenCalledWith({
       subPath: "opp-123/application-packages/compete-321",
-      body: competitionData,
+      body: applicationPackageData,
       allowedErrorStatuses: [422],
     });
   });
@@ -300,7 +307,7 @@ describe("updateCompetitionForGrantor", () => {
         value: null,
       },
       {
-        field: "competition_title",
+        field: "applicationPackage_title",
         message: "Must not be empty.",
         type: "required",
         value: "",
@@ -317,18 +324,22 @@ describe("updateCompetitionForGrantor", () => {
 
     // verify that it throws the error
     await expect(
-      updateCompetitionForGrantor("opp-123", "compete-321", competitionData),
+      updateApplicationPackageForGrantor(
+        "opp-123",
+        "compete-321",
+        applicationPackageData,
+      ),
     ).rejects.toThrow(ApiRequestError);
   });
 });
 
-describe("saveCompetitionInstructions", () => {
+describe("saveApplicationPackageInstructions", () => {
   afterEach(() => jest.clearAllMocks());
 
   it("calls fetchAnnouncementWithMethod with POST, the correct subPath and body, and returns the parsed JSON response", async () => {
     const responseBody = {
       data: {
-        competition_instruction_id: "instruction-123",
+        applicationPackage_instruction_id: "instruction-123",
         file_name: "instructions.pdf",
         created_at: "2026-08-20T00:00:00Z",
       },
@@ -337,7 +348,7 @@ describe("saveCompetitionInstructions", () => {
       json: () => Promise.resolve(responseBody),
     });
 
-    const result = await saveCompetitionInstructions(
+    const result = await saveApplicationPackageInstructions(
       "opp-123",
       "compete-321",
       "pending-file-456",
@@ -356,12 +367,16 @@ describe("saveCompetitionInstructions", () => {
     mockFetcher.mockRejectedValue(new Error("Network failure"));
 
     await expect(
-      saveCompetitionInstructions("opp-123", "compete-321", "pending-file-456"),
+      saveApplicationPackageInstructions(
+        "opp-123",
+        "compete-321",
+        "pending-file-456",
+      ),
     ).rejects.toThrow("Network failure");
   });
 });
 
-describe("deleteCompetitionInstructions", () => {
+describe("deleteApplicationPackageInstructions", () => {
   afterEach(() => jest.clearAllMocks());
 
   it("calls fetchAnnouncementWithMethod with DELETE, the correct subPath, and returns the parsed JSON response", async () => {
@@ -373,7 +388,7 @@ describe("deleteCompetitionInstructions", () => {
       json: () => Promise.resolve(responseBody),
     });
 
-    const result = await deleteCompetitionInstructions(
+    const result = await deleteApplicationPackageInstructions(
       "opp-123",
       "compete-321",
       "instruction-123",
@@ -394,7 +409,7 @@ describe("deleteCompetitionInstructions", () => {
     mockFetcher.mockRejectedValue(new Error("Network failure"));
 
     await expect(
-      deleteCompetitionInstructions(
+      deleteApplicationPackageInstructions(
         "opp-123",
         "compete-321",
         "instruction-123",

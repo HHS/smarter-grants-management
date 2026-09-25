@@ -15,7 +15,9 @@ export function RequiredForms({
   requiredForms?: ApplicationPackageFormsSubmitApi;
   formDetails: FormType[];
 }) {
-  const t = useTranslations("OpportunityCompetition.sectionRequiredForms");
+  const t = useTranslations(
+    "OpportunityApplicationPackage.sectionRequiredForms",
+  );
   const tForm = useTranslations("FormSelectModal");
 
   return (

@@ -1,20 +1,23 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {
-  fakeCompetitionWithOpportunity,
+  fakeApplicationPackageWithOpportunity,
   fakeFormType,
 } from "src/utils/testing/fixtures";
 
-import { ApplicationPackage } from "./ApplicationPackage";
+import { ApplicationPackageForm } from "./ApplicationPackageForm";
 
 const mockApplicationPackageAction = jest.fn();
 const mockScrollTo = jest.fn();
 const mockClientFetch = jest.fn();
 
-jest.mock("src/app/[locale]/opportunity/[id]/competition/actions", () => ({
-  ApplicationPackageAction: (formData: unknown) =>
-    mockApplicationPackageAction(formData) as unknown,
-}));
+jest.mock(
+  "src/app/[locale]/announcement/[id]/application-package/actions",
+  () => ({
+    applicationPackageFormAction: (formData: unknown) =>
+      mockApplicationPackageAction(formData) as unknown,
+  }),
+);
 
 jest.mock("src/hooks/useClientFetch", () => ({
   useClientFetch: jest.fn(() => ({
@@ -38,9 +41,9 @@ describe("ApplicationPackage", () => {
       validationErrors: ["an error string"],
     });
     render(
-      <ApplicationPackage
-        opportunityId="1"
-        competition={fakeCompetitionWithOpportunity}
+      <ApplicationPackageForm
+        announcementId="1"
+        applicationPackage={fakeApplicationPackageWithOpportunity}
         forms={[fakeFormType]}
       />,
     );

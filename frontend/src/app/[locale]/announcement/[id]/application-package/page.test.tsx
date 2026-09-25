@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { axe } from "jest-axe";
-import OpportunityCompetitionPage from "src/app/[locale]/announcement/[id]/application-package/page";
+import OpportunityApplicationPackagePage from "src/app/[locale]/announcement/[id]/application-package/page";
 import { MissingAuthError } from "src/errors";
 import { GrantorAnnouncementDetail } from "src/types/announcement/announcementResponseTypes";
 import { DeepPartial } from "src/utils/testing/commonTestUtils";
@@ -41,20 +41,22 @@ jest.mock(
   "src/app/[locale]/announcement/[id]/application-package/_components/ApplicationPackageForm",
   () => ({
     ApplicationPackageForm: ({
-      competition,
+      applicationPackage,
     }: {
-      competition?: { competition_id?: string };
+      applicationPackage?: { applicationPackage_id?: string };
     }) => (
       <div
-        data-testid="competition-form"
-        data-competition-id={competition?.competition_id ?? ""}
+        data-testid="applicationPackage-form"
+        data-applicationPackage-id={
+          applicationPackage?.applicationPackage_id ?? ""
+        }
       />
     ),
   }),
 );
 
 const mockGetAnnouncement = jest.fn();
-const mockCreateCompetitionForGrantor = jest.fn();
+const mockCreateApplicationPackageForGrantor = jest.fn();
 const mockAllForms = jest.fn();
 const mockApplicationPackageForms = jest.fn();
 
@@ -73,18 +75,18 @@ const baseOpportunityData: DeepPartial<GrantorAnnouncementDetail> = {
   application_packages: null,
 };
 
-describe("OpportunityCompetitionPage", () => {
+describe("OpportunityApplicationPackagePage", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe("when opportunity has no existing competition", () => {
+  describe("when opportunity has no existing applicationPackage", () => {
     beforeEach(() => {
       mockGetAnnouncement.mockResolvedValue({
         data: { ...baseOpportunityData, application_packages: null },
       });
-      mockCreateCompetitionForGrantor.mockResolvedValue({
-        data: { competition_id: "new-competition-id" },
+      mockCreateApplicationPackageForGrantor.mockResolvedValue({
+        data: { applicationPackage_id: "new-applicationPackage-id" },
       });
       mockApplicationPackageForms.mockResolvedValue({
         data: [],
@@ -106,19 +108,19 @@ describe("OpportunityCompetitionPage", () => {
     });
 
     it("passes an empty string to ApplicationPackageForm", async () => {
-      const component = await OpportunityCompetitionPage({
+      const component = await OpportunityApplicationPackagePage({
         params: pageParams,
       });
       render(component);
 
-      expect(screen.getByTestId("competition-form")).toHaveAttribute(
-        "data-competition-id",
+      expect(screen.getByTestId("applicationPackage-form")).toHaveAttribute(
+        "data-applicationPackage-id",
         "",
       );
     });
 
     it("passes accessibility scan", async () => {
-      const component = await OpportunityCompetitionPage({
+      const component = await OpportunityApplicationPackagePage({
         params: pageParams,
       });
       const { container } = render(component);
@@ -128,30 +130,32 @@ describe("OpportunityCompetitionPage", () => {
     });
   });
 
-  describe("when opportunity already has a competition", () => {
+  describe("when opportunity already has a applicationPackage", () => {
     beforeEach(() => {
       mockGetAnnouncement.mockResolvedValue({
         data: {
           ...baseOpportunityData,
-          application_packages: [{ competition_id: "existing-competition-id" }],
+          application_packages: [
+            { applicationPackage_id: "existing-applicationPackage-id" },
+          ],
         },
       });
     });
 
-    it("passes the existing competition_id to ApplicationPackageForm", async () => {
-      const component = await OpportunityCompetitionPage({
+    it("passes the existing applicationPackage_id to ApplicationPackageForm", async () => {
+      const component = await OpportunityApplicationPackagePage({
         params: pageParams,
       });
       render(component);
 
-      expect(screen.getByTestId("competition-form")).toHaveAttribute(
-        "data-competition-id",
-        "existing-competition-id",
+      expect(screen.getByTestId("applicationPackage-form")).toHaveAttribute(
+        "data-applicationPackage-id",
+        "existing-applicationPackage-id",
       );
     });
 
     it("passes accessibility scan", async () => {
-      const component = await OpportunityCompetitionPage({
+      const component = await OpportunityApplicationPackagePage({
         params: pageParams,
       });
       const { container } = render(component);
@@ -166,7 +170,7 @@ describe("OpportunityCompetitionPage", () => {
       mockGetAnnouncement.mockRejectedValue(
         new MissingAuthError("Missing auth"),
       );
-      const component = await OpportunityCompetitionPage({
+      const component = await OpportunityApplicationPackagePage({
         params: pageParams,
       });
       render(component);

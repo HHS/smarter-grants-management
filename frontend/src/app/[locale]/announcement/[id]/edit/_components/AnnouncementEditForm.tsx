@@ -16,7 +16,13 @@ import { AnnouncementEditFormValues } from "src/utils/announcementEditFormConfig
 import { getNumericAmountFromString } from "src/utils/formatCurrencyUtil";
 
 import { useTranslations } from "next-intl";
-import { startTransition, useActionState, useRef, useState } from "react";
+import {
+  startTransition,
+  useActionState,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   Alert,
   Button,
@@ -124,12 +130,12 @@ export default function AnnouncementEditForm({
     useState<AnnouncementEditValidationErrors>({});
 
   useEffect(() => {
-    if (formState.newOpportunitySummaryId) {
+    if (formState.newAnnouncementSummaryId) {
       // TODO #9633
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setCurrentSummaryId(formState.newOpportunitySummaryId);
+      setCurrentSummaryId(formState.newAnnouncementSummaryId);
     }
-  }, [formState.newOpportunitySummaryId]);
+  }, [formState.newAnnouncementSummaryId]);
 
   useEffect(() => {
     if (Object.keys(formState.validationErrors || {}).length) {
@@ -304,13 +310,13 @@ export default function AnnouncementEditForm({
             <span className="display-block margin-top-1 margin-bottom-1">
               {t("content.alerts.validationErrorBody")}
             </span>
-            {Array.from(
-              new Set(Object.values(formState.validationErrors).flat()),
-            ).map((error, i) => (
-              <span key={i} className="display-block">
-                {error}
-              </span>
-            ))}
+            {Object.values(formState.validationErrors)
+              .flat()
+              .map((error, i) => (
+                <span key={i} className="display-block">
+                  {error}
+                </span>
+              ))}
           </Alert>
         </div>
       ) : null}

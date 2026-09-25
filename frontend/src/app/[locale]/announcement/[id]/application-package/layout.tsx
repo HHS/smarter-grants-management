@@ -13,7 +13,7 @@ export async function generateMetadata({
   const { locale } = await params;
   const t = await getTranslations({
     locale,
-    namespace: "OpportunityCompetition",
+    namespace: "OpportunityApplicationPackage",
   });
   return {
     title: t("pageTitle"),
@@ -21,6 +21,6 @@ export async function generateMetadata({
   };
 }
 
-export default function CompetitionLayout({ children }: LayoutProps) {
+export default function ApplicationPackageLayout({ children }: LayoutProps) {
   return <AuthenticationGate>{children}</AuthenticationGate>;
 }

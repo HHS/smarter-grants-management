@@ -3,13 +3,13 @@ import { progressType } from "src/components/grantor-announcements/ProgressCheck
 export function computeAnnouncementPublishEligibility(
   isDraft: boolean,
   summaryStatus: (typeof progressType)[keyof typeof progressType],
-  competitionStatus: (typeof progressType)[keyof typeof progressType],
+  applicationPackageStatus: (typeof progressType)[keyof typeof progressType],
 ): boolean {
   return (
     isDraft &&
     (summaryStatus === progressType.complete ||
-      competitionStatus === progressType.complete) &&
+      applicationPackageStatus === progressType.complete) &&
     summaryStatus !== progressType.inProgress &&
-    competitionStatus !== progressType.inProgress
+    applicationPackageStatus !== progressType.inProgress
   );
 }

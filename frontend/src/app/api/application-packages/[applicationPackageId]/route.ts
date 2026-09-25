@@ -1,7 +1,7 @@
 import { respondWithTraceAndLogs } from "src/utils/apiUtils";
 
-import { getCompetition } from "./handler";
+import { getApplicationPackage } from "./handler";
 
 export const GET = respondWithTraceAndLogs<{ applicationPackageId: string }>(
-  getCompetition,
+  getApplicationPackage,
 );

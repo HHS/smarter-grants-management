@@ -20,6 +20,27 @@ import { redirect } from "next/navigation";
 
 const dayjs = getConfiguredDayJs();
 
+const EDIT_FORM_FIELD_NAMES = [
+  "announcement_title",
+  "category",
+  "summary_description",
+  "post_timestamp",
+  "close_timestamp",
+  "agency_email_address",
+  "agency_email_address_description",
+  "award_floor",
+  "award_ceiling",
+  "funding_instruments",
+  "funding_categories",
+  "expected_number_of_awards",
+  "estimated_total_program_funding",
+  "applicant_types",
+  "applicant_eligibility_description",
+  "additional_info_url",
+  "additional_info_url_description",
+  "agency_contact_description",
+] as const;
+
 export type AnnouncementEditValidationErrors = {
   announcement_title?: string[];
   category?: string[];

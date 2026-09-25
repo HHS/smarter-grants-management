@@ -28,12 +28,12 @@ export const dynamic = "force-dynamic";
 const blockedForms = ["cf355a4d-d840-43fd-a78f-729edf41ab4c"];
 
 const ButtonSaveAndExit = () => {
-  const t = useTranslations("OpportunityCompetition");
+  const t = useTranslations("OpportunityApplicationPackage");
   return (
     <>
       <Button
         type="submit"
-        form="opportunity-competition-form"
+        form="opportunity-applicationPackage-form"
         className="margin-left-1"
       >
         {t("button.saveAndExit")}
@@ -42,7 +42,7 @@ const ButtonSaveAndExit = () => {
   );
 };
 
-export default async function OpportunityCompetitionPage({
+export default async function OpportunityApplicationPackagePage({
   params,
 }: PageProps) {
   const { id, locale } = await params;
@@ -52,7 +52,7 @@ export default async function OpportunityCompetitionPage({
   });
   const t = await getTranslations({
     locale,
-    namespace: "OpportunityCompetition",
+    namespace: "OpportunityApplicationPackage",
   });
 
   let opportunityData;
@@ -73,10 +73,10 @@ export default async function OpportunityCompetitionPage({
     throw error;
   }
 
-  // NOTE: Currently we are only supporting a single competition
-  let competition: ApplicationPackage | undefined = undefined;
+  // NOTE: Currently we are only supporting a single applicationPackage
+  let applicationPackage: ApplicationPackage | undefined = undefined;
   if (opportunityData.application_packages?.[0]) {
-    competition = opportunityData.application_packages[0];
+    applicationPackage = opportunityData.application_packages[0];
   }
 
   const navigationItems = [
@@ -131,7 +131,7 @@ export default async function OpportunityCompetitionPage({
           <section className="order-2 width-full maxw-tablet-xl padding-top-4">
             <ApplicationPackageForm
               announcementId={id}
-              competition={competition}
+              applicationPackage={applicationPackage}
               forms={forms.data}
             />
           </section>
