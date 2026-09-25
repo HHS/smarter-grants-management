@@ -5,7 +5,7 @@ from sqlalchemy.orm import selectinload
 
 from src.adapters import db
 from src.api.route_utils import raise_flask_error
-from src.db.models.announcement_models import AnnouncementAssistanceListing
+from src.db.models.announcement_models import Announcement, AnnouncementAssistanceListing
 from src.db.models.application_package_models import (
     ApplicationPackage,
     ApplicationPackageInstruction,
@@ -20,10 +20,13 @@ def get_application_package(
 
     application_package = db_session.execute(
         select(ApplicationPackage)
+        .join(Announcement)
         .where(
             ApplicationPackage.announcement_id == announcement_id,
             ApplicationPackage.application_package_id == application_package_id,
         )
+        .where(ApplicationPackage.is_deleted.is_(False))
+        .where(Announcement.is_deleted.is_(False))
         .options(
             selectinload(ApplicationPackage.application_package_forms),
             selectinload(ApplicationPackage.link_application_package_open_to_applicant),
