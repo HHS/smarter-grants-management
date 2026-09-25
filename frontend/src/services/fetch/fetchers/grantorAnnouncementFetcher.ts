@@ -68,6 +68,31 @@ export const searchAccessibleAnnouncements = async (
   return (await response.json()) as AnnouncementListAPIResponse;
 };
 
+export const fetchAnnouncements = async (
+  page: number,
+): Promise<{
+  announcements: AnnouncementListResponseData;
+  totalRecords: number;
+  totalPages: number;
+}> => {
+  const pageRequest: PaginationRequestBody = {
+    page_offset: page,
+    page_size: 25,
+    sort_order: [
+      {
+        order_by: "created_at",
+        sort_direction: "descending",
+      },
+    ],
+  };
+  const json = await searchAccessibleAnnouncements(pageRequest);
+  return {
+    announcements: json.data,
+    totalRecords: json.pagination_info.total_records,
+    totalPages: json.pagination_info.total_pages,
+  };
+};
+
 export async function getAnnouncement(
   opportunityId: string,
 ): Promise<GrantorAnnouncementApiResponse> {

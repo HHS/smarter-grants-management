@@ -76,15 +76,16 @@ const userSession: UserSession = {
   session_duration_minutes: 15,
 };
 
-const mockSearchForAnnouncements = jest.fn().mockResolvedValue({
-  data: [],
-  pagination_info: { total_pages: 0, total_records: 0 },
+const mockFetchAnnouncements = jest.fn().mockResolvedValue({
+  announcements: [],
+  totalRecords: 0,
+  totalPages: 0,
 });
 const mockGetSession = jest.fn().mockResolvedValue(userSession);
 
 jest.mock("src/services/fetch/fetchers/grantorAnnouncementFetcher", () => ({
-  searchAccessibleAnnouncements: (arg: unknown): unknown =>
-    mockSearchForAnnouncements(arg) as Promise<AnnouncementListItem[]>,
+  fetchAnnouncements: (arg: unknown): unknown =>
+    mockFetchAnnouncements(arg) as Promise<AnnouncementListItem[]>,
 }));
 
 jest.mock("src/services/auth/session", () => ({
@@ -145,9 +146,10 @@ describe("Announcements", () => {
   });
 
   it("renders announcements from backend contract fields", async () => {
-    mockSearchForAnnouncements.mockResolvedValue({
-      data: [baseAnnouncement],
-      pagination_info: { total_pages: 1, total_records: 1 },
+    mockFetchAnnouncements.mockResolvedValue({
+      announcements: [baseAnnouncement],
+      totalRecords: 1,
+      totalPages: 1,
     });
 
     const component = await AnnouncementsListPage({ params: localeParams });
@@ -155,13 +157,14 @@ describe("Announcements", () => {
 
     expect(await screen.findByText("Test Announcement")).toBeVisible();
     expect(await screen.findByText("FO-26-00001")).toBeVisible();
-    expect(mockSearchForAnnouncements).toHaveBeenCalled();
+    expect(mockFetchAnnouncements).toHaveBeenCalled();
   });
 
   it("renders announcement count", async () => {
-    mockSearchForAnnouncements.mockResolvedValue({
-      data: [baseAnnouncement],
-      pagination_info: { total_pages: 1, total_records: 1 },
+    mockFetchAnnouncements.mockResolvedValue({
+      announcements: [baseAnnouncement],
+      totalRecords: 1,
+      totalPages: 1,
     });
 
     const component = await AnnouncementsListPage({ params: localeParams });
@@ -171,9 +174,10 @@ describe("Announcements", () => {
   });
 
   it("redirects to last page when out of range", async () => {
-    mockSearchForAnnouncements.mockResolvedValue({
-      data: [],
-      pagination_info: { total_pages: 1, total_records: 7 },
+    mockFetchAnnouncements.mockResolvedValue({
+      announcements: [],
+      totalRecords: 7,
+      totalPages: 1,
     });
 
     await AnnouncementsListPage({
@@ -199,7 +203,7 @@ describe("Announcements", () => {
   });
 
   it("renders unauthenticated page for missing auth", async () => {
-    mockSearchForAnnouncements.mockRejectedValue(
+    mockFetchAnnouncements.mockRejectedValue(
       new MissingAuthError("missing auth"),
     );
 
@@ -210,7 +214,7 @@ describe("Announcements", () => {
   });
 
   it("renders error alert for general fetch errors", async () => {
-    mockSearchForAnnouncements.mockRejectedValue(new Error("failure"));
+    mockFetchAnnouncements.mockRejectedValue(new Error("failure"));
     const component = await AnnouncementsListPage({ params: localeParams });
     render(component);
 
@@ -218,7 +222,7 @@ describe("Announcements", () => {
   });
 
   it("rethrows UnauthorizedError (401 unauthenticated) errors", async () => {
-    mockSearchForAnnouncements.mockRejectedValue(
+    mockFetchAnnouncements.mockRejectedValue(
       new UnauthorizedError("No active session"),
     );
 
@@ -230,8 +234,8 @@ describe("Announcements", () => {
   });
 
   it("shows forecasted status tag for forecast announcements", async () => {
-    mockSearchForAnnouncements.mockResolvedValue({
-      data: [
+    mockFetchAnnouncements.mockResolvedValue({
+      announcements: [
         {
           ...baseAnnouncement,
           forecast_summary: {
@@ -241,7 +245,8 @@ describe("Announcements", () => {
           non_forecast_summary: null,
         },
       ],
-      pagination_info: { total_pages: 1, total_records: 1 },
+      totalRecords: 1,
+      totalPages: 1,
     });
 
     const component = await AnnouncementsListPage({ params: localeParams });
@@ -258,9 +263,10 @@ describe("Announcements", () => {
   });
 
   it("shows posted status tag for active announcements", async () => {
-    mockSearchForAnnouncements.mockResolvedValue({
-      data: [baseAnnouncement],
-      pagination_info: { total_pages: 1, total_records: 1 },
+    mockFetchAnnouncements.mockResolvedValue({
+      announcements: [baseAnnouncement],
+      totalRecords: 1,
+      totalPages: 1,
     });
 
     const component = await AnnouncementsListPage({ params: localeParams });
