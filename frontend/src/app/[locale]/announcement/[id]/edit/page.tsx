@@ -4,15 +4,16 @@ import {
   MissingAuthError,
   parseErrorStatus,
 } from "src/errors";
-import { getOpportunityForGrantor } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
+import { getAnnouncement } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 import { GrantorAnnouncementDetail } from "src/types/announcement/announcementResponseTypes";
-import { buildOpportunityEditInitialValues } from "src/utils/announcementEditFormConfig";
+import { buildAnnouncementEditInitialValues } from "src/utils/announcementEditFormConfig";
 
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Alert, Button, GridContainer } from "@trussworks/react-uswds";
 
 import LeftHandFormNav from "src/components/core/forms/LeftHandFormNav";
+import GeneralErrorAlert from "src/components/core/GeneralErrorAlert";
 import { UnauthorizedMessage } from "src/components/core/UnauthorizedMessage";
 import { AnnouncementDetailsHeader } from "src/components/grantor-announcements/AnnouncementDetailsHeader";
 
@@ -23,7 +24,7 @@ const HeaderButtons = ({ saveAndExitLabel }: { saveAndExitLabel: string }) => {
     <>
       <Button
         type="submit"
-        form="opportunity-edit-form"
+        form="announcement-edit-form"
         className="margin-left-1"
       >
         {saveAndExitLabel}
@@ -36,7 +37,7 @@ type PageProps = {
   params: Promise<{ id: string; locale: string }>;
 };
 
-export default async function OpportunityEditPage({ params }: PageProps) {
+export default async function AnnouncementEditPage({ params }: PageProps) {
   const { id, locale } = await params;
   const t = await getTranslations({ locale, namespace: "Errors" });
   const tEdit = await getTranslations({ locale, namespace: "OpportunityEdit" });
@@ -46,14 +47,14 @@ export default async function OpportunityEditPage({ params }: PageProps) {
   // this opportunity for its agency.
   const hasVerifiedGrantorEditAccess = true;
 
-  let opportunityData: GrantorAnnouncementDetail;
-  let opportunitySummaryId: string;
+  let announcementData: GrantorAnnouncementDetail;
+  let announcementSummaryId: string;
   try {
-    const response = await getOpportunityForGrantor(id);
-    opportunityData = response.data;
-    opportunitySummaryId =
-      response.data.forecast_summary?.opportunity_summary_id ??
-      response.data.non_forecast_summary?.opportunity_summary_id ??
+    const response = await getAnnouncement(id);
+    announcementData = response.data;
+    announcementSummaryId =
+      response.data.forecast_summary?.announcement_summary_id ??
+      response.data.non_forecast_summary?.announcement_summary_id ??
       "";
   } catch (error) {
     if (error instanceof MissingAuthError) {
@@ -67,10 +68,14 @@ export default async function OpportunityEditPage({ params }: PageProps) {
     if (status === 403) {
       return <UnauthorizedMessage />;
     }
-    throw error;
+    return (
+      <GridContainer>
+        <GeneralErrorAlert />
+      </GridContainer>
+    );
   }
 
-  if (id !== opportunityData.opportunity_id) {
+  if (id !== announcementData.announcement_id) {
     return (
       <GridContainer className="margin-top-4">
         <Alert type="error" heading={t("heading")} headingLevel="h4">
@@ -85,11 +90,11 @@ export default async function OpportunityEditPage({ params }: PageProps) {
   }
 
   const activeSummary =
-    opportunityData.forecast_summary ??
-    opportunityData.non_forecast_summary ??
-    opportunityData.summary;
-  const initialValues = buildOpportunityEditInitialValues({
-    ...opportunityData,
+    announcementData.forecast_summary ??
+    announcementData.non_forecast_summary ??
+    announcementData.summary;
+  const initialValues = buildAnnouncementEditInitialValues({
+    ...announcementData,
     attachments: [],
     summary: activeSummary,
   });
@@ -105,7 +110,7 @@ export default async function OpportunityEditPage({ params }: PageProps) {
   return (
     <div className="bg-white">
       <AnnouncementDetailsHeader
-        opportunityData={opportunityData}
+        opportunityData={announcementData}
         locale={locale}
         hasBackToOverview={true}
       >
@@ -118,11 +123,11 @@ export default async function OpportunityEditPage({ params }: PageProps) {
 
           <section className="order-2 width-full maxw-tablet-xl padding-top-4">
             <AnnouncementEditForm
-              opportunityId={opportunityData.opportunity_id}
-              opportunitySummaryId={opportunitySummaryId}
-              isForecast={!!opportunityData.forecast_summary}
+              announcementId={announcementData.announcement_id}
+              announcementSummaryId={announcementSummaryId}
+              isForecast={!!announcementData.forecast_summary}
               initialValues={initialValues}
-              initialAttachments={opportunityData.attachments ?? []}
+              initialAttachments={announcementData.attachments ?? []}
             />
           </section>
         </div>

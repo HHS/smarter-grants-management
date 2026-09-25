@@ -16,6 +16,7 @@ import {
   ChangeEvent,
   ForwardedRef,
   forwardRef,
+  useCallback,
   useImperativeHandle,
   useState,
 } from "react";
@@ -450,7 +451,7 @@ export const RecommendationDetailForm = forwardRef(
       return initial;
     });
 
-    const validate = (): boolean => {
+    const validate = useCallback((): boolean => {
       const nextErrors: RecommendationFieldErrors = {};
 
       if (!recommendationType) {
@@ -483,9 +484,7 @@ export const RecommendationDetailForm = forwardRef(
 
       setErrors(nextErrors);
       return Object.keys(nextErrors).length === 0;
-    };
-
-    useImperativeHandle(ref, () => ({ validate }), [
+    }, [
       recommendationType,
       hasException,
       exceptionDetail,
@@ -495,6 +494,8 @@ export const RecommendationDetailForm = forwardRef(
       submissions,
       t,
     ]);
+
+    useImperativeHandle(ref, () => ({ validate }), [validate]);
 
     if (!singleSubmission && !isMultipleSubmissions) {
       return null;

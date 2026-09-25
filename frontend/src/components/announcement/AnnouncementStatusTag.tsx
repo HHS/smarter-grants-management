@@ -24,7 +24,7 @@ const STATUS_TAG_CLASSNAME =
 const STATUS_TAG_STYLE: CSSProperties = { whiteSpace: "nowrap" };
 
 const AnnouncementStatusTag = ({ status }: Props) => {
-  const t = useTranslations("Opportunities.statusTag");
+  const t = useTranslations("Announcements.statusTag");
 
   const statusTag = () => {
     switch (status) {
@@ -43,7 +43,7 @@ const AnnouncementStatusTag = ({ status }: Props) => {
         return (
           <div
             className={`${STATUS_TAG_CLASSNAME} bg-mint-lighter-custom text-ink`}
-            data-testid="opportunity-status-posted"
+            data-testid="announcement-status-posted"
             style={STATUS_TAG_STYLE}
           >
             {t("posted")}
@@ -53,7 +53,7 @@ const AnnouncementStatusTag = ({ status }: Props) => {
         return (
           <div
             className={`${STATUS_TAG_CLASSNAME} bg-accent-warm-lighter text-ink`}
-            data-testid="opportunity-status-forecasted"
+            data-testid="announcement-status-forecasted"
             style={STATUS_TAG_STYLE}
           >
             {t("forecasted")}
