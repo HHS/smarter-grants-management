@@ -185,3 +185,21 @@ export type AnnouncementOverview = Pick<
   | "summary"
   | "opportunity_status"
 >;
+
+export interface AnnouncementListSummary {
+  close_timestamp: string | null;
+  is_forecast: boolean;
+  post_timestamp: string | null;
+  archive_timestamp: string | null;
+  funding_instruments: string[];
+}
+
+export interface AnnouncementListItem {
+  announcement_id: string;
+  announcement_number: string | null;
+  announcement_title: string | null;
+  created_at: string;
+  updated_at: string;
+  forecast_summary: AnnouncementListSummary | null;
+  non_forecast_summary: AnnouncementListSummary | null;
+}

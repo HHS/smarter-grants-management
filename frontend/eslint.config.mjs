@@ -55,12 +55,7 @@ export default defineConfig(...vitalsPlugin, [
           ],
         },
       ],
-      // TODO #9637 remove this warn line after addressing the issues where this rule flags stuff
-      "promise/catch-or-return": "warn",
-      // TODO #9637 remove this warn line after addressing the issues where this rule flags stuff
-      "promise/always-return": "warn",
-      // TODO #9637 remove this warn line after addressing the issues where this rule flags stuff
-      "react-hooks/error-boundaries": "warn",
+      "promise/catch-or-return": ["error", { allowFinally: true }],
     },
 
     settings: {
