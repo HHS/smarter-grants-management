@@ -51,8 +51,8 @@ const handleCdnTest = (request: NextRequest) => {
   cacheControl.push(`max-age=${params.get("max-age") || "10"}`);
   cacheControl.push(
     params.get("cache") ||
-      (request.cookies.has("session") &&
-      request.cookies.get("session")?.value !== ""
+      (request.cookies.has("sgm-session") &&
+      request.cookies.get("sgm-session")?.value !== ""
         ? "no-store"
         : "public"),
   );
@@ -80,6 +80,8 @@ const isACdnTestRequest = (request: NextRequest): boolean => {
 
 export default function proxy(request: NextRequest): NextResponse {
   const cacheControl: string[] = [];
+
+  console.log("2!!", request.cookies.getAll());
 
   // only allow for cdn testing/troubleshooting in lower envs
 
@@ -139,8 +141,8 @@ export default function proxy(request: NextRequest): NextResponse {
     });
   }
   if (
-    request.cookies.has("session") &&
-    request.cookies.get("session")?.value !== ""
+    request.cookies.has("sgm-session") &&
+    request.cookies.get("sgm-session")?.value !== ""
   ) {
     cacheControl.push("no-store");
     cacheControl.push("max-age=0");

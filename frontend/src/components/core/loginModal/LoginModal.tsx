@@ -2,6 +2,7 @@
 
 import { storeCurrentPage } from "src/utils/userUtils";
 
+import { redirect } from "next/navigation";
 import { RefObject, useActionState } from "react";
 import {
   Button,
@@ -67,6 +68,9 @@ const LoginModalBody = ({
   modalRef: RefObject<ModalRef | null>;
 }) => {
   const [formState, formAction] = useActionState(apiKeyLoginAction, {});
+  if (formState.token) {
+    redirect(`/api/auth/callback?token=${formState.token}`);
+  }
   // // may need to check logged in state here to make sure we can open up the modal after login/logout
   // if (formState.success && modalRef) {
   //   toggleModal(modalRef as RefObject<ModalRef>);

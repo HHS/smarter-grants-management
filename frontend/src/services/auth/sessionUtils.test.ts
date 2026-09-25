@@ -70,7 +70,7 @@ describe("deleteSession", () => {
   it("calls cookie.delete with expected values", async () => {
     await deleteSession();
     expect(deleteCookiesMock).toHaveBeenCalledTimes(1);
-    expect(deleteCookiesMock).toHaveBeenCalledWith("session");
+    expect(deleteCookiesMock).toHaveBeenCalledWith("sgm-session");
   });
 });
 
