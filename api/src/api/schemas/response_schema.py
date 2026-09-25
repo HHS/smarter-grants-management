@@ -13,7 +13,10 @@ class ValidationIssueSchema(Schema):
     value = fields.String(
         metadata={"description": "The value that failed", "example": "invalid string"}
     )
-    metadata = fields.MixinField(allow_none=True, metadata={"description": "Additional metadata about the error", "example": None})
+    metadata = fields.MixinField(
+        allow_none=True,
+        metadata={"description": "Additional metadata about the error", "example": None},
+    )
 
 
 class AbstractResponseSchema(Schema):

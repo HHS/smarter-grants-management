@@ -272,4 +272,16 @@ class Range(validators.Range):
         else:  # must be max, init requires you set something
             error_type = SchemaValidationError.MAX_VALUE
 
-        return [MarshmallowErrorContainer(error_type, super()._format_error(value, message), value=value, metadata={"minimum": self.min, "maximum": self.max, "minimum_exclusive": self.min_inclusive, "maximum_exclusive": self.max_inclusive})]
+        return [
+            MarshmallowErrorContainer(
+                error_type,
+                super()._format_error(value, message),
+                value=value,
+                metadata={
+                    "minimum": self.min,
+                    "maximum": self.max,
+                    "minimum_exclusive": self.min_inclusive,
+                    "maximum_exclusive": self.max_inclusive,
+                },
+            )
+        ]

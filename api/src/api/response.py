@@ -66,7 +66,7 @@ def process_marshmallow_issues(marshmallow_issues: dict) -> list[ValidationError
                         message=item.message,
                         type=item.key,
                         metadata=item.metadata,
-                        value=item.value
+                        value=item.value,
                     )
                 )
         else:
