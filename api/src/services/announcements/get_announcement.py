@@ -42,6 +42,7 @@ def get_announcement(db_session: db.Session, announcement_id: uuid.UUID) -> Anno
     announcement = db_session.execute(
         select(Announcement)
         .where(Announcement.announcement_id == announcement_id)
+        .where(Announcement.is_deleted.is_(False))
         .options(*announcement_response_options())
     ).scalar_one_or_none()
 
