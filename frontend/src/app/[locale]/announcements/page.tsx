@@ -13,9 +13,8 @@ import TopLevelError from "src/app/[locale]/error/page";
 import Unauthenticated from "src/app/[locale]/unauthenticated/page";
 import { MissingAuthError, UnauthorizedError } from "src/errors";
 import { getSession } from "src/services/auth/session";
-import { searchAccessibleAnnouncements } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
+import { fetchAnnouncements } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 import { LocalizedPageProps, TFn } from "src/types/intl";
-import { PaginationRequestBody } from "src/types/search/searchRequestTypes";
 import { WithFeatureFlagProps } from "src/types/uiTypes";
 import { formatTimestamp } from "src/utils/generalUtils";
 
@@ -449,28 +448,6 @@ const AnnouncementsTable = ({
 //
 //   return agencyUserPrivileges;
 // };
-
-// --------------------------------------------------
-// Fetch function: get the list of announcements the user can access
-// --------------------------------------------------
-const fetchAnnouncements = async (page: number) => {
-  const pageRequest: PaginationRequestBody = {
-    page_offset: page,
-    page_size: 25,
-    sort_order: [
-      {
-        order_by: "created_at",
-        sort_direction: "descending",
-      },
-    ],
-  };
-  const json = await searchAccessibleAnnouncements(pageRequest);
-  return {
-    announcements: json.data,
-    totalRecords: json.pagination_info.total_records,
-    totalPages: json.pagination_info.total_pages,
-  };
-};
 
 // TODO(#auth): Restore agency-scoped fetch when agency authorization returns.
 //
