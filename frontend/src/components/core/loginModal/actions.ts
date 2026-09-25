@@ -5,7 +5,7 @@ import { getJWTWithApiKeyLogin } from "src/services/fetch/fetchers/apiKeyLoginFe
 
 type ApiKeyLoginActionState = {
   error?: boolean;
-  success?: boolean;
+  success?: boolean; // currently unused
   unauthenticated?: boolean;
   token?: string;
 };
