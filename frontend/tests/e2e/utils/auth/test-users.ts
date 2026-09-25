@@ -5,12 +5,11 @@ import playwrightEnv, { SupportedEnvs } from "tests/e2e/playwright-env";
   the static user id for the active target environment. Tests pass a TestUserKey
   to authenticateE2eUser to choose which seeded user to log in as.
 
-  Each seeded user is flagged in the API seed (with_e2e_test_user grants the
-  READ_TEST_USER_TOKEN privilege) so its session token can be fetched via
-  POST /v1/internal/e2e-token. This file exposes the logical test-user keys
-  that correspond to seeded identities prepared before the E2E tests run.
-  To add a test user: seed it with a static id in api/tests/lib/seed_e2e.py,
-  then add a matching entry here.
+  Each seeded user is configured in the API seed so its JWT can be fetched via
+  GET /v1/internal/api-jwt using that user's direct API key. This file exposes
+  the logical test-user keys that correspond to seeded identities prepared
+  before the E2E tests run. To add a test user: seed it with a static id in
+  api/tests/lib/seed_e2e.py, then add a matching entry here.
 */
 
 export type TestUserKey =

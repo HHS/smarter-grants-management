@@ -347,6 +347,13 @@ jobs:
           ../api/bin/wait-for-api.sh
         shell: bash
 
+      - name: Seed local E2E API keys
+        run: |
+          cd ../api
+          # The direct /v1/internal/api-jwt flow requires seeded local API keys to
+          # exist in the database; without this, the API rejects the request with 401
+          # even though the test runtime passes the correct key name.
+          docker compose exec -T grants-management-api db-seed-local
       - name: Dump API logs on startup failure
         if: failure()
         run: |
@@ -455,9 +462,10 @@ jobs:
           current_shard: ${{ matrix.shard }}
           api_logs: ${{ inputs.api_logs && 'true' || 'false' }}
           playwright_tags: ""
-          # Not a secret: the local API seeds the test-user manager with the
-          # committed LOCAL_TEST_USER_MANAGER_API_KEY default from api/local.env,
-          # so the frontend must send that same literal value.
+          # Temporary direct API-key login workaround for E2E: fetch a JWT from
+          # /v1/internal/api-jwt using the seeded local test user's key.
+          test_user_api_key: "local-dev-api-key-1"
+          # Legacy compatibility value retained for older local flows.
           test_user_manager_api_key: "local-manager-key"
           playwright_projects: ${{ env.playwright_projects }}
           # Only install the non-Chrome browsers when the run isn't narrowed to a
@@ -480,9 +488,10 @@ jobs:
           current_shard: ${{ matrix.shard }}
           api_logs: ${{ inputs.api_logs && 'true' || 'false' }}
           playwright_tags: ${{ env.test_group_tags }}
-          # Not a secret: the local API seeds the test-user manager with the
-          # committed LOCAL_TEST_USER_MANAGER_API_KEY default from api/local.env,
-          # so the frontend must send that same literal value.
+          # Temporary direct API-key login workaround for E2E: fetch a JWT from
+          # /v1/internal/api-jwt using the seeded local test user's key.
+          test_user_api_key: "local-dev-api-key-1"
+          # Legacy compatibility value retained for older local flows.
           test_user_manager_api_key: "local-manager-key"
           playwright_projects: ${{ env.playwright_projects }}
           # Only install the non-Chrome browsers when the run isn't narrowed to a
@@ -511,9 +520,10 @@ jobs:
           # tests," since both can run in the same shard when specs changed but
           # utils didn't - without this they'd upload identically-named artifacts.
           shard_label: "${{ matrix.shard }}-specs"
-          # Not a secret: the local API seeds the test-user manager with the
-          # committed LOCAL_TEST_USER_MANAGER_API_KEY default from api/local.env,
-          # so the frontend must send that same literal value.
+          # Temporary direct API-key login workaround for E2E: fetch a JWT from
+          # /v1/internal/api-jwt using the seeded local test user's key.
+          test_user_api_key: "local-dev-api-key-1"
+          # Legacy compatibility value retained for older local flows.
           test_user_manager_api_key: "local-manager-key"
           playwright_projects: ${{ env.playwright_projects }}
           # Only install the non-Chrome browsers when the run isn't narrowed to a

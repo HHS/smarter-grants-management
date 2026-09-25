@@ -175,6 +175,17 @@ cd frontend
 npm run test:e2e -- tests/e2e/path/to/test.spec.ts
 ```
 
+To temporarily defer known failing E2E spec files, add them to
+`frontend/tests/e2e/deferred-test-files.json` under `testFiles`.
+Playwright reads this file from `tests/playwright.config.ts` and skips
+discovery for listed files.
+
+Use this only as a short-term workaround:
+
+- Add paths relative to `tests/e2e` (example: `login/specs/login-redirect.spec.ts`)
+- Include only files that are actively tracked for follow-up fixes
+- Remove entries once the test is fixed
+
 For an interactive run from the repository root, use:
 
 ```sh

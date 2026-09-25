@@ -78,10 +78,12 @@ const playwrightEnv = {
   testUserEmail: process.env.STAGING_TEST_USER_EMAIL || "",
   testUserPassword: process.env.STAGING_TEST_USER_PASSWORD || "",
   testUserAuthKey: process.env.STAGING_TEST_USER_MFA_KEY || "",
-  // API key for the "test user manager" whose credentials authorize
-  // POST /v1/internal/e2e-token. A single variable set per environment by the
-  // e2e composite action (local uses the committed local-manager-key; staging
-  // injects its own secret value).
+  // Direct API key for the seeded E2E test user. The app accepts this via
+  // /v1/internal/api-jwt to create a short-lived JWT for browser auth during
+  // tests. Local and deployed environments set this explicitly.
+  testUserApiKey: process.env.TEST_USER_API_KEY || "",
+  // Legacy manager key retained for older flows and rollback references. This is
+  // no longer the main path for the direct API-key E2E login workaround.
   testUserManagerApiKey: process.env.TEST_USER_MANAGER_API_KEY || "",
   // Flag indicating if the E2E environment has a virus scanner for infected file testing.
   // Enabled by default in all environments as the scan currently works in both local and Staging env;
