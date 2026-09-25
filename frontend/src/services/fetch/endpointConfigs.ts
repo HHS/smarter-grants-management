@@ -125,3 +125,10 @@ export const fetchWorkflowEndpoint = {
   method: "GET" as ApiMethod,
   requiresAuth: true,
 };
+
+export const apiKeyLoginEndpoint = {
+  basePath: environment.API_URL,
+  version: "v1",
+  namespace: "/internal/api-jwt",
+  method: "GET" as ApiMethod,
+};

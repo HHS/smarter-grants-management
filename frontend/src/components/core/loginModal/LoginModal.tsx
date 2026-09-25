@@ -1,15 +1,19 @@
 "use-client";
 
-import { RefObject } from "react";
+import { storeCurrentPage } from "src/utils/userUtils";
+
+import { RefObject, useActionState } from "react";
 import {
+  Button,
   ButtonGroup,
+  ErrorMessage,
   ModalFooter,
   ModalRef,
   ModalToggleButton,
 } from "@trussworks/react-uswds";
 
-import { LoginLink } from "src/components/core/LoginButton";
 import { SimplerModal } from "src/components/core/SimplerModal";
+import { apiKeyLoginAction } from "./action";
 
 export const LoginModal = ({
   modalRef,
@@ -46,6 +50,9 @@ export const LoginModal = ({
   );
 };
 
+const toggleModal = (modalRef: RefObject<ModalRef>) =>
+  modalRef.current.toggleModal();
+
 const LoginModalBody = ({
   buttonText,
   closeText,
@@ -59,23 +66,42 @@ const LoginModalBody = ({
   helpText: string;
   modalRef: RefObject<ModalRef | null>;
 }) => {
+  const [formState, formAction] = useActionState(apiKeyLoginAction, {});
+  // // may need to check logged in state here to make sure we can open up the modal after login/logout
+  // if (formState.success && modalRef) {
+  //   toggleModal(modalRef as RefObject<ModalRef>);
+  // }
   return (
     <>
       <p>{helpText}</p>
       <p className="font-sans-2xs margin-y-4">{descriptionText}</p>
-      <ModalFooter>
-        <ButtonGroup>
-          <LoginLink className="usa-button">{buttonText}</LoginLink>
-          <ModalToggleButton
-            modalRef={modalRef}
-            closer
-            unstyled
-            className="padding-105 text-center"
-          >
-            {closeText}
-          </ModalToggleButton>
-        </ButtonGroup>
-      </ModalFooter>
+      <form action={formAction}>
+        {formState.error && <ErrorMessage>Login error</ErrorMessage>}
+        {formState.unauthenticated && (
+          <ErrorMessage>Invalid API key</ErrorMessage>
+        )}
+        <input name="apiKey" />
+        <ModalFooter>
+          <ButtonGroup>
+            <Button
+              type="submit"
+              onClick={() => {
+                storeCurrentPage(location.pathname, location.search);
+              }}
+            >
+              {buttonText}
+            </Button>
+            <ModalToggleButton
+              modalRef={modalRef}
+              closer
+              unstyled
+              className="padding-105 text-center"
+            >
+              {closeText}
+            </ModalToggleButton>
+          </ButtonGroup>
+        </ModalFooter>
+      </form>
     </>
   );
 };
