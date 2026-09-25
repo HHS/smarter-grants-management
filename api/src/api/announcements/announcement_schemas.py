@@ -935,10 +935,18 @@ class ApplicationPackageFormsSetRequestSchema(Schema):
     )
 
 
+class ApplicationPackageInstructionDownloadSchema(FileAttachmentDownloadSchema):
+    application_package_instruction_id = fields.UUID(
+        metadata={"description": "The application package instruction ID"}
+    )
+
+
 class ApplicationPackageWithInstructionSchema(ApplicationPackageSchema):
 
     # Only add the instructions for certain endpoints, don't need them on all endpoints.
-    application_package_instructions = fields.List(fields.Nested(FileAttachmentDownloadSchema()))
+    application_package_instructions = fields.List(
+        fields.Nested(ApplicationPackageInstructionDownloadSchema())
+    )
 
 
 class ApplicationPackageResponseSchema(AbstractResponseSchema):
@@ -1087,3 +1095,18 @@ class AnnouncementAttachmentCreateFromPendingFileRequestSchema(Schema):
         required=True,
         metadata={"description": "The ID of the pending (virus-scanned) file to attach"},
     )
+
+
+class ApplicationPackageInstructionCreateFromPendingFileRequestSchema(Schema):
+    pending_file_id = fields.UUID(
+        required=True,
+        metadata={"description": "The ID of the pending (virus-scanned) file to attach"},
+    )
+
+
+class ApplicationPackageInstructionGetResponseSchema(AbstractResponseSchema):
+    data = fields.Nested(ApplicationPackageInstructionDownloadSchema())
+
+
+class ApplicationPackageInstructionDeleteResponseSchema(AbstractResponseSchema):
+    data = fields.MixinField(metadata={"example": None})
