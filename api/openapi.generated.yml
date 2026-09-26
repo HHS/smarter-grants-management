@@ -918,6 +918,57 @@ paths:
       security:
       - ApiJwtAuth: &id016 []
       - ApiUserKeyAuth: *id016
+  /v1/announcements/{announcement_id}/audit_events:
+    post:
+      parameters:
+      - in: path
+        name: announcement_id
+        schema:
+          type: string
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnnouncementAuditResponseSchema'
+          description: Successful response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Validation error
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Not found
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Forbidden
+      tags:
+      - Announcements
+      summary: Get Announcement Audit History
+      description: Get an announcement's audit history, paginated.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnnouncementAuditRequestSchema'
+      security:
+      - ApiJwtAuth: &id017 []
+      - ApiUserKeyAuth: *id017
   /v1/grantor-organizations/{grantor_organization_id}:
     get:
       parameters:
@@ -961,8 +1012,8 @@ paths:
       - Grantor Organizations
       summary: Fetch a Grantor Organization
       security:
-      - ApiJwtAuth: &id017 []
-      - ApiUserKeyAuth: *id017
+      - ApiJwtAuth: &id018 []
+      - ApiUserKeyAuth: *id018
   /alpha/proof_of_concept/opportunities/{opportunity_id}:
     get:
       parameters:
@@ -997,8 +1048,8 @@ paths:
         of cross-service data transfer. This endpoint requires JWT or API key authentication
         but has no authorization enforcement.
       security:
-      - ApiJwtAuth: &id018 []
-      - ApiUserKeyAuth: *id018
+      - ApiJwtAuth: &id019 []
+      - ApiUserKeyAuth: *id019
   /v1/announcements/{announcement_id}/application-packages:
     post:
       parameters:
@@ -1047,8 +1098,8 @@ paths:
             schema:
               $ref: '#/components/schemas/ApplicationPackageCreateRequestSchema'
       security:
-      - ApiJwtAuth: &id019 []
-      - ApiUserKeyAuth: *id019
+      - ApiJwtAuth: &id020 []
+      - ApiUserKeyAuth: *id020
   /v1/resources/{resource_type}/{resource_id}/users/list:
     post:
       parameters:
@@ -1104,8 +1155,8 @@ paths:
             schema:
               $ref: '#/components/schemas/ListUserForResourceRequestSchema'
       security:
-      - ApiJwtAuth: &id020 []
-      - ApiUserKeyAuth: *id020
+      - ApiJwtAuth: &id021 []
+      - ApiUserKeyAuth: *id021
   /v1/announcements/{announcement_id}/summaries/{announcement_summary_id}:
     put:
       parameters:
@@ -1159,8 +1210,8 @@ paths:
             schema:
               $ref: '#/components/schemas/AnnouncementSummaryUpdateRequestSchema'
       security:
-      - ApiJwtAuth: &id021 []
-      - ApiUserKeyAuth: *id021
+      - ApiJwtAuth: &id022 []
+      - ApiUserKeyAuth: *id022
   /v1/announcements/{announcement_id}/attachments/{announcement_attachment_id}:
     get:
       parameters:
@@ -1209,8 +1260,8 @@ paths:
       - Announcements
       summary: Get an Announcement Attachment
       security:
-      - ApiJwtAuth: &id022 []
-      - ApiUserKeyAuth: *id022
+      - ApiJwtAuth: &id023 []
+      - ApiUserKeyAuth: *id023
     delete:
       parameters:
       - in: path
@@ -1258,8 +1309,8 @@ paths:
       - Announcements
       summary: Delete an Announcement Attachment
       security:
-      - ApiJwtAuth: &id023 []
-      - ApiUserKeyAuth: *id023
+      - ApiJwtAuth: &id024 []
+      - ApiUserKeyAuth: *id024
   /v1/announcements/{announcement_id}/application-packages/{application_package_id}:
     get:
       parameters:
@@ -1302,8 +1353,8 @@ paths:
       - Announcements
       summary: Fetch an Application Package
       security:
-      - ApiJwtAuth: &id024 []
-      - ApiUserKeyAuth: *id024
+      - ApiJwtAuth: &id025 []
+      - ApiUserKeyAuth: *id025
     put:
       parameters:
       - in: path
@@ -1356,8 +1407,8 @@ paths:
             schema:
               $ref: '#/components/schemas/ApplicationPackageUpdateRequestSchema'
       security:
-      - ApiJwtAuth: &id025 []
-      - ApiUserKeyAuth: *id025
+      - ApiJwtAuth: &id026 []
+      - ApiUserKeyAuth: *id026
   /v1/announcements/{announcement_id}/application-packages/{application_package_id}/forms:
     put:
       parameters:
@@ -1411,8 +1462,112 @@ paths:
             schema:
               $ref: '#/components/schemas/ApplicationPackageFormsSetRequestSchema'
       security:
-      - ApiJwtAuth: &id026 []
-      - ApiUserKeyAuth: *id026
+      - ApiJwtAuth: &id027 []
+      - ApiUserKeyAuth: *id027
+  /v1/announcements/{announcement_id}/application-packages/{application_package_id}/instructions:
+    post:
+      parameters:
+      - in: path
+        name: announcement_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: application_package_id
+        schema:
+          type: string
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationPackageInstructionGetResponseSchema'
+          description: Successful response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Validation error
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Not found
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Forbidden
+      tags:
+      - Announcements
+      summary: Create an Application Package Instruction
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationPackageInstructionCreateFromPendingFileRequestSchema'
+      security:
+      - ApiJwtAuth: &id028 []
+      - ApiUserKeyAuth: *id028
+  ? /v1/announcements/{announcement_id}/application-packages/{application_package_id}/instructions/{application_package_instruction_id}
+  : delete:
+      parameters:
+      - in: path
+        name: announcement_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: application_package_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: application_package_instruction_id
+        schema:
+          type: string
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationPackageInstructionDeleteResponseSchema'
+          description: Successful response
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Authentication error
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Not found
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSchema'
+          description: Forbidden
+      tags:
+      - Announcements
+      summary: Delete an Application Package Instruction
+      security:
+      - ApiJwtAuth: &id029 []
+      - ApiUserKeyAuth: *id029
 openapi: 3.1.0
 components:
   schemas:
@@ -1889,7 +2044,7 @@ components:
           type: array
           description: List of forms required for this application package
           items:
-            type: &id028
+            type: &id031
             - object
             $ref: '#/components/schemas/ApplicationPackageFormSchema'
         public_application_package_id:
@@ -1935,7 +2090,7 @@ components:
             FakeMail@fake.com'
         announcement_assistance_listing:
           description: Assistance listing information for this application package
-          type: &id029
+          type: &id032
           - object
           - 'null'
           anyOf:
@@ -1945,14 +2100,14 @@ components:
           type: array
           description: List of applicant types who are eligible for this application
             package
-          example: &id030
+          example: &id033
           - individual
           - organization
           items:
-            enum: &id031
+            enum: &id034
             - individual
             - organization
-            type: &id032
+            type: &id035
             - string
     AnnouncementAttachmentSchema:
       type: object
@@ -2377,7 +2532,7 @@ components:
       properties:
         pagination_info:
           description: The pagination information for paginated endpoints
-          type: &id027
+          type: &id030
           - object
           $ref: '#/components/schemas/PaginationInfoSchema'
         message:
@@ -2520,7 +2675,7 @@ components:
       properties:
         pagination_info:
           description: The pagination information for paginated endpoints
-          type: *id027
+          type: *id030
           $ref: '#/components/schemas/PaginationInfoSchema'
         message:
           type: string
@@ -2899,7 +3054,7 @@ components:
       properties:
         pagination_info:
           description: The pagination information for paginated endpoints
-          type: *id027
+          type: *id030
           $ref: '#/components/schemas/PaginationInfoSchema'
         message:
           type: string
@@ -3207,11 +3362,11 @@ components:
           type: array
           minItems: 1
           description: Categories of funding for this announcement
-          example: &id033
+          example: &id036
           - education
           - health
           items:
-            enum: &id034
+            enum: &id037
             - recovery_act
             - agriculture
             - arts
@@ -3240,7 +3395,7 @@ components:
             - other
             - energy_infrastructure_and_critical_mineral_and_materials
             - recreation_and_tourism
-            type: &id035
+            type: &id038
             - string
         funding_category_description:
           type:
@@ -3253,26 +3408,26 @@ components:
           type: array
           minItems: 1
           description: Types of funding instruments used for this announcement
-          example: &id036
+          example: &id039
           - cooperative_agreement
           - grant
           items:
-            enum: &id037
+            enum: &id040
             - cooperative_agreement
             - grant
             - procurement_contract
             - other
-            type: &id038
+            type: &id041
             - string
         applicant_types:
           type: array
           minItems: 1
           description: Types of applicants eligible for this announcement
-          example: &id039
+          example: &id042
           - state_governments
           - county_governments
           items:
-            enum: &id040
+            enum: &id043
             - state_governments
             - county_governments
             - city_or_township_governments
@@ -3290,7 +3445,7 @@ components:
             - small_businesses
             - other
             - unrestricted
-            type: &id041
+            type: &id044
             - string
         applicant_eligibility_description:
           type:
@@ -3398,6 +3553,276 @@ components:
           example: 123e4567-e89b-12d3-a456-426614174000
       required:
       - pending_file_id
+    AnnouncementAuditUserSchema:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+          description: The user's unique identifier
+          example: 123e4567-e89b-12d3-a456-426614174000
+        email:
+          type:
+          - string
+          - 'null'
+          description: The user's email address, null if they have no login
+    AnnouncementAuditSummarySchema:
+      type: object
+      properties:
+        announcement_summary_id:
+          type: string
+          format: uuid
+          description: The announcement summary's unique identifier
+          example: 123e4567-e89b-12d3-a456-426614174000
+        is_forecast:
+          type: boolean
+          description: Whether the announcement summary is a forecast
+        post_timestamp:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: The date the announcement was posted
+        close_timestamp:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: The date the announcement will close
+    AnnouncementAuditAttachmentSchema:
+      type: object
+      properties:
+        announcement_attachment_id:
+          type: string
+          format: uuid
+          description: The announcement attachment's unique identifier
+          example: 123e4567-e89b-12d3-a456-426614174000
+        file_name:
+          type: string
+          description: The name of the attachment file
+    AnnouncementAuditApplicationPackageSchema:
+      type: object
+      properties:
+        application_package_id:
+          type: string
+          format: uuid
+          description: The application package's unique identifier
+          example: 123e4567-e89b-12d3-a456-426614174000
+        application_package_title:
+          type:
+          - string
+          - 'null'
+          description: The title of the application package
+        opening_timestamp:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: The opening date of the application package
+        closing_timestamp:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: The closing date of the application package
+    AnnouncementAuditApplicationPackageInstructionSchema:
+      type: object
+      properties:
+        application_package_instruction_id:
+          type: string
+          format: uuid
+          description: The application package instruction's unique identifier
+          example: 123e4567-e89b-12d3-a456-426614174000
+        file_name:
+          type: string
+          description: The name of the instruction file
+    AnnouncementAuditEventSchema:
+      type: object
+      properties:
+        announcement_audit_id:
+          type: string
+          format: uuid
+          description: The audit record's unique identifier
+          example: 123e4567-e89b-12d3-a456-426614174000
+        announcement_audit_event:
+          description: The type of change that occurred
+          example: announcement_created
+          enum:
+          - announcement_created
+          - announcement_updated
+          - announcement_summary_created
+          - announcement_summary_updated
+          - announcement_summary_deleted
+          - application_package_created
+          - application_package_updated
+          - application_package_deleted
+          - announcement_attachment_created
+          - announcement_attachment_updated
+          - announcement_attachment_deleted
+          - application_package_instruction_created
+          - application_package_instruction_updated
+          - application_package_instruction_deleted
+          type:
+          - string
+        user:
+          description: The user who made the change
+          type:
+          - object
+          $ref: '#/components/schemas/AnnouncementAuditUserSchema'
+        announcement_summary:
+          description: The announcement summary affected, if applicable
+          type:
+          - object
+          - 'null'
+          anyOf:
+          - $ref: '#/components/schemas/AnnouncementAuditSummarySchema'
+          - type: 'null'
+        announcement_attachment:
+          description: The announcement attachment affected, if applicable
+          type:
+          - object
+          - 'null'
+          anyOf:
+          - $ref: '#/components/schemas/AnnouncementAuditAttachmentSchema'
+          - type: 'null'
+        application_package:
+          description: The application package affected, if applicable
+          type:
+          - object
+          - 'null'
+          anyOf:
+          - $ref: '#/components/schemas/AnnouncementAuditApplicationPackageSchema'
+          - type: 'null'
+        application_package_instruction:
+          description: The application package instruction affected, if applicable
+          type:
+          - object
+          - 'null'
+          anyOf:
+          - $ref: '#/components/schemas/AnnouncementAuditApplicationPackageInstructionSchema'
+          - type: 'null'
+        audit_metadata:
+          type:
+          - object
+          - 'null'
+          description: Additional freeform metadata recorded with the change
+          additionalProperties: {}
+        created_at:
+          type: string
+          format: date-time
+          description: When the audit event occurred
+    AnnouncementAuditResponseSchema:
+      type: object
+      properties:
+        pagination_info:
+          description: The pagination information for paginated endpoints
+          type: *id030
+          $ref: '#/components/schemas/PaginationInfoSchema'
+        message:
+          type: string
+          description: The message to return
+          example: Success
+        data:
+          type: array
+          items:
+            type:
+            - object
+            $ref: '#/components/schemas/AnnouncementAuditEventSchema'
+        status_code:
+          type: integer
+          description: The HTTP status code
+          example: 200
+    AnnouncementAuditEventOneOfSchema:
+      type: object
+      properties:
+        one_of:
+          type: array
+          minItems: 1
+          items:
+            enum:
+            - announcement_created
+            - announcement_updated
+            - announcement_summary_created
+            - announcement_summary_updated
+            - announcement_summary_deleted
+            - application_package_created
+            - application_package_updated
+            - application_package_deleted
+            - announcement_attachment_created
+            - announcement_attachment_updated
+            - announcement_attachment_deleted
+            - application_package_instruction_created
+            - application_package_instruction_updated
+            - application_package_instruction_deleted
+            type:
+            - string
+    AnnouncementAuditFilterSchema:
+      type: object
+      properties:
+        announcement_audit_event:
+          description: Only return audit events of these types
+          type:
+          - object
+          $ref: '#/components/schemas/AnnouncementAuditEventOneOfSchema'
+    SortOrderAnnouncementAuditPaginationSchema:
+      type: object
+      properties:
+        order_by:
+          type: string
+          enum:
+          - created_at
+          description: The field to sort the response by
+        sort_direction:
+          description: Whether to sort the response ascending or descending
+          enum:
+          - ascending
+          - descending
+          type:
+          - string
+      required:
+      - order_by
+      - sort_direction
+    AnnouncementAuditPaginationSchema:
+      type: object
+      properties:
+        sort_order:
+          type: array
+          default:
+          - order_by: created_at
+            sort_direction: descending
+          minItems: 1
+          maxItems: 5
+          description: The list of sorting rules
+          items:
+            type:
+            - object
+            $ref: '#/components/schemas/SortOrderAnnouncementAuditPaginationSchema'
+        page_size:
+          type: integer
+          default: 25
+          minimum: 1
+          maximum: 5000
+          description: The size of the page to fetch
+          example: 25
+        page_offset:
+          type: integer
+          default: 1
+          minimum: 1
+          description: The page number to fetch, starts counting from 1
+          example: 1
+    AnnouncementAuditRequestSchema:
+      type: object
+      properties:
+        filters:
+          type:
+          - object
+          $ref: '#/components/schemas/AnnouncementAuditFilterSchema'
+        pagination:
+          type:
+          - object
+          $ref: '#/components/schemas/AnnouncementAuditPaginationSchema'
+      required:
+      - pagination
     GrantorOrganizationSchema:
       type: object
       properties:
@@ -3491,7 +3916,7 @@ components:
           type:
           - object
           $ref: '#/components/schemas/OpportunityDataSchema'
-    FileAttachmentDownloadSchema:
+    ApplicationPackageInstructionDownloadSchema:
       type: object
       properties:
         file_name:
@@ -3521,6 +3946,11 @@ components:
         download_path:
           type: string
           description: The file's download path
+        application_package_instruction_id:
+          type: string
+          format: uuid
+          description: The application package instruction ID
+          example: 123e4567-e89b-12d3-a456-426614174000
     ApplicationPackageWithInstructionSchema:
       type: object
       properties:
@@ -3539,7 +3969,7 @@ components:
           type: array
           description: List of forms required for this application package
           items:
-            type: *id028
+            type: *id031
             $ref: '#/components/schemas/ApplicationPackageFormSchema'
         public_application_package_id:
           type:
@@ -3584,7 +4014,7 @@ components:
             FakeMail@fake.com'
         announcement_assistance_listing:
           description: Assistance listing information for this application package
-          type: *id029
+          type: *id032
           anyOf:
           - $ref: '#/components/schemas/AnnouncementAssistanceListingSchema'
           - type: 'null'
@@ -3592,16 +4022,16 @@ components:
           type: array
           description: List of applicant types who are eligible for this application
             package
-          example: *id030
+          example: *id033
           items:
-            enum: *id031
-            type: *id032
+            enum: *id034
+            type: *id035
         application_package_instructions:
           type: array
           items:
             type:
             - object
-            $ref: '#/components/schemas/FileAttachmentDownloadSchema'
+            $ref: '#/components/schemas/ApplicationPackageInstructionDownloadSchema'
     ApplicationPackageResponseSchema:
       type: object
       properties:
@@ -3663,14 +4093,14 @@ components:
           minItems: 1
           description: List of applicant types who are eligible for this application
             package
-          example: &id042
+          example: &id045
           - individual
           - organization
           items:
-            enum: &id043
+            enum: &id046
             - individual
             - organization
-            type: &id044
+            type: &id047
             - string
       required:
       - application_package_title
@@ -3765,7 +4195,7 @@ components:
       properties:
         pagination_info:
           description: The pagination information for paginated endpoints
-          type: *id027
+          type: *id030
           $ref: '#/components/schemas/PaginationInfoSchema'
         message:
           type: string
@@ -4027,10 +4457,10 @@ components:
           type: array
           minItems: 1
           description: Categories of funding for this announcement
-          example: *id033
+          example: *id036
           items:
-            enum: *id034
-            type: *id035
+            enum: *id037
+            type: *id038
         funding_category_description:
           type:
           - string
@@ -4042,18 +4472,18 @@ components:
           type: array
           minItems: 1
           description: Types of funding instruments used for this announcement
-          example: *id036
-          items:
-            enum: *id037
-            type: *id038
-        applicant_types:
-          type: array
-          minItems: 1
-          description: Types of applicants eligible for this announcement
           example: *id039
           items:
             enum: *id040
             type: *id041
+        applicant_types:
+          type: array
+          minItems: 1
+          description: Types of applicants eligible for this announcement
+          example: *id042
+          items:
+            enum: *id043
+            type: *id044
         applicant_eligibility_description:
           type:
           - string
@@ -4154,10 +4584,10 @@ components:
           minItems: 1
           description: List of applicant types who are eligible for this application
             package
-          example: *id042
+          example: *id045
           items:
-            enum: *id043
-            type: *id044
+            enum: *id046
+            type: *id047
       required:
       - application_package_title
       - closing_timestamp
@@ -4189,13 +4619,51 @@ components:
             $ref: '#/components/schemas/FormReplaceSchema'
       required:
       - forms
+    ApplicationPackageInstructionGetResponseSchema:
+      type: object
+      properties:
+        message:
+          type: string
+          description: The message to return
+          example: Success
+        data:
+          type:
+          - object
+          $ref: '#/components/schemas/ApplicationPackageInstructionDownloadSchema'
+        status_code:
+          type: integer
+          description: The HTTP status code
+          example: 200
+    ApplicationPackageInstructionCreateFromPendingFileRequestSchema:
+      type: object
+      properties:
+        pending_file_id:
+          type: string
+          format: uuid
+          description: The ID of the pending (virus-scanned) file to attach
+          example: 123e4567-e89b-12d3-a456-426614174000
+      required:
+      - pending_file_id
+    ApplicationPackageInstructionDeleteResponseSchema:
+      type: object
+      properties:
+        message:
+          type: string
+          description: The message to return
+          example: Success
+        data:
+          example: null
+        status_code:
+          type: integer
+          description: The HTTP status code
+          example: 200
   securitySchemes:
-    ApiJwtAuth:
-      type: apiKey
-      in: header
-      name: X-MGMT-Token
     ApiUserKeyAuth:
       type: apiKey
       in: header
       name: X-API-Key
+    ApiJwtAuth:
+      type: apiKey
+      in: header
+      name: X-MGMT-Token
 
