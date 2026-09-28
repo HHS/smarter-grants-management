@@ -16,7 +16,7 @@ export const AgencySelector = ({
   className?: string;
 }) => {
   const router = useRouter();
-  const t = useTranslations("Opportunities");
+  const t = useTranslations("Announcements");
 
   return (
     <div className={className ?? "usa-form-group margin-bottom-4"}>

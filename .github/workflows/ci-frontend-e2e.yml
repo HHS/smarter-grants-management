@@ -319,6 +319,11 @@ jobs:
           ulimit -c unlimited
           mkdir -p /tmp/cores
           echo "/tmp/cores/core.%e.%p.%t" | sudo tee /proc/sys/kernel/core_pattern
+          # Pre-create the s3mock bind mount as the runner user. Otherwise Docker
+          # creates it as root and the API container (running as the runner's UID)
+          # can't create the local file scanner's watch directory inside it.
+          mkdir -p locals3root
+
           # Run init first to generate JWT keys in override.env
 
           make init-ci-cd
@@ -340,6 +345,17 @@ jobs:
           # Ensure the API wait script is executable
           chmod +x ../api/bin/wait-for-api.sh
           ../api/bin/wait-for-api.sh
+        shell: bash
+
+      - name: Dump API logs on startup failure
+        if: failure()
+        run: |
+          cd ../api
+          docker compose ps --all
+          docker compose logs --no-color --timestamps grants-management-api
+          docker compose logs --no-color --timestamps --tail 200 s3mock
+          # Ownership of the s3mock bind mount, which the local file scanner writes into
+          ls -la locals3root locals3root/* || true
         shell: bash
 
       # we shouldn't ever need to do this

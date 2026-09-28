@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import OpportunityEditPage from "src/app/[locale]/announcement/[id]/edit/page";
+import AnnouncementEditPage from "src/app/[locale]/announcement/[id]/edit/page";
 import { GrantorAnnouncementDetail } from "src/types/announcement/announcementResponseTypes";
 import { LocalizedPageProps } from "src/types/intl";
 import { FeatureFlaggedPageWrapper } from "src/types/uiTypes";
@@ -59,15 +59,15 @@ jest.mock("react", () => ({
   useActionState: () => mockUseActionState() as unknown,
 }));
 
-const mockGetOpportunityForGrantor = jest.fn().mockResolvedValue({
+const mockGetAnnouncement = jest.fn().mockResolvedValue({
   data: {
-    opportunity_id: "opportunity-123",
+    announcement_id: "opportunity-123",
     forecast_summary: { opportunity_summary_id: "summary-1" },
   },
 });
 jest.mock("src/services/fetch/fetchers/grantorAnnouncementFetcher", () => ({
-  getOpportunityForGrantor: (arg: unknown): unknown =>
-    mockGetOpportunityForGrantor(arg) as Promise<GrantorAnnouncementDetail[]>,
+  getAnnouncement: (arg: unknown): unknown =>
+    mockGetAnnouncement(arg) as Promise<GrantorAnnouncementDetail[]>,
 }));
 
 jest.mock("src/services/fetch/fetchers/announcementAttachmentFetcher", () => ({
@@ -93,7 +93,7 @@ describe("AnnouncementEditForm - action buttons", () => {
   });
 
   it("renders the saveAndExit button", async () => {
-    const component = await OpportunityEditPage({ params: pageParams });
+    const component = await AnnouncementEditPage({ params: pageParams });
     render(component);
     expect(
       screen.getByRole("button", { name: "button.saveAndExit" }),
@@ -108,7 +108,7 @@ describe("AnnouncementEditForm - action buttons", () => {
       false,
     ]);
 
-    const component = await OpportunityEditPage({ params: pageParams });
+    const component = await AnnouncementEditPage({ params: pageParams });
     render(component);
 
     fireEvent.click(screen.getByRole("button", { name: "button.saveAndExit" }));

@@ -1,6 +1,9 @@
+from collections.abc import Iterable, Sequence
 from typing import Any
 
 import jsonpath_ng
+
+from src.util.json_util import json_encoder
 
 
 def flatten_dict(in_dict: Any, separator: str = ".", prefix: str = "") -> dict:
@@ -44,21 +47,21 @@ def flatten_dict(in_dict: Any, separator: str = ".", prefix: str = "") -> dict:
     return {prefix: in_dict}
 
 
-def diff_nested_dicts(dict1: dict, dict2: dict) -> list:
+def diff_nested_dicts(dict1: dict, dict2: dict) -> dict:
     """
-        Compare two dictionaries (possibly nested), return a list of differences
-        with 'field', 'before', and 'after' for each key.
+        Compare two dictionaries (possibly nested), return a dict of differences
+        keyed by field, each holding 'before' and 'after'.
 
 
         :param dict1 : The first dictionary.
         :param dict2 : The second dictionary.
-        :return : Returns a list of dictionaries representing the differences.
+        :return : Returns a dict of {field: {"before": ..., "after": ...}} for each changed key.
     a"""
 
     flatt_dict1 = flatten_dict(dict1)
     flatt_dict2 = flatten_dict(dict2)
 
-    diffs: list = []
+    diffs: dict = {}
 
     all_keys = set(flatt_dict1.keys()).union(flatt_dict2.keys())  # Does not keep order
 
@@ -69,9 +72,34 @@ def diff_nested_dicts(dict1: dict, dict2: dict) -> list:
         v_b = _convert_iterables_to_set(values[1])
 
         if v_a != v_b:
-            diffs.append({"field": k, "before": values[0], "after": values[1]})
+            diffs[k] = {"before": values[0], "after": values[1]}
 
     return diffs
+
+
+def snapshot_fields(obj: object | None, fields: Sequence[str]) -> dict[str, Any]:
+    """
+    Build a flat, JSON-safe dict of field values read off obj via getattr.
+    obj=None maps every field to None - the "nothing existed yet" case for
+    audit "before" snapshots on create.
+    """
+    snapshot: dict[str, Any] = {}
+    for field in fields:
+        value = None if obj is None else getattr(obj, field)
+        snapshot[field] = _normalize(value)
+    return snapshot
+
+
+def _normalize(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {key: _normalize(val) for key, val in value.items()}
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+    if isinstance(value, Iterable):
+        # Covers list/tuple/set plus SQLAlchemy association-proxy collections
+        # (e.g. _AssociationSet), which don't subclass the builtin set/list/tuple.
+        return [_normalize(val) for val in value]
+    return json_encoder(value)
 
 
 def _convert_iterables_to_set(data: Any) -> Any:

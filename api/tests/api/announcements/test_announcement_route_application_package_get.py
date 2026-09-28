@@ -70,6 +70,17 @@ def test_application_package_get_not_found_404(client, api_key_headers):
     assert resp.status_code == 404
 
 
+def test_application_package_get_is_deleted_404(client, api_key_headers):
+    application_package = ApplicationPackageFactory.create(is_deleted=True)
+
+    resp = client.get(
+        f"/v1/announcements/{application_package.announcement_id}/application-packages/{application_package.application_package_id}",
+        headers=api_key_headers,
+    )
+
+    assert resp.status_code == 404
+
+
 def test_application_package_get_bad_api_key_401(client):
     resp = client.get(
         f"/v1/announcements/{uuid.uuid4()}/application-packages/{uuid.uuid4()}",

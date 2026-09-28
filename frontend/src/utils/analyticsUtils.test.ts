@@ -31,7 +31,7 @@ describe("waitForNewRelic", () => {
     // eslint-disable-next-line
     const resolution = new Promise<boolean>((resolve) =>
       waitForNewRelic().then((result) => {
-        resolve(result);
+        return resolve(result);
       }),
     );
     await jest.runAllTimersAsync();

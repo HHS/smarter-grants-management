@@ -1,3 +1,7 @@
+import pytest
+from sqlalchemy import update
+
+from src.db.models.announcement_models import Announcement
 from tests.db.models.factories import AnnouncementFactory, AnnouncementSummaryFactory
 
 
@@ -13,6 +17,14 @@ def list_request(**filters):
     return payload
 
 
+@pytest.fixture(autouse=True)
+def cleanup_announcements(db_session):
+    # Mark all announcements created by other tests as deleted so they
+    # do not get picked up by these tests.
+    db_session.execute(update(Announcement).values(is_deleted=True))
+    db_session.commit()
+
+
 def test_announcement_list_returns_announcements(
     client,
     db_session,
@@ -20,6 +32,9 @@ def test_announcement_list_returns_announcements(
 ):
     announcement_summaries = AnnouncementSummaryFactory.create_batch(size=3)
     announcement_ids = {str(a.announcement_id) for a in announcement_summaries}
+
+    # Create one that is deleted that won't get picked up
+    AnnouncementSummaryFactory.create(announcement__is_deleted=True)
 
     response = client.post(
         "/v1/announcements/list",
@@ -31,9 +46,9 @@ def test_announcement_list_returns_announcements(
 
     response_json = response.get_json()
     returned_ids = {item["announcement_id"] for item in response_json["data"]}
-    assert announcement_ids.issubset(returned_ids)
+    assert announcement_ids == returned_ids
 
-    assert response_json["pagination_info"]["total_records"] >= 3
+    assert response_json["pagination_info"]["total_records"] == 3
 
 
 def test_announcement_list_paginates(

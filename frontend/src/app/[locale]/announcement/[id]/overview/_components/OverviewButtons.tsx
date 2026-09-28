@@ -18,7 +18,9 @@ function isPastDate(value: string | null): boolean {
     return false;
   }
   const dayjs = getConfiguredDayJs();
-  const date = dayjs(value, "YYYY-MM-DD", true);
+  // post_timestamp comes back from the API as a full ISO timestamp, not a bare
+  // YYYY-MM-DD date, so this needs a loose parse rather than a strict-format one.
+  const date = dayjs(value);
   const today = dayjs().startOf("day");
   return date.isValid() && date.isBefore(today);
 }

@@ -5,7 +5,7 @@ from sqlalchemy.orm import selectinload
 
 from src.adapters import db
 from src.api.route_utils import raise_flask_error
-from src.db.models.announcement_models import AnnouncementAttachment
+from src.db.models.announcement_models import Announcement, AnnouncementAttachment
 from src.db.models.user_models import User
 from src.services.announcements.authorization import has_access
 from src.services.announcements.get_announcement import get_announcement_and_verify_access
@@ -21,9 +21,13 @@ def get_announcement_attachment_and_verify_access(
 
     announcement_attachment = db_session.execute(
         select(AnnouncementAttachment)
+        .join(Announcement)
         .where(
             AnnouncementAttachment.announcement_attachment_id == announcement_attachment_id,
             AnnouncementAttachment.announcement_id == announcement_id,
+            # Don't fetch if the attachment or the announcement itself is marked as deleted
+            AnnouncementAttachment.is_deleted.is_(False),
+            Announcement.is_deleted.is_(False),
         )
         .options(selectinload(AnnouncementAttachment.file_attachment))
     ).scalar_one_or_none()
