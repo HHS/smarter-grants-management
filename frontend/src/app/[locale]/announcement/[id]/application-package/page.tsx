@@ -24,8 +24,8 @@ type PageProps = {
 export const dynamic = "force-dynamic";
 
 // We are temporarily removing the SF-424 Short form, pending implementation of form libraries
-// If any other forms need to be blocked, add them to this array
-const blockedForms = ["cf355a4d-d840-43fd-a78f-729edf41ab4c"];
+// If any other forms need to be blocked, add their form_id to this array
+const blockedForms: number[] = [];
 
 const ButtonSaveAndExit = () => {
   const t = useTranslations("OpportunityCompetition");

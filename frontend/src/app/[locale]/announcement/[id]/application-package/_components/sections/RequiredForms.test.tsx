@@ -8,32 +8,25 @@ jest.mock("next-intl", () => ({
 }));
 
 const alwaysRequiredForms: Record<string, boolean> = {
-  "1623b310-85be-496a-b84b-34bdee22a68a": true,
+  "111": true,
 };
 
 describe("RequiredForms", () => {
-  const alwaysRequiredFormId = "1623b310-85be-496a-b84b-34bdee22a68a";
+  const alwaysRequiredFormId = 111;
+  const conditionalFormId = 222;
 
   const mockFormDetails: FormType[] = [
     {
       form_id: alwaysRequiredFormId,
       short_name: "SF424_V1",
       name: "Application for Federal Assistance (SF-424)",
-      current_version: {
-        legacy_form_version: "",
-        major_version: 1,
-        minor_version: 0,
-      },
+      version: "1.0",
     },
     {
-      form_id: "conditional-form-id",
+      form_id: conditionalFormId,
       short_name: "CD511_V2",
       name: "Certification Form (CD-511)",
-      current_version: {
-        legacy_form_version: "",
-        major_version: 2,
-        minor_version: 1,
-      },
+      version: "2.1",
     },
   ];
 
@@ -65,7 +58,7 @@ describe("RequiredForms", () => {
           alwaysRequiredForms={alwaysRequiredForms}
           requiredForms={[
             {
-              form_id: "conditional-form-id",
+              form_id: conditionalFormId,
               is_required: false,
             },
           ]}
@@ -162,7 +155,7 @@ describe("RequiredForms", () => {
           alwaysRequiredForms={alwaysRequiredForms}
           requiredForms={[
             {
-              form_id: "missing-form",
+              form_id: 999,
               is_required: true,
             },
           ]}
@@ -201,7 +194,7 @@ describe("RequiredForms", () => {
           alwaysRequiredForms={alwaysRequiredForms}
           requiredForms={[
             {
-              form_id: "conditional-form-id",
+              form_id: conditionalFormId,
               is_required: false,
             },
           ]}

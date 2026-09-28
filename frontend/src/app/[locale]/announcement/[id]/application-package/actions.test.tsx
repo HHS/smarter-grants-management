@@ -42,7 +42,7 @@ const mockUpdateApplicationPackageForms = jest.mocked(
 
 const mockRequiredForms: ApplicationPackageFormsSubmitApi = [
   {
-    form_id: "1623b310-85be-496a-b84b-34bdee22a68a",
+    form_id: 713,
     is_required: true,
   },
 ];
@@ -514,6 +514,7 @@ describe("buildRequestBody (tested indirectly via saveApplicationPackage)", () =
     expect(requestBody.application_package_title).toBeNull();
     expect(requestBody.opening_timestamp).toBeNull();
     expect(requestBody.closing_timestamp).toBeNull();
-    expect(requestBody.public_application_package_id).toBeNull();
+    // Omitted (not null) since the backend rejects an explicit null for this field
+    expect(requestBody.public_application_package_id).toBeUndefined();
   });
 });

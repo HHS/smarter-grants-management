@@ -78,10 +78,9 @@ function buildRequestBody(formData: FormData) {
       const gracePeriod = getFieldValue(formData, "grace_period");
       return gracePeriod === null ? null : Number(gracePeriod);
     })(),
-    public_application_package_id: getFieldValue(
-      formData,
-      "public_application_package_id",
-    ),
+    // Backend requires this key be omitted rather than sent as null when empty
+    public_application_package_id:
+      getFieldValue(formData, "public_application_package_id") ?? undefined,
     contact_info: contactInfo,
     open_to_applicants: openToApplicants,
   };

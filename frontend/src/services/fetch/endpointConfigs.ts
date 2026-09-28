@@ -41,6 +41,7 @@ export const fetchFormsEndpoint = {
   version: "v1",
   namespace: "forms",
   method: "POST" as ApiMethod,
+  requiresAuth: true,
 };
 
 export const userLogoutEndpoint = {

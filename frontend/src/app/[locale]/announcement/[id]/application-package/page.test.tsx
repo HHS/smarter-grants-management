@@ -94,12 +94,8 @@ describe("AnnouncementApplicationPackagePage", () => {
       mockAllForms.mockResolvedValue({
         data: [
           {
-            current_version: {
-              legacy_form_version: "2.1",
-              major_version: 4,
-              minor_version: 0,
-            },
-            form_id: "123e4567-e89b-12d3-a456-426614174000",
+            version: "4.0",
+            form_id: 713,
             name: "Application for Federal Assistance",
             short_name: "SF-424",
           },

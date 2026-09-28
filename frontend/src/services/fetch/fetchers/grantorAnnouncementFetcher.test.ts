@@ -339,7 +339,7 @@ describe("updateApplicationPackageForms", () => {
 
   it("calls fetchGrantorOpportunityWithMethod with PUT and the correct subPath", async () => {
     const requiredForms: ApplicationPackageFormsSubmitApi = [
-      { form_id: "1623b310-85be-496a-b84b-34bdee22a68a", is_required: true },
+      { form_id: 713, is_required: true },
     ];
 
     await updateApplicationPackageForms({

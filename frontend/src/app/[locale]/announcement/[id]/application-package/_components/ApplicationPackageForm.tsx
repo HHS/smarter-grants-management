@@ -17,6 +17,7 @@ import {
 import { UploadFileMetadata } from "src/types/fileUploadTypes";
 
 import { useTranslations } from "next-intl";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 import React, { useRef, useState } from "react";
 import {
   Alert,
@@ -27,9 +28,9 @@ import {
 
 import { FormSelectModal } from "./FormSelectModal";
 
-// SF 424. As we start to support other form families, this will be replaced with a more complex function
+// SF 424 (form_id 713). As we start to support other form families, this will be replaced with a more complex function
 const alwaysRequiredForms: Record<string, boolean> = {
-  "1623b310-85be-496a-b84b-34bdee22a68a": true,
+  "713": true,
 };
 type ApplicationPackageFormProps = {
   announcementId: string;
@@ -47,25 +48,27 @@ export function ApplicationPackageForm({
   const applicationPackageId: string =
     applicationPackage?.application_package_id || "";
   const existingFiles: UploadFileMetadata[] =
-    applicationPackage?.application_package_instructions.map((instruction) => ({
-      id: instruction.competition_instruction_id,
-      fileName: instruction.file_name,
-      updatedAt: instruction.updated_at,
-      downloadUrl: instruction.download_path,
-    })) ?? [];
+    applicationPackage?.application_package_instructions?.map(
+      (instruction) => ({
+        id: instruction.competition_instruction_id,
+        fileName: instruction.file_name,
+        updatedAt: instruction.updated_at,
+        downloadUrl: instruction.download_path,
+      }),
+    ) ?? [];
 
   // ===== Required Forms =====
   const formModalRef = useRef<ModalRef | null>(null);
   const [requiredForms, setRequiredForms] =
     useState<ApplicationPackageFormsSubmitApi>(
       applicationPackage?.application_package_forms?.map(
-        ({ form, is_required }) => ({
-          form_id: form.form_id,
+        ({ form_id, is_required }) => ({
+          form_id,
           is_required,
         }),
       ) ??
         Object.entries(alwaysRequiredForms).map(([formId, isRequired]) => ({
-          form_id: formId,
+          form_id: Number(formId),
           is_required: isRequired,
         })),
     );
@@ -93,7 +96,12 @@ export function ApplicationPackageForm({
     const formData = new FormData(event.currentTarget);
     saveDataAndRoute(formData)
       .then((result) => setFormState(result))
-      .catch(() => setFormState({ errorMessage: t("alerts.networkError") }))
+      .catch((error: unknown) => {
+        if (isRedirectError(error)) {
+          throw error;
+        }
+        setFormState({ errorMessage: t("alerts.networkError") });
+      })
       .finally(() => setIsPending(false));
   };
 
