@@ -338,8 +338,8 @@ jobs:
 
           # Now run the seeding and populate commands
           echo "LOGIN_FINAL_DESTINATION=http://localhost:3000/api/auth/callback" >> override.env
-          make start
-          make db-seed-local
+          make db-seed-local start
+          
           # add this back when we get workflows working
           # make run-workflow-service-async
           cd ../frontend
