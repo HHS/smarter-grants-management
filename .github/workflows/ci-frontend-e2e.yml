@@ -339,21 +339,13 @@ jobs:
           # Now run the seeding and populate commands
           echo "LOGIN_FINAL_DESTINATION=http://localhost:3000/api/auth/callback" >> override.env
           make start
+          make db-seed-local
           # add this back when we get workflows working
           # make run-workflow-service-async
           cd ../frontend
           # Ensure the API wait script is executable
           chmod +x ../api/bin/wait-for-api.sh
           ../api/bin/wait-for-api.sh
-        shell: bash
-
-      - name: Seed local E2E API keys
-        run: |
-          cd ../api
-          # The direct /v1/internal/api-jwt flow requires seeded local API keys to
-          # exist in the database; without this, the API rejects the request with 401
-          # even though the test runtime passes the correct key name.
-          docker compose exec -T grants-management-api db-seed-local
         shell: bash
 
       - name: Dump API logs on startup failure
