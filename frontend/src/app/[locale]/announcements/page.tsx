@@ -225,10 +225,6 @@ const transformTableRowData = (
       announcement.non_forecast_summary ?? announcement.forecast_summary;
     const status = getAnnouncementStatus(summary);
 
-    /* Issue: 236 Title should link directly to overview regardless of status.
-   const announcementTitleUrl = status === "draft" && canUpdate
-        ? `/announcement/${announcement.announcement_id}/edit`
-        : `/announcement/${announcement.announcement_id}/overview`; */
     const announcementTitleUrl = `/announcement/${announcement.announcement_id}/overview`;
 
     // Get funding instrument types from summary and format them
