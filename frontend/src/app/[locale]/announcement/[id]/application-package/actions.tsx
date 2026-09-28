@@ -1,11 +1,11 @@
 "use server";
 
 import { ApiRequestError, parseErrorStatus } from "src/errors";
-import { updateCompetitionForms } from "src/services/fetch/fetchers/competitionFormsFetcher";
 import {
   createApplicationPackage,
   saveCompetitionInstructions,
   updateApplicationPackage,
+  updateApplicationPackageForms,
 } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 import { FrontendErrorDetails } from "src/types/apiResponseTypes";
 import {
@@ -145,8 +145,9 @@ export async function saveApplicationPackage(
     }
 
     if (requiredForms) {
-      await updateCompetitionForms({
-        competitionId: applicationPackageId,
+      await updateApplicationPackageForms({
+        announcementId,
+        applicationPackageId,
         body: { forms: requiredForms },
       });
     }

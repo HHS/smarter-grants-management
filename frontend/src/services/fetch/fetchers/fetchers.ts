@@ -5,7 +5,6 @@ import {
   EndpointConfig,
   fetchAwardRecommendationEndpoint,
   fetchCompetitionEndpoint,
-  fetchCompetitionFormsEndpoint,
   fetchFormsEndpoint,
   fetchWorkflowEndpoint,
   getLocalUsersEndpoint,
@@ -123,10 +122,6 @@ export const fetchForms = cache(requesterForEndpoint(fetchFormsEndpoint));
 
 export const fetchCompetition = cache(
   requesterForEndpoint(fetchCompetitionEndpoint),
-);
-
-export const fetchCompetitionForms = cache(
-  requesterForEndpoint(fetchCompetitionFormsEndpoint),
 );
 
 export const fetchAwardRecommendation = cache(

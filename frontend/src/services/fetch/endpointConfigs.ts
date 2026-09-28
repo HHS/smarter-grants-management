@@ -43,14 +43,6 @@ export const fetchFormsEndpoint = {
   method: "POST" as ApiMethod,
 };
 
-export const fetchCompetitionFormsEndpoint = {
-  basePath: environment.API_URL,
-  version: "alpha",
-  namespace: "competitions",
-  method: "PUT" as ApiMethod,
-  requiresAuth: true,
-};
-
 export const userLogoutEndpoint = {
   basePath: environment.API_URL,
   version: "v1",

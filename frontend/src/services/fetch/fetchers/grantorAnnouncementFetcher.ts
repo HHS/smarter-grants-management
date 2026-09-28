@@ -11,7 +11,9 @@ import {
   GrantorAnnouncementApiResponse,
 } from "src/types/announcement/announcementResponseTypes";
 import { APIResponse, PaginationInfo } from "src/types/apiResponseTypes";
+import { ApplicationPackageFormsApiResponse } from "src/types/applicationPackageFormsResponseTypes";
 import {
+  ApplicationPackageFormsSubmitApi,
   ApplicationPackageInstructionsApiResponse,
   ApplicationPackageSaveApiResponse,
   ApplicationPackageSaveRequest,
@@ -36,6 +38,12 @@ type UpdateAnnouncementSummaryParams = {
 type CreateAnnouncementSummaryParams = {
   announcementId: string;
   body: AnnouncementSummaryCreateRequest;
+};
+
+type UpdateApplicationPackageFormsParams = {
+  announcementId: string;
+  applicationPackageId: string;
+  body: { forms: ApplicationPackageFormsSubmitApi };
 };
 
 export const searchOpportunitiesByAgency = async (
@@ -142,6 +150,18 @@ export async function updateApplicationPackage(
     body: data,
   });
   return (await response.json()) as ApplicationPackageSaveApiResponse;
+}
+
+export async function updateApplicationPackageForms({
+  announcementId,
+  applicationPackageId,
+  body,
+}: UpdateApplicationPackageFormsParams): Promise<ApplicationPackageFormsApiResponse> {
+  const response = await fetchGrantorOpportunityWithMethod("PUT")({
+    subPath: `${announcementId}/application-packages/${applicationPackageId}/forms`,
+    body,
+  });
+  return (await response.json()) as ApplicationPackageFormsApiResponse;
 }
 
 export async function saveCompetitionInstructions(

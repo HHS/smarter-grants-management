@@ -6,8 +6,12 @@ import {
   saveCompetitionInstructions,
   searchOpportunitiesByAgency,
   updateApplicationPackage,
+  updateApplicationPackageForms,
 } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
-import { ApplicationPackageSaveRequest } from "src/types/applicationPackageResponseTypes";
+import {
+  ApplicationPackageFormsSubmitApi,
+  ApplicationPackageSaveRequest,
+} from "src/types/applicationPackageResponseTypes";
 import { PaginationRequestBody } from "src/types/search/searchRequestTypes";
 import { fakeAgencyResponseData } from "src/utils/testing/fixtures";
 
@@ -324,6 +328,32 @@ describe("updateApplicationPackage", () => {
         applicationPackageData,
       ),
     ).rejects.toThrow(ApiRequestError);
+  });
+});
+
+describe("updateApplicationPackageForms", () => {
+  beforeEach(() => {
+    mockFetcher.mockResolvedValue({ json: () => Promise.resolve({}) });
+  });
+  afterEach(() => jest.clearAllMocks());
+
+  it("calls fetchGrantorOpportunityWithMethod with PUT and the correct subPath", async () => {
+    const requiredForms: ApplicationPackageFormsSubmitApi = [
+      { form_id: "1623b310-85be-496a-b84b-34bdee22a68a", is_required: true },
+    ];
+
+    await updateApplicationPackageForms({
+      announcementId: "opp-123",
+      applicationPackageId: "compete-321",
+      body: { forms: requiredForms },
+    });
+
+    expect(mockFetchGrantorOpportunityWithMethod).toHaveBeenCalledTimes(1);
+    expect(mockFetchGrantorOpportunityWithMethod).toHaveBeenCalledWith("PUT");
+    expect(mockFetcher).toHaveBeenCalledWith({
+      subPath: "opp-123/application-packages/compete-321/forms",
+      body: { forms: requiredForms },
+    });
   });
 });
 

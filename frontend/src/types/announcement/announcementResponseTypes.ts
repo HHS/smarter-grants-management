@@ -9,6 +9,7 @@ export interface AnnouncementAssistanceListing {
   announcement_assistance_listing_id: string;
   assistance_listing_id: string;
   program_title: string | null;
+  assistance_listing_number: string | null;
 }
 
 export interface AnnouncementDocument {

@@ -1,10 +1,10 @@
 import { identity } from "lodash";
 import { ApiRequestError } from "src/errors";
-import { updateCompetitionForms } from "src/services/fetch/fetchers/competitionFormsFetcher";
 import {
   createApplicationPackage,
   saveCompetitionInstructions,
   updateApplicationPackage,
+  updateApplicationPackageForms,
 } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 import { ApplicationPackageFormsSubmitApi } from "src/types/applicationPackageResponseTypes";
 
@@ -21,10 +21,7 @@ jest.mock("src/services/fetch/fetchers/grantorAnnouncementFetcher", () => ({
   createApplicationPackage: jest.fn(),
   saveCompetitionInstructions: jest.fn(),
   updateApplicationPackage: jest.fn(),
-}));
-
-jest.mock("src/services/fetch/fetchers/competitionFormsFetcher", () => ({
-  updateCompetitionForms: jest.fn(),
+  updateApplicationPackageForms: jest.fn(),
 }));
 
 const mockRedirect = jest.fn();
@@ -39,7 +36,9 @@ const mockUpdateApplicationPackage = jest.mocked(updateApplicationPackage);
 const mockSaveCompetitionInstructions = jest.mocked(
   saveCompetitionInstructions,
 );
-const mockUpdateCompetitionForms = jest.mocked(updateCompetitionForms);
+const mockUpdateApplicationPackageForms = jest.mocked(
+  updateApplicationPackageForms,
+);
 
 const mockRequiredForms: ApplicationPackageFormsSubmitApi = [
   {
@@ -125,7 +124,7 @@ describe("saveApplicationPackage", () => {
     });
   });
 
-  it("updates competition forms with the new application package ID after creating", async () => {
+  it("updates application package forms with the new application package ID after creating", async () => {
     const formData = buildValidFormData();
     formData.delete("applicationPackageId");
 
@@ -133,8 +132,9 @@ describe("saveApplicationPackage", () => {
 
     await saveApplicationPackage(formData, mockRequiredForms);
 
-    expect(mockUpdateCompetitionForms).toHaveBeenCalledWith({
-      competitionId: "new-application-package-id",
+    expect(mockUpdateApplicationPackageForms).toHaveBeenCalledWith({
+      announcementId: "opp-123",
+      applicationPackageId: "new-application-package-id",
       body: { forms: mockRequiredForms },
     });
   });
@@ -161,15 +161,16 @@ describe("saveApplicationPackage", () => {
     });
   });
 
-  it("updates competition forms with the existing application package ID", async () => {
+  it("updates application package forms with the existing application package ID", async () => {
     const formData = buildValidFormData();
 
     mockUpdateApplicationPackage.mockResolvedValue(successfulUpdateResponse);
 
     await saveApplicationPackage(formData, mockRequiredForms);
 
-    expect(mockUpdateCompetitionForms).toHaveBeenCalledWith({
-      competitionId: "compete-456",
+    expect(mockUpdateApplicationPackageForms).toHaveBeenCalledWith({
+      announcementId: "opp-123",
+      applicationPackageId: "compete-456",
       body: { forms: mockRequiredForms },
     });
   });
