@@ -137,6 +137,24 @@ def test_announcement_summary_create_forecast_200(
     assert response.get_json()["data"]["is_forecast"] is True
 
 
+def test_announcement_summary_create_duplicate_type_is_deleted_200(
+    client,
+    api_key_headers,
+):
+    announcement = AnnouncementFactory.create()
+    # Add a deleted summary, this won't get seen and a new summary can be created.
+    AnnouncementSummaryFactory.create(announcement=announcement, is_forecast=True, is_deleted=True)
+
+    response = client.post(
+        f"/v1/announcements/{announcement.announcement_id}/summaries",
+        json=build_summary_request(is_forecast=True),
+        headers=api_key_headers,
+    )
+
+    assert response.status_code == 200
+    assert response.get_json()["data"]["is_forecast"] is True
+
+
 def test_announcement_summary_create_duplicate_type_422(
     client,
     db_session,
@@ -160,6 +178,21 @@ def test_announcement_summary_create_unknown_announcement_404(
 ):
     response = client.post(
         f"/v1/announcements/{uuid.uuid4()}/summaries",
+        json=build_summary_request(),
+        headers=api_key_headers,
+    )
+
+    assert response.status_code == 404
+
+
+def test_announcement_summary_create_deleted_announcement_404(
+    client,
+    api_key_headers,
+):
+    announcement = AnnouncementFactory.create(is_deleted=True)
+
+    response = client.post(
+        f"/v1/announcements/{announcement.announcement_id}/summaries",
         json=build_summary_request(),
         headers=api_key_headers,
     )

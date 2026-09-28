@@ -5,12 +5,12 @@ import {
   AnnouncementAttachmentListResponse,
 } from "src/types/announcement/announcementAttachmentTypes";
 
-import { fetchGrantorOpportunityWithMethod } from "./fetchers";
+import { fetchAnnouncementWithMethod } from "./fetchers";
 
 export const listAnnouncementAttachments = async (
   opportunityId: string,
 ): Promise<AnnouncementAttachmentListResponse> => {
-  const response = await fetchGrantorOpportunityWithMethod("GET")({
+  const response = await fetchAnnouncementWithMethod("GET")({
     subPath: `${opportunityId}/attachments`,
   });
   return (await response.json()) as AnnouncementAttachmentListResponse;
@@ -20,7 +20,7 @@ export const createAnnouncementAttachment = async (
   opportunityId: string,
   pendingFileId: string,
 ): Promise<AnnouncementAttachmentCreateResponse> => {
-  const response = await fetchGrantorOpportunityWithMethod("POST")({
+  const response = await fetchAnnouncementWithMethod("POST")({
     subPath: `${opportunityId}/attachments`,
     body: { pending_file_id: pendingFileId },
     // want to allow responses with failed validations through so we can properly handle displaying validation errors
@@ -37,7 +37,7 @@ export const deleteOpportunityAttachment = async (
   message: string;
   errors?: unknown[] | null;
 }> => {
-  const response = await fetchGrantorOpportunityWithMethod("DELETE")({
+  const response = await fetchAnnouncementWithMethod("DELETE")({
     subPath: `${opportunityId}/attachments/${attachmentId}`,
     // want to allow responses with failed validations through so we can properly handle displaying validation errors
     allowedErrorStatuses: [422],

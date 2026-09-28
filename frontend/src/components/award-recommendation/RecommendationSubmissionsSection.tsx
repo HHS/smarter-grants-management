@@ -164,7 +164,6 @@ const SubmissionTable = ({
   };
 
   useEffect(() => {
-    // TODO #9633
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void fetchSubmissions();
     // eslint-disable-next-line react-hooks/exhaustive-deps

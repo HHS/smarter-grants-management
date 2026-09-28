@@ -49,6 +49,24 @@ def test_attachment_get_missing_attachment_404(client, api_key_headers):
     assert resp.status_code == 404
 
 
+def test_attachment_get_deleted_announcement_404(client, api_key_headers):
+    announcement_attachment = AnnouncementAttachmentFactory.create(announcement__is_deleted=True)
+    resp = client.get(
+        f"/v1/announcements/{announcement_attachment.announcement_id}/attachments/{announcement_attachment.announcement_attachment_id}",
+        headers=api_key_headers,
+    )
+    assert resp.status_code == 404
+
+
+def test_attachment_get_deleted_attachment_404(client, api_key_headers):
+    announcement_attachment = AnnouncementAttachmentFactory.create(is_deleted=True)
+    resp = client.get(
+        f"/v1/announcements/{announcement_attachment.announcement_id}/attachments/{announcement_attachment.announcement_attachment_id}",
+        headers=api_key_headers,
+    )
+    assert resp.status_code == 404
+
+
 def test_attachment_get_bad_api_key_401(client):
     resp = client.get(
         f"/v1/announcements/{uuid.uuid4()}/attachments/{uuid.uuid4()}",

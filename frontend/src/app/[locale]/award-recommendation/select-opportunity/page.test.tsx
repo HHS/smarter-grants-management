@@ -4,7 +4,7 @@ import SelectOpportunityPage, {
 } from "src/app/[locale]/award-recommendation/select-opportunity/page";
 
 jest.mock("src/services/fetch/fetchers/grantorAnnouncementFetcher", () => ({
-  searchAccessibleOpportunities: jest.fn(() =>
+  searchAccessibleAnnouncements: jest.fn(() =>
     Promise.resolve({
       data: [],
       pagination_info: undefined,

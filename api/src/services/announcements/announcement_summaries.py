@@ -55,6 +55,7 @@ def _check_existing_summary(
         select(AnnouncementSummary).where(
             AnnouncementSummary.announcement_id == announcement_id,
             AnnouncementSummary.is_forecast == is_forecast,
+            AnnouncementSummary.is_deleted.is_(False),
         )
     ).scalar_one_or_none()
 
@@ -72,10 +73,12 @@ def _get_announcement_summary(
     announcement_summary_id: uuid.UUID,
 ) -> AnnouncementSummary:
     summary = db_session.execute(
-        select(AnnouncementSummary).where(
+        select(AnnouncementSummary)
+        .where(
             AnnouncementSummary.announcement_summary_id == announcement_summary_id,
             AnnouncementSummary.announcement_id == announcement_id,
         )
+        .where(AnnouncementSummary.is_deleted.is_(False))
     ).scalar_one_or_none()
 
     if summary is None:

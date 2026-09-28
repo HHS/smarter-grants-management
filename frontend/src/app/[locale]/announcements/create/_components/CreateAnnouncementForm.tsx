@@ -65,7 +65,6 @@ export function CreateAnnouncementForm({
         top: 0,
         behavior: "smooth",
       });
-      // TODO #9633
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setDisableSave(true);
       if (selectedCategoryId.trim() !== "other") {
@@ -78,13 +77,8 @@ export function CreateAnnouncementForm({
   useEffect(
     () => {
       // Category: if Other then show the Explanation field
-      if (selectedCategoryId.trim() === "other") {
-        // TODO #9633
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setShowExplain(true);
-      } else {
-        setShowExplain(false);
-      }
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setShowExplain(selectedCategoryId.trim() === "other");
       // Check for required fields to enable the Save button
       const allReqFieldsFilled =
         opportunityNumber.trim() !== "" &&

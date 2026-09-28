@@ -98,6 +98,30 @@ def test_announcement_attachment_create_announcement_not_found_404(
     assert resp.get_json()["message"].startswith("Could not find announcement with ID")
 
 
+def test_announcement_attachment_create_announcement_deleted_404(
+    client, s3_config, db_session, enable_factory_create
+):
+    api_key = UserApiKeyFactory.create()
+
+    pending_file = PendingFileFactory.create(
+        file_scan_status=FileScanStatus.COMPLETE, user=api_key.user, file_contents="hello"
+    )
+    announcement = AnnouncementFactory.create(is_deleted=True)
+
+    request = {"pending_file_id": pending_file.pending_file_id}
+
+    resp = client.post(
+        f"/v1/announcements/{announcement.announcement_id}/attachments",
+        json=request,
+        headers={"X-API-Key": api_key.key_id},
+    )
+    assert resp.status_code == 404
+
+    # Verify the status hasn't been updated
+    db_session.refresh(pending_file)
+    assert pending_file.file_scan_status == FileScanStatus.COMPLETE
+
+
 @pytest.mark.parametrize("status", [FileScanStatus.INFECTED, FileScanStatus.PENDING])
 def test_announcement_attachment_create_scan_not_complete_422(
     client, s3_config, db_session, enable_factory_create, status

@@ -7,7 +7,11 @@ import {
   getAwardRecommendationRisk,
   getAwardRecommendationSubmissionsForRisk,
 } from "src/services/fetch/fetchers/awardRecommendationFetcher";
-import { AwardRecommendationDetails } from "src/types/awardRecommendationTypes";
+import {
+  AwardRecommendationDetails,
+  AwardRecommendationRisk,
+  AwardRecommendationSubmission,
+} from "src/types/awardRecommendationTypes";
 import { WithFeatureFlagProps } from "src/types/uiTypes";
 
 import { getTranslations } from "next-intl/server";
@@ -41,75 +45,26 @@ async function EditRiskPageContent({ params }: EditRiskPageProps) {
   const { id: awardRecommendationId, riskId } = await params;
   const t = await getTranslations("AwardRecommendation");
 
-  let awardRecommendationDetails: AwardRecommendationDetails | null = null;
+  let submissions: AwardRecommendationSubmission[] = [];
+  let heroHeading: string = "";
+  let details: AwardRecommendationDetails | null;
+  let risk: AwardRecommendationRisk | null;
 
   try {
-    const [details, risk] = await Promise.all([
+    [details, risk] = await Promise.all([
       getAwardRecommendationDetails(awardRecommendationId),
       getAwardRecommendationRisk(awardRecommendationId, riskId),
     ]);
 
-    awardRecommendationDetails = details;
-
-    if (!risk) {
-      return (
-        <Alert
-          heading={t("errorHeadingAwardRecommendationRisk")}
-          headingLevel="h2"
-          type="warning"
-          validation
-        >
-          {t("awardRecommendationRiskFetchError")}
-        </Alert>
+    if (risk) {
+      const riskNumber =
+        risk.award_recommendation_risk_number || String(risk.risk_number);
+      heroHeading = t("risks.editRiskTitle", { riskNumber });
+      submissions = await getAwardRecommendationSubmissionsForRisk(
+        awardRecommendationId,
+        risk.award_recommendation_application_submission_ids,
       );
     }
-
-    const riskNumber =
-      risk.award_recommendation_risk_number || String(risk.risk_number);
-    const heroHeading = t("risks.editRiskTitle", { riskNumber });
-    const submissions = await getAwardRecommendationSubmissionsForRisk(
-      awardRecommendationId,
-      risk.award_recommendation_application_submission_ids,
-    );
-
-    return (
-      <>
-        <Suspense
-          fallback={
-            <span data-testid="award-recommendation-hero-fallback"></span>
-          }
-        >
-          <AwardRecommendationHero
-            awardRecommendationDetails={awardRecommendationDetails}
-            heading={heroHeading}
-            showDateAndStatus={false}
-            additionalBreadcrumbs={[
-              {
-                title: t("risks.editTitle"),
-                path: `/award-recommendation/${awardRecommendationId}/risks`,
-              },
-              {
-                title: heroHeading,
-                path: `/award-recommendation/${awardRecommendationId}/risks/${riskId}/edit`,
-              },
-            ]}
-          />
-        </Suspense>
-        <GridContainer>
-          <Grid row>
-            <Grid col={12}>
-              <div className="margin-top-4">
-                <EditRiskForm
-                  awardRecommendationId={awardRecommendationId}
-                  risk={risk}
-                  submissions={submissions}
-                />
-              </div>
-            </Grid>
-          </Grid>
-        </GridContainer>
-      </>
-    );
   } catch (error) {
     console.error("Failed to fetch award recommendation risk details", error);
     const errorStatus = parseErrorStatus(error as ApiRequestError);
@@ -138,6 +93,57 @@ async function EditRiskPageContent({ params }: EditRiskPageProps) {
       </Alert>
     );
   }
+
+  if (!risk) {
+    return (
+      <Alert
+        heading={t("errorHeadingAwardRecommendationRisk")}
+        headingLevel="h2"
+        type="warning"
+        validation
+      >
+        {t("awardRecommendationRiskFetchError")}
+      </Alert>
+    );
+  }
+  return (
+    <>
+      <Suspense
+        fallback={
+          <span data-testid="award-recommendation-hero-fallback"></span>
+        }
+      >
+        <AwardRecommendationHero
+          awardRecommendationDetails={details}
+          heading={heroHeading}
+          showDateAndStatus={false}
+          additionalBreadcrumbs={[
+            {
+              title: t("risks.editTitle"),
+              path: `/award-recommendation/${awardRecommendationId}/risks`,
+            },
+            {
+              title: heroHeading,
+              path: `/award-recommendation/${awardRecommendationId}/risks/${riskId}/edit`,
+            },
+          ]}
+        />
+      </Suspense>
+      <GridContainer>
+        <Grid row>
+          <Grid col={12}>
+            <div className="margin-top-4">
+              <EditRiskForm
+                awardRecommendationId={awardRecommendationId}
+                risk={risk}
+                submissions={submissions}
+              />
+            </div>
+          </Grid>
+        </Grid>
+      </GridContainer>
+    </>
+  );
 }
 
 export default withFeatureFlag<EditRiskPageProps, never>(
