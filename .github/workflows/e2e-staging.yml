@@ -8,7 +8,8 @@ on:
     inputs:
       version:
         description: "git reference for testing code to run (e.g., a branch, tag, or commit SHA)"
-        required: true
+        required: false
+        default: "main"
         type: string
       target:
         description: "application environment to run tests against (dev / prod TK)"
@@ -24,7 +25,8 @@ on:
     inputs:
       version:
         description: "git reference for testing code to run (e.g., a branch, tag, or commit SHA)"
-        required: true
+        required: false
+        default: "main"
         type: string
       target:
         description: "application environment to run tests against (dev / prod TK)"

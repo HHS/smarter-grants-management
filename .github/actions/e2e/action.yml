@@ -104,10 +104,37 @@ runs:
       run: |
         if [[ $PLAYWRIGHT_TARGET_ENV != "local" && $PLAYWRIGHT_TARGET_ENV != "staging" ]]; then echo "invalid e2e test target provided" && exit 1; fi
 
+    - name: Resolve checkout ref
+      shell: bash
+      env:
+        REQUESTED_REF: ${{ inputs.version }}
+      run: |
+        checkout_ref="$REQUESTED_REF"
+
+        # GitHub workflow UI can provide values like "Run in main*" for ref-like inputs.
+        # Normalize those values to a branch name that checkout can fetch.
+        if [[ "$checkout_ref" =~ ^Run\ in\ (.+)\*$ ]]; then
+          checkout_ref="${BASH_REMATCH[1]}"
+        fi
+
+        # If a full heads ref is provided, convert to branch name for consistency.
+        if [[ "$checkout_ref" == refs/heads/* ]]; then
+          checkout_ref="${checkout_ref#refs/heads/}"
+        fi
+
+        # Reject malformed ref values that include whitespace or wildcard characters.
+        if [[ -z "$checkout_ref" || "$checkout_ref" == *" "* || "$checkout_ref" == *"*"* ]]; then
+          echo "::warning::Invalid E2E version ref '$REQUESTED_REF'. Falling back to 'main'."
+          checkout_ref="main"
+        fi
+
+        echo "Using checkout ref: $checkout_ref"
+        echo "checkout_ref=$checkout_ref" >> "$GITHUB_ENV"
+
     - name: Check out code
       uses: actions/checkout@v6
       with:
-        ref: ${{ inputs.version }}
+        ref: ${{ env.checkout_ref }}
         clean: false
 
     - name: Set up Node
