@@ -1,9 +1,5 @@
-import {
-  AnnouncementAssistanceListing,
-  BaseAnnouncement,
-} from "./announcement/announcementResponseTypes";
+import type { AnnouncementAssistanceListing } from "./announcement/announcementResponseTypes";
 import { APIResponse } from "./apiResponseTypes";
-import { FormDetail } from "./formResponseTypes";
 
 export interface ApplicationPackageInstructions {
   applicationPackage_instruction_id: string;
@@ -13,12 +9,12 @@ export interface ApplicationPackageInstructions {
   updated_at: string;
 }
 export type ApplicationPackageForms = {
-  form: FormDetail;
+  form_id: number;
   is_required: boolean;
 }[];
 
 export type ApplicationPackageFormsSubmitApi = {
-  form_id: string;
+  form_id: number;
   is_required: boolean;
 }[];
 
@@ -26,12 +22,12 @@ export type ApplicantTypes = "individual" | "organization";
 
 // This is used for create and update
 export type ApplicationPackageSaveRequest = {
-  applicationPackage_title: string | null;
-  opening_date: string | null;
-  closing_date: string | null;
+  application_package_title: string | null;
+  opening_timestamp: string | null;
+  closing_timestamp: string | null;
   contact_info: string | null;
   grace_period?: number | null;
-  public_applicationPackage_id?: string | null;
+  public_application_package_id?: string | null;
   open_to_applicants: ApplicantTypes[];
 };
 
@@ -40,22 +36,17 @@ export interface ApplicationPackageSaveApiResponse extends APIResponse {
 }
 
 export type ApplicationPackage = {
-  closing_date: string;
-  applicationPackage_forms: ApplicationPackageForms;
-  applicationPackage_id: string;
-  applicationPackage_info: string;
-  applicationPackage_instructions: ApplicationPackageInstructions[];
-  applicationPackage_title: string;
+  announcement_assistance_listing: AnnouncementAssistanceListing | null;
+  application_package_forms: ApplicationPackageForms;
+  application_package_id: string;
+  application_package_instructions: ApplicationPackageInstructions[];
+  application_package_title: string;
+  closing_timestamp: string;
   contact_info: string | null;
-  expected_application_count: number | null;
   grace_period: number | null;
-  is_open: boolean;
   open_to_applicants: ApplicantTypes[];
-  opening_date: string;
-  opportunity_assistance_listings: AnnouncementAssistanceListing[];
-  opportunity_id: number;
-  opportunity: BaseAnnouncement;
-  public_applicationPackage_id?: string | null;
+  opening_timestamp: string;
+  public_application_package_id?: string | null;
 };
 
 export interface ApplicationPackageInstructionsApiResponse extends APIResponse {

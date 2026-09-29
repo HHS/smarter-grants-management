@@ -1,7 +1,5 @@
 import { JSONSchema7 } from "json-schema";
-import { FormType } from "src/types/allFormsResponseTypes";
 import { BaseAnnouncement } from "src/types/announcement/announcementResponseTypes";
-import { ApplicationPackage } from "src/types/applicationPackageResponseTypes";
 import { UserProfile } from "src/types/authTypes";
 import {
   AwardRecommendationDetails,
@@ -9,7 +7,6 @@ import {
   AwardRecommendationStatus,
   AwardRecommendationSubmission,
 } from "src/types/awardRecommendationTypes";
-import { FormDetail, FormInstruction } from "src/types/formResponseTypes";
 import { RelevantAgencyRecord } from "src/types/search/searchFilterTypes";
 import {
   TestUser,
@@ -476,49 +473,6 @@ export const fakeUserProfile: UserProfile = {
   user_id: "an id",
 };
 
-export const fakeFormInstruction: FormInstruction = {
-  created_at: "1999-11-11",
-  download_path: "a download path",
-  file_name: "a file name",
-  updated_at: "1999-11-11",
-};
-
-export const fakeForm: FormDetail = {
-  form_instruction: fakeFormInstruction,
-  form_name: "fake form",
-  form_ui_schema: [],
-  form_id: "123e4567-e89b-12d3-a456-426614174000",
-  form_json_schema: {
-    properties: {
-      ApplicationNumber: {
-        maxLength: 120,
-        minLength: 1,
-        title: "Application number",
-        type: "number",
-      },
-      Date: {
-        format: "date",
-        title: "Date of application ",
-        type: "string",
-      },
-      Description: {
-        maxLength: 15,
-        minLength: 0,
-        title: "Description for application",
-        type: "string",
-      },
-      Title: {
-        maxLength: 60,
-        minLength: 1,
-        title: "Title",
-        type: "string",
-      },
-    },
-    title: "Test form for testing",
-    type: "object",
-  },
-};
-
 export const mockOpportunity: BaseAnnouncement = {
   opportunity_id: "63588df8-f2d1-44ed-a201-5804abba696a",
   legacy_opportunity_id: 12345,
@@ -534,28 +488,3 @@ export const mockOpportunity: BaseAnnouncement = {
   },
   opportunity_number: "OPP-12345",
 } as BaseAnnouncement;
-
-export const fakeApplicationPackageWithOpportunity: ApplicationPackage = {
-  ...fakeApplicationPackage,
-  opportunity_id: 1,
-  open_to_applicants: [],
-  applicationPackage_forms: [
-    {
-      form: fakeForm,
-      is_required: true,
-    },
-  ],
-  expected_application_count: 1,
-  grace_period: 0,
-  opportunity: mockOpportunity,
-};
-export const fakeFormType: FormType = {
-  form_id: "1",
-  name: "form name",
-  short_name: "really short form name",
-  current_version: {
-    legacy_form_version: "1",
-    major_version: 1,
-    minor_version: 1,
-  },
-};
