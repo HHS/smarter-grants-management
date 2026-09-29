@@ -4,7 +4,8 @@
     "Paths are relative to tests/e2e (for example: login/specs/login-redirect.spec.ts).",
     "Remove entries as soon as tests are fixed."
   ],
-  "testFiles": [
+  "testFiles": [],
+  "commentedOutTestFiles": [
     "announcement/specs/failure-path-announcements-list.spec.ts",
     "announcement/specs/failure-path-announcement-overview-initial-state.spec.ts",
     "announcement/specs/failure-path-create-announcement.spec.ts",
