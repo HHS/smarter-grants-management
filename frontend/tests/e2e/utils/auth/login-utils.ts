@@ -36,8 +36,8 @@ export const newExpirationDate = () =>
   new Date(Date.now() + 12 * 60 * 60 * 1000);
 
 /*
-  encrypts a server session token (fetched from POST /v1/internal/e2e-token)
-  into a fake client token
+  encrypts a server session token (fetched from GET /v1/internal/api-jwt)
+  into a fake client token.
 */
 export const generateSpoofedSession = async (
   serverToken: string,
