@@ -16,6 +16,7 @@ inputs:
   version:
     description: "ref / sha / branch to run tests against"
     required: true
+    default: "main"
   target:
     description: "application environment to run tests against (dev / prod TK)"
     required: true
