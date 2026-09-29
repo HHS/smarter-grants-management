@@ -11,7 +11,9 @@ import {
   GrantorAnnouncementApiResponse,
 } from "src/types/announcement/announcementResponseTypes";
 import { APIResponse, PaginationInfo } from "src/types/apiResponseTypes";
+import { ApplicationPackageFormsApiResponse } from "src/types/applicationPackageFormsResponseTypes";
 import {
+  ApplicationPackageFormsSubmitApi,
   ApplicationPackageInstructionsApiResponse,
   ApplicationPackageSaveApiResponse,
   ApplicationPackageSaveRequest,
@@ -38,6 +40,12 @@ type UpdateAnnouncementSummaryParams = {
 type CreateAnnouncementSummaryParams = {
   announcementId: string;
   body: AnnouncementSummaryCreateRequest;
+};
+
+type UpdateApplicationPackageFormsParams = {
+  announcementId: string;
+  applicationPackageId: string;
+  body: { forms: ApplicationPackageFormsSubmitApi };
 };
 
 export const searchOpportunitiesByAgency = async (
@@ -126,29 +134,41 @@ export async function publishOpportunityForGrantor(
   return (await response.json()) as GrantorAnnouncementApiResponse;
 }
 
-export async function createApplicationPackageForGrantor(
-  opportunityId: string,
+export async function createApplicationPackage(
+  announcementId: string,
   data: ApplicationPackageSaveRequest,
 ): Promise<ApplicationPackageSaveApiResponse> {
   const response = await fetchAnnouncementWithMethod("POST")({
-    subPath: `${opportunityId}/application-packages`,
+    subPath: `${announcementId}/application-packages`,
     body: data,
     allowedErrorStatuses: [422],
   });
   return (await response.json()) as ApplicationPackageSaveApiResponse;
 }
 
-export async function updateApplicationPackageForGrantor(
-  opportunityId: string,
+export async function updateApplicationPackage(
+  announcementId: string,
   applicationPackageId: string,
   data: ApplicationPackageSaveRequest,
 ): Promise<ApplicationPackageSaveApiResponse> {
   const response = await fetchAnnouncementWithMethod("PUT")({
-    subPath: `${opportunityId}/application-packages/${applicationPackageId}`,
+    subPath: `${announcementId}/application-packages/${applicationPackageId}`,
     body: data,
     allowedErrorStatuses: [422],
   });
   return (await response.json()) as ApplicationPackageSaveApiResponse;
+}
+
+export async function updateApplicationPackageForms({
+  announcementId,
+  applicationPackageId,
+  body,
+}: UpdateApplicationPackageFormsParams): Promise<ApplicationPackageFormsApiResponse> {
+  const response = await fetchAnnouncementWithMethod("PUT")({
+    subPath: `${announcementId}/application-packages/${applicationPackageId}/forms`,
+    body,
+  });
+  return (await response.json()) as ApplicationPackageFormsApiResponse;
 }
 
 export async function saveApplicationPackageInstructions(

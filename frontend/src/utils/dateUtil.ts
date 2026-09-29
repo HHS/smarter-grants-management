@@ -53,3 +53,9 @@ export const isExpiring = (expiration?: number) =>
 // '2026-09-23' -> '2026-09-23T00:00:00.000Z'
 export const dateToTimestamp = (dateStr: string): string =>
   new Date(dateStr).toISOString();
+
+// Same as dateToTimestamp, but passes null through instead of throwing -
+// for optional date fields sourced from form data or a raw API payload.
+export const dateToTimestampOrNull = (
+  dateStr: string | null | undefined,
+): string | null => (dateStr ? dateToTimestamp(dateStr) : null);

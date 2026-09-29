@@ -17,7 +17,8 @@ import {
 import { UploadFileMetadata } from "src/types/fileUploadTypes";
 
 import { useTranslations } from "next-intl";
-import React, { useEffect, useRef, useState } from "react";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
+import React, { useRef, useState } from "react";
 import {
   Alert,
   Button,
@@ -27,9 +28,9 @@ import {
 
 import { FormSelectModal } from "./FormSelectModal";
 
-// SF 424. As we start to support other form families, this will be replaced with a more complex function
+// SF 424 (form_id 713). As we start to support other form families, this will be replaced with a more complex function
 const alwaysRequiredForms: Record<string, boolean> = {
-  "1623b310-85be-496a-b84b-34bdee22a68a": true,
+  "713": true,
 };
 type ApplicationPackageFormProps = {
   announcementId: string;
@@ -45,46 +46,37 @@ export function ApplicationPackageForm({
   const t = useTranslations("OpportunityCompetition");
 
   const applicationPackageId: string =
-    applicationPackage?.applicationPackage_id || "";
+    applicationPackage?.application_package_id || "";
   const existingFiles: UploadFileMetadata[] =
-    applicationPackage?.applicationPackage_instructions.map((instruction) => ({
-      id: instruction.applicationPackage_instruction_id,
-      fileName: instruction.file_name,
-      updatedAt: instruction.updated_at,
-      downloadUrl: instruction.download_path,
-    })) ?? [];
+    applicationPackage?.application_package_instructions?.map(
+      (instruction) => ({
+        id: instruction.applicationPackage_instruction_id,
+        fileName: instruction.file_name,
+        updatedAt: instruction.updated_at,
+        downloadUrl: instruction.download_path,
+      }),
+    ) ?? [];
 
   // ===== Required Forms =====
   const formModalRef = useRef<ModalRef | null>(null);
   const [requiredForms, setRequiredForms] =
     useState<ApplicationPackageFormsSubmitApi>(
-      applicationPackage?.applicationPackage_forms?.map(
-        ({ form, is_required }) => ({
-          form_id: form.form_id,
+      applicationPackage?.application_package_forms?.map(
+        ({ form_id, is_required }) => ({
+          form_id,
           is_required,
         }),
       ) ??
         Object.entries(alwaysRequiredForms).map(([formId, isRequired]) => ({
-          form_id: formId,
+          form_id: Number(formId),
           is_required: isRequired,
         })),
     );
 
   // ===== Server side action to save data =====
-  const [formState, setFormState] = useState<ApplicationPackageActionState>({});
+  const [formState, setFormState] =
+    useState<ApplicationPackageActionState | null>(null);
   const [isPending, setIsPending] = useState(false);
-
-  useEffect(() => {
-    if (
-      formState.validationErrors &&
-      Object.keys(formState.validationErrors).length
-    ) {
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    }
-  }, [formState.validationErrors]);
 
   const handleSubmit = (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -104,13 +96,18 @@ export function ApplicationPackageForm({
     const formData = new FormData(event.currentTarget);
     saveDataAndRoute(formData)
       .then((result) => setFormState(result))
-      .catch(() => setFormState({ errorMessage: t("alerts.networkError") }))
+      .catch((error: unknown) => {
+        if (isRedirectError(error)) {
+          throw error;
+        }
+        setFormState({ errorMessage: t("alerts.networkError") });
+      })
       .finally(() => setIsPending(false));
   };
 
   // ===== Render the form =====
   return (
-    <form id="opportunity-applicationPackage-form" onSubmit={handleSubmit}>
+    <form id="application-package-form" onSubmit={handleSubmit}>
       <input type="hidden" name="announcementId" value={announcementId} />
       <input
         type="hidden"
@@ -118,32 +115,18 @@ export function ApplicationPackageForm({
         value={applicationPackageId}
       />
 
-      {formState.errorMessage ? (
-        <div className="margin-top-2">
-          <Alert
-            type="warning"
-            heading={formState.errorMessage}
-            headingLevel="h3"
-            validation
-          />
-        </div>
-      ) : null}
-
-      {formState.validationErrors &&
-      Object.keys(formState.validationErrors).length > 0 ? (
+      {formState?.errorMessage ? (
         <div className="margin-top-2">
           <Alert
             type="error"
-            heading={t("alerts.validationErrors")}
+            heading={formState.errorMessage}
             headingLevel="h3"
           >
             <span className="display-block margin-top-1 margin-bottom-1">
               {t("alerts.validationErrorBody")}
             </span>
-            {Array.from(
-              new Set(Object.values(formState.validationErrors).flat()),
-            ).map((error, i) => (
-              <span key={i} className="display-block">
+            {formState?.validationErrors?.map((error, index) => (
+              <span key={index} className="display-block">
                 {error}
               </span>
             ))}
@@ -167,16 +150,16 @@ export function ApplicationPackageForm({
               </p>
               <SubmissionSetUp
                 publicApplicationPackageId={
-                  applicationPackage?.public_applicationPackage_id
+                  applicationPackage?.public_application_package_id
                 }
                 applicationPackageTitle={
-                  applicationPackage?.applicationPackage_title
+                  applicationPackage?.application_package_title
                 }
                 openToApplicants={applicationPackage?.open_to_applicants}
               />
               <SubmissionWindow
-                openingDate={applicationPackage?.opening_date}
-                closingDate={applicationPackage?.closing_date}
+                openingTimestamp={applicationPackage?.opening_timestamp}
+                closingTimestamp={applicationPackage?.closing_timestamp}
                 gracePeriod={applicationPackage?.grace_period}
               />
               <AgencyContact contactInfo={applicationPackage?.contact_info} />

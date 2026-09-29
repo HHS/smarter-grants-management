@@ -6,8 +6,10 @@ export type AnnouncementStatus =
   "archived" | "closed" | "posted" | "forecasted";
 
 export interface AnnouncementAssistanceListing {
-  assistance_listing_number: string;
-  program_title: string;
+  announcement_assistance_listing_id: string;
+  assistance_listing_id: string;
+  program_title: string | null;
+  assistance_listing_number: string | null;
 }
 
 export interface AnnouncementDocument {

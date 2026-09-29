@@ -10,7 +10,7 @@ import {
   updateAnnouncementSummary,
 } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 import { AnnouncementSummaryUpdateRawData } from "src/types/announcement/announcementResponseTypes";
-import { dateToTimestamp, getConfiguredDayJs } from "src/utils/dateUtil";
+import { dateToTimestampOrNull, getConfiguredDayJs } from "src/utils/dateUtil";
 import { formDataToObject } from "src/utils/formData/formDataToJson";
 import { mapApiValidationErrors } from "src/utils/validationUtils";
 import { z } from "zod";
@@ -409,12 +409,8 @@ export async function saveAnnouncementEditAction(
         ...rawBody,
         funding_categories: [rawBody.funding_categories],
         funding_instruments: [rawBody.funding_instruments],
-        close_timestamp: rawBody.close_timestamp
-          ? dateToTimestamp(rawBody.close_timestamp)
-          : null,
-        post_timestamp: rawBody.post_timestamp
-          ? dateToTimestamp(rawBody.post_timestamp)
-          : null,
+        close_timestamp: dateToTimestampOrNull(rawBody.close_timestamp),
+        post_timestamp: dateToTimestampOrNull(rawBody.post_timestamp),
       };
       const createResponse = await createAnnouncementSummary({
         announcementId,
@@ -476,12 +472,8 @@ export async function saveAnnouncementEditAction(
       ...rawBody,
       funding_categories: [rawBody.funding_categories],
       funding_instruments: [rawBody.funding_instruments],
-      close_timestamp: rawBody.close_timestamp
-        ? dateToTimestamp(rawBody.close_timestamp)
-        : null,
-      post_timestamp: rawBody.post_timestamp
-        ? dateToTimestamp(rawBody.post_timestamp)
-        : null,
+      close_timestamp: dateToTimestampOrNull(rawBody.close_timestamp),
+      post_timestamp: dateToTimestampOrNull(rawBody.post_timestamp),
     };
 
     const response = await updateAnnouncementSummary({
