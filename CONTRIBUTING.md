@@ -56,6 +56,47 @@ This project follows [trunk-based development](./DEVELOPMENT.md#branching-model)
 
 Each application has its own testing and linters. Every commit is tested to adhere to tests and the linting guidelines. It is recommended to run tests and linters locally before committing.
 
+### Commit Signing
+
+All commits must be cryptographically signed using GPG or SSH keys. This is enforced on protected branches to prevent impersonation and malicious injections.
+
+#### Setting Up GPG Commit Signing
+
+1. **Generate a GPG key:**
+   ```bash
+   gpg --full-generate-key
+   ```
+   - Select: RSA and RSA
+   - Key size: 4096 bits
+   - Use your GitHub email address
+
+2. **Get your GPG key ID:**
+   ```bash
+   gpg --list-secret-keys --keyid-format=long
+   ```
+   Copy the key ID (e.g., `B5690EEEBB952194`)
+
+3. **Configure Git to sign commits:**
+   ```bash
+   git config --global user.signingkey YOUR_KEY_ID
+   git config --global commit.gpgsign true
+   ```
+
+4. **Add your GPG public key to GitHub:**
+   ```bash
+   gpg --armor --export YOUR_KEY_ID
+   ```
+   - Go to [GitHub Settings > SSH and GPG keys](https://github.com/settings/keys)
+   - Click "New GPG key"
+   - Paste the output and save
+
+5. **Verify your commits are signed:**
+   ```bash
+   git log --show-signature -1
+   ```
+
+For more details, see [GitHub's guide on signing commits](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits).
+
 ### Issues
 
 External contributors should use the _Bug Report_ or _Feature Request_ [issue templates](https://github.com/HHS/smarter-grants-management/issues/new/choose).
