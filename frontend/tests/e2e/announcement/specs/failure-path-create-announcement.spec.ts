@@ -66,12 +66,15 @@ test.describe("Opportunity failure path - create opportunity", () => {
       { page, context }: { page: Page; context: BrowserContext },
       testInfo: TestInfo,
     ) => {
-      test.setTimeout(300_000);
+      test.setTimeout(150_000);
 
       await authenticateE2eUser(
         page,
         context,
         !!testInfo.project.name.match(/[Mm]obile/),
+        "primaryOrgAdmin",
+        // Temporary use of testUserApiKey for authentication
+        playwrightEnv.testUserApiKey,
       );
 
       const fillData = buildOpportunityHappyPathFillData(new Date());

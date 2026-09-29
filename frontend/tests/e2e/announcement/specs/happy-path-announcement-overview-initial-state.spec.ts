@@ -54,13 +54,16 @@ test.describe("Grantor opportunity overview happy path - initial state", () => {
       { page, context }: { page: Page; context: BrowserContext },
       testInfo: TestInfo,
     ) => {
-      test.setTimeout(300_000);
+      test.setTimeout(150_000);
 
       //--------------Test setup start here----------------
       await authenticateE2eUser(
         page,
         context,
         !!testInfo.project.name.match(/[Mm]obile/),
+        "primaryOrgAdmin",
+        // Temporary use of testUserApiKey for authentication
+        playwrightEnv.testUserApiKey,
       );
 
       // Define commonly used values for assertions and form filling at the beginning of the test for better readability of the scenario steps.

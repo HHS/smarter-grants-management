@@ -43,7 +43,7 @@ test.describe("Grantor Opportunity Happy Path", () => {
       { page, context }: { page: Page; context: BrowserContext },
       testInfo: TestInfo,
     ) => {
-      test.setTimeout(300_000);
+      test.setTimeout(150_000);
 
       // Given I am logged in as a grantor user.
       await authenticateE2eUser(
@@ -68,7 +68,7 @@ test.describe("Grantor Opportunity Happy Path", () => {
       await expect(page).toHaveURL(/\/announcements/);
 
       // When I click "Create Opportunity"
-      await page.getByRole("link", { name: "Create Opportunity" }).click();
+      await page.getByRole("link", { name: "Create Announcement" }).click();
 
       // And I should be on the "Create Opportunity" page
       await expect(page).toHaveURL(/\/announcements\/create/);
