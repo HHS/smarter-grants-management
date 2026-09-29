@@ -6,8 +6,8 @@ import { RequiredForms } from "src/app/[locale]/announcement/[id]/application-pa
 import { SubmissionSetUp } from "src/app/[locale]/announcement/[id]/application-package/_components/sections/SubmissionSetUp";
 import { SubmissionWindow } from "src/app/[locale]/announcement/[id]/application-package/_components/sections/SubmissionWindow";
 import {
-  CompetitionActionState,
-  competitionFormAction,
+  ApplicationPackageActionState,
+  applicationPackageFormAction,
 } from "src/app/[locale]/announcement/[id]/application-package/actions";
 import { FormType } from "src/types/allFormsResponseTypes";
 import {
@@ -17,7 +17,7 @@ import {
 import { UploadFileMetadata } from "src/types/fileUploadTypes";
 
 import { useTranslations } from "next-intl";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Button,
@@ -31,23 +31,24 @@ import { FormSelectModal } from "./FormSelectModal";
 const alwaysRequiredForms: Record<string, boolean> = {
   "1623b310-85be-496a-b84b-34bdee22a68a": true,
 };
-type CompetitionFormProps = {
+type ApplicationPackageFormProps = {
   announcementId: string;
-  competition?: ApplicationPackage;
+  applicationPackage?: ApplicationPackage;
   forms: FormType[];
 };
 
 export function ApplicationPackageForm({
   announcementId,
-  competition,
+  applicationPackage,
   forms,
-}: CompetitionFormProps) {
+}: ApplicationPackageFormProps) {
   const t = useTranslations("OpportunityCompetition");
 
-  const competitionId: string = competition?.competition_id || "";
+  const applicationPackageId: string =
+    applicationPackage?.applicationPackage_id || "";
   const existingFiles: UploadFileMetadata[] =
-    competition?.competition_instructions.map((instruction) => ({
-      id: instruction.competition_instruction_id,
+    applicationPackage?.applicationPackage_instructions.map((instruction) => ({
+      id: instruction.applicationPackage_instruction_id,
       fileName: instruction.file_name,
       updatedAt: instruction.updated_at,
       downloadUrl: instruction.download_path,
@@ -57,10 +58,12 @@ export function ApplicationPackageForm({
   const formModalRef = useRef<ModalRef | null>(null);
   const [requiredForms, setRequiredForms] =
     useState<ApplicationPackageFormsSubmitApi>(
-      competition?.competition_forms?.map(({ form, is_required }) => ({
-        form_id: form.form_id,
-        is_required,
-      })) ??
+      applicationPackage?.applicationPackage_forms?.map(
+        ({ form, is_required }) => ({
+          form_id: form.form_id,
+          is_required,
+        }),
+      ) ??
         Object.entries(alwaysRequiredForms).map(([formId, isRequired]) => ({
           form_id: formId,
           is_required: isRequired,
@@ -68,10 +71,20 @@ export function ApplicationPackageForm({
     );
 
   // ===== Server side action to save data =====
-  const [formState, setFormState] = useState<CompetitionActionState | null>(
-    null,
-  );
+  const [formState, setFormState] = useState<ApplicationPackageActionState>({});
   const [isPending, setIsPending] = useState(false);
+
+  useEffect(() => {
+    if (
+      formState.validationErrors &&
+      Object.keys(formState.validationErrors).length
+    ) {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }
+  }, [formState.validationErrors]);
 
   const handleSubmit = (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -81,7 +94,7 @@ export function ApplicationPackageForm({
     // The default route is triggered by the saveAndExit button in the header component
     const submitterButton = event.nativeEvent.submitter;
     const submitType = submitterButton?.dataset.submitType || "saveAndExit";
-    const saveDataAndRoute = competitionFormAction.bind(
+    const saveDataAndRoute = applicationPackageFormAction.bind(
       null,
       submitType,
       requiredForms, // objects cannot be placed in hidden inputs
@@ -97,22 +110,40 @@ export function ApplicationPackageForm({
 
   // ===== Render the form =====
   return (
-    <form id="opportunity-competition-form" onSubmit={handleSubmit}>
+    <form id="opportunity-applicationPackage-form" onSubmit={handleSubmit}>
       <input type="hidden" name="announcementId" value={announcementId} />
-      <input type="hidden" name="competitionId" value={competitionId} />
+      <input
+        type="hidden"
+        name="applicationPackageId"
+        value={applicationPackageId}
+      />
 
-      {formState?.errorMessage ? (
+      {formState.errorMessage ? (
+        <div className="margin-top-2">
+          <Alert
+            type="warning"
+            heading={formState.errorMessage}
+            headingLevel="h3"
+            validation
+          />
+        </div>
+      ) : null}
+
+      {formState.validationErrors &&
+      Object.keys(formState.validationErrors).length > 0 ? (
         <div className="margin-top-2">
           <Alert
             type="error"
-            heading={formState.errorMessage}
+            heading={t("alerts.validationErrors")}
             headingLevel="h3"
           >
             <span className="display-block margin-top-1 margin-bottom-1">
               {t("alerts.validationErrorBody")}
             </span>
-            {formState?.validationErrors?.map((error, index) => (
-              <span key={index} className="display-block">
+            {Array.from(
+              new Set(Object.values(formState.validationErrors).flat()),
+            ).map((error, i) => (
+              <span key={i} className="display-block">
                 {error}
               </span>
             ))}
@@ -121,7 +152,7 @@ export function ApplicationPackageForm({
       ) : null}
 
       <div className="bg-white">
-        {/* TODO(#10507): remove minh-viewport once the competition page has enough content that sticky nav no longer releases */}
+        {/* TODO(#10507): remove minh-viewport once the applicationPackage page has enough content that sticky nav no longer releases */}
         <div className="grid-container padding-bottom-4 minh-viewport">
           <section className="order-2 width-full maxw-tablet-xl padding-top-4">
             <div
@@ -135,19 +166,23 @@ export function ApplicationPackageForm({
                 {t("applicationRequirementsSubheader")}
               </p>
               <SubmissionSetUp
-                publicCompetitionId={competition?.public_competition_id}
-                competitionTitle={competition?.competition_title}
-                openToApplicants={competition?.open_to_applicants}
+                publicApplicationPackageId={
+                  applicationPackage?.public_applicationPackage_id
+                }
+                applicationPackageTitle={
+                  applicationPackage?.applicationPackage_title
+                }
+                openToApplicants={applicationPackage?.open_to_applicants}
               />
               <SubmissionWindow
-                openingDate={competition?.opening_date}
-                closingDate={competition?.closing_date}
-                gracePeriod={competition?.grace_period}
+                openingDate={applicationPackage?.opening_date}
+                closingDate={applicationPackage?.closing_date}
+                gracePeriod={applicationPackage?.grace_period}
               />
-              <AgencyContact contactInfo={competition?.contact_info} />
+              <AgencyContact contactInfo={applicationPackage?.contact_info} />
               <ApplicationInstructions
                 announcementId={announcementId}
-                competitionId={competitionId}
+                applicationPackageId={applicationPackageId}
                 existingFiles={existingFiles}
               />
               <RequiredForms

@@ -33,17 +33,17 @@ jest.mock("next/server", () => ({
 
 const buildContext = (
   announcementId = "announcement-123",
-  applicationPackageId = "competition-123",
+  applicationPackageId = "applicationPackage-123",
   fileId = "instruction-123",
 ) => ({
   params: Promise.resolve({
     announcementId,
-    competitionId: applicationPackageId,
+    applicationPackageId: applicationPackageId,
     fileId,
   }),
 });
 
-describe("DELETE competition instruction handler", () => {
+describe("DELETE applicationPackage instruction handler", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
@@ -60,7 +60,7 @@ describe("DELETE competition instruction handler", () => {
 
     (sessionModule.getSession as jest.Mock).mockResolvedValue(mockSession);
     (
-      grantorAnnouncementFetcherModule.deleteCompetitionInstructions as jest.Mock
+      grantorAnnouncementFetcherModule.deleteApplicationPackageInstructions as jest.Mock
     ).mockResolvedValue({
       data: {},
       status_code: 200,
@@ -68,7 +68,7 @@ describe("DELETE competition instruction handler", () => {
     });
   });
 
-  it("deletes a competition instruction successfully", async () => {
+  it("deletes a applicationPackage instruction successfully", async () => {
     const response = await DELETE({} as NextRequest, buildContext());
 
     expect(response.status).toBe(200);
@@ -81,10 +81,10 @@ describe("DELETE competition instruction handler", () => {
     });
     expect(sessionModule.getSession).toHaveBeenCalledTimes(1);
     expect(
-      grantorAnnouncementFetcherModule.deleteCompetitionInstructions,
+      grantorAnnouncementFetcherModule.deleteApplicationPackageInstructions,
     ).toHaveBeenCalledWith(
       "announcement-123",
-      "competition-123",
+      "applicationPackage-123",
       "instruction-123",
     );
   });
@@ -93,7 +93,7 @@ describe("DELETE competition instruction handler", () => {
     [
       "announcementId",
       "",
-      "competition-123",
+      "applicationPackage-123",
       "instruction-123",
       "Announcement ID is required",
     ],
@@ -107,7 +107,7 @@ describe("DELETE competition instruction handler", () => {
     [
       "fileId",
       "announcement-123",
-      "competition-123",
+      "applicationPackage-123",
       "",
       "ApplicationPackage Instruction ID is required",
     ],
@@ -123,7 +123,7 @@ describe("DELETE competition instruction handler", () => {
       expect(await response.json()).toEqual({ error });
       expect(sessionModule.getSession).not.toHaveBeenCalled();
       expect(
-        grantorAnnouncementFetcherModule.deleteCompetitionInstructions,
+        grantorAnnouncementFetcherModule.deleteApplicationPackageInstructions,
       ).not.toHaveBeenCalled();
     },
   );
@@ -135,16 +135,17 @@ describe("DELETE competition instruction handler", () => {
 
     expect(response.status).toBe(401);
     expect(await response.json()).toEqual({
-      error: "Not logged in, cannot delete competition instructions file",
+      error:
+        "Not logged in, cannot delete applicationPackage instructions file",
     });
     expect(
-      grantorAnnouncementFetcherModule.deleteCompetitionInstructions,
+      grantorAnnouncementFetcherModule.deleteApplicationPackageInstructions,
     ).not.toHaveBeenCalled();
   });
 
   it("returns the backend error status when deletion fails", async () => {
     (
-      grantorAnnouncementFetcherModule.deleteCompetitionInstructions as jest.Mock
+      grantorAnnouncementFetcherModule.deleteApplicationPackageInstructions as jest.Mock
     ).mockRejectedValueOnce(new NotFoundError("Instruction file not found"));
 
     const response = await DELETE({} as NextRequest, buildContext());
@@ -157,7 +158,7 @@ describe("DELETE competition instruction handler", () => {
 
   it("returns 500 for unexpected errors", async () => {
     (
-      grantorAnnouncementFetcherModule.deleteCompetitionInstructions as jest.Mock
+      grantorAnnouncementFetcherModule.deleteApplicationPackageInstructions as jest.Mock
     ).mockRejectedValueOnce(new Error("Network error"));
 
     const response = await DELETE({} as NextRequest, buildContext());

@@ -2,12 +2,12 @@ import "server-only";
 
 import { ApplicationPackage } from "src/types/applicationPackageResponseTypes";
 
-import { fetchCompetition } from "./fetchers";
+import { fetchApplicationPackage } from "./fetchers";
 
-export const getCompetitionDetails = async (
+export const getApplicationPackageDetails = async (
   id: string,
 ): Promise<ApplicationPackage> => {
-  const response = await fetchCompetition({ subPath: id });
+  const response = await fetchApplicationPackage({ subPath: id });
   const responseBody = (await response.json()) as { data: ApplicationPackage };
 
   return responseBody.data;

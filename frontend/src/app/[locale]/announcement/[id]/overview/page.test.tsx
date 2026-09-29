@@ -69,7 +69,7 @@ jest.mock("./_components/OverviewButtons", () => ({
   ),
 }));
 
-// Fixture builders   shaped relative to summaryRequiredFields / competitionRequiredFields
+// Fixture builders   shaped relative to summaryRequiredFields / applicationPackageRequiredFields
 // (RequiredFields.tsx) so ProgressChecker's real getProgress() logic determines the
 // status - not mocked, exercised for real.
 type ProgressStatus = "notStarted" | "inProgress" | "complete";
@@ -85,16 +85,16 @@ function buildSummaryFixture(status: ProgressStatus) {
   };
 }
 
-function buildCompetitionFixture(
+function buildApplicationPackageFixture(
   status: ProgressStatus,
 ): DeepPartial<[ApplicationPackage]> | null {
   if (status === "notStarted") return null;
-  if (status === "inProgress") return [{ competition_id: "comp-1" }];
+  if (status === "inProgress") return [{ applicationPackage_id: "comp-1" }];
   return [
     {
-      competition_id: "comp-1",
+      applicationPackage_id: "comp-1",
       open_to_applicants: ["individual"],
-      competition_title: "comp-1",
+      applicationPackage_title: "comp-1",
     },
   ];
 }
@@ -127,10 +127,10 @@ const OVERVIEW_SECTIONS: OverviewSectionCase[] = [
   },
   {
     name: "Application Package",
-    linkNameKey: "labels.competitionLink",
+    linkNameKey: "labels.applicationPackageLink",
     hrefSuffix: "application-package",
     buildData: (status) => ({
-      application_packages: buildCompetitionFixture(status),
+      application_packages: buildApplicationPackageFixture(status),
     }),
   },
 ];
@@ -141,7 +141,7 @@ describe("OpportunityOverviewPage", () => {
   });
 
   describe.each(OVERVIEW_SECTIONS)("$name section", (section) => {
-    // "complete" omitted: summaryRequiredFields/competitionRequiredFields check
+    // "complete" omitted: summaryRequiredFields/applicationPackageRequiredFields check
     // post_timestamp/application_package_title, but Summary/ApplicationPackage
     // don't declare those fields yet - see #261/#262.
     it.each(["notStarted", "inProgress"] as const)(
@@ -226,7 +226,7 @@ describe("OpportunityOverviewPage", () => {
           ...baseOpportunityData,
           is_draft: true,
           summary: buildSummaryFixture("complete"),
-          application_packages: buildCompetitionFixture("complete"),
+          application_packages: buildApplicationPackageFixture("complete"),
         },
       });
 
@@ -285,7 +285,7 @@ describe("OpportunityOverviewPage", () => {
         data: {
           ...baseOpportunityData,
           summary: buildSummaryFixture("notStarted"),
-          application_packages: buildCompetitionFixture("notStarted"),
+          application_packages: buildApplicationPackageFixture("notStarted"),
         },
       });
 
@@ -304,7 +304,7 @@ describe("OpportunityOverviewPage", () => {
         data: {
           ...baseOpportunityData,
           summary: buildSummaryFixture("complete"),
-          application_packages: buildCompetitionFixture("complete"),
+          application_packages: buildApplicationPackageFixture("complete"),
         },
       });
 

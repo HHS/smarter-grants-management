@@ -1,4 +1,7 @@
 import { JSONSchema7 } from "json-schema";
+import { FormType } from "src/types/allFormsResponseTypes";
+import { BaseAnnouncement } from "src/types/announcement/announcementResponseTypes";
+import { ApplicationPackage } from "src/types/applicationPackageResponseTypes";
 import { UserProfile } from "src/types/authTypes";
 import {
   AwardRecommendationDetails,
@@ -6,6 +9,7 @@ import {
   AwardRecommendationStatus,
   AwardRecommendationSubmission,
 } from "src/types/awardRecommendationTypes";
+import { FormDetail, FormInstruction } from "src/types/formResponseTypes";
 import { RelevantAgencyRecord } from "src/types/search/searchFilterTypes";
 import {
   TestUser,
@@ -122,7 +126,7 @@ export const mockAwardRecommendationSubmissions: AwardRecommendationSubmission[]
         total_requested_amount: "50000.00",
         application: {
           application_id: "63588df8-f2d1-44ed-a201-5804abba696d",
-          competition_id: "63588df8-f2d1-44ed-a201-5804abba696e",
+          applicationPackage_id: "63588df8-f2d1-44ed-a201-5804abba696e",
           organization: {
             organization_id: "63588df8-f2d1-44ed-a201-5804abba696f",
             organization_name: "Test Org",
@@ -293,9 +297,9 @@ export const fakeResponsiveTableRows = [
   ],
 ];
 
-export const fakeCompetition = {
+export const fakeApplicationPackage = {
   closing_date: "1-1-30",
-  competition_forms: [
+  applicationPackage_forms: [
     {
       form: {
         form_id: "123e4567-e89b-12d3-a456-426614174000",
@@ -332,18 +336,19 @@ export const fakeCompetition = {
       is_required: true,
     },
   ],
-  competition_id: "1",
-  competition_info: "info",
-  competition_instructions: [
+  applicationPackage_id: "1",
+  applicationPackage_info: "info",
+  applicationPackage_instructions: [
     {
       created_at: "2025-06-13T20:17:16.491Z",
       download_path:
         "https://cdn.example.com/application-package-instructions/file.pdf",
-      file_name: "competition_instructions.pdf",
+      file_name: "applicationPackage_instructions.pdf",
       updated_at: "2025-06-13T20:17:16.491Z",
+      applicationPackage_instruction_id: "1",
     },
   ],
-  competition_title: "cool competition",
+  applicationPackage_title: "cool applicationPackage",
   contact_info: null,
   is_open: true,
   open_to_applicants: ["individual", "organization"],
@@ -469,4 +474,88 @@ export const fakeTestUser: TestUser = {
 export const fakeUserProfile: UserProfile = {
   token: "a token",
   user_id: "an id",
+};
+
+export const fakeFormInstruction: FormInstruction = {
+  created_at: "1999-11-11",
+  download_path: "a download path",
+  file_name: "a file name",
+  updated_at: "1999-11-11",
+};
+
+export const fakeForm: FormDetail = {
+  form_instruction: fakeFormInstruction,
+  form_name: "fake form",
+  form_ui_schema: [],
+  form_id: "123e4567-e89b-12d3-a456-426614174000",
+  form_json_schema: {
+    properties: {
+      ApplicationNumber: {
+        maxLength: 120,
+        minLength: 1,
+        title: "Application number",
+        type: "number",
+      },
+      Date: {
+        format: "date",
+        title: "Date of application ",
+        type: "string",
+      },
+      Description: {
+        maxLength: 15,
+        minLength: 0,
+        title: "Description for application",
+        type: "string",
+      },
+      Title: {
+        maxLength: 60,
+        minLength: 1,
+        title: "Title",
+        type: "string",
+      },
+    },
+    title: "Test form for testing",
+    type: "object",
+  },
+};
+
+export const mockOpportunity: BaseAnnouncement = {
+  opportunity_id: "63588df8-f2d1-44ed-a201-5804abba696a",
+  legacy_opportunity_id: 12345,
+  opportunity_title: "Test Opportunity",
+  opportunity_status: "posted",
+  summary: {
+    archive_date: "2023-01-01",
+    close_date: "2023-02-01",
+    post_date: "2023-01-15",
+    agency_name: "Test Agency",
+    award_ceiling: 50000,
+    award_floor: 10000,
+  },
+  opportunity_number: "OPP-12345",
+} as BaseAnnouncement;
+
+export const fakeApplicationPackageWithOpportunity: ApplicationPackage = {
+  ...fakeApplicationPackage,
+  opportunity_id: 1,
+  open_to_applicants: [],
+  applicationPackage_forms: [
+    {
+      form: fakeForm,
+      is_required: true,
+    },
+  ],
+  expected_application_count: 1,
+  grace_period: 0,
+  opportunity: mockOpportunity,
+};
+export const fakeFormType: FormType = {
+  form_id: "1",
+  name: "form name",
+  short_name: "really short form name",
+  current_version: {
+    legacy_form_version: "1",
+    major_version: 1,
+    minor_version: 1,
+  },
 };

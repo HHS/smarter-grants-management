@@ -126,48 +126,50 @@ export async function publishOpportunityForGrantor(
   return (await response.json()) as GrantorAnnouncementApiResponse;
 }
 
-export async function createCompetitionForGrantor(
+export async function createApplicationPackageForGrantor(
   opportunityId: string,
   data: ApplicationPackageSaveRequest,
 ): Promise<ApplicationPackageSaveApiResponse> {
   const response = await fetchAnnouncementWithMethod("POST")({
     subPath: `${opportunityId}/application-packages`,
     body: data,
+    allowedErrorStatuses: [422],
   });
   return (await response.json()) as ApplicationPackageSaveApiResponse;
 }
 
-export async function updateCompetitionForGrantor(
+export async function updateApplicationPackageForGrantor(
   opportunityId: string,
-  competitionId: string,
+  applicationPackageId: string,
   data: ApplicationPackageSaveRequest,
 ): Promise<ApplicationPackageSaveApiResponse> {
   const response = await fetchAnnouncementWithMethod("PUT")({
-    subPath: `${opportunityId}/application-packages/${competitionId}`,
+    subPath: `${opportunityId}/application-packages/${applicationPackageId}`,
     body: data,
+    allowedErrorStatuses: [422],
   });
   return (await response.json()) as ApplicationPackageSaveApiResponse;
 }
 
-export async function saveCompetitionInstructions(
+export async function saveApplicationPackageInstructions(
   opportunityId: string,
-  competitionId: string,
+  applicationPackageId: string,
   pendingFileId: string,
 ): Promise<ApplicationPackageInstructionsApiResponse> {
   const response = await fetchAnnouncementWithMethod("POST")({
-    subPath: `${opportunityId}/application-packages/${competitionId}/instructions`,
+    subPath: `${opportunityId}/application-packages/${applicationPackageId}/instructions`,
     body: { pending_file_id: pendingFileId },
   });
   return (await response.json()) as ApplicationPackageInstructionsApiResponse;
 }
 
-export async function deleteCompetitionInstructions(
+export async function deleteApplicationPackageInstructions(
   opportunityId: string,
-  competitionId: string,
-  competitionInstructionId: string,
+  applicationPackageId: string,
+  applicationPackageInstructionId: string,
 ): Promise<APIResponse> {
   const response = await fetchAnnouncementWithMethod("DELETE")({
-    subPath: `${opportunityId}/application-packages/${competitionId}/instructions/${competitionInstructionId}`,
+    subPath: `${opportunityId}/application-packages/${applicationPackageId}/instructions/${applicationPackageInstructionId}`,
   });
   return (await response.json()) as APIResponse;
 }
