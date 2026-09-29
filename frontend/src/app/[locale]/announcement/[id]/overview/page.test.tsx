@@ -111,7 +111,7 @@ type OverviewSectionCase = {
 
 const OVERVIEW_SECTIONS: OverviewSectionCase[] = [
   {
-    name: "Opportunity Summary",
+    name: "Announcement Summary",
     linkNameKey: "labels.editOpportunityLink",
     hrefSuffix: "edit",
     buildData: (status) => ({ summary: buildSummaryFixture(status) }),

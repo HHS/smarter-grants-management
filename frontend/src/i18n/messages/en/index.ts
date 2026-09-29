@@ -769,11 +769,11 @@ export const messages = {
     },
   },
   AnnouncementOverview: {
-    pageTitle: "Opportunity Overview",
+    pageTitle: "Announcement Overview",
     pageApplication: "Smarter Grants Management",
-    metaDescription: "Opportunity publishing progress overview",
+    metaDescription: "Announcement publishing progress overview",
     labels: {
-      editOpportunityLink: "Opportunity Summary",
+      editOpportunityLink: "Announcement Summary",
       applicationPackageLink: "Application Package",
       previewButton: "Preview",
       publishButton: "Publish",
