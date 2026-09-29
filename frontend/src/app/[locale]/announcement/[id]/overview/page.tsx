@@ -12,8 +12,9 @@ import { computeAnnouncementPublishEligibility } from "src/utils/announcement/an
 
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { Alert, Link } from "@trussworks/react-uswds";
+import { Alert, GridContainer, Link } from "@trussworks/react-uswds";
 
+import GeneralErrorAlert from "src/components/core/GeneralErrorAlert";
 import { UnauthorizedMessage } from "src/components/core/UnauthorizedMessage";
 import { AnnouncementDetailsHeader } from "src/components/grantor-announcements/AnnouncementDetailsHeader";
 import {
@@ -61,7 +62,11 @@ export default async function OpportunityOverviewPage({
     if (status === 403) {
       return <UnauthorizedMessage />;
     }
-    throw error;
+    return (
+      <GridContainer>
+        <GeneralErrorAlert />
+      </GridContainer>
+    );
   }
   const editUrl = "../" + id + "/edit";
   const applicationPackageUrl = "../" + id + "/application-package";
