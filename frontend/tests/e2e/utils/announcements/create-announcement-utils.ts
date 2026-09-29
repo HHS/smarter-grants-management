@@ -18,7 +18,7 @@ export async function createOpportunity(
   await expect(page).toHaveURL(/\/announcements/);
 
   // When I start creating a new announcement.
-  await page.getByRole("link", { name: "Create Announcements" }).click();
+  await page.getByRole("link", { name: "Create Announcement" }).click();
   await expect(page).toHaveURL(/\/announcements\/create/);
 
   // And I fill the required fields using the metadata in CREATE_OPPORTUNITY_FIELD_DEFINITIONS, which testers update when they need to change what gets filled.
