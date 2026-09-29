@@ -96,7 +96,10 @@ export default async function OpportunityOverviewPage({
 
   return (
     <div className="bg-white">
-      <AnnouncementDetailsHeader opportunityData={opportunityData} locale={locale}>
+      <AnnouncementDetailsHeader
+        opportunityData={opportunityData}
+        locale={locale}
+      >
         <OverviewButtons opportunityId={id} publishEnabled={publishEnabled} />
       </AnnouncementDetailsHeader>
       <div className="grid-container padding-top-4 padding-bottom-4">
