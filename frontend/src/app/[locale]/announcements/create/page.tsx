@@ -16,7 +16,7 @@ const PageHeader = () => {
         breadcrumbList={[
           { title: "home", path: "/" },
           {
-            title: "Opportunities",
+            title: "Announcements",
             path: `/announcements`,
           },
           {
