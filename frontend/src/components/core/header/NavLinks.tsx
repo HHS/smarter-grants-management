@@ -36,9 +36,6 @@ export type LoggedInNavConfig = {
 
 const homeRegexp = /^\/(?:e[ns])?$/;
 
-// temporarily using API keys directly for login rather than a centralized login service
-const useApiKeyLogin = true;
-
 /*
   nav links going to external sites need to:
   - not be preloaded
@@ -177,10 +174,12 @@ export const NavLinks = ({
   mobileExpanded,
   onToggleMobileNav,
   loggedInNavConfig,
+  useApiKeyLogin = true,
 }: {
   mobileExpanded: boolean;
   onToggleMobileNav: () => void;
   loggedInNavConfig: LoggedInNavConfig;
+  useApiKeyLogin?: boolean;
 }) => {
   const t = useTranslations("Header.navLinks");
 
@@ -330,6 +329,7 @@ export const NavLinks = ({
     user?.token,
     loggedInNavConfig,
     loginModalRef,
+    useApiKeyLogin,
   ]);
 
   return (
