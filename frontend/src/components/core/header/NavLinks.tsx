@@ -266,11 +266,13 @@ export const NavLinks = ({
       if (useApiKeyLogin) {
         items.push(
           <ModalToggleButton
+            key="sign-in"
             id="login-modal-toggle"
             modalRef={loginModalRef}
             opener
             className="usa-button--unstyled usa-nav__link text-normal"
             aria-label="open login modal"
+            onClick={() => closeDropdownAndMobileNav()}
           >
             {t("login")}
           </ModalToggleButton>,
