@@ -127,7 +127,7 @@ const OVERVIEW_SECTIONS: OverviewSectionCase[] = [
   },
   {
     name: "Application Package",
-    linkNameKey: "labels.competitionLink",
+    linkNameKey: "labels.applicationPackageLink",
     hrefSuffix: "application-package",
     buildData: (status) => ({
       application_packages: buildApplicationPackageFixture(status),

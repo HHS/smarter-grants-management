@@ -3,7 +3,7 @@
 import { ApiRequestError, parseErrorStatus } from "src/errors";
 import {
   createApplicationPackage,
-  saveCompetitionInstructions,
+  saveApplicationPackageInstructions,
   updateApplicationPackage,
   updateApplicationPackageForms,
 } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
@@ -136,7 +136,7 @@ export async function saveApplicationPackage(
     // then save the application instructions file (attachment)
     const pendingFileId = formData.get("pending-file-id") as string | null;
     if (pendingFileId) {
-      await saveCompetitionInstructions(
+      await saveApplicationPackageInstructions(
         announcementId,
         applicationPackageId,
         pendingFileId,

@@ -2,7 +2,7 @@ import type { AnnouncementAssistanceListing } from "./announcement/announcementR
 import { APIResponse } from "./apiResponseTypes";
 
 export interface ApplicationPackageInstructions {
-  competition_instruction_id: string;
+  applicationPackage_instruction_id: string;
   created_at: string;
   download_path: string;
   file_name: string;
@@ -51,7 +51,7 @@ export type ApplicationPackage = {
 
 export interface ApplicationPackageInstructionsApiResponse extends APIResponse {
   data: {
-    competition_instruction_id: string;
+    applicationPackage_instruction_id: string;
     file_name: string;
     created_at: string;
   };

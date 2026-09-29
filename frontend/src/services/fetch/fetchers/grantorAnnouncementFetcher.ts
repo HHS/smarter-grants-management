@@ -141,6 +141,7 @@ export async function createApplicationPackage(
   const response = await fetchAnnouncementWithMethod("POST")({
     subPath: `${announcementId}/application-packages`,
     body: data,
+    allowedErrorStatuses: [422],
   });
   return (await response.json()) as ApplicationPackageSaveApiResponse;
 }
@@ -153,6 +154,7 @@ export async function updateApplicationPackage(
   const response = await fetchAnnouncementWithMethod("PUT")({
     subPath: `${announcementId}/application-packages/${applicationPackageId}`,
     body: data,
+    allowedErrorStatuses: [422],
   });
   return (await response.json()) as ApplicationPackageSaveApiResponse;
 }
@@ -169,25 +171,25 @@ export async function updateApplicationPackageForms({
   return (await response.json()) as ApplicationPackageFormsApiResponse;
 }
 
-export async function saveCompetitionInstructions(
+export async function saveApplicationPackageInstructions(
   opportunityId: string,
-  competitionId: string,
+  applicationPackageId: string,
   pendingFileId: string,
 ): Promise<ApplicationPackageInstructionsApiResponse> {
   const response = await fetchAnnouncementWithMethod("POST")({
-    subPath: `${opportunityId}/application-packages/${competitionId}/instructions`,
+    subPath: `${opportunityId}/application-packages/${applicationPackageId}/instructions`,
     body: { pending_file_id: pendingFileId },
   });
   return (await response.json()) as ApplicationPackageInstructionsApiResponse;
 }
 
-export async function deleteCompetitionInstructions(
+export async function deleteApplicationPackageInstructions(
   opportunityId: string,
-  competitionId: string,
-  competitionInstructionId: string,
+  applicationPackageId: string,
+  applicationPackageInstructionId: string,
 ): Promise<APIResponse> {
   const response = await fetchAnnouncementWithMethod("DELETE")({
-    subPath: `${opportunityId}/application-packages/${competitionId}/instructions/${competitionInstructionId}`,
+    subPath: `${opportunityId}/application-packages/${applicationPackageId}/instructions/${applicationPackageInstructionId}`,
   });
   return (await response.json()) as APIResponse;
 }

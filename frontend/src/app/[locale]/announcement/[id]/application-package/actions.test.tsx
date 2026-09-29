@@ -2,7 +2,7 @@ import { identity } from "lodash";
 import { ApiRequestError } from "src/errors";
 import {
   createApplicationPackage,
-  saveCompetitionInstructions,
+  saveApplicationPackageInstructions,
   updateApplicationPackage,
   updateApplicationPackageForms,
 } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
@@ -19,7 +19,7 @@ jest.mock("next-intl/server", () => ({
 
 jest.mock("src/services/fetch/fetchers/grantorAnnouncementFetcher", () => ({
   createApplicationPackage: jest.fn(),
-  saveCompetitionInstructions: jest.fn(),
+  saveApplicationPackageInstructions: jest.fn(),
   updateApplicationPackage: jest.fn(),
   updateApplicationPackageForms: jest.fn(),
 }));
@@ -34,7 +34,7 @@ jest.mock("next/navigation", () => ({
 const mockCreateApplicationPackage = jest.mocked(createApplicationPackage);
 const mockUpdateApplicationPackage = jest.mocked(updateApplicationPackage);
 const mockSaveCompetitionInstructions = jest.mocked(
-  saveCompetitionInstructions,
+  saveApplicationPackageInstructions,
 );
 const mockUpdateApplicationPackageForms = jest.mocked(
   updateApplicationPackageForms,

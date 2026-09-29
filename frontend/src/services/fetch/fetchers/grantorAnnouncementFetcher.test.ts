@@ -2,8 +2,8 @@ import { ApiRequestError } from "src/errors";
 import {
   createApplicationPackage,
   createOpportunity,
-  deleteCompetitionInstructions,
-  saveCompetitionInstructions,
+  deleteApplicationPackageInstructions,
+  saveApplicationPackageInstructions,
   searchOpportunitiesByAgency,
   updateApplicationPackage,
   updateApplicationPackageForms,
@@ -249,6 +249,7 @@ describe("createApplicationPackage", () => {
     expect(mockFetcher).toHaveBeenCalledWith({
       subPath: "opp-123/application-packages",
       body: applicationPackageData,
+      allowedErrorStatuses: [422],
     });
     expect(result).toEqual({
       data: { application_package_id: "new-application-package-id" },
@@ -266,6 +267,7 @@ describe("createApplicationPackage", () => {
     expect(mockFetcher).toHaveBeenCalledWith({
       subPath: "opp-123/application-packages",
       body: applicationPackageWithPublicId,
+      allowedErrorStatuses: [422],
     });
   });
 });
@@ -288,6 +290,7 @@ describe("updateApplicationPackage", () => {
     expect(mockFetcher).toHaveBeenCalledWith({
       subPath: "opp-123/application-packages/compete-321",
       body: applicationPackageData,
+      allowedErrorStatuses: [422],
     });
   });
 
@@ -357,13 +360,13 @@ describe("updateApplicationPackageForms", () => {
   });
 });
 
-describe("saveCompetitionInstructions", () => {
+describe("saveApplicationPackageInstructions", () => {
   afterEach(() => jest.clearAllMocks());
 
   it("calls fetchAnnouncementWithMethod with POST, the correct subPath and body, and returns the parsed JSON response", async () => {
     const responseBody = {
       data: {
-        competition_instruction_id: "instruction-123",
+        applicationPackage_instruction_id: "instruction-123",
         file_name: "instructions.pdf",
         created_at: "2026-08-20T00:00:00Z",
       },
@@ -372,7 +375,7 @@ describe("saveCompetitionInstructions", () => {
       json: () => Promise.resolve(responseBody),
     });
 
-    const result = await saveCompetitionInstructions(
+    const result = await saveApplicationPackageInstructions(
       "opp-123",
       "compete-321",
       "pending-file-456",
@@ -391,12 +394,16 @@ describe("saveCompetitionInstructions", () => {
     mockFetcher.mockRejectedValue(new Error("Network failure"));
 
     await expect(
-      saveCompetitionInstructions("opp-123", "compete-321", "pending-file-456"),
+      saveApplicationPackageInstructions(
+        "opp-123",
+        "compete-321",
+        "pending-file-456",
+      ),
     ).rejects.toThrow("Network failure");
   });
 });
 
-describe("deleteCompetitionInstructions", () => {
+describe("deleteApplicationPackageInstructions", () => {
   afterEach(() => jest.clearAllMocks());
 
   it("calls fetchAnnouncementWithMethod with DELETE, the correct subPath, and returns the parsed JSON response", async () => {
@@ -408,7 +415,7 @@ describe("deleteCompetitionInstructions", () => {
       json: () => Promise.resolve(responseBody),
     });
 
-    const result = await deleteCompetitionInstructions(
+    const result = await deleteApplicationPackageInstructions(
       "opp-123",
       "compete-321",
       "instruction-123",
@@ -429,7 +436,7 @@ describe("deleteCompetitionInstructions", () => {
     mockFetcher.mockRejectedValue(new Error("Network failure"));
 
     await expect(
-      deleteCompetitionInstructions(
+      deleteApplicationPackageInstructions(
         "opp-123",
         "compete-321",
         "instruction-123",

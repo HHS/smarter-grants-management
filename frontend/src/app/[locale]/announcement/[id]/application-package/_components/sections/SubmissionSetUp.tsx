@@ -45,8 +45,8 @@ export function SubmissionSetUp({
         <div className="tablet:grid-col">
           <CommonTextInput
             fieldId="public_application_package_id"
-            labelText={t("publicCompetitionId")}
-            description={t("publicCompetitionIdHint")}
+            labelText={t("publicApplicationPackageId")}
+            description={t("publicApplicationPackageIdHint")}
             isRequired={false}
             fieldMaxLength={255}
             onTextChange={() => {}}
@@ -56,8 +56,8 @@ export function SubmissionSetUp({
         <div className="tablet:grid-col">
           <CommonTextInput
             fieldId="application_package_title"
-            labelText={t("competitionTitle")}
-            description={t("competitionTitleHint")}
+            labelText={t("applicationPackageTitle")}
+            description={t("applicationPackageTitleHint")}
             isRequired={true}
             fieldMaxLength={255}
             onTextChange={() => {}}

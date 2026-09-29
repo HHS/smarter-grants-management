@@ -9,10 +9,10 @@ export interface EndpointConfig {
   requiresAuth?: boolean;
 }
 
-export const fetchCompetitionEndpoint = {
+export const fetchApplicationPackageEndpoint = {
   basePath: environment.API_URL,
   version: "alpha",
-  namespace: "competitions",
+  namespace: "applicationPackages",
   method: "GET" as ApiMethod,
 };
 

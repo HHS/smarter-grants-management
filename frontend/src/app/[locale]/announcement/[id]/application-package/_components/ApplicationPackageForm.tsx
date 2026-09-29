@@ -50,7 +50,7 @@ export function ApplicationPackageForm({
   const existingFiles: UploadFileMetadata[] =
     applicationPackage?.application_package_instructions?.map(
       (instruction) => ({
-        id: instruction.competition_instruction_id,
+        id: instruction.applicationPackage_instruction_id,
         fileName: instruction.file_name,
         updatedAt: instruction.updated_at,
         downloadUrl: instruction.download_path,
@@ -135,7 +135,7 @@ export function ApplicationPackageForm({
       ) : null}
 
       <div className="bg-white">
-        {/* TODO(#10507): remove minh-viewport once the competition page has enough content that sticky nav no longer releases */}
+        {/* TODO(#10507): remove minh-viewport once the applicationPackage page has enough content that sticky nav no longer releases */}
         <div className="grid-container padding-bottom-4 minh-viewport">
           <section className="order-2 width-full maxw-tablet-xl padding-top-4">
             <div
@@ -165,7 +165,7 @@ export function ApplicationPackageForm({
               <AgencyContact contactInfo={applicationPackage?.contact_info} />
               <ApplicationInstructions
                 announcementId={announcementId}
-                competitionId={applicationPackageId}
+                applicationPackageId={applicationPackageId}
                 existingFiles={existingFiles}
               />
               <RequiredForms

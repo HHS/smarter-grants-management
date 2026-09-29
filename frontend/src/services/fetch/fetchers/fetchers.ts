@@ -3,8 +3,8 @@ import "server-only";
 import { ApiRequestError } from "src/errors";
 import {
   EndpointConfig,
+  fetchApplicationPackageEndpoint,
   fetchAwardRecommendationEndpoint,
-  fetchCompetitionEndpoint,
   fetchFormsEndpoint,
   fetchWorkflowEndpoint,
   getLocalUsersEndpoint,
@@ -120,8 +120,8 @@ export function requesterForEndpoint({
 
 export const fetchForms = cache(requesterForEndpoint(fetchFormsEndpoint));
 
-export const fetchCompetition = cache(
-  requesterForEndpoint(fetchCompetitionEndpoint),
+export const fetchApplicationPackage = cache(
+  requesterForEndpoint(fetchApplicationPackageEndpoint),
 );
 
 export const fetchAwardRecommendation = cache(

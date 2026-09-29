@@ -121,7 +121,7 @@ export default async function OpportunityOverviewPage({
         >
           <div className="tablet:grid-col">
             <Link href={applicationPackageUrl}>
-              {t("labels.competitionLink")}
+              {t("labels.applicationPackageLink")}
             </Link>
           </div>
           <div className="tablet:grid-col">

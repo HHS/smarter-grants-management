@@ -1,4 +1,5 @@
 import { JSONSchema7 } from "json-schema";
+import { BaseAnnouncement } from "src/types/announcement/announcementResponseTypes";
 import { UserProfile } from "src/types/authTypes";
 import {
   AwardRecommendationDetails,
@@ -122,7 +123,7 @@ export const mockAwardRecommendationSubmissions: AwardRecommendationSubmission[]
         total_requested_amount: "50000.00",
         application: {
           application_id: "63588df8-f2d1-44ed-a201-5804abba696d",
-          competition_id: "63588df8-f2d1-44ed-a201-5804abba696e",
+          applicationPackage_id: "63588df8-f2d1-44ed-a201-5804abba696e",
           organization: {
             organization_id: "63588df8-f2d1-44ed-a201-5804abba696f",
             organization_name: "Test Org",
@@ -293,9 +294,9 @@ export const fakeResponsiveTableRows = [
   ],
 ];
 
-export const fakeCompetition = {
+export const fakeApplicationPackage = {
   closing_date: "1-1-30",
-  competition_forms: [
+  applicationPackage_forms: [
     {
       form: {
         form_id: "123e4567-e89b-12d3-a456-426614174000",
@@ -332,18 +333,19 @@ export const fakeCompetition = {
       is_required: true,
     },
   ],
-  competition_id: "1",
-  competition_info: "info",
-  competition_instructions: [
+  applicationPackage_id: "1",
+  applicationPackage_info: "info",
+  applicationPackage_instructions: [
     {
       created_at: "2025-06-13T20:17:16.491Z",
       download_path:
         "https://cdn.example.com/application-package-instructions/file.pdf",
-      file_name: "competition_instructions.pdf",
+      file_name: "applicationPackage_instructions.pdf",
       updated_at: "2025-06-13T20:17:16.491Z",
+      applicationPackage_instruction_id: "1",
     },
   ],
-  competition_title: "cool competition",
+  applicationPackage_title: "cool applicationPackage",
   contact_info: null,
   is_open: true,
   open_to_applicants: ["individual", "organization"],
@@ -470,3 +472,19 @@ export const fakeUserProfile: UserProfile = {
   token: "a token",
   user_id: "an id",
 };
+
+export const mockOpportunity: BaseAnnouncement = {
+  opportunity_id: "63588df8-f2d1-44ed-a201-5804abba696a",
+  legacy_opportunity_id: 12345,
+  opportunity_title: "Test Opportunity",
+  opportunity_status: "posted",
+  summary: {
+    archive_date: "2023-01-01",
+    close_date: "2023-02-01",
+    post_date: "2023-01-15",
+    agency_name: "Test Agency",
+    award_ceiling: 50000,
+    award_floor: 10000,
+  },
+  opportunity_number: "OPP-12345",
+} as BaseAnnouncement;
