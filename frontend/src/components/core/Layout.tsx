@@ -60,7 +60,7 @@ export default async function Layout({ children, locale }: Props) {
               environment.LOCAL_DEV === "true" && testUsers.length < 500
             }
             testUsers={testUsers}
-            useApiKeyLogin={environment.LOCAL_DEV === "true"}
+            useApiKeyLogin={environment.LOCAL_DEV !== "true"}
           />
           <MaintenanceBanner message={environment.MAINTENANCE_BANNER_MESSAGE} />
           <RouteFocusManager>
