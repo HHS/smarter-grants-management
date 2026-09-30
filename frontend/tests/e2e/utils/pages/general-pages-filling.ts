@@ -4,12 +4,11 @@
  */
 
 import { type Page } from "@playwright/test";
-import { runFieldFillBatch } from "tests/e2e/utils/common/index";
+import { fillField, runFieldFillBatch } from "tests/e2e/utils/common/index";
 import {
   type FillFieldDefinition,
   type FillPageFieldsOptions,
 } from "tests/e2e/utils/common/types";
-import { fillField } from "tests/e2e/utils/forms/general-forms-filling";
 
 export type PageFillField = FillFieldDefinition & {
   value: string | boolean;

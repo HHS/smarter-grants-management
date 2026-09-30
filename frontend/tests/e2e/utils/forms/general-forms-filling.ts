@@ -4,10 +4,9 @@
  */
 
 import { Page, TestInfo } from "@playwright/test";
-import { runSharedFieldFill } from "tests/e2e/utils/common/index";
+import { fillField } from "tests/e2e/utils/common/index";
 import {
   shouldFillField,
-  type FillFieldDefinition,
   type FillFormConfig,
   type FormFillFieldDefinitions,
 } from "tests/e2e/utils/common/types";
@@ -18,21 +17,6 @@ import { clickSaveButton } from "./save-form-utils";
 type FillFieldOptions = {
   fieldContextLabel?: string;
 };
-
-/** Fills one field using the shared field-fill execution path. */
-export async function fillField(
-  page: Page,
-  field: FillFieldDefinition,
-  data: string | boolean | undefined,
-  options?: FillFieldOptions,
-): Promise<void> {
-  await runSharedFieldFill({
-    page,
-    field,
-    data,
-    fieldContextLabel: options?.fieldContextLabel,
-  });
-}
 /**
  * Fills a subset of fields on the current form page without navigating or saving.
  * Use when the form is already open and only some fields should be filled
