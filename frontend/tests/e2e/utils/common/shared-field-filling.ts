@@ -1,5 +1,6 @@
 /**
  * Shared helper for single-field fill execution with consistent error wrapping.
+ * Keep field dispatch here so page orchestration code can stay thin and reusable.
  * Usage: import { runSharedFieldFill } from "tests/e2e/utils/common/shared-field-filling";
  */
 
@@ -22,6 +23,14 @@ type SharedFillOptions = {
 
 const defaultFieldContextLabel = "field";
 
+const buildFieldContext = (
+  fieldContextLabel: string,
+  fieldIdentifier: string,
+  field: FillFieldDefinition,
+  pageUrl: string,
+): string =>
+  `${fieldContextLabel} '${fieldIdentifier}' (${field.type}) on ${pageUrl}`;
+
 /** Fills one field using the shared field-fill execution path. */
 export async function fillField(
   page: Page,
@@ -29,6 +38,7 @@ export async function fillField(
   data: string | boolean | undefined,
   options?: FillFieldOptions,
 ): Promise<void> {
+  // Small wrapper so callers can set a context label without knowing the handler map.
   await runSharedFieldFill({
     page,
     field,
@@ -42,19 +52,28 @@ export async function runSharedFieldFill(
   options: SharedFillOptions,
 ): Promise<void> {
   const { page, field, data } = options;
+  const pageUrl = page.url();
 
+  // Keep a stable field identifier in wrapped errors so callers get useful context.
   const fieldIdentifier =
     options.fieldIdentifier ?? buildFieldIdentifier(field);
   const fieldContextLabel =
     options.fieldContextLabel ?? defaultFieldContextLabel;
-  const notFoundHandlerMessage = `No handler found for ${fieldContextLabel} type: ${field.type}`;
-  const wrappedErrorPrefix = `Failed to fill ${fieldContextLabel} ${fieldIdentifier}`;
+  const fieldContext = buildFieldContext(
+    fieldContextLabel,
+    fieldIdentifier,
+    field,
+    pageUrl,
+  );
+  const notFoundHandlerMessage = `No handler found for ${fieldContext} type: ${field.type}`;
+  const wrappedErrorPrefix = `Failed to fill ${fieldContext}`;
 
   try {
     if (data === undefined) {
       return;
     }
 
+    // Route through the shared field-type handler map instead of duplicating routing in wrappers.
     const handler = fieldHandlerMap[field.type];
     if (!handler) {
       throw new Error(notFoundHandlerMessage);

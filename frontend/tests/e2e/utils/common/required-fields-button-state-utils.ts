@@ -7,7 +7,7 @@
  * - Assert trigger/additional button states after each fill step.
  */
 import { type Page } from "@playwright/test";
-import { fillPageFields } from "tests/e2e/utils/pages/general-pages-filling";
+import { fillPageFields } from "tests/e2e/utils/common/general-page-filling";
 
 import { buildPageFieldsFromDefinitions } from "./build-page-fields-from-definitions";
 import { assertButtonEnabledDisabledStates } from "./button-state-assertions";

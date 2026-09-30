@@ -1,4 +1,4 @@
-import { type PageFillField } from "tests/e2e/utils/pages/general-pages-filling";
+import { type PageFillField } from "tests/e2e/utils/common/general-page-filling";
 
 import { type FieldValue, type MetadataPageFieldDefinition } from "./types";
 

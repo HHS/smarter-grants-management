@@ -1,10 +1,13 @@
 /**
- * Generic page-field filling helpers that dispatch to shared field handlers.
- * Usage: import { fillPageField, fillPageFields } from "tests/e2e/utils/pages/general-pages-filling";
+ * Shared page-field filling helpers that batch page fields through the common field executor.
+ * Keep page-field dispatch here so page orchestration files do not need to know
+ * how a specific field type is resolved.
+ * Usage: import { fillPageField, fillPageFields } from "tests/e2e/utils/common/general-page-filling";
  */
 
 import { type Page } from "@playwright/test";
-import { fillField, runFieldFillBatch } from "tests/e2e/utils/common/index";
+import { runFieldFillBatch } from "tests/e2e/utils/common/field-batch-filling";
+import { fillField } from "tests/e2e/utils/common/shared-field-filling";
 import {
   type FillFieldDefinition,
   type FillPageFieldsOptions,
@@ -20,6 +23,7 @@ export async function fillPageField(
   field: PageFillField,
   data: string | boolean | undefined,
 ): Promise<void> {
+  // Keep page-specific context in errors without duplicating field handling logic.
   await fillField(page, field, data, {
     fieldContextLabel: "page field",
   });
@@ -35,6 +39,7 @@ export async function fillPageFields(
   options?: FillPageFieldsOptions,
 ): Promise<void> {
   const continueOnError = options?.continueOnError ?? false;
+  // Keep batching local so callers can choose whether page-level errors stop early.
   await runFieldFillBatch({
     items: fields,
     continueOnError,

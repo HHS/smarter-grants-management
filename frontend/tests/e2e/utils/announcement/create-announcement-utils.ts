@@ -7,7 +7,7 @@ import {
   CREATE_OPPORTUNITY_FIELD_DEFINITIONS,
   type OpportunityFieldValueKey,
 } from "tests/e2e/announcement/fixtures/announcement-pages-field-definitions";
-import { fillPageFields } from "tests/e2e/utils/pages/general-pages-filling";
+import { fillPageFields } from "tests/e2e/utils/common/general-page-filling";
 
 export async function createOpportunity(
   page: Page,
