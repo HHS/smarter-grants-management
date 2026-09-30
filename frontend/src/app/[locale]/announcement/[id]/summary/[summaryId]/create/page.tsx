@@ -6,11 +6,15 @@ type PageProps = {
   params: Promise<{ id: string; isForecast: string }>;
 };
 
-export default async function AnnouncementSummaryEditPage({
+export default async function AnnouncementSummaryCreatePage({
   params,
 }: PageProps) {
   const { id, isForecast } = await params;
   return (
-    <SummaryEditView announcementId={id} isForecast={isForecast === "true"} />
+    <SummaryEditView
+      announcementId={id}
+      isForecast={isForecast === "true"}
+      createMode={true}
+    />
   );
 }

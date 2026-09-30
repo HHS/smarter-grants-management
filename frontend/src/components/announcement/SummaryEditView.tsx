@@ -1,11 +1,13 @@
-import AnnouncementEditForm from "src/components/SummaryEditView/AnnouncementEditForm";
 import {
   ApiRequestError,
   MissingAuthError,
   parseErrorStatus,
 } from "src/errors";
 import { getAnnouncement } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
-import { GrantorAnnouncementDetail } from "src/types/announcement/announcementResponseTypes";
+import {
+  AnnouncementSummaryDetail,
+  GrantorAnnouncementDetail,
+} from "src/types/announcement/announcementResponseTypes";
 import { buildAnnouncementEditInitialValues } from "src/utils/announcementEditFormConfig";
 
 import { notFound } from "next/navigation";
@@ -15,11 +17,13 @@ import LeftHandFormNav from "src/components/core/forms/LeftHandFormNav";
 import GeneralErrorAlert from "src/components/core/GeneralErrorAlert";
 import { UnauthorizedMessage } from "src/components/core/UnauthorizedMessage";
 import { AnnouncementDetailsHeader } from "src/components/grantor-announcements/AnnouncementDetailsHeader";
+import AnnouncementEditForm from "src/components/SummaryEditView/AnnouncementEditForm";
 
 type SummaryEditViewProps = {
   summaryId?: string; // we may want this later to support multiple summaries
   announcementId: string;
-  isForecast: boolean;
+  isForecast?: boolean;
+  createMode?: boolean;
 };
 
 // TODO(#8601): Replace this fail-closed placeholder with a real grantor authorization
@@ -37,19 +41,101 @@ const navigationItems = [
   { text: "Attachments", href: "attachments" },
 ];
 
+const GenericErrorDisplay = () => (
+  <GridContainer className="margin-top-4">
+    <Alert type="error" heading="We're sorry." headingLevel="h4">
+      There seems to have been an error.
+    </Alert>
+  </GridContainer>
+);
+
+// makes sure we are editing / creating the right type of summary
+const validateProperState = ({
+  announcementId,
+  summaryId,
+  isForecast,
+  createMode,
+  announcementData,
+}: {
+  announcementData: GrantorAnnouncementDetail;
+} & SummaryEditViewProps): boolean => {
+  if (announcementId !== announcementData.announcement_id) {
+    console.error(
+      "Announcement id does not match id from fetched announcement",
+    );
+    return true;
+  }
+
+  if (createMode) {
+    if (isForecast && announcementData.forecast_summary) {
+      console.error("Forecast summary already exists");
+      return true;
+    }
+    if (!isForecast && announcementData.non_forecast_summary) {
+      console.error("Synopsis already exists");
+      return true;
+    }
+  }
+  if (isForecast && !announcementData.forecast_summary) {
+    console.error(
+      "Attempting to edit forecast summary on announcement where one doesn't exist yet",
+    );
+    return true;
+  }
+
+  if (!isForecast && !announcementData.non_forecast_summary) {
+    console.error(
+      "Attempting to edit synopsis summary on announcement where one doesn't exist yet",
+    );
+    return true;
+  }
+
+  if (
+    isForecast &&
+    announcementData.forecast_summary?.announcement_summary_id !== summaryId &&
+    !isForecast &&
+    announcementData.non_forecast_summary?.announcement_summary_id !== summaryId
+  ) {
+    console.error(
+      "Announcement summary id does not match id from fetched announcement",
+    );
+    return true;
+  }
+  return false;
+};
+
+const getActiveSummary = (
+  createMode: boolean,
+  isForecast: boolean,
+  announcemenData: GrantorAnnouncementDetail,
+): AnnouncementSummaryDetail | object => {
+  if (createMode) {
+    return {};
+  }
+  if (isForecast) {
+    if (!announcemenData.forecast_summary) {
+      console.error("No active forecast summary");
+      return {};
+    }
+    return announcemenData.forecast_summary;
+  }
+  if (!announcemenData.non_forecast_summary) {
+    console.error("No active synopsis summary");
+    return {};
+  }
+  return announcemenData.non_forecast_summary;
+};
+
 export default async function SummaryEditView({
   announcementId,
-  isForecast,
+  summaryId,
+  isForecast = false,
+  createMode = false,
 }: SummaryEditViewProps) {
   let announcementData: GrantorAnnouncementDetail;
-  let announcementSummaryId: string;
   try {
     const response = await getAnnouncement(announcementId);
     announcementData = response.data;
-    announcementSummaryId =
-      response.data.forecast_summary?.announcement_summary_id ??
-      response.data.non_forecast_summary?.announcement_summary_id ??
-      "";
   } catch (error) {
     if (error instanceof MissingAuthError) {
       // TODO: should be an anauthenticated message
@@ -69,29 +155,37 @@ export default async function SummaryEditView({
     );
   }
 
-  if (announcementId !== announcementData.announcement_id) {
-    return (
-      <GridContainer className="margin-top-4">
-        <Alert type="error" heading="We're sorry." headingLevel="h4">
-          There seems to have been an error.
-        </Alert>
-      </GridContainer>
-    );
+  const stateValidationError = validateProperState({
+    announcementId,
+    summaryId,
+    isForecast,
+    createMode,
+    announcementData,
+  });
+
+  if (stateValidationError) {
+    return <GenericErrorDisplay />;
   }
 
   if (!hasVerifiedGrantorEditAccess) {
     return <UnauthorizedMessage />;
   }
 
-  const activeSummary =
-    announcementData.forecast_summary ??
-    announcementData.non_forecast_summary ??
-    announcementData.summary;
-  const initialValues = buildAnnouncementEditInitialValues({
-    ...announcementData,
-    attachments: [],
-    summary: activeSummary,
-  });
+  const activeSummary = getActiveSummary(
+    createMode,
+    isForecast,
+    announcementData,
+  );
+
+  const initialValues = buildAnnouncementEditInitialValues(
+    {
+      ...announcementData,
+      attachments: [],
+      summary: activeSummary,
+    },
+    createMode,
+  );
+
   return (
     <div className="bg-white">
       <AnnouncementDetailsHeader
@@ -114,8 +208,13 @@ export default async function SummaryEditView({
 
           <section className="order-2 width-full maxw-tablet-xl padding-top-4">
             <AnnouncementEditForm
-              announcementId={announcementData.announcement_id}
-              announcementSummaryId={announcementSummaryId}
+              announcementId={announcementId}
+              announcementSummaryId={
+                createMode
+                  ? ""
+                  : (activeSummary as AnnouncementSummaryDetail)
+                      .announcement_summary_id
+              }
               isForecast={isForecast}
               initialValues={initialValues}
               initialAttachments={

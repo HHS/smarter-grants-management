@@ -1,6 +1,5 @@
 "use client";
 
-import { AnnouncementAttachmentUploadInput } from "src/components/SummaryEditView/AnnouncementAttachmentUploadInput";
 import {
   announcementEditFormAction,
   type AnnouncementEditValidationErrors,
@@ -43,6 +42,7 @@ import {
   CommonWordLimit,
 } from "src/components/core/forms/CommonFormFields";
 import { DynamicFieldLabel } from "src/components/core/forms/DynamicFieldLabel";
+import { AnnouncementAttachmentUploadInput } from "src/components/SummaryEditView/AnnouncementAttachmentUploadInput";
 
 function formatNumber(value: string): string {
   const raw = value.replace(/,/g, "");
@@ -94,7 +94,7 @@ function EligibilityCheckboxGroup({
 
 type AnnouncementEditFormProps = {
   announcementId: string;
-  announcementSummaryId: string;
+  announcementSummaryId?: string;
   isForecast?: boolean;
   initialValues: AnnouncementEditFormValues;
   initialAttachments?: AnnouncementAttachment[];

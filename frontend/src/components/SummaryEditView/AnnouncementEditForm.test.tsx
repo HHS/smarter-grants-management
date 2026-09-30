@@ -12,9 +12,12 @@ jest.mock("react", () => ({
   useActionState: () => mockUseActionState() as unknown,
 }));
 
-jest.mock("src/app/[locale]/announcement/[id]/summary/[summaryId]/actions", () => ({
-  announcementEditFormAction: jest.fn(),
-}));
+jest.mock(
+  "src/app/[locale]/announcement/[id]/summary/[summaryId]/actions",
+  () => ({
+    announcementEditFormAction: jest.fn(),
+  }),
+);
 
 jest.mock("next-intl", () => ({
   useTranslations: () => (key: string) => key,
