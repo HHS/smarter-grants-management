@@ -75,9 +75,11 @@ jest.mock("src/services/fetch/fetchers/announcementAttachmentFetcher", () => ({
   deleteOpportunityAttachment: jest.fn(),
 }));
 
-const pageParams = new Promise<{ id: string; locale: string }>((resolve) => {
-  resolve({ id: "opportunity-123", locale: "en" });
-});
+const pageParams = new Promise<{ id: string; isForecast: string }>(
+  (resolve) => {
+    resolve({ id: "opportunity-123", isForecast: "" });
+  },
+);
 
 describe("AnnouncementEditForm - action buttons", () => {
   beforeEach(() => {
