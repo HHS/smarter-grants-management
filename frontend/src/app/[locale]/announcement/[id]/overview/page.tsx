@@ -12,7 +12,7 @@ import { computeAnnouncementPublishEligibility } from "src/utils/announcement/an
 
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { Link } from "@trussworks/react-uswds";
+import { Alert, Link } from "@trussworks/react-uswds";
 
 import { UnauthorizedMessage } from "src/components/core/UnauthorizedMessage";
 import { AnnouncementDetailsHeader } from "src/components/grantor-announcements/AnnouncementDetailsHeader";
@@ -41,6 +41,10 @@ export default async function OpportunityOverviewPage({
   const t = await getTranslations({
     locale,
     namespace: "AnnouncementOverview",
+  });
+  const tHeader = await getTranslations({
+    locale,
+    namespace: "AnnouncementDetailsHeader",
   });
   let opportunityData: GrantorAnnouncementDetail;
   try {
@@ -95,11 +99,20 @@ export default async function OpportunityOverviewPage({
       <AnnouncementDetailsHeader
         opportunityData={opportunityData}
         locale={locale}
-        isNewlyCreated={isNewlyCreated}
       >
         <OverviewButtons opportunityId={id} publishEnabled={publishEnabled} />
       </AnnouncementDetailsHeader>
       <div className="grid-container padding-top-4 padding-bottom-4">
+        {isNewlyCreated && (
+          <Alert
+            type="success"
+            heading={tHeader("alerts.newOpportunityHeading")}
+            headingLevel="h3"
+            className="margin-bottom-4"
+          >
+            {tHeader("alerts.newOpportunityBody")}
+          </Alert>
+        )}
         <div
           className="grid-row grid-gap-2 padding-top-2"
           data-testid="overview-row-edit"

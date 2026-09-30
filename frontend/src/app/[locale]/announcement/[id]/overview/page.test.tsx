@@ -44,19 +44,10 @@ jest.mock(
   "src/components/grantor-announcements/AnnouncementDetailsHeader",
   () => ({
     AnnouncementDetailsHeader: ({
-      isNewlyCreated,
       children,
     }: {
-      isNewlyCreated?: boolean;
       children?: React.ReactNode;
-    }) => (
-      <div
-        data-testid="opportunity-details-header"
-        data-is-newly-created={String(!!isNewlyCreated)}
-      >
-        {children}
-      </div>
-    ),
+    }) => <div data-testid="opportunity-details-header">{children}</div>,
   }),
 );
 
@@ -120,7 +111,7 @@ type OverviewSectionCase = {
 
 const OVERVIEW_SECTIONS: OverviewSectionCase[] = [
   {
-    name: "Opportunity Summary",
+    name: "Announcement Summary",
     linkNameKey: "labels.editOpportunityLink",
     hrefSuffix: "edit",
     buildData: (status) => ({ summary: buildSummaryFixture(status) }),
@@ -244,7 +235,7 @@ describe("OpportunityOverviewPage", () => {
   });
 
   describe("isNewlyCreated", () => {
-    it("passes isNewlyCreated through when fromCreate=true", async () => {
+    it("renders the newly-created alert outside the header when fromCreate=true", async () => {
       mockGetAnnouncement.mockResolvedValue({
         data: { ...baseOpportunityData },
       });
@@ -255,13 +246,13 @@ describe("OpportunityOverviewPage", () => {
       });
       render(component);
 
-      expect(screen.getByTestId("opportunity-details-header")).toHaveAttribute(
-        "data-is-newly-created",
-        "true",
-      );
+      const header = screen.getByTestId("opportunity-details-header");
+      const alertHeading = screen.getByText("alerts.newOpportunityHeading");
+      expect(alertHeading).toBeInTheDocument();
+      expect(header).not.toContainElement(alertHeading);
     });
 
-    it("does not set isNewlyCreated when fromCreate is absent", async () => {
+    it("does not render the newly-created alert when fromCreate is absent", async () => {
       mockGetAnnouncement.mockResolvedValue({
         data: { ...baseOpportunityData },
       });
@@ -272,10 +263,9 @@ describe("OpportunityOverviewPage", () => {
       });
       render(component);
 
-      expect(screen.getByTestId("opportunity-details-header")).toHaveAttribute(
-        "data-is-newly-created",
-        "false",
-      );
+      expect(
+        screen.queryByText("alerts.newOpportunityHeading"),
+      ).not.toBeInTheDocument();
     });
   });
 
