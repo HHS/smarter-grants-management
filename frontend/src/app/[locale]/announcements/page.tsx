@@ -578,7 +578,7 @@ export default async function AnnouncementsListPage(
       return <Unauthenticated />;
     }
     if (error instanceof UnauthorizedError) {
-      throw error;
+      return <Unauthenticated />;
     }
     return <AnnouncementsErrorPage />;
   }

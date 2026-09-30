@@ -1,10 +1,10 @@
 "use client";
 
-import { AnnouncementAttachmentUploadInput } from "src/app/[locale]/announcement/[id]/edit/_components/AnnouncementAttachmentUploadInput";
+import { AnnouncementAttachmentUploadInput } from "src/components/SummaryEditView/AnnouncementAttachmentUploadInput";
 import {
   announcementEditFormAction,
   type AnnouncementEditValidationErrors,
-} from "src/app/[locale]/announcement/[id]/edit/actions";
+} from "src/app/[locale]/announcement/[id]/summary/[summaryId]/actions";
 import {
   categoryOptions,
   eligbilityValueToGroup,
