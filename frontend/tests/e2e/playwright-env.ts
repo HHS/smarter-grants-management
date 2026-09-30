@@ -10,8 +10,10 @@ if (fs.existsSync(envPath)) {
 
 // Organization label shown in the "Start new application" modal dropdown.
 // Must match the legal_business_name in seed_orgs_and_users.py.
+// Note: "dev" intentionally reuses deployed/staging fixture labels.
 const TEST_ORG_LABELS: Record<string, string> = {
   local: "Sally's Soup Emporium",
+  dev: "Automatic staging Organization for UEI AUTOHQDCCHBY",
   staging: "Automatic staging Organization for UEI AUTOHQDCCHBY",
   grantee1: "Automatic staging Organization for UEI AUTOHQDCCHBY",
   grantee2: "Automatic staging Organization for UEI AUTOHQDCCHBY",
@@ -21,6 +23,8 @@ const TEST_ORG_LABELS: Record<string, string> = {
 
 export const SUPPORTED_ENVS = [
   "local",
+  // Deployed frontend-dev target used by the temporary API-key modal login flow.
+  "dev",
   "staging",
   "grantee1",
   "grantee2",
@@ -82,6 +86,9 @@ const playwrightEnv = {
   // /v1/internal/api-jwt to create a short-lived JWT for browser auth during
   // tests. Local and deployed environments set this explicitly.
   testUserApiKey: process.env.TEST_USER_API_KEY || "",
+  // Temporary fallback key used only for the dev frontend API-key modal flow.
+  // If E2E_API_KEY is not provided, reuse TEST_USER_API_KEY.
+  e2eApiKey: process.env.E2E_API_KEY || process.env.TEST_USER_API_KEY || "",
   // Legacy manager key retained for older flows and rollback references. This is
   // no longer the main path for the direct API-key E2E login workaround.
   testUserManagerApiKey: process.env.TEST_USER_MANAGER_API_KEY || "",

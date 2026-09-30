@@ -66,6 +66,9 @@ const {
   playwrightProjects,
 } = playwrightEnv;
 
+// Staging and dev deployed targets share the same browser/parallelization posture.
+const isStagingLikeTarget = targetEnv === "staging" || targetEnv === "dev";
+
 // If playwrightProjects is set (e.g. "Chrome" on PR runs), only run the
 // requested projects. Leave blank to run every project defined below.
 const requestedProjectNames = playwrightProjects
@@ -88,7 +91,7 @@ export default defineConfig({
   // Files listed in tests/e2e/deferred-test-files.json are not discovered.
   testIgnore: deferredTestIgnores,
   /* Run tests in files in parallel */
-  fullyParallel: targetEnv !== "staging",
+  fullyParallel: !isStagingLikeTarget,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!isCi,
   /* Retry on CI only */
@@ -108,12 +111,11 @@ export default defineConfig({
     trace: "on-first-retry",
     screenshot: "on",
     video: "on-first-retry",
-    launchOptions:
-      targetEnv === "staging"
-        ? {
-            args: ["--disable-dev-shm-usage"],
-          }
-        : undefined,
+    launchOptions: isStagingLikeTarget
+      ? {
+          args: ["--disable-dev-shm-usage"],
+        }
+      : undefined,
   },
   // Enable test sharding for parallelization in CI.
   shard: {
@@ -124,7 +126,7 @@ export default defineConfig({
   },
   /* Configure projects for major browsers */
   projects: filterProjects(
-    targetEnv === "staging"
+    isStagingLikeTarget
       ? [
           {
             name: "Chrome",
