@@ -8,6 +8,10 @@ import { fieldHandlerMap } from "tests/e2e/utils/common/field-handler-dispatcher
 import { buildFieldIdentifier } from "tests/e2e/utils/common/field-identifier";
 import { type FillFieldDefinition } from "tests/e2e/utils/common/types";
 
+type FillFieldOptions = {
+  fieldContextLabel?: string;
+};
+
 type SharedFillOptions = {
   page: Page;
   field: FillFieldDefinition;
@@ -17,6 +21,21 @@ type SharedFillOptions = {
 };
 
 const defaultFieldContextLabel = "field";
+
+/** Fills one field using the shared field-fill execution path. */
+export async function fillField(
+  page: Page,
+  field: FillFieldDefinition,
+  data: string | boolean | undefined,
+  options?: FillFieldOptions,
+): Promise<void> {
+  await runSharedFieldFill({
+    page,
+    field,
+    data,
+    fieldContextLabel: options?.fieldContextLabel,
+  });
+}
 
 /** Fills a single field through the shared handler map with consistent error wrapping. */
 export async function runSharedFieldFill(
