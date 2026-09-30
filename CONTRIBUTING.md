@@ -56,6 +56,30 @@ This project follows [trunk-based development](./DEVELOPMENT.md#branching-model)
 
 Each application has its own testing and linters. Every commit is tested to adhere to tests and the linting guidelines. It is recommended to run tests and linters locally before committing.
 
+### Issues
+
+External contributors should use the _Bug Report_ or _Feature Request_ [issue templates](https://github.com/HHS/smarter-grants-management/issues/new/choose).
+
+### Pull Requests
+
+Pull requests should follow the conventions in [DEVELOPMENT.md](./DEVELOPMENT.md) with the following changes:
+
+1. Pull requests should be titled with `[Issue N] Description`. However if there is no issue, use `[External] Description` format.
+1. External contributors can't merge their own PRs, so an internal team member will pull in after changes are satisfactory.
+
+### Review Assignment
+
+This repository uses a hybrid review assignment model powered by a GitHub Action rather than the traditional CODEOWNERS file.
+
+**For external contributors (community/fork PRs):**
+When you open a pull request from a fork, we request that you tag one or all of our designated maintainers to review your PR prior to us merging it.
+
+Current designated maintainers:
+
+- @btabaska
+- @mdragon
+- @KevinJBoyer
+
 ### Commit Signing
 
 **For SGM, all commits must be cryptographically signed using GPG key.**
@@ -196,30 +220,6 @@ If you still see this issue after adding the key, it could be **email mismatch:*
    ```
 
 For more details, see [GitHub's guide on signing commits](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits).
-
-### Issues
-
-External contributors should use the _Bug Report_ or _Feature Request_ [issue templates](https://github.com/HHS/smarter-grants-management/issues/new/choose).
-
-### Pull Requests
-
-Pull requests should follow the conventions in [DEVELOPMENT.md](./DEVELOPMENT.md) with the following changes:
-
-1. Pull requests should be titled with `[Issue N] Description`. However if there is no issue, use `[External] Description` format.
-1. External contributors can't merge their own PRs, so an internal team member will pull in after changes are satisfactory.
-
-### Review Assignment
-
-This repository uses a hybrid review assignment model powered by a GitHub Action rather than the traditional CODEOWNERS file.
-
-**For external contributors (community/fork PRs):**
-When you open a pull request from a fork, we request that you tag one or all of our designated maintainers to review your PR prior to us merging it.
-
-Current designated maintainers:
-
-- @btabaska
-- @mdragon
-- @KevinJBoyer
 
 ## Non-Technical Contributions
 
