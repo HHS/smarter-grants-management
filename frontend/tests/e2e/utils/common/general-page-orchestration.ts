@@ -82,7 +82,9 @@ export async function fillForm(
     // goto last resort, and URL pattern + load-state verification.
     const opened = await openForm(page, formMatcher);
     if (!opened) {
-      throw new Error(`Could not find or open form: ${formMatcher}`);
+      throw new Error(
+        `Could not find or open form: ${formMatcher}`,
+      );
     }
     // Form ready check:
     // Confirm the form heading is visible before filling any fields.
