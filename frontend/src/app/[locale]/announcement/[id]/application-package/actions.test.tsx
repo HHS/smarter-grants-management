@@ -1,19 +1,16 @@
 import { identity } from "lodash";
 import { ApiRequestError } from "src/errors";
-import { updateApplicationPackageForms } from "src/services/fetch/fetchers/applicationPackageFormsFetcher";
 import {
-  createApplicationPackageForGrantor,
+  createApplicationPackage,
   saveApplicationPackageInstructions,
-  updateApplicationPackageForGrantor,
+  updateApplicationPackage,
+  updateApplicationPackageForms,
 } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
-import {
-  ApplicationPackageFormsSubmitApi,
-  ApplicationPackageSaveApiResponse,
-} from "src/types/applicationPackageResponseTypes";
+import { ApplicationPackageFormsSubmitApi } from "src/types/applicationPackageResponseTypes";
 
 import {
   applicationPackageFormAction,
-  updateApplicationPackage,
+  saveApplicationPackage,
 } from "./actions";
 
 jest.mock("next-intl/server", () => ({
@@ -21,12 +18,9 @@ jest.mock("next-intl/server", () => ({
 }));
 
 jest.mock("src/services/fetch/fetchers/grantorAnnouncementFetcher", () => ({
-  createApplicationPackageForGrantor: jest.fn(),
+  createApplicationPackage: jest.fn(),
   saveApplicationPackageInstructions: jest.fn(),
-  updateApplicationPackageForGrantor: jest.fn(),
-}));
-
-jest.mock("src/services/fetch/fetchers/applicationPackageFormsFetcher", () => ({
+  updateApplicationPackage: jest.fn(),
   updateApplicationPackageForms: jest.fn(),
 }));
 
@@ -37,13 +31,9 @@ jest.mock("next/navigation", () => ({
   },
 }));
 
-const mockCreateApplicationPackageForGrantor = jest.mocked(
-  createApplicationPackageForGrantor,
-);
-const mockUpdateApplicationPackageForGrantor = jest.mocked(
-  updateApplicationPackageForGrantor,
-);
-const mockSaveApplicationPackageInstructions = jest.mocked(
+const mockCreateApplicationPackage = jest.mocked(createApplicationPackage);
+const mockUpdateApplicationPackage = jest.mocked(updateApplicationPackage);
+const mockSaveCompetitionInstructions = jest.mocked(
   saveApplicationPackageInstructions,
 );
 const mockUpdateApplicationPackageForms = jest.mocked(
@@ -52,7 +42,7 @@ const mockUpdateApplicationPackageForms = jest.mocked(
 
 const mockRequiredForms: ApplicationPackageFormsSubmitApi = [
   {
-    form_id: "1623b310-85be-496a-b84b-34bdee22a68a",
+    form_id: 713,
     is_required: true,
   },
 ];
@@ -61,26 +51,26 @@ const successfulCreateResponse = {
   message: "success",
   status_code: 201,
   data: {
-    applicationPackage_id: "new-applicationPackage-id",
+    application_package_id: "new-application-package-id",
   },
-} as Awaited<ReturnType<typeof createApplicationPackageForGrantor>>;
+} as Awaited<ReturnType<typeof createApplicationPackage>>;
 
 const successfulUpdateResponse = {
   message: "success",
   status_code: 200,
   data: {
-    applicationPackage_id: "existing-applicationPackage-id",
+    application_package_id: "existing-application-package-id",
   },
-} as Awaited<ReturnType<typeof updateApplicationPackageForGrantor>>;
+} as Awaited<ReturnType<typeof updateApplicationPackage>>;
 
 function buildValidFormData(overrides?: Record<string, string>) {
   const formData = new FormData();
   formData.set("announcementId", "opp-123");
   formData.set("applicationPackageId", "compete-456");
-  formData.set("applicationPackage_title", "Test ApplicationPackage");
-  formData.set("opening_date", "2026-06-01");
-  formData.set("closing_date", "2026-07-01");
-  formData.set("public_applicationPackage_id", "PUBLIC-COMP-789");
+  formData.set("application_package_title", "Test ApplicationPackage");
+  formData.set("opening_timestamp", "2026-06-01");
+  formData.set("closing_timestamp", "2026-07-01");
+  formData.set("public_application_package_id", "PUBLIC-COMP-789");
   formData.set("open_to_applicants", "both");
   formData.set("contact_name", "John Doe");
   formData.set("contact_title", "Manager");
@@ -96,7 +86,7 @@ function buildValidFormData(overrides?: Record<string, string>) {
   return formData;
 }
 
-describe("updateApplicationPackage", () => {
+describe("saveApplicationPackage", () => {
   beforeEach(() => {
     jest.resetAllMocks();
   });
@@ -105,30 +95,28 @@ describe("updateApplicationPackage", () => {
     const formData = new FormData();
     formData.set("applicationPackageId", "compete-456");
 
-    const result = await updateApplicationPackage(formData, mockRequiredForms);
+    const result = await saveApplicationPackage(formData, mockRequiredForms);
 
     expect(result).toEqual({
       errorMessage: "genericError",
     });
   });
 
-  it("calls createApplicationPackageForGrantor when no applicationPackageId", async () => {
+  it("calls createApplicationPackage when no applicationPackageId", async () => {
     const formData = buildValidFormData();
     formData.delete("applicationPackageId");
 
-    mockCreateApplicationPackageForGrantor.mockResolvedValue(
-      successfulCreateResponse,
-    );
+    mockCreateApplicationPackage.mockResolvedValue(successfulCreateResponse);
 
-    const result = await updateApplicationPackage(formData, mockRequiredForms);
+    const result = await saveApplicationPackage(formData, mockRequiredForms);
 
-    expect(mockCreateApplicationPackageForGrantor).toHaveBeenCalledWith(
+    expect(mockCreateApplicationPackage).toHaveBeenCalledWith(
       "opp-123",
       expect.objectContaining({
-        applicationPackage_title: "Test ApplicationPackage",
-        opening_date: "2026-06-01",
-        closing_date: "2026-07-01",
-        public_applicationPackage_id: "PUBLIC-COMP-789",
+        application_package_title: "Test ApplicationPackage",
+        opening_timestamp: "2026-06-01T00:00:00.000Z",
+        closing_timestamp: "2026-07-01T00:00:00.000Z",
+        public_application_package_id: "PUBLIC-COMP-789",
       }),
     );
     expect(result).toEqual({
@@ -136,39 +124,36 @@ describe("updateApplicationPackage", () => {
     });
   });
 
-  it("updates applicationPackage forms with the new applicationPackage ID after creating", async () => {
+  it("updates application package forms with the new application package ID after creating", async () => {
     const formData = buildValidFormData();
     formData.delete("applicationPackageId");
 
-    mockCreateApplicationPackageForGrantor.mockResolvedValue(
-      successfulCreateResponse,
-    );
+    mockCreateApplicationPackage.mockResolvedValue(successfulCreateResponse);
 
-    await updateApplicationPackage(formData, mockRequiredForms);
+    await saveApplicationPackage(formData, mockRequiredForms);
 
     expect(mockUpdateApplicationPackageForms).toHaveBeenCalledWith({
-      applicationPackageId: "new-applicationPackage-id",
+      announcementId: "opp-123",
+      applicationPackageId: "new-application-package-id",
       body: { forms: mockRequiredForms },
     });
   });
 
-  it("calls updateApplicationPackageForGrantor when applicationPackageId exists", async () => {
+  it("calls updateApplicationPackage when applicationPackageId exists", async () => {
     const formData = buildValidFormData();
 
-    mockUpdateApplicationPackageForGrantor.mockResolvedValue(
-      successfulUpdateResponse,
-    );
+    mockUpdateApplicationPackage.mockResolvedValue(successfulUpdateResponse);
 
-    const result = await updateApplicationPackage(formData, mockRequiredForms);
+    const result = await saveApplicationPackage(formData, mockRequiredForms);
 
-    expect(mockUpdateApplicationPackageForGrantor).toHaveBeenCalledWith(
+    expect(mockUpdateApplicationPackage).toHaveBeenCalledWith(
       "opp-123",
       "compete-456",
       expect.objectContaining({
-        applicationPackage_title: "Test ApplicationPackage",
-        opening_date: "2026-06-01",
-        closing_date: "2026-07-01",
-        public_applicationPackage_id: "PUBLIC-COMP-789",
+        application_package_title: "Test ApplicationPackage",
+        opening_timestamp: "2026-06-01T00:00:00.000Z",
+        closing_timestamp: "2026-07-01T00:00:00.000Z",
+        public_application_package_id: "PUBLIC-COMP-789",
       }),
     );
     expect(result).toEqual({
@@ -176,36 +161,33 @@ describe("updateApplicationPackage", () => {
     });
   });
 
-  it("updates applicationPackage forms with the existing applicationPackage ID", async () => {
+  it("updates application package forms with the existing application package ID", async () => {
     const formData = buildValidFormData();
 
-    mockUpdateApplicationPackageForGrantor.mockResolvedValue(
-      successfulUpdateResponse,
-    );
+    mockUpdateApplicationPackage.mockResolvedValue(successfulUpdateResponse);
 
-    await updateApplicationPackage(formData, mockRequiredForms);
+    await saveApplicationPackage(formData, mockRequiredForms);
 
     expect(mockUpdateApplicationPackageForms).toHaveBeenCalledWith({
+      announcementId: "opp-123",
       applicationPackageId: "compete-456",
       body: { forms: mockRequiredForms },
     });
   });
 
-  it("saves application instructions when creating a applicationPackage with a pending file ID", async () => {
+  it("saves application instructions when creating an application package with a pending file ID", async () => {
     const formData = buildValidFormData({
       "pending-file-id": "pending-file-789",
     });
     formData.delete("applicationPackageId");
 
-    mockCreateApplicationPackageForGrantor.mockResolvedValue(
-      successfulCreateResponse,
-    );
+    mockCreateApplicationPackage.mockResolvedValue(successfulCreateResponse);
 
-    const result = await updateApplicationPackage(formData, mockRequiredForms);
+    const result = await saveApplicationPackage(formData, mockRequiredForms);
 
-    expect(mockSaveApplicationPackageInstructions).toHaveBeenCalledWith(
+    expect(mockSaveCompetitionInstructions).toHaveBeenCalledWith(
       "opp-123",
-      "new-applicationPackage-id",
+      "new-application-package-id",
       "pending-file-789",
     );
     expect(result).toEqual({
@@ -218,13 +200,11 @@ describe("updateApplicationPackage", () => {
       "pending-file-id": "pending-file-789",
     });
 
-    mockUpdateApplicationPackageForGrantor.mockResolvedValue(
-      successfulUpdateResponse,
-    );
+    mockUpdateApplicationPackage.mockResolvedValue(successfulUpdateResponse);
 
-    const result = await updateApplicationPackage(formData, mockRequiredForms);
+    const result = await saveApplicationPackage(formData, mockRequiredForms);
 
-    expect(mockSaveApplicationPackageInstructions).toHaveBeenCalledWith(
+    expect(mockSaveCompetitionInstructions).toHaveBeenCalledWith(
       "opp-123",
       "compete-456",
       "pending-file-789",
@@ -239,16 +219,12 @@ describe("updateApplicationPackage", () => {
       "pending-file-id": "pending-file-789",
     });
 
-    mockUpdateApplicationPackageForGrantor.mockResolvedValue(
-      successfulUpdateResponse,
-    );
-    mockSaveApplicationPackageInstructions.mockRejectedValue(
-      new Error("unexpected"),
-    );
+    mockUpdateApplicationPackage.mockResolvedValue(successfulUpdateResponse);
+    mockSaveCompetitionInstructions.mockRejectedValue(new Error("unexpected"));
 
-    const result = await updateApplicationPackage(formData, mockRequiredForms);
+    const result = await saveApplicationPackage(formData, mockRequiredForms);
 
-    expect(mockSaveApplicationPackageInstructions).toHaveBeenCalledWith(
+    expect(mockSaveCompetitionInstructions).toHaveBeenCalledWith(
       "opp-123",
       "compete-456",
       "pending-file-789",
@@ -261,11 +237,11 @@ describe("updateApplicationPackage", () => {
   it("maps 401 to an unauthenticated error", async () => {
     const formData = buildValidFormData();
 
-    mockUpdateApplicationPackageForGrantor.mockRejectedValue(
+    mockUpdateApplicationPackage.mockRejectedValue(
       new ApiRequestError("unauthenticated", "APIRequestError", 401),
     );
 
-    const result = await updateApplicationPackage(formData, mockRequiredForms);
+    const result = await saveApplicationPackage(formData, mockRequiredForms);
 
     expect(result).toEqual({
       errorMessage: "unauthenticated",
@@ -275,11 +251,11 @@ describe("updateApplicationPackage", () => {
   it("maps 403 to a forbidden error", async () => {
     const formData = buildValidFormData();
 
-    mockUpdateApplicationPackageForGrantor.mockRejectedValue(
+    mockUpdateApplicationPackage.mockRejectedValue(
       new ApiRequestError("forbidden", "APIRequestError", 403),
     );
 
-    const result = await updateApplicationPackage(formData, mockRequiredForms);
+    const result = await saveApplicationPackage(formData, mockRequiredForms);
 
     expect(result).toEqual({
       errorMessage: "forbidden",
@@ -289,11 +265,11 @@ describe("updateApplicationPackage", () => {
   it("maps 404 to a not found error", async () => {
     const formData = buildValidFormData();
 
-    mockUpdateApplicationPackageForGrantor.mockRejectedValue(
+    mockUpdateApplicationPackage.mockRejectedValue(
       new ApiRequestError("notFound", "APIRequestError", 404),
     );
 
-    const result = await updateApplicationPackage(formData, mockRequiredForms);
+    const result = await saveApplicationPackage(formData, mockRequiredForms);
 
     expect(result).toEqual({
       errorMessage: "notFound",
@@ -303,35 +279,32 @@ describe("updateApplicationPackage", () => {
   it("maps 422 to validationErrors with formatted error message", async () => {
     const formData = buildValidFormData();
 
-    const mockResponse = {
-      status_code: 422,
-      errors: [
-        {
-          field: "open_to_applicants",
-          message: "Shorter than minimum length 1.",
-        },
-      ],
-    } as ApplicationPackageSaveApiResponse;
+    const apiError = new ApiRequestError(
+      "Validation error",
+      "ValidationError",
+      422,
+      {
+        field: "open_to_applicants",
+        message: "Shorter than minimum length 1.",
+      },
+    );
 
-    mockUpdateApplicationPackageForGrantor.mockResolvedValue(mockResponse);
+    mockUpdateApplicationPackage.mockRejectedValue(apiError);
 
-    const result = await updateApplicationPackage(formData, mockRequiredForms);
+    const result = await saveApplicationPackage(formData, mockRequiredForms);
 
     expect(result).toEqual({
-      validationErrors: {
-        open_to_applicants: ["Shorter than minimum length 1."],
-      },
+      errorMessage: "validationErrors",
+      validationErrors: ["open_to_applicants: Shorter than minimum length 1."],
     });
   });
 
   it("maps unknown errors to a generic error", async () => {
     const formData = buildValidFormData();
 
-    mockUpdateApplicationPackageForGrantor.mockRejectedValue(
-      new Error("unexpected"),
-    );
+    mockUpdateApplicationPackage.mockRejectedValue(new Error("unexpected"));
 
-    const result = await updateApplicationPackage(formData, mockRequiredForms);
+    const result = await saveApplicationPackage(formData, mockRequiredForms);
 
     expect(result).toEqual({
       errorMessage: "genericError",
@@ -344,12 +317,10 @@ describe("applicationPackageFormAction", () => {
     jest.resetAllMocks();
   });
 
-  it("delegates to updateApplicationPackage and redirects to ../overview for saveAndExit", async () => {
+  it("delegates to saveApplicationPackage and redirects to ../overview for saveAndExit", async () => {
     const formData = buildValidFormData();
 
-    mockUpdateApplicationPackageForGrantor.mockResolvedValue(
-      successfulUpdateResponse,
-    );
+    mockUpdateApplicationPackage.mockResolvedValue(successfulUpdateResponse);
 
     await applicationPackageFormAction(
       "saveAndExit",
@@ -357,16 +328,14 @@ describe("applicationPackageFormAction", () => {
       formData,
     );
 
-    expect(mockUpdateApplicationPackageForGrantor).toHaveBeenCalledTimes(1);
+    expect(mockUpdateApplicationPackage).toHaveBeenCalledTimes(1);
     expect(mockRedirect).toHaveBeenCalledWith("../overview");
   });
 
-  it("delegates to updateApplicationPackage and redirects to ../edit for saveAndGoBack", async () => {
+  it("delegates to saveApplicationPackage and redirects to ../edit for saveAndGoBack", async () => {
     const formData = buildValidFormData();
 
-    mockUpdateApplicationPackageForGrantor.mockResolvedValue(
-      successfulUpdateResponse,
-    );
+    mockUpdateApplicationPackage.mockResolvedValue(successfulUpdateResponse);
 
     await applicationPackageFormAction(
       "saveAndGoBack",
@@ -374,16 +343,14 @@ describe("applicationPackageFormAction", () => {
       formData,
     );
 
-    expect(mockUpdateApplicationPackageForGrantor).toHaveBeenCalledTimes(1);
+    expect(mockUpdateApplicationPackage).toHaveBeenCalledTimes(1);
     expect(mockRedirect).toHaveBeenCalledWith("../edit");
   });
 
-  it("delegates to updateApplicationPackage and redirects to ../overview for saveAndContinue", async () => {
+  it("delegates to saveApplicationPackage and redirects to ../overview for saveAndContinue", async () => {
     const formData = buildValidFormData();
 
-    mockUpdateApplicationPackageForGrantor.mockResolvedValue(
-      successfulUpdateResponse,
-    );
+    mockUpdateApplicationPackage.mockResolvedValue(successfulUpdateResponse);
 
     await applicationPackageFormAction(
       "saveAndContinue",
@@ -391,14 +358,14 @@ describe("applicationPackageFormAction", () => {
       formData,
     );
 
-    expect(mockUpdateApplicationPackageForGrantor).toHaveBeenCalledTimes(1);
+    expect(mockUpdateApplicationPackage).toHaveBeenCalledTimes(1);
     expect(mockRedirect).toHaveBeenCalledWith("../overview");
   });
 
-  it("returns errors without redirecting when updateApplicationPackage returns errorMessage", async () => {
+  it("returns errors without redirecting when saveApplicationPackage returns errorMessage", async () => {
     const formData = buildValidFormData();
 
-    mockUpdateApplicationPackageForGrantor.mockRejectedValue(
+    mockUpdateApplicationPackage.mockRejectedValue(
       new ApiRequestError("forbidden", "APIRequestError", 403),
     );
 
@@ -408,7 +375,7 @@ describe("applicationPackageFormAction", () => {
       formData,
     );
 
-    expect(mockUpdateApplicationPackageForGrantor).toHaveBeenCalledTimes(1);
+    expect(mockUpdateApplicationPackage).toHaveBeenCalledTimes(1);
     expect(mockRedirect).not.toHaveBeenCalled();
     expect(result).toEqual({
       errorMessage: "forbidden",
@@ -418,9 +385,7 @@ describe("applicationPackageFormAction", () => {
   it("returns saveResult for unknown submitType without redirecting", async () => {
     const formData = buildValidFormData();
 
-    mockUpdateApplicationPackageForGrantor.mockResolvedValue(
-      successfulUpdateResponse,
-    );
+    mockUpdateApplicationPackage.mockResolvedValue(successfulUpdateResponse);
 
     const result = await applicationPackageFormAction(
       "unknownType",
@@ -428,7 +393,7 @@ describe("applicationPackageFormAction", () => {
       formData,
     );
 
-    expect(mockUpdateApplicationPackageForGrantor).toHaveBeenCalledTimes(1);
+    expect(mockUpdateApplicationPackage).toHaveBeenCalledTimes(1);
     expect(mockRedirect).not.toHaveBeenCalled();
     expect(result).toEqual({
       successMessage: "success",
@@ -436,7 +401,7 @@ describe("applicationPackageFormAction", () => {
   });
 });
 
-describe("buildRequestBody (tested indirectly via updateApplicationPackage)", () => {
+describe("buildRequestBody (tested indirectly via saveApplicationPackage)", () => {
   beforeEach(() => {
     jest.resetAllMocks();
   });
@@ -445,31 +410,27 @@ describe("buildRequestBody (tested indirectly via updateApplicationPackage)", ()
     const formData = buildValidFormData();
     formData.delete("applicationPackageId");
 
-    mockCreateApplicationPackageForGrantor.mockResolvedValue(
-      successfulCreateResponse,
-    );
+    mockCreateApplicationPackage.mockResolvedValue(successfulCreateResponse);
 
-    await updateApplicationPackage(formData, mockRequiredForms);
+    await saveApplicationPackage(formData, mockRequiredForms);
 
-    const requestBody = mockCreateApplicationPackageForGrantor.mock.calls[0][1];
+    const requestBody = mockCreateApplicationPackage.mock.calls[0][1];
     expect(requestBody.open_to_applicants).toEqual([
       "organization",
       "individual",
     ]);
   });
 
-  it("includes the public applicationPackage ID in the request body", async () => {
+  it("includes the public application package ID in the request body", async () => {
     const formData = buildValidFormData();
     formData.delete("applicationPackageId");
 
-    mockCreateApplicationPackageForGrantor.mockResolvedValue(
-      successfulCreateResponse,
-    );
+    mockCreateApplicationPackage.mockResolvedValue(successfulCreateResponse);
 
-    await updateApplicationPackage(formData, mockRequiredForms);
+    await saveApplicationPackage(formData, mockRequiredForms);
 
-    const requestBody = mockCreateApplicationPackageForGrantor.mock.calls[0][1];
-    expect(requestBody.public_applicationPackage_id).toBe("PUBLIC-COMP-789");
+    const requestBody = mockCreateApplicationPackage.mock.calls[0][1];
+    expect(requestBody.public_application_package_id).toBe("PUBLIC-COMP-789");
   });
 
   it("builds correct request body for 'organizations_only' applicant type", async () => {
@@ -477,13 +438,11 @@ describe("buildRequestBody (tested indirectly via updateApplicationPackage)", ()
     formData.delete("applicationPackageId");
     formData.set("open_to_applicants", "organizations_only");
 
-    mockCreateApplicationPackageForGrantor.mockResolvedValue(
-      successfulCreateResponse,
-    );
+    mockCreateApplicationPackage.mockResolvedValue(successfulCreateResponse);
 
-    await updateApplicationPackage(formData, mockRequiredForms);
+    await saveApplicationPackage(formData, mockRequiredForms);
 
-    const requestBody = mockCreateApplicationPackageForGrantor.mock.calls[0][1];
+    const requestBody = mockCreateApplicationPackage.mock.calls[0][1];
     expect(requestBody.open_to_applicants).toEqual(["organization"]);
   });
 
@@ -492,13 +451,11 @@ describe("buildRequestBody (tested indirectly via updateApplicationPackage)", ()
     formData.delete("applicationPackageId");
     formData.set("open_to_applicants", "individuals_only");
 
-    mockCreateApplicationPackageForGrantor.mockResolvedValue(
-      successfulCreateResponse,
-    );
+    mockCreateApplicationPackage.mockResolvedValue(successfulCreateResponse);
 
-    await updateApplicationPackage(formData, mockRequiredForms);
+    await saveApplicationPackage(formData, mockRequiredForms);
 
-    const requestBody = mockCreateApplicationPackageForGrantor.mock.calls[0][1];
+    const requestBody = mockCreateApplicationPackage.mock.calls[0][1];
     expect(requestBody.open_to_applicants).toEqual(["individual"]);
   });
 
@@ -506,13 +463,11 @@ describe("buildRequestBody (tested indirectly via updateApplicationPackage)", ()
     const formData = buildValidFormData();
     formData.delete("applicationPackageId");
 
-    mockCreateApplicationPackageForGrantor.mockResolvedValue(
-      successfulCreateResponse,
-    );
+    mockCreateApplicationPackage.mockResolvedValue(successfulCreateResponse);
 
-    await updateApplicationPackage(formData, mockRequiredForms);
+    await saveApplicationPackage(formData, mockRequiredForms);
 
-    const requestBody = mockCreateApplicationPackageForGrantor.mock.calls[0][1];
+    const requestBody = mockCreateApplicationPackage.mock.calls[0][1];
     expect(requestBody.contact_info).toBe(
       "John Doe | Manager | john@example.com | 555-0100",
     );
@@ -522,34 +477,44 @@ describe("buildRequestBody (tested indirectly via updateApplicationPackage)", ()
     const formData = buildValidFormData({ grace_period: "30" });
     formData.delete("applicationPackageId");
 
-    mockCreateApplicationPackageForGrantor.mockResolvedValue(
-      successfulCreateResponse,
-    );
+    mockCreateApplicationPackage.mockResolvedValue(successfulCreateResponse);
 
-    await updateApplicationPackage(formData, mockRequiredForms);
+    await saveApplicationPackage(formData, mockRequiredForms);
 
-    const requestBody = mockCreateApplicationPackageForGrantor.mock.calls[0][1];
+    const requestBody = mockCreateApplicationPackage.mock.calls[0][1];
     expect(requestBody.grace_period).toBe(30);
+  });
+
+  it("converts opening and closing dates to ISO timestamps", async () => {
+    const formData = buildValidFormData();
+    formData.delete("applicationPackageId");
+
+    mockCreateApplicationPackage.mockResolvedValue(successfulCreateResponse);
+
+    await saveApplicationPackage(formData, mockRequiredForms);
+
+    const requestBody = mockCreateApplicationPackage.mock.calls[0][1];
+    expect(requestBody.opening_timestamp).toBe("2026-06-01T00:00:00.000Z");
+    expect(requestBody.closing_timestamp).toBe("2026-07-01T00:00:00.000Z");
   });
 
   it("handles empty field values by returning null", async () => {
     const formData = buildValidFormData();
     formData.delete("applicationPackageId");
-    formData.set("applicationPackage_title", "");
-    formData.set("opening_date", "");
-    formData.set("closing_date", "");
-    formData.set("public_applicationPackage_id", "");
+    formData.set("application_package_title", "");
+    formData.set("opening_timestamp", "");
+    formData.set("closing_timestamp", "");
+    formData.set("public_application_package_id", "");
 
-    mockCreateApplicationPackageForGrantor.mockResolvedValue(
-      successfulCreateResponse,
-    );
+    mockCreateApplicationPackage.mockResolvedValue(successfulCreateResponse);
 
-    await updateApplicationPackage(formData, mockRequiredForms);
+    await saveApplicationPackage(formData, mockRequiredForms);
 
-    const requestBody = mockCreateApplicationPackageForGrantor.mock.calls[0][1];
-    expect(requestBody.applicationPackage_title).toBeNull();
-    expect(requestBody.opening_date).toBeNull();
-    expect(requestBody.closing_date).toBeNull();
-    expect(requestBody.public_applicationPackage_id).toBeNull();
+    const requestBody = mockCreateApplicationPackage.mock.calls[0][1];
+    expect(requestBody.application_package_title).toBeNull();
+    expect(requestBody.opening_timestamp).toBeNull();
+    expect(requestBody.closing_timestamp).toBeNull();
+    // Omitted (not null) since the backend rejects an explicit null for this field
+    expect(requestBody.public_application_package_id).toBeUndefined();
   });
 });

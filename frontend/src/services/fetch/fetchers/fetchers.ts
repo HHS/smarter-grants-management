@@ -4,7 +4,6 @@ import { ApiRequestError } from "src/errors";
 import {
   EndpointConfig,
   fetchApplicationPackageEndpoint,
-  fetchApplicationPackageFormsEndpoint,
   fetchAwardRecommendationEndpoint,
   fetchFormsEndpoint,
   fetchWorkflowEndpoint,
@@ -123,10 +122,6 @@ export const fetchForms = cache(requesterForEndpoint(fetchFormsEndpoint));
 
 export const fetchApplicationPackage = cache(
   requesterForEndpoint(fetchApplicationPackageEndpoint),
-);
-
-export const fetchApplicationPackageForms = cache(
-  requesterForEndpoint(fetchApplicationPackageFormsEndpoint),
 );
 
 export const fetchAwardRecommendation = cache(

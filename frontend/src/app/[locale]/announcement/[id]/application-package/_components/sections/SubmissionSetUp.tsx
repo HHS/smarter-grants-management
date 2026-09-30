@@ -44,7 +44,7 @@ export function SubmissionSetUp({
       <div className="grid-row grid-gap-2">
         <div className="tablet:grid-col">
           <CommonTextInput
-            fieldId="public_applicationPackage_id"
+            fieldId="public_application_package_id"
             labelText={t("publicApplicationPackageId")}
             description={t("publicApplicationPackageIdHint")}
             isRequired={false}
@@ -55,7 +55,7 @@ export function SubmissionSetUp({
         </div>
         <div className="tablet:grid-col">
           <CommonTextInput
-            fieldId="applicationPackage_title"
+            fieldId="application_package_title"
             labelText={t("applicationPackageTitle")}
             description={t("applicationPackageTitleHint")}
             isRequired={true}

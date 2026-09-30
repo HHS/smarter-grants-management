@@ -1,18 +1,19 @@
 "use server";
 
 import { ApiRequestError, parseErrorStatus } from "src/errors";
-import { updateApplicationPackageForms } from "src/services/fetch/fetchers/applicationPackageFormsFetcher";
 import {
-  createApplicationPackageForGrantor,
+  createApplicationPackage,
   saveApplicationPackageInstructions,
-  updateApplicationPackageForGrantor,
+  updateApplicationPackage,
+  updateApplicationPackageForms,
 } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
+import { FrontendErrorDetails } from "src/types/apiResponseTypes";
 import {
   ApplicantTypes,
   ApplicationPackageFormsSubmitApi,
   ApplicationPackageSaveRequest,
 } from "src/types/applicationPackageResponseTypes";
-import { mapApiValidationErrors } from "src/utils/validationUtils";
+import { dateToTimestampOrNull } from "src/utils/dateUtil";
 
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
@@ -20,19 +21,9 @@ import { redirect } from "next/navigation";
 export type ApplicationPackageActionState = {
   errorMessage?: string;
   successMessage?: string;
-  validationErrors?: { [field: string]: string[] };
+  validationErrors?: string[];
   newApplicationPackageId?: string;
 };
-
-const COMPETITION_FORM_FIELDS = [
-  "applicationPackage_title",
-  "opening_date",
-  "closing_date",
-  "grace_period",
-  "public_applicationPackage_id",
-  "contact_info",
-  "open_to_applicants",
-] as const;
 
 // Make sure to return null in cases of empty string
 function getFieldValue(formData: FormData, fieldName: string) {
@@ -73,27 +64,47 @@ function buildRequestBody(formData: FormData) {
 
   // Build the request body which should match the ApplicationPackageSaveRequest
   const requestBody: ApplicationPackageSaveRequest = {
-    applicationPackage_title: getFieldValue(
+    application_package_title: getFieldValue(
       formData,
-      "applicationPackage_title",
+      "application_package_title",
     ),
-    opening_date: getFieldValue(formData, "opening_date"),
-    closing_date: getFieldValue(formData, "closing_date"),
+    opening_timestamp: dateToTimestampOrNull(
+      getFieldValue(formData, "opening_timestamp"),
+    ),
+    closing_timestamp: dateToTimestampOrNull(
+      getFieldValue(formData, "closing_timestamp"),
+    ),
     grace_period: (() => {
       const gracePeriod = getFieldValue(formData, "grace_period");
       return gracePeriod === null ? null : Number(gracePeriod);
     })(),
-    public_applicationPackage_id: getFieldValue(
-      formData,
-      "public_applicationPackage_id",
-    ),
+    // Backend requires this key be omitted rather than sent as null when empty
+    public_application_package_id:
+      getFieldValue(formData, "public_application_package_id") ?? undefined,
     contact_info: contactInfo,
     open_to_applicants: openToApplicants,
   };
   return requestBody;
 }
 
-export async function updateApplicationPackage(
+export interface FrontendErrorCause {
+  // The details area actually under the cause
+  details: FrontendErrorDetails;
+}
+
+function formatValidationErrors(error: unknown) {
+  const formatedErrors: string[] = [];
+  if (error instanceof ApiRequestError) {
+    const cause = error.cause as FrontendErrorCause;
+    const details = cause.details;
+    // NOTE: currently this only returning one error at a time (no list)
+    const errorMessage = details.field + ": " + details.message;
+    return [errorMessage];
+  }
+  return formatedErrors;
+}
+
+export async function saveApplicationPackage(
   formData: FormData,
   requiredForms: ApplicationPackageFormsSubmitApi,
 ): Promise<ApplicationPackageActionState> {
@@ -111,29 +122,14 @@ export async function updateApplicationPackage(
 
   try {
     if (!applicationPackageId) {
-      apiResponse = await createApplicationPackageForGrantor(
-        announcementId,
-        requestBody,
-      );
-      applicationPackageId = apiResponse.data.applicationPackage_id;
+      apiResponse = await createApplicationPackage(announcementId, requestBody);
+      applicationPackageId = apiResponse.data.application_package_id;
     } else {
-      apiResponse = await updateApplicationPackageForGrantor(
+      apiResponse = await updateApplicationPackage(
         announcementId,
         applicationPackageId,
         requestBody,
       );
-    }
-
-    if (apiResponse.status_code === 422) {
-      const { validationErrors, errorMessage } = mapApiValidationErrors(
-        apiResponse,
-        t("validationErrors"),
-        COMPETITION_FORM_FIELDS,
-      );
-      return {
-        errorMessage,
-        validationErrors,
-      };
     }
 
     // If the record was successfully created or updated,
@@ -149,6 +145,7 @@ export async function updateApplicationPackage(
 
     if (requiredForms) {
       await updateApplicationPackageForms({
+        announcementId,
         applicationPackageId,
         body: { forms: requiredForms },
       });
@@ -167,6 +164,11 @@ export async function updateApplicationPackage(
         return { errorMessage: t("forbidden") };
       case 404:
         return { errorMessage: t("notFound") };
+      case 422:
+        return {
+          errorMessage: t("validationErrors"),
+          validationErrors: formatValidationErrors(error),
+        };
       default:
         return { errorMessage: t("genericError") };
     }
@@ -179,12 +181,8 @@ export async function applicationPackageFormAction(
   formData: FormData,
 ): Promise<ApplicationPackageActionState> {
   // 1. Save the form; if there are API errors, display them
-  const saveResult = await updateApplicationPackage(formData, requiredForms);
-  if (
-    saveResult.errorMessage ||
-    (saveResult.validationErrors &&
-      Object.keys(saveResult.validationErrors).length)
-  ) {
+  const saveResult = await saveApplicationPackage(formData, requiredForms);
+  if (saveResult.errorMessage) {
     return saveResult;
   }
 

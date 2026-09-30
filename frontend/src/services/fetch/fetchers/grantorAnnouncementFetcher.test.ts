@@ -1,13 +1,17 @@
 import { ApiRequestError } from "src/errors";
 import {
-  createApplicationPackageForGrantor,
+  createApplicationPackage,
   createOpportunity,
   deleteApplicationPackageInstructions,
   saveApplicationPackageInstructions,
   searchOpportunitiesByAgency,
-  updateApplicationPackageForGrantor,
+  updateApplicationPackage,
+  updateApplicationPackageForms,
 } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
-import { ApplicationPackageSaveRequest } from "src/types/applicationPackageResponseTypes";
+import {
+  ApplicationPackageFormsSubmitApi,
+  ApplicationPackageSaveRequest,
+} from "src/types/applicationPackageResponseTypes";
 import { PaginationRequestBody } from "src/types/search/searchRequestTypes";
 import { fakeAgencyResponseData } from "src/utils/testing/fixtures";
 
@@ -213,29 +217,29 @@ describe("createOpportunity", () => {
 });
 
 // ---------------------------------------------
-// Tests for opportunity applicationPackages
+// Tests for announcement application packages
 // ---------------------------------------------
 const applicationPackageData: ApplicationPackageSaveRequest = {
-  applicationPackage_title: "",
-  opening_date: null,
-  closing_date: null,
+  application_package_title: "",
+  opening_timestamp: null,
+  closing_timestamp: null,
   contact_info: null,
   open_to_applicants: ["individual", "organization"],
 };
 
-describe("createApplicationPackageForGrantor", () => {
+describe("createApplicationPackage", () => {
   beforeEach(() => {
     mockFetcher.mockResolvedValue({
       json: () =>
         Promise.resolve({
-          data: { applicationPackage_id: "new-applicationPackage-id" },
+          data: { application_package_id: "new-application-package-id" },
         }),
     });
   });
   afterEach(() => jest.clearAllMocks());
 
   it("calls fetchAnnouncementWithMethod with POST, the correct subPath, and returns the parsed JSON response", async () => {
-    const result = await createApplicationPackageForGrantor(
+    const result = await createApplicationPackage(
       "opp-123",
       applicationPackageData,
     );
@@ -248,20 +252,17 @@ describe("createApplicationPackageForGrantor", () => {
       allowedErrorStatuses: [422],
     });
     expect(result).toEqual({
-      data: { applicationPackage_id: "new-applicationPackage-id" },
+      data: { application_package_id: "new-application-package-id" },
     });
   });
 
-  it("includes public_applicationPackage_id in the request body", async () => {
+  it("includes public_application_package_id in the request body", async () => {
     const applicationPackageWithPublicId: ApplicationPackageSaveRequest = {
       ...applicationPackageData,
-      public_applicationPackage_id: "PUBLIC-COMP-789",
+      public_application_package_id: "PUBLIC-COMP-789",
     };
 
-    await createApplicationPackageForGrantor(
-      "opp-123",
-      applicationPackageWithPublicId,
-    );
+    await createApplicationPackage("opp-123", applicationPackageWithPublicId);
 
     expect(mockFetcher).toHaveBeenCalledWith({
       subPath: "opp-123/application-packages",
@@ -271,14 +272,14 @@ describe("createApplicationPackageForGrantor", () => {
   });
 });
 
-describe("updateApplicationPackageForGrantor", () => {
+describe("updateApplicationPackage", () => {
   beforeEach(() => {
     mockFetcher.mockResolvedValue({ json: () => Promise.resolve({}) });
   });
   afterEach(() => jest.clearAllMocks());
 
   it("calls fetchAnnouncementWithMethod with PUT and the correct subPath", async () => {
-    await updateApplicationPackageForGrantor(
+    await updateApplicationPackage(
       "opp-123",
       "compete-321",
       applicationPackageData,
@@ -307,7 +308,7 @@ describe("updateApplicationPackageForGrantor", () => {
         value: null,
       },
       {
-        field: "applicationPackage_title",
+        field: "application_package_title",
         message: "Must not be empty.",
         type: "required",
         value: "",
@@ -324,12 +325,38 @@ describe("updateApplicationPackageForGrantor", () => {
 
     // verify that it throws the error
     await expect(
-      updateApplicationPackageForGrantor(
+      updateApplicationPackage(
         "opp-123",
         "compete-321",
         applicationPackageData,
       ),
     ).rejects.toThrow(ApiRequestError);
+  });
+});
+
+describe("updateApplicationPackageForms", () => {
+  beforeEach(() => {
+    mockFetcher.mockResolvedValue({ json: () => Promise.resolve({}) });
+  });
+  afterEach(() => jest.clearAllMocks());
+
+  it("calls fetchGrantorOpportunityWithMethod with PUT and the correct subPath", async () => {
+    const requiredForms: ApplicationPackageFormsSubmitApi = [
+      { form_id: 713, is_required: true },
+    ];
+
+    await updateApplicationPackageForms({
+      announcementId: "opp-123",
+      applicationPackageId: "compete-321",
+      body: { forms: requiredForms },
+    });
+
+    expect(mockFetchGrantorOpportunityWithMethod).toHaveBeenCalledTimes(1);
+    expect(mockFetchGrantorOpportunityWithMethod).toHaveBeenCalledWith("PUT");
+    expect(mockFetcher).toHaveBeenCalledWith({
+      subPath: "opp-123/application-packages/compete-321/forms",
+      body: { forms: requiredForms },
+    });
   });
 });
 

@@ -28,8 +28,10 @@ const opportunityWithSummaryRequiredFields = {
 
 // These are the data objects for testing
 const testALN: AnnouncementAssistanceListing = {
-  assistance_listing_number: "30.CLY",
+  announcement_assistance_listing_id: "test-announcement-assistance-listing-id",
+  assistance_listing_id: "test-assistance-listing-id",
   program_title: "Test ALN",
+  assistance_listing_number: "43.012",
 };
 const summaryData: Summary = {
   close_date: null,
