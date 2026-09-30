@@ -3,7 +3,7 @@ import { GrantorAnnouncementDetail } from "src/types/announcement/announcementRe
 
 import { useTranslations } from "next-intl";
 import { ReactNode } from "react";
-import { Alert, Link } from "@trussworks/react-uswds";
+import { Link } from "@trussworks/react-uswds";
 
 import { USWDSIcon } from "src/components/core/USWDSIcon";
 
@@ -11,7 +11,6 @@ type OpportunityDetailsHeaderProps = {
   opportunityData: GrantorAnnouncementDetail;
   locale: string;
   children?: ReactNode;
-  isNewlyCreated?: boolean;
   hasBackToOverview?: boolean;
 };
 
@@ -19,7 +18,6 @@ export function AnnouncementDetailsHeader({
   opportunityData,
   locale,
   children,
-  isNewlyCreated = false,
   hasBackToOverview = false,
 }: OpportunityDetailsHeaderProps) {
   const t = useTranslations("AnnouncementDetailsHeader");
@@ -97,17 +95,6 @@ export function AnnouncementDetailsHeader({
             <div className="display-flex flex-align-end gap-1">{children}</div>
           )}
         </div>
-        {isNewlyCreated ? (
-          <div className="margin-top-2">
-            <Alert
-              type="success"
-              heading={t("alerts.newOpportunityHeading")}
-              headingLevel="h3"
-            >
-              {t("alerts.newOpportunityBody")}
-            </Alert>
-          </div>
-        ) : null}
       </div>
     </section>
   );

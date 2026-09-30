@@ -18,7 +18,7 @@ jest.mock("src/hooks/useClientFetch", () => ({
 
 const applicationInstructionsProps = {
   announcementId: "opp-123",
-  competitionId: "competition-123",
+  applicationPackageId: "applicationPackage-123",
 };
 
 type MockSimplerFileInputProps = {
@@ -83,7 +83,9 @@ describe("ApplicationInstructions", () => {
       expect(screen.getByText("uploadAFile")).toBeInTheDocument();
       expect(screen.getByText("multipleFiles")).toBeInTheDocument();
       expect(
-        screen.getByRole("button", { name: "competition-instruction-file" }),
+        screen.getByRole("button", {
+          name: "applicationPackage-instruction-file",
+        }),
       ).toBeInTheDocument();
     });
 
@@ -100,7 +102,9 @@ describe("ApplicationInstructions", () => {
       render(<ApplicationInstructions {...applicationInstructionsProps} />);
 
       fireEvent.click(
-        screen.getByRole("button", { name: "competition-instruction-file" }),
+        screen.getByRole("button", {
+          name: "applicationPackage-instruction-file",
+        }),
       );
 
       expect(screen.getByDisplayValue("file-123")).toHaveAttribute(
@@ -150,7 +154,7 @@ describe("ApplicationInstructions", () => {
       fireEvent.click(screen.getByRole("button", { name: "delete-file" }));
 
       expect(mockClientFetch).toHaveBeenCalledWith(
-        `/api/announcements/opp-123/application-packages/competition-123/instructions/instruction-123`,
+        `/api/announcements/opp-123/application-packages/applicationPackage-123/instructions/instruction-123`,
         { method: "DELETE" },
       );
       await waitFor(() => {

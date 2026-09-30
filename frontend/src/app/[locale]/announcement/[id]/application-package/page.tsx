@@ -24,8 +24,8 @@ type PageProps = {
 export const dynamic = "force-dynamic";
 
 // We are temporarily removing the SF-424 Short form, pending implementation of form libraries
-// If any other forms need to be blocked, add them to this array
-const blockedForms = ["cf355a4d-d840-43fd-a78f-729edf41ab4c"];
+// If any other forms need to be blocked, add their form_id to this array
+const blockedForms: number[] = [];
 
 const ButtonSaveAndExit = () => {
   const t = useTranslations("OpportunityCompetition");
@@ -33,7 +33,7 @@ const ButtonSaveAndExit = () => {
     <>
       <Button
         type="submit"
-        form="opportunity-competition-form"
+        form="application-package-form"
         className="margin-left-1"
       >
         {t("button.saveAndExit")}
@@ -42,7 +42,7 @@ const ButtonSaveAndExit = () => {
   );
 };
 
-export default async function OpportunityCompetitionPage({
+export default async function AnnouncementApplicationPackagePage({
   params,
 }: PageProps) {
   const { id, locale } = await params;
@@ -73,10 +73,10 @@ export default async function OpportunityCompetitionPage({
     throw error;
   }
 
-  // NOTE: Currently we are only supporting a single competition
-  let competition: ApplicationPackage | undefined = undefined;
+  // NOTE: Currently we are only supporting a single application package
+  let applicationPackage: ApplicationPackage | undefined = undefined;
   if (opportunityData.application_packages?.[0]) {
-    competition = opportunityData.application_packages[0];
+    applicationPackage = opportunityData.application_packages[0];
   }
 
   const navigationItems = [
@@ -131,7 +131,7 @@ export default async function OpportunityCompetitionPage({
           <section className="order-2 width-full maxw-tablet-xl padding-top-4">
             <ApplicationPackageForm
               announcementId={id}
-              competition={competition}
+              applicationPackage={applicationPackage}
               forms={forms.data}
             />
           </section>

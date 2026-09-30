@@ -4,9 +4,8 @@ import { ApiRequestError } from "src/errors";
 import {
   apiKeyLoginEndpoint,
   EndpointConfig,
+  fetchApplicationPackageEndpoint,
   fetchAwardRecommendationEndpoint,
-  fetchCompetitionEndpoint,
-  fetchCompetitionFormsEndpoint,
   fetchFormsEndpoint,
   fetchWorkflowEndpoint,
   getLocalUsersEndpoint,
@@ -122,12 +121,8 @@ export function requesterForEndpoint({
 
 export const fetchForms = cache(requesterForEndpoint(fetchFormsEndpoint));
 
-export const fetchCompetition = cache(
-  requesterForEndpoint(fetchCompetitionEndpoint),
-);
-
-export const fetchCompetitionForms = cache(
-  requesterForEndpoint(fetchCompetitionFormsEndpoint),
+export const fetchApplicationPackage = cache(
+  requesterForEndpoint(fetchApplicationPackageEndpoint),
 );
 
 export const fetchAwardRecommendation = cache(

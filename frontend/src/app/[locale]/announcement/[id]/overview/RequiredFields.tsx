@@ -8,7 +8,7 @@ export const summaryRequiredFields = {
   applicant_types: true,
 };
 
-export const competitionRequiredFields = {
+export const applicationPackageRequiredFields = {
   open_to_applicants: true,
   application_package_title: true,
   // TBD: more required fields once this page is completed

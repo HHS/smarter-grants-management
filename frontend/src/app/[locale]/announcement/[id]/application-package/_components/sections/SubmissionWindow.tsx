@@ -6,14 +6,14 @@ import { DatePicker, FormGroup, TextInput } from "@trussworks/react-uswds";
 import { DynamicFieldLabel } from "src/components/core/forms/DynamicFieldLabel";
 
 type SubmissionWindowProps = {
-  openingDate?: string | null;
-  closingDate?: string | null;
+  openingTimestamp?: string | null;
+  closingTimestamp?: string | null;
   gracePeriod?: number | null;
 };
 
 export function SubmissionWindow({
-  openingDate,
-  closingDate,
+  openingTimestamp,
+  closingTimestamp,
   gracePeriod,
 }: SubmissionWindowProps) {
   const t = useTranslations("OpportunityCompetition.sectionSubmissionWindow");
@@ -33,14 +33,14 @@ export function SubmissionWindow({
         <div className="tablet:grid-col-6">
           <FormGroup>
             <DynamicFieldLabel
-              idFor="opening_date"
+              idFor="opening_timestamp"
               title={t("submissionsOpen")}
               description={t("submissionsOpenHint")}
             />
             <DatePicker
-              id="opening_date"
-              name="opening_date"
-              defaultValue={openingDate ?? ""}
+              id="opening_timestamp"
+              name="opening_timestamp"
+              defaultValue={openingTimestamp ?? ""}
               placeholder="mm/dd/yyyy"
               className="width-full"
             />
@@ -49,15 +49,15 @@ export function SubmissionWindow({
         <div className="tablet:grid-col-6">
           <FormGroup>
             <DynamicFieldLabel
-              idFor="closing_date"
+              idFor="closing_timestamp"
               title={t("submissionsClose")}
               description={t("submissionsCloseHint")}
               required={true}
             />
             <DatePicker
-              id="closing_date"
-              name="closing_date"
-              defaultValue={closingDate ?? ""}
+              id="closing_timestamp"
+              name="closing_timestamp"
+              defaultValue={closingTimestamp ?? ""}
               placeholder="mm/dd/yyyy"
               className="width-full"
             />
