@@ -34,7 +34,7 @@ import {
   fillRequiredFieldsAndAssertButtonState,
   getCharacterLimitedFields,
 } from "tests/e2e/utils/common/index";
-import { fillPageFields } from "tests/e2e/utils/pages/general-pages-filling";
+import { fillPageFields } from "tests/e2e/utils/common/general-page-filling";
 
 const { GRANTOR, OPPORTUNITY_MANAGEMENT, CORE_REGRESSION } = VALID_TAGS;
 const { targetEnv } = playwrightEnv;

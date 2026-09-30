@@ -3,7 +3,7 @@ import { type ValidationMetadata } from "tests/e2e/utils/common/types";
 import {
   fillPageFields,
   type PageFillField,
-} from "tests/e2e/utils/pages/general-pages-filling";
+} from "tests/e2e/utils/common/general-page-filling";
 
 type CharacterLimitValidationDefinition<TValueKey extends string> = {
   valueKey: TValueKey;

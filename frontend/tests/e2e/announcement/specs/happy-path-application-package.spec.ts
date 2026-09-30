@@ -41,7 +41,7 @@ import { assertOverviewSectionStatus } from "tests/e2e/utils/announcements/overv
 import { waitForOpportunityRowByStatus } from "tests/e2e/utils/announcements/table-row-utils";
 import { authenticateE2eUser } from "tests/e2e/utils/auth/authenticate-e2e-user-utils";
 import { assertButtonEnabledDisabledStates } from "tests/e2e/utils/common/index";
-import { fillPageFields } from "tests/e2e/utils/pages/general-pages-filling";
+import { fillPageFields } from "tests/e2e/utils/common/general-page-filling";
 
 const { GRANTOR, CORE_REGRESSION } = VALID_TAGS;
 const { targetEnv } = playwrightEnv;
