@@ -253,7 +253,7 @@ module "service" {
   enable_newrelic = module.project_config.enable_newrelic
 
   # API Gateway variables
-  enable_api_gateway         = true
+  enable_api_gateway         = false
   optional_extra_alb_domains = toset(lookup(local.service_config, "secondary_domain_names", []))
   optional_extra_alb_certs   = local.service_config.enable_https == true ? [for cert in data.aws_acm_certificate.secondary_certs : cert.arn] : []
 
