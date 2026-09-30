@@ -13,10 +13,6 @@ import {
 
 import { buildFlexibleFormNameRegex, openForm } from "./form-navigation-utils";
 import { clickSaveButton } from "./save-form-utils";
-
-type FillFieldOptions = {
-  fieldContextLabel?: string;
-};
 /**
  * Fills a subset of fields on the current form page without navigating or saving.
  * Use when the form is already open and only some fields should be filled
