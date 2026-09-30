@@ -1,4 +1,4 @@
-import AnnouncementEditForm from "src/app/[locale]/announcement/[id]/edit/_components/AnnouncementEditForm";
+import AnnouncementEditForm from "src/components/SummaryEditView/AnnouncementEditForm";
 import {
   ApiRequestError,
   MissingAuthError,

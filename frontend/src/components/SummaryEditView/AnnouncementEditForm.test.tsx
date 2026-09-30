@@ -12,7 +12,7 @@ jest.mock("react", () => ({
   useActionState: () => mockUseActionState() as unknown,
 }));
 
-jest.mock("src/app/[locale]/announcement/[id]/edit/actions", () => ({
+jest.mock("src/app/[locale]/announcement/[id]/summary/[summaryId]/actions", () => ({
   announcementEditFormAction: jest.fn(),
 }));
 
