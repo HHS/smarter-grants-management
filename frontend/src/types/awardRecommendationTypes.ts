@@ -128,7 +128,7 @@ export type AwardRecommendationOrganization = {
 
 export type AwardRecommendationApplication = {
   application_id: string;
-  competition_id: string;
+  applicationPackage_id: string;
   organization?: AwardRecommendationOrganization;
 };
 

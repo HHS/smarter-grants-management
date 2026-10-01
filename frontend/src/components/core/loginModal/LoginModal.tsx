@@ -1,16 +1,20 @@
 "use-client";
 
-import { RefObject } from "react";
+import { storeCurrentPage } from "src/utils/userUtils";
+
+import { redirect } from "next/navigation";
+import { RefObject, useActionState } from "react";
 import {
+  Button,
   ButtonGroup,
+  ErrorMessage,
   ModalFooter,
   ModalRef,
   ModalToggleButton,
 } from "@trussworks/react-uswds";
 
-import { LoginLink } from "src/components/core/LoginButton";
 import { SimplerModal } from "src/components/core/SimplerModal";
-import { USWDSIcon } from "src/components/core/USWDSIcon";
+import { apiKeyLoginAction } from "./actions";
 
 export const LoginModal = ({
   modalRef,
@@ -60,30 +64,42 @@ const LoginModalBody = ({
   helpText: string;
   modalRef: RefObject<ModalRef | null>;
 }) => {
+  const [formState, formAction] = useActionState(apiKeyLoginAction, {});
+  if (formState.token) {
+    redirect(`/api/auth/callback?token=${formState.token}`);
+  }
+
   return (
     <>
       <p>{helpText}</p>
       <p className="font-sans-2xs margin-y-4">{descriptionText}</p>
-      <ModalFooter>
-        <ButtonGroup>
-          <LoginLink className="usa-button">
-            {buttonText}
-            <USWDSIcon
-              className="usa-icon margin-right-05 margin-left-neg-05"
-              name="launch"
-              key="login-gov-link-icon"
-            />
-          </LoginLink>
-          <ModalToggleButton
-            modalRef={modalRef}
-            closer
-            unstyled
-            className="padding-105 text-center"
-          >
-            {closeText}
-          </ModalToggleButton>
-        </ButtonGroup>
-      </ModalFooter>
+      <form action={formAction}>
+        {formState.error && <ErrorMessage>Login error</ErrorMessage>}
+        {formState.unauthenticated && (
+          <ErrorMessage>Invalid API key</ErrorMessage>
+        )}
+        <input name="apiKey" />
+        <ModalFooter>
+          <ButtonGroup>
+            <Button
+              type="submit"
+              onClick={() => {
+                storeCurrentPage(location.pathname, location.search);
+              }}
+            >
+              {buttonText}
+            </Button>
+            <ModalToggleButton
+              modalRef={modalRef}
+              closer
+              unstyled
+              className="padding-105 text-center"
+            >
+              {closeText}
+            </ModalToggleButton>
+          </ButtonGroup>
+        </ModalFooter>
+      </form>
     </>
   );
 };

@@ -224,10 +224,8 @@ const transformTableRowData = (
     const summary =
       announcement.non_forecast_summary ?? announcement.forecast_summary;
     const status = getAnnouncementStatus(summary);
-    const announcementTitleUrl =
-      status === "draft" && canUpdate
-        ? `/announcement/${announcement.announcement_id}/edit`
-        : `/announcement/${announcement.announcement_id}`;
+
+    const announcementTitleUrl = `/announcement/${announcement.announcement_id}/overview`;
 
     // Get funding instrument types from summary and format them
     const fundingInstruments = summary?.funding_instruments || [];

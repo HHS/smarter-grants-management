@@ -48,13 +48,19 @@ export default async function Layout({ children, locale }: Props) {
         <a className="usa-skipnav" href="#main-content">
           {t("Layout.skipToMain")}
         </a>
-        <LoginModalProvider>
+        <LoginModalProvider
+          helpText="Enter an API key to login to Simpler Grants Management"
+          titleText="Login With API Key"
+          buttonText="Login"
+          closeText="Cancel"
+        >
           <Header
             locale={locale}
             localDev={
               environment.LOCAL_DEV === "true" && testUsers.length < 500
             }
             testUsers={testUsers}
+            useApiKeyLogin={environment.LOCAL_DEV !== "true"}
           />
           <MaintenanceBanner message={environment.MAINTENANCE_BANNER_MESSAGE} />
           <RouteFocusManager>

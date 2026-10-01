@@ -1,11 +1,11 @@
 "use server";
 
 import { ApiRequestError, parseErrorStatus } from "src/errors";
-import { updateCompetitionForms } from "src/services/fetch/fetchers/competitionFormsFetcher";
 import {
-  createCompetitionForGrantor,
-  saveCompetitionInstructions,
-  updateCompetitionForGrantor,
+  createApplicationPackage,
+  saveApplicationPackageInstructions,
+  updateApplicationPackage,
+  updateApplicationPackageForms,
 } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 import { FrontendErrorDetails } from "src/types/apiResponseTypes";
 import {
@@ -13,15 +13,16 @@ import {
   ApplicationPackageFormsSubmitApi,
   ApplicationPackageSaveRequest,
 } from "src/types/applicationPackageResponseTypes";
+import { dateToTimestampOrNull } from "src/utils/dateUtil";
 
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
-export type CompetitionActionState = {
+export type ApplicationPackageActionState = {
   errorMessage?: string;
   successMessage?: string;
   validationErrors?: string[];
-  newCompetitionId?: string;
+  newApplicationPackageId?: string;
 };
 
 // Make sure to return null in cases of empty string
@@ -63,14 +64,23 @@ function buildRequestBody(formData: FormData) {
 
   // Build the request body which should match the ApplicationPackageSaveRequest
   const requestBody: ApplicationPackageSaveRequest = {
-    competition_title: getFieldValue(formData, "competition_title"),
-    opening_date: getFieldValue(formData, "opening_date"),
-    closing_date: getFieldValue(formData, "closing_date"),
+    application_package_title: getFieldValue(
+      formData,
+      "application_package_title",
+    ),
+    opening_timestamp: dateToTimestampOrNull(
+      getFieldValue(formData, "opening_timestamp"),
+    ),
+    closing_timestamp: dateToTimestampOrNull(
+      getFieldValue(formData, "closing_timestamp"),
+    ),
     grace_period: (() => {
       const gracePeriod = getFieldValue(formData, "grace_period");
       return gracePeriod === null ? null : Number(gracePeriod);
     })(),
-    public_competition_id: getFieldValue(formData, "public_competition_id"),
+    // Backend requires this key be omitted rather than sent as null when empty
+    public_application_package_id:
+      getFieldValue(formData, "public_application_package_id") ?? undefined,
     contact_info: contactInfo,
     open_to_applicants: openToApplicants,
   };
@@ -94,13 +104,14 @@ function formatValidationErrors(error: unknown) {
   return formatedErrors;
 }
 
-export async function updateCompetition(
+export async function saveApplicationPackage(
   formData: FormData,
   requiredForms: ApplicationPackageFormsSubmitApi,
-): Promise<CompetitionActionState> {
+): Promise<ApplicationPackageActionState> {
   const t = await getTranslations("OpportunityCompetition.alerts");
   const announcementId = formData.get("announcementId") as string | null;
-  let competitionId = formData.get("competitionId") as string | null;
+  let applicationPackageId = formData.get("applicationPackageId") as
+    string | null;
   let apiResponse;
 
   // This should never be the case here,
@@ -110,16 +121,13 @@ export async function updateCompetition(
   const requestBody = buildRequestBody(formData);
 
   try {
-    if (!competitionId) {
-      apiResponse = await createCompetitionForGrantor(
-        announcementId,
-        requestBody,
-      );
-      competitionId = apiResponse.data.competition_id;
+    if (!applicationPackageId) {
+      apiResponse = await createApplicationPackage(announcementId, requestBody);
+      applicationPackageId = apiResponse.data.application_package_id;
     } else {
-      apiResponse = await updateCompetitionForGrantor(
+      apiResponse = await updateApplicationPackage(
         announcementId,
-        competitionId,
+        applicationPackageId,
         requestBody,
       );
     }
@@ -128,16 +136,17 @@ export async function updateCompetition(
     // then save the application instructions file (attachment)
     const pendingFileId = formData.get("pending-file-id") as string | null;
     if (pendingFileId) {
-      await saveCompetitionInstructions(
+      await saveApplicationPackageInstructions(
         announcementId,
-        competitionId,
+        applicationPackageId,
         pendingFileId,
       );
     }
 
     if (requiredForms) {
-      await updateCompetitionForms({
-        competitionId,
+      await updateApplicationPackageForms({
+        announcementId,
+        applicationPackageId,
         body: { forms: requiredForms },
       });
     }
@@ -166,13 +175,13 @@ export async function updateCompetition(
   }
 }
 
-export async function competitionFormAction(
+export async function applicationPackageFormAction(
   submitType: string,
   requiredForms: ApplicationPackageFormsSubmitApi,
   formData: FormData,
-): Promise<CompetitionActionState> {
+): Promise<ApplicationPackageActionState> {
   // 1. Save the form; if there are API errors, display them
-  const saveResult = await updateCompetition(formData, requiredForms);
+  const saveResult = await saveApplicationPackage(formData, requiredForms);
   if (saveResult.errorMessage) {
     return saveResult;
   }

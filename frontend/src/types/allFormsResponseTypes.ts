@@ -1,16 +1,10 @@
 import { APIResponse } from "src/types/apiResponseTypes";
 
-export type VersionInformation = {
-  legacy_form_version: string;
-  major_version: number;
-  minor_version: number;
-};
-
 export interface FormType {
-  form_id: string;
+  form_id: number;
   name: string;
   short_name: string;
-  current_version: VersionInformation;
+  version: string;
 }
 
 export interface AllFormsApiResponse extends APIResponse {

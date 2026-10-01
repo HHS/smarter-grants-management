@@ -1,8 +1,7 @@
 export interface CreateAnnouncementRecord {
-  opportunity_id?: string;
-  agency_id: string;
-  opportunity_number: string;
-  opportunity_title: string;
+  announcement_id?: string;
+  announcement_number: string;
+  announcement_title: string;
   tagline: string;
   purpose_statement: string;
   category: string;
@@ -11,7 +10,6 @@ export interface CreateAnnouncementRecord {
 }
 
 export type FieldValidationErrors = {
-  agencyId?: string[];
   opportunityNumber?: string[];
   opportunityTitle?: string[];
   tagline?: string[];

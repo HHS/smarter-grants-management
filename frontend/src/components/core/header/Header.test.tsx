@@ -4,9 +4,9 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { applicationTestUserId } from "src/constants/auth";
 import { fakeTestUser } from "src/utils/testing/fixtures";
-import * as userUtils from "src/utils/userUtils";
 
 import { ReadonlyURLSearchParams } from "next/navigation";
+import { PropsWithChildren } from "react";
 
 import Header from "src/components/core/header/Header";
 
@@ -31,6 +31,11 @@ jest.mock("src/hooks/useSearchParamUpdater", () => ({
   useSearchParamUpdater: () => ({
     searchParams: new ReadonlyURLSearchParams(),
   }),
+}));
+
+jest.mock("src/services/auth/LoginModalProvider", () => ({
+  LoginModalProvider: ({ children }: PropsWithChildren) => children,
+  useLoginModal: () => ({}),
 }));
 
 jest.mock("next/navigation", () => ({
@@ -194,23 +199,7 @@ describe("Header", () => {
       document.querySelector(".usa-overlay.is-visible"),
     ).not.toBeInTheDocument();
   });
-  it("calls storeCurrentPage when sign-in is clicked in mobile menu", async () => {
-    (userUtils.storeCurrentPage as jest.Mock).mockClear();
-    mockUseUser.mockReturnValue({
-      user: { token: undefined },
-      hasBeenLoggedOut: false,
-      resetHasBeenLoggedOut: jest.fn(),
-    });
-    const user = userEvent.setup();
-    render(<Header {...props} />);
-    const menuButton = screen.getByTestId("navMenuButton");
-    await user.click(menuButton);
-    const nav = screen.getByRole("navigation");
-    const signInLink = within(nav).getByRole("link", { name: "login" });
-    await user.click(signInLink);
 
-    expect(userUtils.storeCurrentPage).toHaveBeenCalled();
-  });
   it("renders with locale for language selection", () => {
     render(<Header locale="es/" />);
     expect(
@@ -230,11 +219,10 @@ describe("Header", () => {
       render(<Header {...props} />);
 
       const nav = screen.getByRole("navigation");
-      const navSignInLink = within(nav).getByRole("link", { name: "login" });
-      expect(navSignInLink).toHaveAttribute(
-        "href",
-        expect.stringContaining("login"),
-      );
+      const navSignInLink = within(nav).getByRole("button", {
+        name: "open login modal",
+      });
+      expect(navSignInLink).toBeInTheDocument();
     });
 
     it("places Sign in inside the nav when unauthenticated so screen reader announces it as a nav item", () => {
@@ -248,7 +236,7 @@ describe("Header", () => {
       render(<Header {...props} />);
 
       const nav = screen.getByRole("navigation");
-      const navLinks = within(nav).getAllByRole("link");
+      const navLinks = within(nav).getAllByRole("button");
       const signInLink = navLinks.find((el) =>
         el.textContent?.toLowerCase().includes("login"),
       );

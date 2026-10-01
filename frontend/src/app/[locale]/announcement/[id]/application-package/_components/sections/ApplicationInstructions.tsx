@@ -14,13 +14,13 @@ import { DynamicFieldLabel } from "src/components/core/forms/DynamicFieldLabel";
 
 type ApplicationInstructionsProps = {
   announcementId: string;
-  competitionId: string;
+  applicationPackageId: string;
   existingFiles?: UploadFileMetadata[];
 };
 
 export function ApplicationInstructions({
   announcementId,
-  competitionId,
+  applicationPackageId,
   existingFiles = [],
 }: ApplicationInstructionsProps) {
   const t = useTranslations(
@@ -53,7 +53,7 @@ export function ApplicationInstructions({
   const handleDeleteFile = async (fileId: string): Promise<undefined> => {
     if (files.length > 0 && fileId) {
       await clientFetch(
-        `/api/announcements/${announcementId}/application-packages/${competitionId}/instructions/${fileId}`,
+        `/api/announcements/${announcementId}/application-packages/${applicationPackageId}/instructions/${fileId}`,
         { method: "DELETE" },
       );
       setFiles((currentFiles) =>
@@ -80,19 +80,19 @@ export function ApplicationInstructions({
         {t("subHeader")}
       </p>
       <DynamicFieldLabel
-        idFor="competition-instruction-file"
+        idFor="applicationPackage-instruction-file"
         title={t("uploadAFile")}
         description={t("multipleFiles")}
       />
       <SimplerFileInput
-        id="competition-instruction-file"
+        id="applicationPackage-instruction-file"
         postUploadAction={handlePostFileUpload}
         postUploadActionProgressMessage={t("uploadWidget.uploading")}
         postUploadActionSuccessMessage={t("uploadWidget.success")}
         postUploadActionErrorMessage={t("uploadWidget.error")}
         deleteActionConfirmationMessage={t("uploadWidget.deleteConfirmation")}
         onDelete={handleDeleteFile}
-        describedByIds={["label-for-competition-instruction-file"]}
+        describedByIds={["label-for-applicationPackage-instruction-file"]}
         existingFiles={files}
       />
     </div>

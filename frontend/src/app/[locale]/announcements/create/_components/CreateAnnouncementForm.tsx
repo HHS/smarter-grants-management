@@ -22,17 +22,10 @@ const categoryList = {
 };
 
 // ----- Main Form -----
-export function CreateAnnouncementForm({
-  defaultAgencyId,
-  userAgencies,
-}: {
-  defaultAgencyId: string;
-  userAgencies: { [key: string]: string };
-}) {
+export function CreateAnnouncementForm() {
   const t = useTranslations("CreateOpportunity");
 
   // Define states for required fields and flags to show/hide or enable/disable components
-  const [selectedAgencyId, setAgencyId] = useState<string>(defaultAgencyId);
   const [opportunityNumber, setOppNbr] = useState<string>("");
   const [opportunityTitle, setOppTitle] = useState<string>("");
   const [tagline, setTagline] = useState<string>("");
@@ -55,9 +48,9 @@ export function CreateAnnouncementForm({
   const router = useRouter();
   useEffect(() => {
     // If success, redirect to the edit page (Part 2 of create)
-    if (response?.success && response.data?.opportunity_id) {
+    if (response?.success && response.data?.announcement_id) {
       router.push(
-        `/announcement/${response.data.opportunity_id}/overview?fromCreate=true`,
+        `/announcement/${response.data.announcement_id}/overview?fromCreate=true`,
       );
     } else if (response?.errorMessage) {
       // Scroll to top to show the error message
@@ -86,7 +79,6 @@ export function CreateAnnouncementForm({
         tagline.trim() !== "" &&
         purposeStatement.trim() !== "" &&
         assistanceListingNumber.trim() !== "" &&
-        selectedAgencyId.trim() !== "" &&
         ((selectedCategoryId.trim() !== "" &&
           selectedCategoryId.trim() !== "other") ||
           (selectedCategoryId.trim() === "other" &&
@@ -98,7 +90,6 @@ export function CreateAnnouncementForm({
       opportunityTitle,
       tagline,
       purposeStatement,
-      selectedAgencyId,
       selectedCategoryId,
       categoryExplanation,
       assistanceListingNumber,
@@ -119,9 +110,6 @@ export function CreateAnnouncementForm({
     e: React.ChangeEvent<HTMLTextAreaElement>,
   ) => {
     setPurposeStatement(e.target.value);
-  };
-  const onAgencySelection = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setAgencyId(e.target.value);
   };
   const onCategorySelection = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setCategory(e.target.value);
@@ -161,7 +149,7 @@ export function CreateAnnouncementForm({
                 fieldMaxLength={40}
                 isRequired={true}
                 onTextChange={onOppNbrChange}
-                defaultValue={response?.data?.opportunity_number || ""}
+                defaultValue={response?.data?.announcement_number || ""}
               />
             </div>
 
@@ -190,7 +178,7 @@ export function CreateAnnouncementForm({
             fieldMaxLength={255}
             isRequired={true}
             onTextChange={onOppTitleChange}
-            defaultValue={response?.data?.opportunity_title || ""}
+            defaultValue={response?.data?.announcement_title || ""}
           />
 
           {/* Tagline */}
@@ -213,17 +201,6 @@ export function CreateAnnouncementForm({
             isRequired={true}
             onTextChange={onPurposeStatementChange}
             defaultValue={response?.data?.purpose_statement || ""}
-          />
-
-          {/* Agency */}
-          <CommonSelectInput
-            labelText={t("CreateAnnouncementForm.agency")}
-            description={""}
-            fieldId="agencyId"
-            isRequired={true}
-            listKeyValuePairs={userAgencies}
-            defaultSelection={response?.data?.agency_id || selectedAgencyId}
-            onSelectionChange={onAgencySelection}
           />
 
           {/* Category */}
