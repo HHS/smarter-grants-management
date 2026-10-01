@@ -49,7 +49,7 @@ export default async function Layout({ children, locale }: Props) {
           {t("Layout.skipToMain")}
         </a>
         <LoginModalProvider
-          helpText="Enter an API key to login to Simpler Grants Management"
+          helpText="Enter an API key to login to Smarter Grants Management"
           titleText="Login With API Key"
           buttonText="Login"
           closeText="Cancel"
