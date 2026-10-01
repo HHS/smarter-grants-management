@@ -56,6 +56,7 @@ jest.mock(
 );
 
 const mockGetAnnouncement = jest.fn();
+const mockGetApplicationPackage = jest.fn();
 const mockCreateApplicationPackage = jest.fn();
 const mockAllForms = jest.fn();
 const mockApplicationPackageForms = jest.fn();
@@ -63,6 +64,8 @@ const mockApplicationPackageForms = jest.fn();
 jest.mock("src/services/fetch/fetchers/grantorAnnouncementFetcher", () => ({
   getAnnouncement: (...args: unknown[]) =>
     mockGetAnnouncement(...args) as unknown,
+  getApplicationPackage: (...args: unknown[]) =>
+    mockGetApplicationPackage(...args) as unknown,
 }));
 
 jest.mock("src/services/fetch/fetchers/allFormsFetcher", () => ({
@@ -136,14 +139,24 @@ describe("AnnouncementApplicationPackagePage", () => {
           ],
         },
       });
+      mockGetApplicationPackage.mockResolvedValue({
+        data: {
+          application_package_id: "existing-application-package-id",
+          application_package_instructions: [],
+        },
+      });
     });
 
-    it("passes the existing application_package_id to ApplicationPackageForm", async () => {
+    it("fetches the full application package and passes it to ApplicationPackageForm", async () => {
       const component = await AnnouncementApplicationPackagePage({
         params: pageParams,
       });
       render(component);
 
+      expect(mockGetApplicationPackage).toHaveBeenCalledWith(
+        "opp-abc-123",
+        "existing-application-package-id",
+      );
       expect(screen.getByTestId("application-package-form")).toHaveAttribute(
         "data-application-package-id",
         "existing-application-package-id",
