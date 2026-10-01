@@ -21,7 +21,10 @@ const isTemporaryModalHost = (hostname: string): boolean =>
 const effectiveTemporaryModalBaseUrl = (() => {
   try {
     const parsedUrl = new URL(baseUrl);
-    if (isTemporaryModalHost(parsedUrl.hostname) && parsedUrl.protocol === "https:") {
+    if (
+      isTemporaryModalHost(parsedUrl.hostname) &&
+      parsedUrl.protocol === "https:"
+    ) {
       parsedUrl.protocol = "http:";
       return parsedUrl.toString();
     }
