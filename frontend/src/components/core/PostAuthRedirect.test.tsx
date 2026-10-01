@@ -33,7 +33,7 @@ describe("PostAuthRedirect", () => {
   });
 
   it("should redirect to home if redirect URL is empty", () => {
-    render(<PostAuthRedirect errorMessage="oops" redirectURL="" />);
+    render(<PostAuthRedirect errorMessage="oops" redirectUrl="" />);
 
     expect(mockRemoveItem).toHaveBeenCalledWith("post-auth-redirect");
     expect(mockPush).toHaveBeenCalledWith("/");
@@ -44,7 +44,7 @@ describe("PostAuthRedirect", () => {
     render(
       <PostAuthRedirect
         errorMessage="oops"
-        redirectURL="https://malicious-site.com"
+        redirectUrl="https://malicious-site.com"
       />,
     );
 
@@ -55,7 +55,7 @@ describe("PostAuthRedirect", () => {
 
   it("should display 'Redirecting...' text", () => {
     const { container } = render(
-      <PostAuthRedirect errorMessage="oops" redirectURL="/some-path" />,
+      <PostAuthRedirect errorMessage="oops" redirectUrl="/some-path" />,
     );
 
     expect(container).toHaveTextContent("Redirecting...");
@@ -66,7 +66,7 @@ describe("PostAuthRedirect", () => {
       <PostAuthRedirect
         errorMessage="oops"
         displayMessage="custom..."
-        redirectURL="/some-path"
+        redirectUrl="/some-path"
       />,
     );
 
@@ -82,7 +82,7 @@ describe("PostAuthRedirect", () => {
         errorMessage="oops"
         displayMessage="custom..."
         checkPiv={true}
-        redirectURL="/some-path"
+        redirectUrl="/some-path"
       />,
     );
 
