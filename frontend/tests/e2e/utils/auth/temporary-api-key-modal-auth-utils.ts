@@ -35,6 +35,26 @@ const effectiveTemporaryModalBaseUrl = (() => {
   return baseUrl;
 })();
 
+export const getMissingTemporaryApiKeyErrorMessage = ({
+  targetEnv,
+  baseUrl: currentBaseUrl,
+}: {
+  targetEnv: string;
+  baseUrl: string;
+}): string => {
+  return [
+    "Missing required E2E API key for the deployed temporary API-key modal flow.",
+    `Target environment: ${targetEnv || "unknown"}.`,
+    `Base URL: ${currentBaseUrl || "unknown"}.`,
+    "Expected one of the following secrets/vars to be populated before the run starts:",
+    "- STAGING_TEST_USER_API_KEY (GitHub Actions secret) -> mapped to TEST_USER_API_KEY in the workflow",
+    "- E2E_API_KEY (local/CI env override) -> used before TEST_USER_API_KEY as a fallback",
+    "- TEST_USER_API_KEY (workflow env) -> direct API key used by the E2E auth helper",
+    "This temporary fallback is enabled only for frontend-dev-* or frontend-staging-* URLs.",
+    "The job cannot authenticate without a valid key, so the E2E suite exits before the scenario assertions run.",
+  ].join("\n");
+};
+
 export const isTemporaryApiKeyModalFlow = (): boolean => {
   try {
     const { hostname } = new URL(baseUrl);
@@ -163,12 +183,10 @@ export const authenticateWithTemporaryApiKeyModal = async (
 
   if (!apiKeyForTemporaryModal) {
     throw new Error(
-      [
-        "Unable to run temporary API-key modal login: neither E2E_API_KEY nor TEST_USER_API_KEY is set.",
-        `Target environment: ${playwrightEnv.targetEnv || "unknown"}.`,
-        `Base URL: ${effectiveTemporaryModalBaseUrl}.`,
-        "This temporary fallback is enabled only for frontend-dev-* or frontend-staging-* URLs.",
-      ].join("\n"),
+      getMissingTemporaryApiKeyErrorMessage({
+        targetEnv: playwrightEnv.targetEnv,
+        baseUrl: effectiveTemporaryModalBaseUrl,
+      }),
     );
   }
 

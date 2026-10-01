@@ -57,6 +57,16 @@ if (SUPPORTED_ENVS.indexOf(targetEnv as SupportedEnvs) === -1) {
   );
 }
 
+if ((targetEnv === "dev" || targetEnv === "staging") && !process.env.E2E_API_KEY && !process.env.TEST_USER_API_KEY) {
+  throw new Error(
+    [
+      `Missing required E2E API key for ${targetEnv} target.`,
+      "Set TEST_USER_API_KEY (workflow env) or E2E_API_KEY (local override) before running deployed E2E tests.",
+      "For GitHub Actions, the secret is STAGING_TEST_USER_API_KEY and it must be passed through as test_user_api_key.",
+    ].join("\n"),
+  );
+}
+
 // Environment for web server
 const webServerEnv: Record<string, string> = Object.fromEntries(
   Object.entries({
