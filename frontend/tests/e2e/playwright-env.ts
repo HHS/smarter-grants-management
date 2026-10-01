@@ -57,7 +57,11 @@ if (SUPPORTED_ENVS.indexOf(targetEnv as SupportedEnvs) === -1) {
   );
 }
 
-if ((targetEnv === "dev" || targetEnv === "staging") && !process.env.E2E_API_KEY && !process.env.TEST_USER_API_KEY) {
+if (
+  (targetEnv === "dev" || targetEnv === "staging") &&
+  !process.env.E2E_API_KEY &&
+  !process.env.TEST_USER_API_KEY
+) {
   throw new Error(
     [
       `Missing required E2E API key for ${targetEnv} target.`,
