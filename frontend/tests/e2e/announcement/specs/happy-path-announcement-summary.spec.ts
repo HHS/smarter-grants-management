@@ -42,8 +42,8 @@ import { createOpportunity } from "tests/e2e/utils/announcement/create-announcem
 import { assertOverviewSectionStatus } from "tests/e2e/utils/announcements/overview-status-utils";
 import { waitForOpportunityRowByStatus } from "tests/e2e/utils/announcements/table-row-utils";
 import { authenticateE2eUser } from "tests/e2e/utils/auth/authenticate-e2e-user-utils";
+import { fillPageFields } from "tests/e2e/utils/common/general-page-filling";
 import { assertButtonEnabledDisabledStates } from "tests/e2e/utils/common/index";
-import { fillPageFields } from "tests/e2e/utils/pages/general-pages-filling";
 
 const { GRANTOR, OPPORTUNITY_MANAGEMENT, CORE_REGRESSION } = VALID_TAGS;
 const { targetEnv } = playwrightEnv;

@@ -1,9 +1,9 @@
 import { expect, type Page } from "@playwright/test";
-import { type ValidationMetadata } from "tests/e2e/utils/common/types";
 import {
   fillPageFields,
   type PageFillField,
-} from "tests/e2e/utils/pages/general-pages-filling";
+} from "tests/e2e/utils/common/general-page-filling";
+import { type ValidationMetadata } from "tests/e2e/utils/common/types";
 
 type CharacterLimitValidationDefinition<TValueKey extends string> = {
   valueKey: TValueKey;

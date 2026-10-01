@@ -2,7 +2,7 @@ import { type Page } from "@playwright/test";
 import {
   fillPageFields,
   type PageFillField,
-} from "tests/e2e/utils/pages/general-pages-filling";
+} from "tests/e2e/utils/common/general-page-filling";
 
 /**
  * Shared utilities for clearing metadata-driven page fields.
