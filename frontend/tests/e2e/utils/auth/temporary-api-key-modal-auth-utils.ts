@@ -14,14 +14,28 @@ const TEMPORARY_MODAL_HOST_PREFIXES = ["frontend-dev-", "frontend-staging-"];
 const TEMPORARY_MODAL_HOST_SUFFIX = ".us-east-1.elb.amazonaws.com";
 const TEMPORARY_MODAL_LOGIN_TIMEOUT_MS = 60_000;
 
+const isTemporaryModalHost = (hostname: string): boolean =>
+  TEMPORARY_MODAL_HOST_PREFIXES.some((prefix) => hostname.startsWith(prefix)) &&
+  hostname.endsWith(TEMPORARY_MODAL_HOST_SUFFIX);
+
+const effectiveTemporaryModalBaseUrl = (() => {
+  try {
+    const parsedUrl = new URL(baseUrl);
+    if (isTemporaryModalHost(parsedUrl.hostname) && parsedUrl.protocol === "https:") {
+      parsedUrl.protocol = "http:";
+      return parsedUrl.toString();
+    }
+  } catch {
+    return baseUrl;
+  }
+
+  return baseUrl;
+})();
+
 export const isTemporaryApiKeyModalFlow = (): boolean => {
   try {
     const { hostname } = new URL(baseUrl);
-    return (
-      TEMPORARY_MODAL_HOST_PREFIXES.some((prefix) =>
-        hostname.startsWith(prefix),
-      ) && hostname.endsWith(TEMPORARY_MODAL_HOST_SUFFIX)
-    );
+    return isTemporaryModalHost(hostname);
   } catch {
     return false;
   }
@@ -66,7 +80,7 @@ const waitForTemporaryApiKeyModalReady = async (page: Page) => {
     [
       "Temporary API-key modal login failed: API-key modal did not open after clicking Sign in.",
       `Target environment: ${playwrightEnv.targetEnv || "unknown"}.`,
-      `Base URL: ${baseUrl}.`,
+      `Base URL: ${effectiveTemporaryModalBaseUrl}.`,
     ].join("\n"),
   );
 };
@@ -109,7 +123,7 @@ const waitForTemporaryApiKeyModalLoginState = async (page: Page) => {
         [
           "Temporary API-key modal login failed: UI returned 'Invalid API key'.",
           `Target environment: ${playwrightEnv.targetEnv || "unknown"}.`,
-          `Base URL: ${baseUrl}.`,
+          `Base URL: ${effectiveTemporaryModalBaseUrl}.`,
           "Set E2E_API_KEY (or TEST_USER_API_KEY fallback) to a valid key for this host.",
         ].join("\n"),
       );
@@ -133,7 +147,7 @@ const waitForTemporaryApiKeyModalLoginState = async (page: Page) => {
       "Temporary API-key modal login timed out waiting for authenticated state.",
       "No account marker became visible and Sign in trigger/modal state did not resolve to authenticated.",
       `Target environment: ${playwrightEnv.targetEnv || "unknown"}.`,
-      `Base URL: ${baseUrl}.`,
+      `Base URL: ${effectiveTemporaryModalBaseUrl}.`,
     ].join("\n"),
   );
 };
@@ -149,7 +163,7 @@ export const authenticateWithTemporaryApiKeyModal = async (
       [
         "Unable to run temporary API-key modal login: neither E2E_API_KEY nor TEST_USER_API_KEY is set.",
         `Target environment: ${playwrightEnv.targetEnv || "unknown"}.`,
-        `Base URL: ${baseUrl}.`,
+        `Base URL: ${effectiveTemporaryModalBaseUrl}.`,
         "This temporary fallback is enabled only for frontend-dev-* or frontend-staging-* URLs.",
       ].join("\n"),
     );
@@ -157,7 +171,9 @@ export const authenticateWithTemporaryApiKeyModal = async (
 
   // Temporary fallback. Remove after dev/staging auth is unified.
 
-  await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
+  await page.goto(effectiveTemporaryModalBaseUrl, {
+    waitUntil: "domcontentloaded",
+  });
 
   if (isMobile) {
     await openMobileNav(page);
