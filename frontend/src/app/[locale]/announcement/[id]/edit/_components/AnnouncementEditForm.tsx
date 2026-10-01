@@ -13,6 +13,7 @@ import {
 } from "src/constants/announcement";
 import { AnnouncementAttachment } from "src/types/announcement/announcementAttachmentTypes";
 import { AnnouncementEditFormValues } from "src/utils/announcementEditFormConfig";
+import { getConfiguredDayJs } from "src/utils/dateUtil";
 import { getNumericAmountFromString } from "src/utils/formatCurrencyUtil";
 
 import { useTranslations } from "next-intl";
@@ -204,6 +205,27 @@ export default function AnnouncementEditForm({
         "expected_number_of_awards",
         t("validationErrors.expectedNumberOfAwardsInput"),
       );
+    }
+  };
+
+  const validatePublishDate = (value: string | undefined) => {
+    if (!value) {
+      // required-ness is handled separately by the "Enter a publish date." check
+      setSingleFrontendError("post_timestamp", null);
+      return;
+    }
+
+    const dayjs = getConfiguredDayJs();
+    const publish = dayjs(value, "MM/DD/YYYY", true);
+    const today = dayjs().startOf("day");
+
+    if (publish.isValid() && publish.isBefore(today)) {
+      setSingleFrontendError(
+        "post_timestamp",
+        t("validationErrors.publishDatePast"),
+      );
+    } else {
+      setSingleFrontendError("post_timestamp", null);
     }
   };
 
@@ -553,6 +575,7 @@ export default function AnnouncementEditForm({
                   name="post_timestamp"
                   defaultValue={initialValues.post_timestamp}
                   placeholder="mm/dd/yyyy"
+                  onChange={(value) => validatePublishDate(value)}
                   className="width-full"
                 />
               </FormGroup>
