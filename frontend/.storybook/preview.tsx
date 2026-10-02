@@ -9,6 +9,7 @@ import "src/styles/styles.scss";
 import { defaultLocale, locales } from "src/i18n/config";
 import { messages } from "src/i18n/messages/en";
 
+import withMockedClientFetch from "./decorators/withMockedClientFetch";
 import I18nStoryWrapper from "./I18nStoryWrapper";
 
 const parameters = {
@@ -51,7 +52,7 @@ const i18nMessagesLoader: Loader = () => {
 
 const preview: Preview = {
   loaders: [i18nMessagesLoader],
-  decorators: [I18nStoryWrapper],
+  decorators: [I18nStoryWrapper, withMockedClientFetch],
   parameters,
 
   globalTypes: {
