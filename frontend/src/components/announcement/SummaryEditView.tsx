@@ -75,6 +75,7 @@ const validateProperState = ({
       console.error("Synopsis already exists");
       return true;
     }
+    return false;
   }
   if (isForecast && !announcementData.forecast_summary) {
     console.error(
@@ -104,34 +105,61 @@ const validateProperState = ({
   return false;
 };
 
+const determineForecastMode = (
+  announcemenData: GrantorAnnouncementDetail,
+  announcementSummaryId?: string,
+): boolean => {
+  if (!announcementSummaryId) {
+    throw new Error(
+      "Summary ID must be supplied when editing an existing summary",
+    );
+  }
+  const forecastMatch =
+    announcemenData.forecast_summary?.announcement_summary_id ===
+    announcementSummaryId;
+  if (forecastMatch) {
+    return true;
+  }
+  const nonForecastMatch =
+    announcemenData.non_forecast_summary?.announcement_summary_id ===
+    announcementSummaryId;
+  if (nonForecastMatch) {
+    return false;
+  }
+  throw new Error(
+    `No summaries that match summary id ${announcementSummaryId}`,
+  );
+};
+
 const getActiveSummary = (
   createMode: boolean,
-  isForecast: boolean,
-  announcemenData: GrantorAnnouncementDetail,
-): AnnouncementSummaryDetail | object => {
+  forecastMode: boolean,
+  announcementData: GrantorAnnouncementDetail,
+) => {
   if (createMode) {
     return {};
   }
-  if (isForecast) {
-    if (!announcemenData.forecast_summary) {
-      console.error("No active forecast summary");
-      return {};
-    }
-    return announcemenData.forecast_summary;
-  }
-  if (!announcemenData.non_forecast_summary) {
-    console.error("No active synopsis summary");
-    return {};
-  }
-  return announcemenData.non_forecast_summary;
+  return forecastMode
+    ? announcementData.forecast_summary
+    : announcementData.non_forecast_summary;
 };
 
 export default async function SummaryEditView({
   announcementId,
   summaryId,
-  isForecast = false,
+  isForecast,
   createMode = false,
 }: SummaryEditViewProps) {
+  if (createMode && isForecast === undefined) {
+    console.error(
+      "Announcement summary type not specified when creating new summary",
+    );
+    return (
+      <GridContainer>
+        <GeneralErrorAlert />
+      </GridContainer>
+    );
+  }
   let announcementData: GrantorAnnouncementDetail;
   try {
     const response = await getAnnouncement(announcementId);
@@ -148,6 +176,26 @@ export default async function SummaryEditView({
     if (status === 403) {
       return <UnauthorizedMessage />;
     }
+    return (
+      <GridContainer>
+        <GeneralErrorAlert />
+      </GridContainer>
+    );
+  }
+
+  /*
+    determine whether we're dealing with a forecast
+    - in create mode, the parent will pass this through
+    - otherwise we need to check which summary the summary id passed in corresponds to
+  */
+  let forecastMode: boolean;
+  try {
+    forecastMode =
+      createMode && isForecast !== undefined
+        ? isForecast
+        : determineForecastMode(announcementData, summaryId);
+  } catch (e) {
+    console.error(e);
     return (
       <GridContainer>
         <GeneralErrorAlert />
@@ -173,7 +221,7 @@ export default async function SummaryEditView({
 
   const activeSummary = getActiveSummary(
     createMode,
-    isForecast,
+    forecastMode,
     announcementData,
   );
 
@@ -189,7 +237,7 @@ export default async function SummaryEditView({
   return (
     <div className="bg-white">
       <AnnouncementDetailsHeader
-        opportunityData={announcementData}
+        announcementData={announcementData}
         locale={"en"}
         hasBackToOverview={true}
       >
