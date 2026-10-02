@@ -8,7 +8,7 @@ export default function LogoutPage() {
   const redirectUrl = SessionStorage.getItem("post-auth-redirect");
   return (
     <PostAuthRedirect
-      errorMessage="Unable to redirect properly on login"
+      errorMessage="Unable to redirect properly on logout"
       checkPiv={true}
       redirectUrl={redirectUrl}
     />
