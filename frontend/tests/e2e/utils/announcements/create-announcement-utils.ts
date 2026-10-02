@@ -1,5 +1,5 @@
 /**
- * Test utility for creating an opportunity from the opportunities list.
+ * Test utility for creating an announcement from the announcements list.
  */
 import { expect, type Page } from "@playwright/test";
 import {
@@ -13,12 +13,12 @@ export async function createOpportunity(
   page: Page,
   fillData: Record<OpportunityFieldValueKey, string>,
 ): Promise<void> {
-  // Given I navigate to the opportunities list.
+  // Given I navigate to the announcements list.
   await page.goto("/announcements");
   await expect(page).toHaveURL(/\/announcements/);
 
-  // When I start creating a new opportunity.
-  await page.getByRole("link", { name: "Create Opportunity" }).click();
+  // When I start creating a new announcement.
+  await page.getByRole("link", { name: "Create Announcement" }).click();
   await expect(page).toHaveURL(/\/announcements\/create/);
 
   // And I fill the required fields using the metadata in CREATE_OPPORTUNITY_FIELD_DEFINITIONS, which testers update when they need to change what gets filled.

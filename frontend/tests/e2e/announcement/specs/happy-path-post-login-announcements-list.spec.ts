@@ -39,7 +39,7 @@ test.describe("Grantor announcements list post-login happy path", () => {
       { page, context }: { page: Page; context: BrowserContext },
       testInfo: TestInfo,
     ) => {
-      test.setTimeout(300_000);
+      test.setTimeout(150_000);
 
       // Given I am logged in as a grantor user.
       await authenticateE2eUser(

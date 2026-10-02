@@ -21,7 +21,7 @@ import {
 import { buildOpportunityHappyPathFillData } from "tests/e2e/announcement/fixtures/announcement-pages-fill-data";
 import playwrightEnv from "tests/e2e/playwright-env";
 import { VALID_TAGS } from "tests/e2e/tags";
-import { createOpportunity } from "tests/e2e/utils/announcement/create-announcement-utils";
+import { createOpportunity } from "tests/e2e/utils/announcements/create-announcement-utils";
 import { authenticateE2eUser } from "tests/e2e/utils/auth/authenticate-e2e-user-utils";
 import { assertButtonEnabledDisabledStates } from "tests/e2e/utils/common/index";
 
@@ -45,12 +45,15 @@ test.describe("Grantor opportunity overview failure path - initial state gating"
       { page, context }: { page: Page; context: BrowserContext },
       testInfo: TestInfo,
     ) => {
-      test.setTimeout(300_000);
+      test.setTimeout(150_000);
 
       await authenticateE2eUser(
         page,
         context,
         !!testInfo.project.name.match(/[Mm]obile/),
+        "primaryOrgAdmin",
+        // Temporary use of testUserApiKey for authentication
+        playwrightEnv.testUserApiKey,
       );
 
       const fillData = buildOpportunityHappyPathFillData(new Date());

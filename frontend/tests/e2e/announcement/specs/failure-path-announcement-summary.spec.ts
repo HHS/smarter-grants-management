@@ -34,7 +34,7 @@ import {
 } from "tests/e2e/announcement/fixtures/announcement-pages-field-definitions";
 import { buildOpportunityHappyPathFillData } from "tests/e2e/announcement/fixtures/announcement-pages-fill-data";
 import { VALID_TAGS } from "tests/e2e/tags";
-import { createOpportunity } from "tests/e2e/utils/announcement/create-announcement-utils";
+import { createOpportunity } from "tests/e2e/utils/announcements/create-announcement-utils";
 import { createAuthenticatedPageLifecycle } from "tests/e2e/utils/common/auth-storage-state-utils";
 import { assertCharacterLimitValidationsFromDefinitions } from "tests/e2e/utils/common/character-limit-validation-utils";
 import { assertCrossFieldValidationsFromDefinitions } from "tests/e2e/utils/common/cross-field-validation-utils";
