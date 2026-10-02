@@ -18,6 +18,7 @@ import Spinner from "src/components/core/Spinner";
 
 type ExternalFilterComboBoxProps = {
   id: string;
+  name: string;
   labelText: string;
   fetchOptionsUrl: string;
   formatOptions: (response: unknown) => ComboBoxOption[];
@@ -53,6 +54,7 @@ const resultCountMessage = (count: number) =>
  */
 export function ExternalFilterComboBox({
   id,
+  name,
   labelText,
   fetchOptionsUrl,
   formatOptions,
@@ -241,13 +243,22 @@ export function ExternalFilterComboBox({
         description={description}
       />
       {hasErrors ? <FieldErrors fieldName={id} rawErrors={rawErrors} /> : null}
+      {/* the selection is submitted as an array, one hidden input per selected value */}
+      {selectedOptions.map((option, index) => (
+        <input
+          key={option.value}
+          type="hidden"
+          name={`${name}[${index}]`}
+          value={option.value}
+        />
+      ))}
       <div className="display-flex flex-align-center">
         <ComboBox
           ref={comboBoxRef}
           className="width-full"
           id={id}
-          // selections are submitted through hidden inputs, since the hidden select
-          // trussworks renders does not track the selected value
+          // selections are submitted through the hidden inputs above, since the hidden
+          // select trussworks renders does not track the selected value
           // (https://github.com/trussworks/react-uswds/issues/3591)
           name=""
           options={availableOptions}

@@ -1,7 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { action } from "storybook/actions";
 import { fn } from "storybook/test";
 
-import { ComboBoxOption } from "@trussworks/react-uswds";
+import { FormEvent } from "react";
+import { Button, ComboBoxOption } from "@trussworks/react-uswds";
 
 import { ExternalFilterComboBox } from "src/components/core/ExternalFilterComboBox";
 
@@ -36,6 +38,7 @@ const meta: Meta<typeof ExternalFilterComboBox> = {
   component: ExternalFilterComboBox,
   args: {
     id: "external-filter-combo-box",
+    name: "assistance_listing_numbers",
     labelText: "Assistance listing",
     description: "Search by assistance listing number or program title",
     isRequired: false,
@@ -55,6 +58,12 @@ const meta: Meta<typeof ExternalFilterComboBox> = {
       control: { type: "text" },
       description:
         "Id of the search input, also used to build label and error ids.",
+      table: { type: { summary: "string" } },
+    },
+    name: {
+      control: { type: "text" },
+      description:
+        "Form field name. Each selected value is submitted as name[0], name[1], ...",
       table: { type: { summary: "string" } },
     },
     labelText: {
@@ -172,6 +181,39 @@ export const MultiSelect: Story = {
       { value: "93.110", label: "93.110 - Maternal and Child Health" },
     ],
   },
+};
+
+const logFormSubmission = action("form submitted");
+
+// wraps the combo box in a form, and logs what the form would submit in the
+// Actions panel instead of submitting it
+const renderInForm: Story["render"] = (args) => (
+  <form
+    aria-label="Example form"
+    onSubmit={(event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      logFormSubmission(Array.from(new FormData(event.currentTarget)));
+    }}
+  >
+    <ExternalFilterComboBox {...args} />
+    <Button type="submit" className="margin-top-2">
+      Submit
+    </Button>
+  </form>
+);
+
+export const FormSubmission: Story = {
+  render: renderInForm,
+};
+
+export const FormSubmissionMultiSelect: Story = {
+  args: {
+    multiSelect: true,
+    defaultSelectedOptions: [
+      { value: "93.110", label: "93.110 - Maternal and Child Health" },
+    ],
+  },
+  render: renderInForm,
 };
 
 export const Loading: Story = {
