@@ -130,9 +130,10 @@ def create_announcements(db_session: db.Session) -> None:
         },
     ]
 
-    existing_numbers = set(
-        db_session.execute(
-            select(Announcement.announcement_number).where(
+    existing_announcements_by_number = {
+        announcement.announcement_number: announcement
+        for announcement in db_session.execute(
+            select(Announcement).where(
                 Announcement.announcement_number.in_(
                     [a["announcement_number"] for a in announcements_to_seed]
                 )
@@ -140,17 +141,26 @@ def create_announcements(db_session: db.Session) -> None:
         )
         .scalars()
         .all()
-    )
+    }
 
     for announcement_data in announcements_to_seed:
-        if announcement_data["announcement_number"] in existing_numbers:
-            continue
+        announcement = existing_announcements_by_number.get(
+            announcement_data["announcement_number"]
+        )
 
-        announcement = f.AnnouncementFactory.create(
-            announcement_number=announcement_data["announcement_number"],
-            announcement_title=announcement_data["announcement_title"],
-        )
-        f.AnnouncementSummaryFactory.create(
-            announcement=announcement,
-            is_forecast=announcement_data["is_forecast"],
-        )
+        if announcement is None:
+            announcement = f.AnnouncementFactory.create(
+                announcement_number=announcement_data["announcement_number"],
+                announcement_title=announcement_data["announcement_title"],
+            )
+            f.AnnouncementSummaryFactory.create(
+                announcement=announcement,
+                is_forecast=announcement_data["is_forecast"],
+            )
+
+        # backfill in case this announcement was seeded before application packages existed
+        if not announcement.application_packages:
+            f.ApplicationPackageFactory.create(
+                announcement=announcement,
+                with_instructions=True,
+            )

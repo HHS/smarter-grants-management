@@ -64,7 +64,7 @@ export const logRequest = (
         awsTraceId: headers.get("X-Amz-Cf-Id"),
         statusCode: response?.status,
         cacheControl: response?.headers?.get("cache-control"),
-        hasSessionCookie: request.cookies.get("session") !== undefined,
+        hasSessionCookie: request.cookies.get("sgm-session") !== undefined,
         correlation_id: correlationId,
       });
     }
