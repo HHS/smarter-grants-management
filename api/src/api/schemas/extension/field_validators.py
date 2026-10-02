@@ -3,7 +3,7 @@ import re
 import typing
 
 from apiflask import validators  # ruff: ignore[banned-api]
-from marshmallow import ValidationError, missing
+from marshmallow import ValidationError
 from marshmallow.validate import _SizedT  # ruff: ignore[banned-api]
 
 from src.api.schemas.extension.schema_common import MarshmallowErrorContainer
@@ -217,7 +217,7 @@ class Email(validators.Email):
             # Fix the validation error to have our format
             error_container = copy.copy(self.EMAIL_ERROR)
             error_container.value = value
-            raise ValidationError([self.EMAIL_ERROR]) from None
+            raise ValidationError([error_container]) from None
 
 
 class URL(validators.URL):

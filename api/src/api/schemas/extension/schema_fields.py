@@ -88,8 +88,8 @@ class MixinField(original_fields.Field):
         value: typing.Any,
         attr: str | None = None,
         data: typing.Mapping[str, typing.Any] | None = None,
-        **kwargs,
-    ):
+        **kwargs: typing.Any,
+    ) -> typing.Any:
         self.sgm_value = value
         self.sgm_attr = attr
 
@@ -100,7 +100,7 @@ class MixinField(original_fields.Field):
         from ``self.error_mapping``.
         """
         try:
-            error_container = self._error_mapping[key]
+            error_container = copy.copy(self._error_mapping[key])
         except KeyError as error:
             class_name = self.__class__.__name__
             message = (

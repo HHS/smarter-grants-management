@@ -286,13 +286,11 @@ def test_marshmallow_validation(simple_client, monkeypatch):
                     "type": error.key,
                     "message": error.message,
                     "field": field.removesuffix("._schema"),
-                    "metadata": None,
-                    "value": None,
+                    "metadata": error.metadata,
+                    "value": error.value,
                 }
             )
 
     assert len(expected_errors) == len(resp_errors)
-    for a in resp_errors:
-        print(a)
     for expected_error in expected_errors:
         assert expected_error in resp_errors
