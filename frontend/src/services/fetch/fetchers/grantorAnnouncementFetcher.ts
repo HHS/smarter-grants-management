@@ -134,6 +134,18 @@ export async function publishOpportunityForGrantor(
   return (await response.json()) as GrantorAnnouncementApiResponse;
 }
 
+// the application packages nested in the announcement response do not include instructions,
+// only this endpoint does
+export async function getApplicationPackage(
+  announcementId: string,
+  applicationPackageId: string,
+): Promise<ApplicationPackageSaveApiResponse> {
+  const response = await fetchAnnouncementWithMethod("GET")({
+    subPath: `${announcementId}/application-packages/${applicationPackageId}`,
+  });
+  return (await response.json()) as ApplicationPackageSaveApiResponse;
+}
+
 export async function createApplicationPackage(
   announcementId: string,
   data: ApplicationPackageSaveRequest,

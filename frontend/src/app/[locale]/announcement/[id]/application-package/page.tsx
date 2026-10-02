@@ -5,7 +5,10 @@ import {
   parseErrorStatus,
 } from "src/errors";
 import { getForms } from "src/services/fetch/fetchers/allFormsFetcher";
-import { getAnnouncement } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
+import {
+  getAnnouncement,
+  getApplicationPackage,
+} from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 import { ApplicationPackage } from "src/types/applicationPackageResponseTypes";
 
 import { useTranslations } from "next-intl";
@@ -74,9 +77,17 @@ export default async function AnnouncementApplicationPackagePage({
   }
 
   // NOTE: Currently we are only supporting a single application package
+  // The package nested in the announcement response does not include instructions,
+  // so fetch the full package record
   let applicationPackage: ApplicationPackage | undefined = undefined;
-  if (opportunityData.application_packages?.[0]) {
-    applicationPackage = opportunityData.application_packages[0];
+  const applicationPackageId =
+    opportunityData.application_packages?.[0]?.application_package_id;
+  if (applicationPackageId) {
+    const packageResponse = await getApplicationPackage(
+      id,
+      applicationPackageId,
+    );
+    applicationPackage = packageResponse.data;
   }
 
   const navigationItems = [

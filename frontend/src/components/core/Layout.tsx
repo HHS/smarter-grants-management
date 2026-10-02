@@ -49,7 +49,7 @@ export default async function Layout({ children, locale }: Props) {
           {t("Layout.skipToMain")}
         </a>
         <LoginModalProvider
-          helpText="Enter an API key to login to Simpler Grants Management"
+          helpText="Enter an API key to login to Smarter Grants Management"
           titleText="Login With API Key"
           buttonText="Login"
           closeText="Cancel"
@@ -60,7 +60,7 @@ export default async function Layout({ children, locale }: Props) {
               environment.LOCAL_DEV === "true" && testUsers.length < 500
             }
             testUsers={testUsers}
-            useApiKeyLogin={environment.LOCAL_DEV === "true"}
+            useApiKeyLogin={environment.LOCAL_DEV !== "true"}
           />
           <MaintenanceBanner message={environment.MAINTENANCE_BANNER_MESSAGE} />
           <RouteFocusManager>

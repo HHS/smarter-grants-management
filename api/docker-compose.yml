@@ -114,6 +114,10 @@ services:
       - COM_ADOBE_TESTING_S3MOCK_STORE_ROOT=containers3root
       - COM_ADOBE_TESTING_S3MOCK_STORE_RETAIN_FILES_ON_EXIT=true
       - COM_ADOBE_TESTING_S3MOCK_STORE_INITIAL_BUCKETS=local-mock-public-bucket,local-mock-draft-bucket,local-mock-file-scan-bucket
+      # S3Mock is a Spring Boot app and inherits Spring's 1MB multipart default,
+      # which causes presigned POST uploads over 1MB to fail with a 413
+      - SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE=2GB
+      - SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE=2GB
     ports:
       - "9090:9090"
     volumes:
