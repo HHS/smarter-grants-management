@@ -43,6 +43,33 @@ import {
 import { DynamicFieldLabel } from "src/components/core/forms/DynamicFieldLabel";
 import { AnnouncementAttachmentUploadInput } from "src/components/SummaryEditView/AnnouncementAttachmentUploadInput";
 
+type TimestampFieldKeys =
+  "post_timestamp" | "close_timestamp" | "close_timestamp_description";
+
+const timestampFieldMap = {
+  forecast: {
+    post_timestamp: "forecasted_post_timestamp",
+    close_timestamp: "forecasted_close_timestamp",
+    close_timestamp_description: "forecasted_close_timestamp_description",
+  },
+  synopsis: {
+    post_timestamp: "post_timestamp",
+    close_timestamp: "close_timestamp",
+    close_timestamp_description: "close_timestamp_description",
+  },
+} as const;
+
+const getTimestampFieldForSummaryType = (
+  isForecast: boolean,
+  fieldName:
+    "post_timestamp" | "close_timestamp" | "close_timestamp_description",
+):
+  | (typeof timestampFieldMap.forecast)[TimestampFieldKeys]
+  | (typeof timestampFieldMap.synopsis)[TimestampFieldKeys] => {
+  const key = isForecast ? "forecast" : "synopsis";
+  return timestampFieldMap[key][fieldName];
+};
+
 function formatNumber(value: string): string {
   const raw = value.replace(/,/g, "");
   if (!raw || isNaN(Number(raw))) return value;
@@ -341,6 +368,7 @@ export default function AnnouncementEditForm({
         className="margin-top-4 simpler-page-anchor-offset"
       >
         <h2 className="margin-top-0 margin-bottom-4 font-heading-xl">
+          {isForecast ? "Forecast" : "Synopsis"} -{" "}
           {t("sections.fundingDetails")}
         </h2>
         <p className="margin-top-0 margin-bottom-4 font-sans-lg text-base-dark">
@@ -560,20 +588,54 @@ export default function AnnouncementEditForm({
 
           <div className="grid-row grid-gap-lg">
             <div className="tablet:grid-col-6">
-              <FormGroup error={!!getFieldError("post_timestamp")}>
+              <FormGroup
+                error={
+                  !!getFieldError(
+                    getTimestampFieldForSummaryType(
+                      isForecast,
+                      "post_timestamp",
+                    ),
+                  )
+                }
+              >
                 <DynamicFieldLabel
-                  idFor="post_timestamp"
+                  idFor={getTimestampFieldForSummaryType(
+                    isForecast,
+                    "post_timestamp",
+                  )}
                   title={t("labels.publishDate")}
                   required
                   description={t("content.publishDateHint")}
                 />
-                {getFieldError("post_timestamp") ? (
-                  <ErrorMessage>{getFieldError("post_timestamp")}</ErrorMessage>
+                {getFieldError(
+                  getTimestampFieldForSummaryType(isForecast, "post_timestamp"),
+                ) ? (
+                  <ErrorMessage>
+                    {getFieldError(
+                      getTimestampFieldForSummaryType(
+                        isForecast,
+                        "post_timestamp",
+                      ),
+                    )}
+                  </ErrorMessage>
                 ) : null}
                 <DatePicker
-                  id="post_timestamp"
-                  name="post_timestamp"
-                  defaultValue={initialValues.post_timestamp}
+                  id={getTimestampFieldForSummaryType(
+                    isForecast,
+                    "post_timestamp",
+                  )}
+                  name={getTimestampFieldForSummaryType(
+                    isForecast,
+                    "post_timestamp",
+                  )}
+                  defaultValue={
+                    initialValues[
+                      getTimestampFieldForSummaryType(
+                        isForecast,
+                        "post_timestamp",
+                      )
+                    ]
+                  }
                   placeholder="mm/dd/yyyy"
                   className="width-full"
                 />

@@ -52,7 +52,7 @@ export function AnnouncementDetailsHeader({
         <div className="display-flex flex-justify">
           <div className="flex-1">
             {hasBackToOverview && (
-              <Link href={"../" + opportunityId + "/overview"}>
+              <Link href={`/announcement/${opportunityId}/overview`}>
                 {t("backToOverview")}
               </Link>
             )}
