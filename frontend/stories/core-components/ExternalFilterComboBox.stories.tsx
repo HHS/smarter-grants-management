@@ -125,3 +125,25 @@ export default meta;
 type Story = StoryObj<typeof ExternalFilterComboBox>;
 
 export const Default: Story = {};
+
+export const Loading: Story = {
+  parameters: {
+    mockFetch: {
+      url: mockSearchUrl,
+      responseBody: mockSearchResponse,
+      delayMs: 5000,
+    },
+  },
+};
+
+// not exported as `Error`, which would shadow the global Error in this file
+export const ErrorStory: Story = {
+  name: "Error",
+  parameters: {
+    mockFetch: {
+      url: mockSearchUrl,
+      responseBody: { message: "Internal server error" },
+      status: 500,
+    },
+  },
+};

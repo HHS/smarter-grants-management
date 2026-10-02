@@ -13,6 +13,7 @@ import {
 
 import { DynamicFieldLabel } from "src/components/core/forms/DynamicFieldLabel";
 import { FieldErrors } from "src/components/core/forms/FieldErrors";
+import Spinner from "src/components/core/Spinner";
 
 type ExternalFilterComboBoxProps = {
   id: string;
@@ -28,10 +29,18 @@ type ExternalFilterComboBoxProps = {
   debounceMs?: number;
 };
 
+type SearchStatus = "idle" | "loading" | "success" | "error";
+
 const defaultBuildRequestBody = (searchTerm: string) => ({ searchTerm });
 
 const minimumLengthHint = (minSearchLength: number) =>
   `Type at least ${minSearchLength} character${minSearchLength === 1 ? "" : "s"} to search`;
+const loadingMessage = "Loading results...";
+const errorMessage = "Unable to load results. Try again.";
+const noResultsMessage = "No results found";
+
+const resultCountMessage = (count: number) =>
+  `${count} result${count === 1 ? "" : "s"} available`;
 
 /**
  * Combo box whose options come from an API request made as the user types,
@@ -53,10 +62,14 @@ export function ExternalFilterComboBox({
   const hasErrors = rawErrors.length > 0;
   const [inputValue, setInputValue] = useState("");
   const [options, setOptions] = useState<ComboBoxOption[]>([]);
+  const [searchStatus, setSearchStatus] = useState<SearchStatus>("idle");
   const searchTerm = inputValue.trim();
   const isBelowMinimumLength = searchTerm.length < minSearchLength;
 
   const comboBoxRef = useRef<ComboBoxRef>(null);
+  // identifies the most recent search, so responses that arrive after the user has
+  // typed again (or after a newer search started) are ignored
+  const latestRequestId = useRef(0);
   const { user } = useUser();
   const { clientFetch } = useClientFetch<unknown>(
     "Error fetching combo box options",
@@ -67,14 +80,25 @@ export function ExternalFilterComboBox({
   // loop, see the note in useClientFetch)
   const search = useEffectEvent((term: string) => {
     if (!user?.token) return;
+    latestRequestId.current += 1;
+    const requestId = latestRequestId.current;
+    setSearchStatus("loading");
     clientFetch(fetchOptionsUrl, {
       method: "POST",
       body: JSON.stringify(buildRequestBody(term)),
     })
-      .then((response) => setOptions(formatOptions(response)))
+      .then((response) => {
+        if (requestId === latestRequestId.current) {
+          setOptions(formatOptions(response));
+          setSearchStatus("success");
+        }
+        return null;
+      })
       .catch((e) => {
+        if (requestId !== latestRequestId.current) return;
         console.error("Unable to fetch combo box options", e);
         setOptions([]);
+        setSearchStatus("error");
       });
   });
 
@@ -112,11 +136,36 @@ export function ExternalFilterComboBox({
 
   const onInputChange = (value: string) => {
     setInputValue(value);
+    // any response still on its way is for text the user has since changed
+    latestRequestId.current += 1;
     // results for a longer search no longer apply once the text drops below the minimum
     if (value.trim().length < minSearchLength) {
       setOptions([]);
+      setSearchStatus("idle");
     }
   };
+
+  // the only text trussworks can show inside the dropdown, shown when there are no options
+  const dropdownMessage = isBelowMinimumLength
+    ? minimumLengthHint(minSearchLength)
+    : searchStatus === "loading"
+      ? loadingMessage
+      : searchStatus === "error"
+        ? errorMessage
+        : noResultsMessage;
+
+  // trussworks' own screen reader status is computed before async results arrive,
+  // so the search state is announced here instead
+  const statusAnnouncement =
+    isBelowMinimumLength || searchStatus === "idle"
+      ? ""
+      : searchStatus === "loading"
+        ? loadingMessage
+        : searchStatus === "error"
+          ? errorMessage
+          : options.length
+            ? resultCountMessage(options.length)
+            : noResultsMessage;
 
   return (
     <FormGroup error={hasErrors || undefined}>
@@ -127,30 +176,36 @@ export function ExternalFilterComboBox({
         description={description}
       />
       {hasErrors ? <FieldErrors fieldName={id} rawErrors={rawErrors} /> : null}
-      <ComboBox
-        ref={comboBoxRef}
-        id={id}
-        // selections are submitted through hidden inputs, since the hidden select
-        // trussworks renders does not track the selected value
-        // (https://github.com/trussworks/react-uswds/issues/3591)
-        name=""
-        options={options}
-        onChange={() => undefined}
-        disabled={disabled}
-        inputProps={{
-          "aria-invalid": hasErrors || undefined,
-          // trussworks onChange only fires on selection, so keystrokes are read here
-          onChange: (e) => onInputChange(e.target.value),
-        }}
-        // the only text trussworks can show inside the dropdown
-        noResults={
-          isBelowMinimumLength ? minimumLengthHint(minSearchLength) : undefined
-        }
-        // options come pre-filtered from the API
-        disableFiltering
-        // gives the dropdown list an accessible name
-        ulProps={{ "aria-labelledby": `label-for-${id}` }}
-      />
+      <div className="display-flex flex-align-center">
+        <ComboBox
+          ref={comboBoxRef}
+          className="width-full"
+          id={id}
+          // selections are submitted through hidden inputs, since the hidden select
+          // trussworks renders does not track the selected value
+          // (https://github.com/trussworks/react-uswds/issues/3591)
+          name=""
+          options={options}
+          onChange={() => undefined}
+          disabled={disabled}
+          inputProps={{
+            "aria-invalid": hasErrors || undefined,
+            // trussworks onChange only fires on selection, so keystrokes are read here
+            onChange: (e) => onInputChange(e.target.value),
+          }}
+          noResults={dropdownMessage}
+          // options come pre-filtered from the API
+          disableFiltering
+          // gives the dropdown list an accessible name
+          ulProps={{ "aria-labelledby": `label-for-${id}` }}
+        />
+        {searchStatus === "loading" ? (
+          <Spinner className="height-3 width-3 margin-left-1" />
+        ) : null}
+      </div>
+      <div role="status" className="usa-sr-only">
+        {statusAnnouncement}
+      </div>
     </FormGroup>
   );
 }
