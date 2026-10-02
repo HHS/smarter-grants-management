@@ -9,8 +9,11 @@ export type AnnouncementEditFormValues = {
   funding_instruments: string;
   is_cost_sharing: boolean | null;
   post_timestamp: string;
-  close_timestamp: string;
-  close_timestamp_description: string;
+  forecasted_post_timestamp?: string;
+  close_timestamp?: string;
+  forecasted_close_timestamp?: string;
+  close_timestamp_description?: string;
+  forecasted_close_timestamp_description?: string;
   funding_categories: string;
   funding_category_description: string;
   expected_number_of_awards: string;

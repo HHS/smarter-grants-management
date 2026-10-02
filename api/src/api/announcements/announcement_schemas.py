@@ -422,9 +422,17 @@ class AnnouncementSummaryBaseRequestSchema(Schema):
     )
 
     post_timestamp = fields.DateTime(
-        required=True,
+        # required=True,
+        required=False,
         metadata={
             "description": "The datetime the announcement was posted",
+        },
+    )
+    forecasted_post_timestamp = fields.DateTime(
+        # required=True,
+        required=False,
+        metadata={
+            "description": "The datetime the forecast was posted",
         },
     )
     close_timestamp = fields.DateTime(
@@ -433,10 +441,23 @@ class AnnouncementSummaryBaseRequestSchema(Schema):
             "description": "The datetime the announcement closes",
         },
     )
+    forecasted_close_timestamp = fields.DateTime(
+        allow_none=True,
+        metadata={
+            "description": "The datetime the forecast closes",
+        },
+    )
     close_timestamp_description = fields.String(
         allow_none=True,
         metadata={
             "description": "Optional details regarding the close date",
+            "example": "Proposals are due earlier than usual.",
+        },
+    )
+    forecasted_close_timestamp_description = fields.String(
+        allow_none=True,
+        metadata={
+            "description": "Optional details regarding the forecast close date",
             "example": "Proposals are due earlier than usual.",
         },
     )

@@ -229,10 +229,11 @@ export default async function SummaryEditView({
   const disableForecastEditing =
     !createMode &&
     forecastMode &&
-    announcementData.forecast_summary?.forecasted_close_timestamp &&
-    timestampPassed(
-      announcementData.forecast_summary?.forecasted_close_timestamp,
-    );
+    announcementData.forecast_summary?.forecasted_close_timestamp
+      ? timestampPassed(
+          announcementData.forecast_summary?.forecasted_close_timestamp,
+        )
+      : false;
 
   const stateValidationError = validateProperState({
     announcementId,
@@ -294,11 +295,12 @@ export default async function SummaryEditView({
                   : (activeSummary as AnnouncementSummaryDetail)
                       .announcement_summary_id
               }
-              isForecast={isForecast}
+              isForecast={forecastMode}
               initialValues={initialValues}
               initialAttachments={
                 announcementData.announcement_attachments ?? []
               }
+              disable={disableForecastEditing}
             />
           </section>
         </div>

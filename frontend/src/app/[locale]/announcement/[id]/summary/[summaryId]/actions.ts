@@ -9,7 +9,11 @@ import {
   createAnnouncementSummary,
   updateAnnouncementSummary,
 } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
-import { AnnouncementSummaryUpdateRawData } from "src/types/announcement/announcementResponseTypes";
+import {
+  AnnouncementSummaryUpdateRawData,
+  EDIT_FORM_FIELD_NAMES,
+  EditFormFields,
+} from "src/types/announcement/announcementResponseTypes";
 import { dateToTimestampOrNull, getConfiguredDayJs } from "src/utils/dateUtil";
 import { formDataToObject } from "src/utils/formData/formDataToJson";
 import { mapApiValidationErrors } from "src/utils/validationUtils";
@@ -20,46 +24,8 @@ import { redirect } from "next/navigation";
 
 const dayjs = getConfiguredDayJs();
 
-const EDIT_FORM_FIELD_NAMES = [
-  "announcement_title",
-  "category",
-  "summary_description",
-  "post_timestamp",
-  "close_timestamp",
-  "agency_email_address",
-  "agency_email_address_description",
-  "award_floor",
-  "award_ceiling",
-  "funding_instruments",
-  "funding_categories",
-  "expected_number_of_awards",
-  "estimated_total_program_funding",
-  "applicant_types",
-  "applicant_eligibility_description",
-  "additional_info_url",
-  "additional_info_url_description",
-  "agency_contact_description",
-] as const;
-
 export type AnnouncementEditValidationErrors = {
-  announcement_title?: string[];
-  category?: string[];
-  summary_description?: string[];
-  post_timestamp?: string[];
-  close_timestamp?: string[];
-  agency_email_address?: string[];
-  agency_email_address_description?: string[];
-  award_floor?: string[];
-  award_ceiling?: string[];
-  funding_instruments?: string[];
-  funding_categories?: string[];
-  expected_number_of_awards?: string[];
-  estimated_total_program_funding?: string[];
-  applicant_types?: string[];
-  applicant_eligibility_description?: string[];
-  additional_info_url?: string[];
-  additional_info_url_description?: string[];
-  agency_contact_description?: string[];
+  [field in EditFormFields]?: string[];
 };
 
 export type OpportunityEditActionState = {
@@ -214,10 +180,9 @@ async function validateOpportunityEditForm(formData: FormData) {
         .string()
         .trim()
         .min(1, { message: validationErrors("description") }),
-      post_timestamp: z
-        .string()
-        .trim()
-        .min(1, { message: validationErrors("publishDate") }),
+      post_timestamp: z.string().trim(),
+      forecasted_post_timestamp: z.string().trim(),
+      // .min(1, { message: validationErrors("publishDate") }),
       close_timestamp: z.string().trim(),
       agency_email_address: z
         .string()
@@ -262,8 +227,17 @@ async function validateOpportunityEditForm(formData: FormData) {
       if (!close.isValid() || !publish.isValid() || close.isBefore(publish)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          path: ["closeDate"],
+          path: ["close_timestamp"],
           message: validationErrors("closeDateOrder"),
+        });
+      }
+    })
+    .superRefine(({ post_timestamp, forecasted_post_timestamp }, ctx) => {
+      if (!post_timestamp && !forecasted_post_timestamp) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["post_timestamp"],
+          message: validationErrors("publishDate"),
         });
       }
     })
@@ -327,12 +301,19 @@ async function validateOpportunityEditForm(formData: FormData) {
   const applicantTypeKeys = Array.from(
     formData.keys().filter((key) => key.includes("applicant_types[")),
   );
+
   return reviewAnnouncementEditSchema.safeParse({
     announcement_title: readStringValue(formData.get("announcement_title")),
     category: readStringValue(formData.get("category")),
     summary_description: readStringValue(formData.get("summary_description")),
     post_timestamp: readStringValue(formData.get("post_timestamp")),
     close_timestamp: readStringValue(formData.get("close_timestamp")),
+    forecasted_post_timestamp: readStringValue(
+      formData.get("forecasted_post_timestamp"),
+    ),
+    forecasted_close_timestamp: readStringValue(
+      formData.get("forecasted_close_timestamp"),
+    ),
     agency_email_address: readStringValue(formData.get("agency_email_address")),
     agency_email_address_description: readStringValue(
       formData.get("agency_email_address_description"),
@@ -363,8 +344,29 @@ async function validateOpportunityEditForm(formData: FormData) {
   });
 }
 
+const getTimestamps = (
+  isForecast: boolean,
+  rawBody: AnnouncementSummaryUpdateRawData,
+) => {
+  if (isForecast) {
+    return {
+      post_timestamp: null,
+      forecasted_close_timestamp: dateToTimestampOrNull(
+        rawBody.forecasted_close_timestamp,
+      ),
+      forecasted_post_timestamp: dateToTimestampOrNull(
+        rawBody.forecasted_post_timestamp,
+      ),
+    };
+  }
+  return {
+    close_timestamp: dateToTimestampOrNull(rawBody.close_timestamp),
+    post_timestamp: dateToTimestampOrNull(rawBody.post_timestamp),
+  };
+};
+
 export async function saveAnnouncementEditAction(
-  _prevState: OpportunityEditActionState,
+  isForecast: boolean,
   formData: FormData,
 ): Promise<OpportunityEditActionState> {
   const alerts = await getTranslations("OpportunityEdit.content.alerts");
@@ -377,8 +379,8 @@ export async function saveAnnouncementEditAction(
   const announcementSummaryId = readStringValue(
     formData.get("announcement_summary_id"),
   ).trim();
-  const isForecast =
-    readStringValue(formData.get("is_forecast")).trim() === "true";
+  // const isForecast =
+  //   readStringValue(formData.get("is_forecast")).trim() === "true";
 
   if (!announcementId) {
     return {
@@ -407,10 +409,9 @@ export async function saveAnnouncementEditAction(
 
       const body = {
         ...rawBody,
+        ...getTimestamps(isForecast, rawBody),
         funding_categories: [rawBody.funding_categories],
         funding_instruments: [rawBody.funding_instruments],
-        close_timestamp: dateToTimestampOrNull(rawBody.close_timestamp),
-        post_timestamp: dateToTimestampOrNull(rawBody.post_timestamp),
       };
       const createResponse = await createAnnouncementSummary({
         announcementId,
@@ -470,10 +471,9 @@ export async function saveAnnouncementEditAction(
 
     const body = {
       ...rawBody,
+      ...getTimestamps(isForecast, rawBody),
       funding_categories: [rawBody.funding_categories],
       funding_instruments: [rawBody.funding_instruments],
-      close_timestamp: dateToTimestampOrNull(rawBody.close_timestamp),
-      post_timestamp: dateToTimestampOrNull(rawBody.post_timestamp),
     };
 
     const response = await updateAnnouncementSummary({
@@ -508,11 +508,12 @@ export async function saveAnnouncementEditAction(
 }
 
 export async function announcementEditFormAction(
-  prevState: OpportunityEditActionState,
+  isForecast: boolean,
+  _prevState: OpportunityEditActionState,
   formData: FormData,
 ): Promise<OpportunityEditActionState> {
   // Save the form first - if there are validation or API errors, display them.
-  const saveResult = await saveAnnouncementEditAction(prevState, formData);
+  const saveResult = await saveAnnouncementEditAction(isForecast, formData);
   const hasValidationErrors =
     saveResult.validationErrors &&
     Object.keys(saveResult.validationErrors).length > 0;

@@ -60,6 +60,11 @@ export default async function OpportunityOverviewPage({
     locale,
     namespace: "AnnouncementOverview",
   });
+  const tHeader = await getTranslations({
+    locale,
+    namespace: "AnnouncementDetailsHeader",
+  });
+
   let announcementData: GrantorAnnouncementDetail;
   try {
     const response = await getAnnouncement(id);
