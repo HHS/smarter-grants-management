@@ -13,6 +13,7 @@ import {
 
 import { DynamicFieldLabel } from "src/components/core/forms/DynamicFieldLabel";
 import { FieldErrors } from "src/components/core/forms/FieldErrors";
+import { Pill } from "src/components/core/Pill";
 import Spinner from "src/components/core/Spinner";
 
 type ExternalFilterComboBoxProps = {
@@ -27,6 +28,7 @@ type ExternalFilterComboBoxProps = {
   disabled?: boolean;
   minSearchLength?: number;
   debounceMs?: number;
+  multiSelect?: boolean;
   defaultSelectedOptions?: ComboBoxOption[];
   onSelectionChange?: (selectedOptions: ComboBoxOption[]) => void;
 };
@@ -40,6 +42,7 @@ const minimumLengthHint = (minSearchLength: number) =>
 const loadingMessage = "Loading results...";
 const errorMessage = "Unable to load results. Try again.";
 const noResultsMessage = "No results found";
+const noNewResultsMessage = "No new results";
 
 const resultCountMessage = (count: number) =>
   `${count} result${count === 1 ? "" : "s"} available`;
@@ -60,15 +63,17 @@ export function ExternalFilterComboBox({
   disabled = false,
   minSearchLength = 3,
   debounceMs = 500,
+  multiSelect = false,
   defaultSelectedOptions = [],
   onSelectionChange,
 }: ExternalFilterComboBoxProps) {
   const hasErrors = rawErrors.length > 0;
   const [inputValue, setInputValue] = useState("");
   // trussworks only shows a default value that is among the options present on mount,
-  // and search results have not arrived yet then, so the defaults start as the options
+  // and search results have not arrived yet then, so a single-select default starts
+  // as the options. Multi-select defaults show as pills instead.
   const [options, setOptions] = useState<ComboBoxOption[]>(
-    defaultSelectedOptions,
+    multiSelect ? [] : defaultSelectedOptions,
   );
   const [selectedOptions, setSelectedOptions] = useState<ComboBoxOption[]>(
     defaultSelectedOptions,
@@ -76,6 +81,16 @@ export function ExternalFilterComboBox({
   const [searchStatus, setSearchStatus] = useState<SearchStatus>("idle");
   const searchTerm = inputValue.trim();
   const isBelowMinimumLength = searchTerm.length < minSearchLength;
+
+  // multi-select does not offer options that are already selected
+  const availableOptions = multiSelect
+    ? options.filter(
+        (option) =>
+          !selectedOptions.some((selected) => selected.value === option.value),
+      )
+    : options;
+  const hasOnlySelectedResults =
+    options.length > 0 && availableOptions.length === 0;
 
   const comboBoxRef = useRef<ComboBoxRef>(null);
   // identifies the most recent search, so responses that arrive after the user has
@@ -156,15 +171,39 @@ export function ExternalFilterComboBox({
     }
   };
 
+  const updateSelection = (newSelection: ComboBoxOption[]) => {
+    setSelectedOptions(newSelection);
+    onSelectionChange?.(newSelection);
+  };
+
   // trussworks reports the selected value whenever its selection changes, including
   // on mount and undefined on clear, so only an actual change is passed on
   const onComboBoxChange = (value?: string) => {
+    if (multiSelect) {
+      // undefined here comes from mount or from the clearSelection() below
+      if (!value) return;
+      const addedOption = availableOptions.find(
+        (option) => option.value === value,
+      );
+      if (!addedOption) return;
+      updateSelection([...selectedOptions, addedOption]);
+      // empty the input, ready for the next search
+      comboBoxRef.current?.clearSelection();
+      comboBoxRef.current?.focus();
+      onInputChange("");
+      return;
+    }
     if (value === selectedOptions[0]?.value) return;
     const selectedOption = options.find((option) => option.value === value);
     if (value && !selectedOption) return;
-    const newSelection = selectedOption ? [selectedOption] : [];
-    setSelectedOptions(newSelection);
-    onSelectionChange?.(newSelection);
+    updateSelection(selectedOption ? [selectedOption] : []);
+  };
+
+  const removeOption = (value: string) => {
+    if (disabled) return;
+    updateSelection(
+      selectedOptions.filter((selected) => selected.value !== value),
+    );
   };
 
   // the only text trussworks can show inside the dropdown, shown when there are no options
@@ -174,7 +213,9 @@ export function ExternalFilterComboBox({
       ? loadingMessage
       : searchStatus === "error"
         ? errorMessage
-        : noResultsMessage;
+        : hasOnlySelectedResults
+          ? noNewResultsMessage
+          : noResultsMessage;
 
   // trussworks' own screen reader status is computed before async results arrive,
   // so the search state is announced here instead
@@ -185,9 +226,11 @@ export function ExternalFilterComboBox({
         ? loadingMessage
         : searchStatus === "error"
           ? errorMessage
-          : options.length
-            ? resultCountMessage(options.length)
-            : noResultsMessage;
+          : availableOptions.length
+            ? resultCountMessage(availableOptions.length)
+            : hasOnlySelectedResults
+              ? noNewResultsMessage
+              : noResultsMessage;
 
   return (
     <FormGroup error={hasErrors || undefined}>
@@ -207,8 +250,10 @@ export function ExternalFilterComboBox({
           // trussworks renders does not track the selected value
           // (https://github.com/trussworks/react-uswds/issues/3591)
           name=""
-          options={options}
-          defaultValue={defaultSelectedOptions[0]?.value}
+          options={availableOptions}
+          defaultValue={
+            multiSelect ? undefined : defaultSelectedOptions[0]?.value
+          }
           onChange={onComboBoxChange}
           disabled={disabled}
           inputProps={{
@@ -226,6 +271,18 @@ export function ExternalFilterComboBox({
           <Spinner className="height-3 width-3 margin-left-1" />
         ) : null}
       </div>
+      {multiSelect && selectedOptions.length > 0 ? (
+        <div className="margin-top-1 display-flex flex-wrap">
+          {selectedOptions.map((option) => (
+            <div key={option.value} className="margin-right-1 margin-bottom-1">
+              <Pill
+                label={option.label}
+                onClose={() => removeOption(option.value)}
+              />
+            </div>
+          ))}
+        </div>
+      ) : null}
       <div role="status" className="usa-sr-only">
         {statusAnnouncement}
       </div>

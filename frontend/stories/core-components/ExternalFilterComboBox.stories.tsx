@@ -45,6 +45,7 @@ const meta: Meta<typeof ExternalFilterComboBox> = {
     debounceMs: 500,
     fetchOptionsUrl: mockSearchUrl,
     formatOptions: formatMockOptions,
+    multiSelect: false,
     defaultSelectedOptions: [],
     // logged in the Actions panel
     onSelectionChange: fn(),
@@ -114,6 +115,15 @@ const meta: Meta<typeof ExternalFilterComboBox> = {
         defaultValue: { summary: "searchTerm => ({ searchTerm })" },
       },
     },
+    multiSelect: {
+      control: { type: "boolean" },
+      description:
+        "Allows several selections, shown as removable pills below the input. Read on mount only, so remount the story after changing it.",
+      table: {
+        type: { summary: "boolean" },
+        defaultValue: { summary: "false" },
+      },
+    },
     defaultSelectedOptions: {
       control: { type: "object" },
       description:
@@ -151,6 +161,15 @@ export const DefaultSelection: Story = {
   args: {
     defaultSelectedOptions: [
       { value: "12.345", label: "12.345 - Chemistry Program" },
+    ],
+  },
+};
+
+export const MultiSelect: Story = {
+  args: {
+    multiSelect: true,
+    defaultSelectedOptions: [
+      { value: "93.110", label: "93.110 - Maternal and Child Health" },
     ],
   },
 };
