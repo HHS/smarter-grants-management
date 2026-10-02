@@ -3,7 +3,7 @@ import enum
 import typing
 
 from apiflask import fields as original_fields  # ruff: ignore[banned-api]
-from marshmallow import ValidationError
+from marshmallow import ValidationError, missing
 
 from src.api.schemas.extension.field_validators import URL as CustomURL
 from src.api.schemas.extension.field_validators import Range
@@ -83,12 +83,24 @@ class MixinField(original_fields.Field):
             for k, v in configured_error_mapping.items():
                 self._error_mapping[k] = copy.copy(v)
 
+    def deserialize(
+        self,
+        value: typing.Any,
+        attr: str | None = None,
+        data: typing.Mapping[str, typing.Any] | None = None,
+        **kwargs: typing.Any,
+    ) -> typing.Any:
+        self.sgm_value = value
+        self.sgm_attr = attr
+
+        return super().deserialize(value, attr, data, **kwargs)
+
     def make_error(self, key: str, **kwargs: typing.Any) -> ValidationError:
         """Helper method to make a `ValidationError` with an error message
         from ``self.error_mapping``.
         """
         try:
-            error_container = self._error_mapping[key]
+            error_container = copy.copy(self._error_mapping[key])
         except KeyError as error:
             class_name = self.__class__.__name__
             message = (
@@ -99,6 +111,11 @@ class MixinField(original_fields.Field):
 
         if kwargs:
             error_container.message = error_container.message.format(**kwargs)
+
+        sgm_value = getattr(self, "sgm_value", None)
+        if sgm_value == missing:
+            sgm_value = None
+        error_container.value = sgm_value
 
         return ValidationError([error_container])
 

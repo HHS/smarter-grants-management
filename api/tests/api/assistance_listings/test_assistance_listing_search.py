@@ -149,4 +149,5 @@ class TestAssistanceListingSearch(BaseTestClass):
             "type": "required",
             "message": "Missing data for required field.",
             "value": None,
+            "metadata": None,
         }

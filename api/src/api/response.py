@@ -18,6 +18,7 @@ class ValidationErrorDetail:
     message: str = ""
     field: str | None = None
     value: Any | None = None
+    metadata: dict[str, Any] | None = None
 
 
 @dataclasses.dataclass
@@ -64,6 +65,8 @@ def process_marshmallow_issues(marshmallow_issues: dict) -> list[ValidationError
                         field=field.removesuffix("._schema"),
                         message=item.message,
                         type=item.key,
+                        metadata=item.metadata,
+                        value=item.value,
                     )
                 )
         else:
