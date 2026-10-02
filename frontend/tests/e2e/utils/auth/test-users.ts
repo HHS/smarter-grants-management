@@ -64,6 +64,8 @@ const STAGING_TEST_ORG_IDS: Record<TestOrgKey, string> = {
 
 export const TEST_USER_IDS = {
   local: LOCAL_TEST_USER_IDS,
+  // Dev reuses the same provisioned identities as staging-like deployed targets.
+  dev: STAGING_TEST_USER_IDS,
   staging: STAGING_TEST_USER_IDS,
   grantee1: STAGING_TEST_USER_IDS,
   grantee2: STAGING_TEST_USER_IDS,
@@ -73,6 +75,8 @@ export const TEST_USER_IDS = {
 
 export const TEST_ORG_IDS = {
   local: LOCAL_TEST_ORG_IDS,
+  // Dev reuses the same org fixtures as staging-like deployed targets.
+  dev: STAGING_TEST_ORG_IDS,
   staging: STAGING_TEST_ORG_IDS,
   grantee1: STAGING_TEST_ORG_IDS,
   grantee2: STAGING_TEST_ORG_IDS,
