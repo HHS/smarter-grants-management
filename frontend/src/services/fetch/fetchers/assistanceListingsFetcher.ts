@@ -9,7 +9,7 @@ import {
 import { fetchAssistanceListings } from "./fetchers";
 
 // only the first page of matches is returned
-const searchPageSize = 25;
+const searchPageSize = 15;
 
 export const getAssistanceListingSearchResults = async (
   query: string,
