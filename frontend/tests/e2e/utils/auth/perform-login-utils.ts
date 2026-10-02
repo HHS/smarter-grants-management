@@ -3,16 +3,15 @@ import { authenticator } from "otplib";
 import playwrightEnv from "tests/e2e/playwright-env";
 import { openMobileNav } from "tests/e2e/playwrightUtils";
 
-const assertStagingLoginCredentials = () => {
-  if (
-    playwrightEnv.targetEnv !== "local" &&
-    (!playwrightEnv.testUserEmail ||
-      !playwrightEnv.testUserPassword ||
-      !playwrightEnv.testUserAuthKey)
-  ) {
-    throw new Error("login credentials missing for staging test run");
-  }
-};
+// Error if env missing and running against staging
+if (
+  playwrightEnv.targetEnv !== "local" &&
+  (!playwrightEnv.testUserEmail ||
+    !playwrightEnv.testUserPassword ||
+    !playwrightEnv.testUserAuthKey)
+) {
+  throw new Error("login credentials missing for staging test run");
+}
 
 // --- Timeouts ---
 const TIMEOUT_HOME = playwrightEnv.targetEnv !== "local" ? 180000 : 60000;
@@ -150,8 +149,6 @@ export const performStagingLogin = async (
   page: Page,
   isMobileProject: boolean,
 ) => {
-  assertStagingLoginCredentials();
-
   if (isMobileProject) {
     await openMobileNav(page);
   }
