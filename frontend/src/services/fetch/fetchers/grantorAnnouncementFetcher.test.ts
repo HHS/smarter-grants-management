@@ -3,6 +3,7 @@ import {
   createApplicationPackage,
   createOpportunity,
   deleteApplicationPackageInstructions,
+  getApplicationPackage,
   saveApplicationPackageInstructions,
   searchOpportunitiesByAgency,
   updateApplicationPackage,
@@ -360,13 +361,39 @@ describe("updateApplicationPackageForms", () => {
   });
 });
 
+describe("getApplicationPackage", () => {
+  afterEach(() => jest.clearAllMocks());
+
+  it("calls fetchAnnouncementWithMethod with GET and the correct subPath, and returns the parsed JSON response", async () => {
+    const responseBody = {
+      data: {
+        application_package_id: "compete-321",
+        application_package_instructions: [
+          { application_package_instruction_id: "instruction-123" },
+        ],
+      },
+    };
+    mockFetcher.mockResolvedValue({
+      json: () => Promise.resolve(responseBody),
+    });
+
+    const result = await getApplicationPackage("opp-123", "compete-321");
+
+    expect(mockFetchGrantorOpportunityWithMethod).toHaveBeenCalledWith("GET");
+    expect(mockFetcher).toHaveBeenCalledWith({
+      subPath: "opp-123/application-packages/compete-321",
+    });
+    expect(result).toEqual(responseBody);
+  });
+});
+
 describe("saveApplicationPackageInstructions", () => {
   afterEach(() => jest.clearAllMocks());
 
   it("calls fetchAnnouncementWithMethod with POST, the correct subPath and body, and returns the parsed JSON response", async () => {
     const responseBody = {
       data: {
-        applicationPackage_instruction_id: "instruction-123",
+        application_package_instruction_id: "instruction-123",
         file_name: "instructions.pdf",
         created_at: "2026-08-20T00:00:00Z",
       },
