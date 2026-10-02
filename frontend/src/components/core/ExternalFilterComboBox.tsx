@@ -27,6 +27,8 @@ type ExternalFilterComboBoxProps = {
   disabled?: boolean;
   minSearchLength?: number;
   debounceMs?: number;
+  defaultSelectedOptions?: ComboBoxOption[];
+  onSelectionChange?: (selectedOptions: ComboBoxOption[]) => void;
 };
 
 type SearchStatus = "idle" | "loading" | "success" | "error";
@@ -58,10 +60,19 @@ export function ExternalFilterComboBox({
   disabled = false,
   minSearchLength = 3,
   debounceMs = 500,
+  defaultSelectedOptions = [],
+  onSelectionChange,
 }: ExternalFilterComboBoxProps) {
   const hasErrors = rawErrors.length > 0;
   const [inputValue, setInputValue] = useState("");
-  const [options, setOptions] = useState<ComboBoxOption[]>([]);
+  // trussworks only shows a default value that is among the options present on mount,
+  // and search results have not arrived yet then, so the defaults start as the options
+  const [options, setOptions] = useState<ComboBoxOption[]>(
+    defaultSelectedOptions,
+  );
+  const [selectedOptions, setSelectedOptions] = useState<ComboBoxOption[]>(
+    defaultSelectedOptions,
+  );
   const [searchStatus, setSearchStatus] = useState<SearchStatus>("idle");
   const searchTerm = inputValue.trim();
   const isBelowMinimumLength = searchTerm.length < minSearchLength;
@@ -145,6 +156,17 @@ export function ExternalFilterComboBox({
     }
   };
 
+  // trussworks reports the selected value whenever its selection changes, including
+  // on mount and undefined on clear, so only an actual change is passed on
+  const onComboBoxChange = (value?: string) => {
+    if (value === selectedOptions[0]?.value) return;
+    const selectedOption = options.find((option) => option.value === value);
+    if (value && !selectedOption) return;
+    const newSelection = selectedOption ? [selectedOption] : [];
+    setSelectedOptions(newSelection);
+    onSelectionChange?.(newSelection);
+  };
+
   // the only text trussworks can show inside the dropdown, shown when there are no options
   const dropdownMessage = isBelowMinimumLength
     ? minimumLengthHint(minSearchLength)
@@ -186,7 +208,8 @@ export function ExternalFilterComboBox({
           // (https://github.com/trussworks/react-uswds/issues/3591)
           name=""
           options={options}
-          onChange={() => undefined}
+          defaultValue={defaultSelectedOptions[0]?.value}
+          onChange={onComboBoxChange}
           disabled={disabled}
           inputProps={{
             "aria-invalid": hasErrors || undefined,

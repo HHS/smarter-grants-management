@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { fn } from "storybook/test";
 
 import { ComboBoxOption } from "@trussworks/react-uswds";
 
@@ -44,6 +45,9 @@ const meta: Meta<typeof ExternalFilterComboBox> = {
     debounceMs: 500,
     fetchOptionsUrl: mockSearchUrl,
     formatOptions: formatMockOptions,
+    defaultSelectedOptions: [],
+    // logged in the Actions panel
+    onSelectionChange: fn(),
   },
   argTypes: {
     id: {
@@ -110,6 +114,23 @@ const meta: Meta<typeof ExternalFilterComboBox> = {
         defaultValue: { summary: "searchTerm => ({ searchTerm })" },
       },
     },
+    defaultSelectedOptions: {
+      control: { type: "object" },
+      description:
+        "Options selected when the component mounts. Read on mount only, so remount the story after changing it.",
+      table: {
+        type: { summary: "ComboBoxOption[]" },
+        defaultValue: { summary: "[]" },
+      },
+    },
+    onSelectionChange: {
+      control: false,
+      description:
+        "Called with the full list of selected options whenever the selection changes, and with an empty list when it is cleared.",
+      table: {
+        type: { summary: "(selectedOptions: ComboBoxOption[]) => void" },
+      },
+    },
   },
   parameters: {
     // handled by the withMockedClientFetch decorator, no real API call is made
@@ -125,6 +146,14 @@ export default meta;
 type Story = StoryObj<typeof ExternalFilterComboBox>;
 
 export const Default: Story = {};
+
+export const DefaultSelection: Story = {
+  args: {
+    defaultSelectedOptions: [
+      { value: "12.345", label: "12.345 - Chemistry Program" },
+    ],
+  },
+};
 
 export const Loading: Story = {
   parameters: {
