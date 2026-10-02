@@ -59,3 +59,7 @@ export const dateToTimestamp = (dateStr: string): string =>
 export const dateToTimestampOrNull = (
   dateStr: string | null | undefined,
 ): string | null => (dateStr ? dateToTimestamp(dateStr) : null);
+
+// to be used with a timestamp string from the db, ex. 2026-09-14 05:02:01.818679+00
+export const timestampPassed = (timestamp: string): boolean =>
+  dayjs(timestamp).isBefore(dayjs(Date.now()));

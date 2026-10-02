@@ -98,6 +98,7 @@ type AnnouncementEditFormProps = {
   isForecast?: boolean;
   initialValues: AnnouncementEditFormValues;
   initialAttachments?: AnnouncementAttachment[];
+  disable?: boolean;
 };
 
 export default function AnnouncementEditForm({
@@ -106,6 +107,7 @@ export default function AnnouncementEditForm({
   isForecast = false,
   initialValues,
   initialAttachments = [],
+  disable = false,
 }: AnnouncementEditFormProps) {
   const t = useTranslations("OpportunityEdit");
   const formRef = useRef<HTMLFormElement>(null);
@@ -300,24 +302,37 @@ export default function AnnouncementEditForm({
       }}
       noValidate
     >
-      <input type="hidden" name="announcement_id" value={announcementId} />
       <input
+        disabled={disable}
+        type="hidden"
+        name="announcement_id"
+        value={announcementId}
+      />
+      <input
+        disabled={disable}
         type="hidden"
         name="announcement_summary_id"
         value={currentSummaryId}
       />
       <input
+        disabled={disable}
         type="hidden"
         name="is_forecast"
         data-testid="isForecast-input"
         value={isForecast ? "true" : "false"}
       />
       <input
+        disabled={disable}
         type="hidden"
         name="announcement_title"
         value={initialValues.announcement_title}
       />
-      <input type="hidden" name="category" value={initialValues.category} />
+      <input
+        disabled={disable}
+        type="hidden"
+        name="category"
+        value={initialValues.category}
+      />
 
       {formState.errorMessage ? (
         <div className="margin-top-2">
@@ -391,6 +406,7 @@ export default function AnnouncementEditForm({
                   </ErrorMessage>
                 ) : null}
                 <Select
+                  disabled={disable}
                   id="funding_instruments"
                   name="funding_instruments"
                   defaultValue={initialValues.funding_instruments}
@@ -415,6 +431,7 @@ export default function AnnouncementEditForm({
                 <div className="grid-row">
                   <div className="grid-col-6">
                     <Radio
+                      disabled={disable}
                       id="cost-sharing-yes"
                       name="is_cost_sharing"
                       label={t("labels.yes")}
@@ -424,6 +441,7 @@ export default function AnnouncementEditForm({
                   </div>
                   <div className="grid-col-6">
                     <Radio
+                      disabled={disable}
                       id="cost-sharing-no"
                       name="is_cost_sharing"
                       label={t("labels.no")}
@@ -451,6 +469,7 @@ export default function AnnouncementEditForm({
                   </ErrorMessage>
                 ) : null}
                 <Select
+                  disabled={disable}
                   id="funding_categories"
                   name="funding_categories"
                   value={fundingCategory}
@@ -473,6 +492,7 @@ export default function AnnouncementEditForm({
           {fundingCategory === "other" && (
             <div className="width-full">
               <CommonCharacterCount
+                disabled={disable}
                 isTextArea={true}
                 labelText={t("labels.fundingCategoryExplanation")}
                 description={t("content.fundingCategoryExplanationHint")}
@@ -499,6 +519,7 @@ export default function AnnouncementEditForm({
                   </ErrorMessage>
                 ) : null}
                 <TextInput
+                  disabled={disable}
                   id="expected_number_of_awards"
                   name="expected_number_of_awards"
                   type="text"
@@ -523,6 +544,7 @@ export default function AnnouncementEditForm({
                   </ErrorMessage>
                 ) : null}
                 <TextInput
+                  disabled={disable}
                   id="estimated_total_program_funding"
                   name="estimated_total_program_funding"
                   type="text"
@@ -718,6 +740,7 @@ export default function AnnouncementEditForm({
             </div>
             {selectedEligibility.map((eligibility, index) => (
               <input
+                disabled={disable}
                 key={`eligibility-${index}`}
                 type="hidden"
                 name={`applicant_types[${index}]`}

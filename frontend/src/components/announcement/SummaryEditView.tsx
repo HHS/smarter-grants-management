@@ -9,6 +9,7 @@ import {
   GrantorAnnouncementDetail,
 } from "src/types/announcement/announcementResponseTypes";
 import { buildAnnouncementEditInitialValues } from "src/utils/announcementEditFormConfig";
+import { timestampPassed } from "src/utils/dateUtil";
 
 import { notFound } from "next/navigation";
 import { Alert, Button, GridContainer } from "@trussworks/react-uswds";
@@ -144,6 +145,26 @@ const getActiveSummary = (
     : announcementData.non_forecast_summary;
 };
 
+/*
+  forecast vs non_forecast differences
+
+  - disable editing on forecast if
+    - not create mode
+    - forecast mode
+    - non_forecast_summary exists
+    - forecast_summary.forecasted_close_timestamp has passed
+  - disable overview forecast link if
+    - non_forecast_summary exists
+    - forecast_summary.forecasted_close_timestamp has passed
+  - disable forecast specific fields when non forecast mode
+    - forecasted_post_timestamp
+    - forecasted_close_timestamp
+    - forecasted_close_timestamp_description
+  - disable synopsis specific fields when in forecast mode
+    - post_timestamp
+    - close_timestamp
+    - close_timestamp_description
+*/
 export default async function SummaryEditView({
   announcementId,
   summaryId,
@@ -160,7 +181,9 @@ export default async function SummaryEditView({
       </GridContainer>
     );
   }
+
   let announcementData: GrantorAnnouncementDetail;
+
   try {
     const response = await getAnnouncement(announcementId);
     announcementData = response.data;
@@ -184,7 +207,7 @@ export default async function SummaryEditView({
   }
 
   /*
-    determine whether we're dealing with a forecast
+    determine whether we're dealing with a forecast:
     - in create mode, the parent will pass this through
     - otherwise we need to check which summary the summary id passed in corresponds to
   */
@@ -202,6 +225,14 @@ export default async function SummaryEditView({
       </GridContainer>
     );
   }
+
+  const disableForecastEditing =
+    !createMode &&
+    forecastMode &&
+    announcementData.forecast_summary?.forecasted_close_timestamp &&
+    timestampPassed(
+      announcementData.forecast_summary?.forecasted_close_timestamp,
+    );
 
   const stateValidationError = validateProperState({
     announcementId,
