@@ -10,11 +10,11 @@ import {
   updateApplicationPackage,
   updateApplicationPackageForms,
 } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
+import { AnnouncementListItem } from "src/types/announcement/announcementResponseTypes";
 import {
   ApplicationPackageFormsSubmitApi,
   ApplicationPackageSaveRequest,
 } from "src/types/applicationPackageResponseTypes";
-import { AnnouncementListItem } from "src/types/announcement/announcementResponseTypes";
 import { PaginationRequestBody } from "src/types/search/searchRequestTypes";
 import { fakeAgencyResponseData } from "src/utils/testing/fixtures";
 
