@@ -12,6 +12,7 @@ const meta: Meta<typeof ExternalFilterComboBox> = {
     isRequired: false,
     rawErrors: [],
     disabled: false,
+    minSearchLength: 3,
   },
   argTypes: {
     id: {
@@ -45,6 +46,12 @@ const meta: Meta<typeof ExternalFilterComboBox> = {
       control: { type: "boolean" },
       description: "Disables the input.",
       table: { type: { summary: "boolean" } },
+    },
+    minSearchLength: {
+      control: { type: "number", min: 1 },
+      description:
+        "Characters required before a search runs. Below this, the dropdown shows a hint.",
+      table: { type: { summary: "number" }, defaultValue: { summary: "3" } },
     },
   },
   parameters: {
