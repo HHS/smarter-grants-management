@@ -6,6 +6,7 @@ import {
 import { getAnnouncement } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 import { GrantorAnnouncementDetail } from "src/types/announcement/announcementResponseTypes";
 import { computeAnnouncementPublishEligibility } from "src/utils/announcement/announcementPublishEligibility";
+import { shouldDisableForecast } from "src/utils/announcement/announcementUtils";
 
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -30,16 +31,22 @@ const SummaryLink = ({
   summaryId,
   isForecast,
   announcementId,
+  disable,
 }: {
   summaryId?: string;
   isForecast?: boolean;
   announcementId: string;
+  disable?: boolean;
 }) => {
   const linkTarget = summaryId
     ? `/announcement/${announcementId}/summary/${summaryId}/edit`
     : `/announcement/${announcementId}/summary/create/${isForecast ? "forecast" : "synopsis"}`;
   const linkText = isForecast ? "Forecast Summary" : "Synopsis Summary";
-  return <Link href={linkTarget}>{linkText}</Link>;
+  return disable ? (
+    <span>{linkText}</span>
+  ) : (
+    <Link href={linkTarget}>{linkText}</Link>
+  );
 };
 
 export default async function OpportunityOverviewPage({
@@ -117,6 +124,7 @@ export default async function OpportunityOverviewPage({
                 announcementData.forecast_summary?.announcement_summary_id
               }
               isForecast={true}
+              disable={shouldDisableForecast(announcementData)}
             />
           </div>
           <div className="tablet:grid-col">
