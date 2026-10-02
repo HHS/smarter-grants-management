@@ -4,10 +4,7 @@ import {
   parseErrorStatus,
 } from "src/errors";
 import { getAnnouncement } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
-import {
-  GrantorAnnouncementDetail,
-  Summary,
-} from "src/types/announcement/announcementResponseTypes";
+import { GrantorAnnouncementDetail } from "src/types/announcement/announcementResponseTypes";
 import { computeAnnouncementPublishEligibility } from "src/utils/announcement/announcementPublishEligibility";
 
 import { getTranslations } from "next-intl/server";
@@ -17,10 +14,7 @@ import { Alert, GridContainer, Link } from "@trussworks/react-uswds";
 import GeneralErrorAlert from "src/components/core/GeneralErrorAlert";
 import { UnauthorizedMessage } from "src/components/core/UnauthorizedMessage";
 import { AnnouncementDetailsHeader } from "src/components/grantor-announcements/AnnouncementDetailsHeader";
-import {
-  getProgress,
-  ProgressChecker,
-} from "src/components/grantor-announcements/ProgressChecker";
+import { ProgressChecker } from "src/components/grantor-announcements/ProgressChecker";
 import { OverviewButtons } from "./_components/OverviewButtons";
 import {
   applicationPackageRequiredFields,
@@ -30,6 +24,22 @@ import {
 type PageProps = {
   params: Promise<{ id: string; locale: string }>;
   searchParams?: Promise<Record<string, string>>;
+};
+
+const SummaryLink = ({
+  summaryId,
+  isForecast,
+  announcementId,
+}: {
+  summaryId?: string;
+  isForecast?: boolean;
+  announcementId: string;
+}) => {
+  const linkTarget = summaryId
+    ? `/announcement/${announcementId}/summary/${summaryId}/edit`
+    : `/announcement/${announcementId}/summary/create/${isForecast ? "forecast" : "synopsis"}`;
+  const linkText = isForecast ? "Forecast Summary" : "Synopsis Summary";
+  return <Link href={linkTarget}>{linkText}</Link>;
 };
 
 export default async function OpportunityOverviewPage({
@@ -43,14 +53,10 @@ export default async function OpportunityOverviewPage({
     locale,
     namespace: "AnnouncementOverview",
   });
-  const tHeader = await getTranslations({
-    locale,
-    namespace: "AnnouncementDetailsHeader",
-  });
-  let opportunityData: GrantorAnnouncementDetail;
+  let announcementData: GrantorAnnouncementDetail;
   try {
     const response = await getAnnouncement(id);
-    opportunityData = response.data;
+    announcementData = response.data;
   } catch (error) {
     if (error instanceof MissingAuthError) {
       return <UnauthorizedMessage />;
@@ -68,41 +74,23 @@ export default async function OpportunityOverviewPage({
       </GridContainer>
     );
   }
-  const editUrl = "../" + id + "/edit";
+
   const applicationPackageUrl = "../" + id + "/application-package";
-  const summary: Summary =
-    opportunityData.summary ??
-    opportunityData.non_forecast_summary ??
-    opportunityData.forecast_summary;
   let applicationPackage = {};
   if (
-    opportunityData.application_packages &&
-    opportunityData.application_packages.length > 0
+    announcementData.application_packages &&
+    announcementData.application_packages.length > 0
   ) {
     // For now, use the first application package
-    applicationPackage = opportunityData.application_packages[0];
+    applicationPackage = announcementData.application_packages[0];
   }
 
-  const summaryStatus = getProgress(summaryRequiredFields, summary);
-  const applicationPackageStatus = getProgress(
-    applicationPackageRequiredFields,
-    applicationPackage,
-  );
-
-  // TODO(#251): re-enable once the backend implements POST /v1/announcements/{id}/publish
-  const isPublishSupportedByBackend: boolean = false;
-  const publishEnabled =
-    isPublishSupportedByBackend &&
-    computeAnnouncementPublishEligibility(
-      opportunityData.is_draft,
-      summaryStatus,
-      applicationPackageStatus,
-    );
+  const publishEnabled = computeAnnouncementPublishEligibility();
 
   return (
     <div className="bg-white">
       <AnnouncementDetailsHeader
-        opportunityData={opportunityData}
+        announcementData={announcementData}
         locale={locale}
       >
         <OverviewButtons opportunityId={id} publishEnabled={publishEnabled} />
@@ -123,12 +111,39 @@ export default async function OpportunityOverviewPage({
           data-testid="overview-row-edit"
         >
           <div className="tablet:grid-col">
-            <Link href={editUrl}>{t("labels.editOpportunityLink")}</Link>
+            <SummaryLink
+              announcementId={id}
+              summaryId={
+                announcementData.forecast_summary?.announcement_summary_id
+              }
+              isForecast={true}
+            />
           </div>
           <div className="tablet:grid-col">
             <ProgressChecker
               requiredFields={summaryRequiredFields}
-              dataToCheck={summary}
+              dataToCheck={announcementData.forecast_summary || {}}
+            />
+          </div>
+        </div>
+        <hr />
+        <div
+          className="grid-row grid-gap-2 padding-top-2"
+          data-testid="overview-row-edit"
+        >
+          <div className="tablet:grid-col">
+            <SummaryLink
+              announcementId={id}
+              summaryId={
+                announcementData.non_forecast_summary?.announcement_summary_id
+              }
+              isForecast={false}
+            />
+          </div>
+          <div className="tablet:grid-col">
+            <ProgressChecker
+              requiredFields={summaryRequiredFields}
+              dataToCheck={announcementData.non_forecast_summary || {}}
             />
           </div>
         </div>

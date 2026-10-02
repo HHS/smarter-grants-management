@@ -8,30 +8,30 @@ import { Link } from "@trussworks/react-uswds";
 import { USWDSIcon } from "src/components/core/USWDSIcon";
 
 type OpportunityDetailsHeaderProps = {
-  opportunityData: GrantorAnnouncementDetail;
+  announcementData: GrantorAnnouncementDetail;
   locale: string;
   children?: ReactNode;
   hasBackToOverview?: boolean;
 };
 
 export function AnnouncementDetailsHeader({
-  opportunityData,
+  announcementData,
   locale,
   children,
   hasBackToOverview = false,
 }: OpportunityDetailsHeaderProps) {
   const t = useTranslations("AnnouncementDetailsHeader");
 
-  const opportunityId = opportunityData.announcement_id;
-  const opportunityNumber = opportunityData.announcement_number ?? "";
-  const title = opportunityData.announcement_title ?? "";
-  const agency = opportunityData.top_level_agency_name ?? "";
-  const subAgency = opportunityData.agency_name ?? "";
+  const opportunityId = announcementData.announcement_id;
+  const opportunityNumber = announcementData.announcement_number ?? "";
+  const title = announcementData.announcement_title ?? "";
+  const agency = announcementData.top_level_agency_name ?? "";
+  const subAgency = announcementData.agency_name ?? "";
 
   const rawLastUpdated = [
-    opportunityData.updated_at,
-    opportunityData.forecast_summary?.updated_at,
-    opportunityData.non_forecast_summary?.updated_at,
+    announcementData.updated_at,
+    announcementData.forecast_summary?.updated_at,
+    announcementData.non_forecast_summary?.updated_at,
   ]
     .filter(Boolean)
     .sort()
@@ -73,7 +73,7 @@ export function AnnouncementDetailsHeader({
               ) : null}
             </p>
             <div className="display-flex flex-align-center gap-1">
-              {opportunityData.is_draft && (
+              {announcementData.is_draft && (
                 <span className="display-inline-flex flex-align-center bg-accent-warm text-ink padding-y-05 padding-x-1 radius-sm margin-right-1">
                   <USWDSIcon
                     name="schedule"

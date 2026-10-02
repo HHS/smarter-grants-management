@@ -3,17 +3,18 @@ import SummaryEditView from "src/components/announcement/SummaryEditView";
 export const dynamic = "force-dynamic";
 
 type PageProps = {
-  params: Promise<{ id: string; isForecast: string }>;
+  params: Promise<{ id: string; type: string }>;
 };
 
 export default async function AnnouncementSummaryCreatePage({
   params,
 }: PageProps) {
-  const { id, isForecast } = await params;
+  const { id, type } = await params;
+
   return (
     <SummaryEditView
       announcementId={id}
-      isForecast={isForecast === "true"}
+      isForecast={type === "forecast"}
       createMode={true}
     />
   );
