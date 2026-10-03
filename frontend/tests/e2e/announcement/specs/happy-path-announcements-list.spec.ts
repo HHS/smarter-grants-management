@@ -49,10 +49,10 @@ test.describe("Grantor opportunities list page happy path", () => {
     "Happy-path Opportunity list tests are consistently flaky/failing in CI",
   );
   test.beforeEach(({ page: _ }, testInfo) => {
-    if (targetEnv === "staging") {
+    if (targetEnv === "staging" || targetEnv === "dev") {
       test.skip(
         testInfo.project.name !== "Chrome",
-        "Staging MFA login is limited to Chrome to avoid OTP rate-limiting",
+        "Deployed login targets (staging/dev) are limited to Chrome to avoid OTP and auth-provider rate-limiting",
       );
     }
   });

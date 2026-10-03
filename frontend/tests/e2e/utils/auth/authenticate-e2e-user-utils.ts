@@ -9,11 +9,18 @@
  * Test users are chosen via a TestUserKey (see test-users.ts). Spoofing is the
  * only supported path — seeded test users have no login credentials or MFA — so
  * any failure throws and fails the test rather than falling back to a real login.
+ *
+ * Temporary API-key modal behavior is implemented in
+ * temporary-api-key-modal-auth-utils.ts and invoked via a target-URL gate.
  */
 
 import { type BrowserContext, type Page } from "@playwright/test";
 import playwrightEnv from "tests/e2e/playwright-env";
 import { createSpoofedSessionCookie } from "tests/e2e/utils/auth/login-utils";
+import {
+  authenticateWithTemporaryApiKeyModal,
+  isTemporaryApiKeyModalFlow,
+} from "tests/e2e/utils/auth/temporary-api-key-modal-auth-utils";
 import {
   getTestUserId,
   type TestUserKey,
@@ -90,6 +97,11 @@ export async function authenticateE2eUser(
   // request boundary.
   testUserApiKeyOverride: string = playwrightEnv.testUserApiKey,
 ): Promise<void> {
+  if (isTemporaryApiKeyModalFlow()) {
+    await authenticateWithTemporaryApiKeyModal(page, isMobile);
+    return;
+  }
+
   const maskedTestUserApiKey = testUserApiKeyOverride
     ? `${testUserApiKeyOverride.slice(0, 4)}...${testUserApiKeyOverride.slice(-4)}`
     : "empty";
