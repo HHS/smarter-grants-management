@@ -1,9 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base",
-    "group:monorepos",
     "config:recommended",
+    "group:monorepos",
     ":dependencyDashboard"
   ],
   "schedule": [
@@ -75,7 +74,7 @@
     },
     {
       "description": "Group React packages together",
-      "packageNames": [
+      "matchPackageNames": [
         "react",
         "@types/react",
         "react-dom",
@@ -84,7 +83,6 @@
       "groupName": "React",
       "reviewers": [
         "doug-s-nava",
-        "chay-REIsys",
         "glenblosser-nava",
         "nathan-stricker",
         "dghazvini"
@@ -92,13 +90,12 @@
     },
     {
       "description": "Group Storybook packages together",
-      "matchPackagePatterns": [
-        "storybook"
+      "matchPackageNames": [
+        "/storybook/"
       ],
       "groupName": "Storybook",
       "reviewers": [
         "doug-s-nava",
-        "chay-REIsys",
         "glenblosser-nava",
         "nathan-stricker",
         "dghazvini"
@@ -106,11 +103,12 @@
     },
     {
       "description": "Group Next.js packages together",
-      "matchPackagePatterns": ["next"],
+      "matchPackageNames": [
+        "/next/"
+      ],
       "groupName": "Next.js",
       "reviewers": [
         "doug-s-nava",
-        "chay-REIsys",
         "glenblosser-nava",
         "nathan-stricker",
         "dghazvini"
@@ -118,13 +116,12 @@
     },
     {
       "description": "Group I18next packages together",
-      "matchPackagePatterns": [
-        "i18next"
+      "matchPackageNames": [
+        "/i18next/"
       ],
       "groupName": "I18next",
       "reviewers": [
         "doug-s-nava",
-        "chay-REIsys",
         "glenblosser-nava",
         "nathan-stricker",
         "dghazvini"
@@ -133,24 +130,32 @@
     {
       "description": "Group test packages together",
       "enabled": false,
-      "matchPackagePatterns": ["jest", "testing-library"],
+      "matchPackageNames": [
+        "/jest/",
+        "/testing-library/"
+      ],
       "groupName": "Jest"
     },
     {
       "description": "Group CSS-related packages together",
       "enabled": false,
-      "matchPackagePatterns": ["postcss", "sass"],
+      "matchPackageNames": [
+        "/postcss/",
+        "/sass/"
+      ],
       "groupName": "Styling"
     },
     {
       "description": "@uswds/uswds must match the version that react-uswds depends on, so it should be manually updated. If this isn't here, uswds updates will be included in frontend updates. If a renovate PR fails because of the @uswds/uswds package version, manually update that package version in the PR and that should fix the issue.",
       "enabled": false,
-      "matchPackagePatterns": ["@uswds/uswds"],
+      "matchPackageNames": [
+        "@uswds/uswds"
+      ],
       "groupName": "USWDS core"
     },
     {
       "description": "Leave peer dependencies alone",
-      "depTypeList": [
+      "matchDepTypes": [
         "peerDependencies"
       ],
       "enabled": false
@@ -161,15 +166,27 @@
       "matchFileNames": [
         "api/docker-compose.yml"
       ],
-      "matchPackagePatterns": ["postgres"]
+      "matchPackageNames": [
+        "/postgres/"
+      ]
     },
     {
       "description": "Don't upgrade Python itself as annual releases reflect as minor version bumps",
       "enabled": false,
       "matchFileNames": [
-        "api/pyproject.toml"
+        "api/pyproject.toml",
+        "api/docker-python-base"
       ],
-      "matchPackagePatterns": ["python"]
+      "matchPackageNames": [
+        "/python/"
+      ]
+    },
+    {
+      "description": "The API's python base image is built by .github/workflows/cd-python-base-image.yml and pinned in api/Dockerfile as a short-sha tag plus digest, so it has no version stream for Renovate to follow. Bump it by hand from that workflow's summary output.",
+      "enabled": false,
+      "matchPackageNames": [
+        "ghcr.io/hhs/sgm-python-base-image"
+      ]
     }
   ]
 }
