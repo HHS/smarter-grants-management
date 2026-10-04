@@ -21,6 +21,6 @@ Architecture documentation for Opportunity, the part of Smarter Grants Managemen
 ## Working on the docs
 
 - **[CONTRIBUTING.md](CONTRIBUTING.md):** how to edit the model and regenerate the diagrams.
-- **[update-diagrams.sh](update-diagrams.sh):** regenerates the diagrams from the model.
+- **`make update-architecture-diagrams`:** regenerates the diagrams from the model (see [`bin/update-architecture-diagrams`](../../bin/update-architecture-diagrams)).
 - **[architecture.dsl](architecture.dsl):** the Structurizr model that every diagram is generated from.
 - **[diagrams/svg/](diagrams/svg/):** the generated diagrams.

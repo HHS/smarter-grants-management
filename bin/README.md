@@ -69,3 +69,9 @@ These are what CD runs, via `make release-*`:
 | `cleanup-ecr` | Delete unused images from the project's ECR repositories. Supports `--dry-run` |
 | `run-step-function` | Start a step function execution for an app/environment |
 | `util.sh` | Shared helper functions |
+
+## Documentation
+
+| Script | Purpose |
+| --- | --- |
+| `update-architecture-diagrams` | Regenerate `documentation/architecture/diagrams/svg/` from `architecture.dsl`. Requires Docker |

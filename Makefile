@@ -72,6 +72,7 @@ __check_defined = \
 	infra-validate-modules \
 	cleanup-ecr \
 	invalidate-cloudfront-cache \
+	update-architecture-diagrams \
 	release-build \
 	release-deploy \
 	release-image-name \
@@ -165,6 +166,9 @@ invalidate-cloudfront-cache: ## Invalidate CloudFront cache for $ENVIRONMENT
 
 cleanup-ecr: ## Delete untagged/unused images from the project's ECR repositories. Pass DRY_RUN=--dry-run to preview.
 	./bin/cleanup-ecr $(DRY_RUN)
+
+update-architecture-diagrams: ## Regenerate documentation/architecture/diagrams/svg/ from architecture.dsl (requires Docker)
+	./bin/update-architecture-diagrams
 
 infra-format: ## Format infrastructure as code files
 	terraform fmt -recursive infra
