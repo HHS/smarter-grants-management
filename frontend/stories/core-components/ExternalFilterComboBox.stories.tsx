@@ -41,6 +41,7 @@ const meta: Meta<typeof ExternalFilterComboBox> = {
     name: "assistance_listing_numbers",
     labelText: "Assistance listing",
     description: "Search by assistance listing number or program title",
+    placeholder: "Search assistance listings",
     isRequired: false,
     rawErrors: [],
     disabled: false,
@@ -74,6 +75,11 @@ const meta: Meta<typeof ExternalFilterComboBox> = {
     description: {
       control: { type: "text" },
       description: "Help text shown under the label.",
+      table: { type: { summary: "string" } },
+    },
+    placeholder: {
+      control: { type: "text" },
+      description: "Hint text shown inside the empty input.",
       table: { type: { summary: "string" } },
     },
     isRequired: {

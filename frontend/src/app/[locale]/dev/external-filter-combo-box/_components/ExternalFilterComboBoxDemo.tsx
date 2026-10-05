@@ -40,6 +40,7 @@ export default function ExternalFilterComboBoxDemo() {
         name="assistance_listing_number"
         labelText="Assistance listing"
         description={description}
+        placeholder="Search ALNs"
         fetchOptionsUrl={searchUrl}
         formatOptions={formatAssistanceListingOptions}
         onSelectionChange={setSingleSelection}
@@ -52,6 +53,7 @@ export default function ExternalFilterComboBoxDemo() {
         name="assistance_listing_numbers"
         labelText="Assistance listings"
         description={description}
+        placeholder="Search ALNs"
         fetchOptionsUrl={searchUrl}
         formatOptions={formatAssistanceListingOptions}
         multiSelect

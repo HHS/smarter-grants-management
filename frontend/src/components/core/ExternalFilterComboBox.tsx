@@ -24,6 +24,7 @@ type ExternalFilterComboBoxProps = {
   formatOptions: (response: unknown) => ComboBoxOption[];
   buildRequestBody?: (searchTerm: string) => Record<string, unknown>;
   description?: string;
+  placeholder?: string;
   isRequired?: boolean;
   rawErrors?: string[];
   disabled?: boolean;
@@ -60,6 +61,7 @@ export function ExternalFilterComboBox({
   formatOptions,
   buildRequestBody = defaultBuildRequestBody,
   description,
+  placeholder,
   isRequired = false,
   rawErrors = [],
   disabled = false,
@@ -269,6 +271,7 @@ export function ExternalFilterComboBox({
           disabled={disabled}
           inputProps={{
             "aria-invalid": hasErrors || undefined,
+            placeholder,
             // trussworks onChange only fires on selection, so keystrokes are read here
             onChange: (e) => onInputChange(e.target.value),
           }}
