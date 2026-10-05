@@ -84,7 +84,7 @@ export const FormSelectModal = ({
   const handleSubmit = () => {
     submitRequiredForms(
       Object.keys(selectedForms).map((key) => {
-        return { form_id: key, is_required: selectedForms[key] };
+        return { form_id: Number(key), is_required: selectedForms[key] };
       }),
     );
     setTableForms(resetTableForms(forms, selectedForms));
@@ -177,8 +177,7 @@ export const FormSelectModal = ({
                         fontWeight: "normal",
                       }}
                     >
-                      v{form.current_version.major_version}.
-                      {form.current_version.minor_version}
+                      v{form.version}
                     </span>
                     {alwaysRequired ? (
                       <span className="always-required-label">

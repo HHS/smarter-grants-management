@@ -26,10 +26,12 @@ const Header = ({
   locale,
   localDev = false,
   testUsers = [],
+  useApiKeyLogin = true,
 }: {
   locale?: string;
   localDev?: boolean;
   testUsers?: TestUser[];
+  useApiKeyLogin?: boolean;
 }) => {
   const t = useTranslations("Header");
   const [isMobileNavExpanded, setIsMobileNavExpanded] =
@@ -130,6 +132,7 @@ const Header = ({
               ],
               name: "Account",
             }}
+            useApiKeyLogin={useApiKeyLogin}
           />
         </div>
       </USWDSHeader>

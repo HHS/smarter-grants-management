@@ -12,7 +12,7 @@ import { computeAnnouncementPublishEligibility } from "src/utils/announcement/an
 
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { Link } from "@trussworks/react-uswds";
+import { Alert, Link } from "@trussworks/react-uswds";
 
 import { UnauthorizedMessage } from "src/components/core/UnauthorizedMessage";
 import { AnnouncementDetailsHeader } from "src/components/grantor-announcements/AnnouncementDetailsHeader";
@@ -22,7 +22,7 @@ import {
 } from "src/components/grantor-announcements/ProgressChecker";
 import { OverviewButtons } from "./_components/OverviewButtons";
 import {
-  competitionRequiredFields,
+  applicationPackageRequiredFields,
   summaryRequiredFields,
 } from "./RequiredFields";
 
@@ -42,6 +42,10 @@ export default async function OpportunityOverviewPage({
     locale,
     namespace: "AnnouncementOverview",
   });
+  const tHeader = await getTranslations({
+    locale,
+    namespace: "AnnouncementDetailsHeader",
+  });
   let opportunityData: GrantorAnnouncementDetail;
   try {
     const response = await getAnnouncement(id);
@@ -60,22 +64,25 @@ export default async function OpportunityOverviewPage({
     throw error;
   }
   const editUrl = "../" + id + "/edit";
-  const competitionUrl = "../" + id + "/application-package";
+  const applicationPackageUrl = "../" + id + "/application-package";
   const summary: Summary =
     opportunityData.summary ??
     opportunityData.non_forecast_summary ??
     opportunityData.forecast_summary;
-  let competition = {};
+  let applicationPackage = {};
   if (
     opportunityData.application_packages &&
     opportunityData.application_packages.length > 0
   ) {
     // For now, use the first application package
-    competition = opportunityData.application_packages[0];
+    applicationPackage = opportunityData.application_packages[0];
   }
 
   const summaryStatus = getProgress(summaryRequiredFields, summary);
-  const competitionStatus = getProgress(competitionRequiredFields, competition);
+  const applicationPackageStatus = getProgress(
+    applicationPackageRequiredFields,
+    applicationPackage,
+  );
 
   // TODO(#251): re-enable once the backend implements POST /v1/announcements/{id}/publish
   const isPublishSupportedByBackend: boolean = false;
@@ -84,7 +91,7 @@ export default async function OpportunityOverviewPage({
     computeAnnouncementPublishEligibility(
       opportunityData.is_draft,
       summaryStatus,
-      competitionStatus,
+      applicationPackageStatus,
     );
 
   return (
@@ -92,11 +99,20 @@ export default async function OpportunityOverviewPage({
       <AnnouncementDetailsHeader
         opportunityData={opportunityData}
         locale={locale}
-        isNewlyCreated={isNewlyCreated}
       >
         <OverviewButtons opportunityId={id} publishEnabled={publishEnabled} />
       </AnnouncementDetailsHeader>
       <div className="grid-container padding-top-4 padding-bottom-4">
+        {isNewlyCreated && (
+          <Alert
+            type="success"
+            heading={tHeader("alerts.newOpportunityHeading")}
+            headingLevel="h3"
+            className="margin-bottom-4"
+          >
+            {tHeader("alerts.newOpportunityBody")}
+          </Alert>
+        )}
         <div
           className="grid-row grid-gap-2 padding-top-2"
           data-testid="overview-row-edit"
@@ -117,12 +133,14 @@ export default async function OpportunityOverviewPage({
           data-testid="overview-row-application-package"
         >
           <div className="tablet:grid-col">
-            <Link href={competitionUrl}>{t("labels.competitionLink")}</Link>
+            <Link href={applicationPackageUrl}>
+              {t("labels.applicationPackageLink")}
+            </Link>
           </div>
           <div className="tablet:grid-col">
             <ProgressChecker
-              requiredFields={competitionRequiredFields}
-              dataToCheck={competition}
+              requiredFields={applicationPackageRequiredFields}
+              dataToCheck={applicationPackage}
             />{" "}
           </div>
         </div>

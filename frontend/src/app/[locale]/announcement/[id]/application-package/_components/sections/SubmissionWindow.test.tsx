@@ -206,22 +206,22 @@ describe("SubmissionWindow", () => {
   });
 
   describe("date fields", () => {
-    it("renders opening_date DatePicker with correct id", () => {
+    it("renders opening_timestamp DatePicker with correct id", () => {
       render(<SubmissionWindow />);
 
       const openingDateInput = screen.getAllByTestId(
         "date-picker-external-input",
       )[0];
-      expect(openingDateInput).toHaveAttribute("id", "opening_date");
+      expect(openingDateInput).toHaveAttribute("id", "opening_timestamp");
     });
 
-    it("renders closing_date DatePicker with correct id", () => {
+    it("renders closing_timestamp DatePicker with correct id", () => {
       render(<SubmissionWindow />);
 
       const closingDateInput = screen.getAllByTestId(
         "date-picker-external-input",
       )[1];
-      expect(closingDateInput).toHaveAttribute("id", "closing_date");
+      expect(closingDateInput).toHaveAttribute("id", "closing_timestamp");
     });
 
     it("renders both date pickers with correct placeholder", () => {
@@ -234,8 +234,8 @@ describe("SubmissionWindow", () => {
     it("populates form fields from the provided values", () => {
       render(
         <SubmissionWindow
-          openingDate="2026-06-01"
-          closingDate="2026-07-01"
+          openingTimestamp="2026-06-01"
+          closingTimestamp="2026-07-01"
           gracePeriod={30}
         />,
       );
@@ -246,6 +246,19 @@ describe("SubmissionWindow", () => {
       expect(
         screen.getByRole("spinbutton", { name: /graceperiod/i }),
       ).toHaveValue(30);
+    });
+
+    it("populates form fields from a full ISO timestamp value", () => {
+      render(
+        <SubmissionWindow
+          openingTimestamp="2026-06-01T00:00:00.000Z"
+          closingTimestamp="2026-07-01T00:00:00.000Z"
+        />,
+      );
+
+      const dateInputs = screen.getAllByTestId("date-picker-external-input");
+      expect(dateInputs[0]).toHaveValue("06/01/2026");
+      expect(dateInputs[1]).toHaveValue("07/01/2026");
     });
   });
 

@@ -31,7 +31,7 @@ const mockSubmission: AwardRecommendationSubmission = {
     total_requested_amount: "50000.00",
     application: {
       application_id: "63588df8-f2d1-44ed-a201-5804abba696d",
-      competition_id: "63588df8-f2d1-44ed-a201-5804abba696e",
+      applicationPackage_id: "63588df8-f2d1-44ed-a201-5804abba696e",
       organization: {
         organization_id: "63588df8-f2d1-44ed-a201-5804abba696f",
         organization_name: "Test Org",

@@ -946,7 +946,7 @@ describe("announcementEditFormAction", () => {
     expect(mockRedirect).toHaveBeenCalledWith("../overview");
   });
 
-  it("delegates to saveAnnouncementEditAction and redirects to the competition page when submitType = saveAndContinue", async () => {
+  it("delegates to saveAnnouncementEditAction and redirects to the applicationPackage page when submitType = saveAndContinue", async () => {
     const formData = buildValidFormData();
     formData.set("announcement_id", "opp-123");
     formData.set("announcement_summary_id", "sum-456");

@@ -6,7 +6,7 @@
  *
  * Reviewer guide:
  * - This fixture is the source of truth for field selectors, value keys,
- *   and validation messages used by competition-page tests.
+ *   and validation messages used by applicationPackage-page tests.
  * - Prefer metadata changes here over hardcoded values in spec files.
  *
  * Tester parameter guide:
@@ -22,10 +22,10 @@ import {
   type ValidationMetadata,
 } from "tests/e2e/utils/common/types";
 
-/** Keys supported by the competition/application-package fill-data object. */
+/** Keys supported by the applicationPackage/application-package fill-data object. */
 export type ApplicationPackageFieldValueKey =
-  | "competitionId"
-  | "competitionTitle"
+  | "applicationPackageId"
+  | "applicationPackageTitle"
   | "whoCanApply"
   | "submissionsOpen"
   | "submissionsClose"
@@ -47,13 +47,13 @@ export const buildPageFieldsFromDefinitions = (
   // Preserve legacy import path while delegating to the shared builder.
 ) => buildSharedPageFieldsFromDefinitions(definitions, fillData);
 
-/** Submission set-up fields from the competition page. */
+/** Submission set-up fields from the applicationPackage page. */
 export const APPLICATION_PACKAGE_SUBMISSION_SETUP_FIELD_DEFINITIONS: ApplicationPackagePageFieldDefinition[] =
   [
     {
       label: "ApplicationPackage ID",
       type: "text",
-      valueKey: "competitionId",
+      valueKey: "applicationPackageId",
       required: false,
       maxLength: 255,
       characterLimitValidationMessage: "1 character over limit",
@@ -61,7 +61,7 @@ export const APPLICATION_PACKAGE_SUBMISSION_SETUP_FIELD_DEFINITIONS: Application
     {
       label: "ApplicationPackage title",
       type: "text",
-      valueKey: "competitionTitle",
+      valueKey: "applicationPackageTitle",
       required: false,
       maxLength: 255,
       characterLimitValidationMessage: "1 character over limit",
@@ -74,7 +74,7 @@ export const APPLICATION_PACKAGE_SUBMISSION_SETUP_FIELD_DEFINITIONS: Application
     },
   ];
 
-/** Submission window fields from the competition page. */
+/** Submission window fields from the applicationPackage page. */
 export const APPLICATION_PACKAGE_SUBMISSION_WINDOW_FIELD_DEFINITIONS: ApplicationPackagePageFieldDefinition[] =
   [
     {
@@ -98,7 +98,7 @@ export const APPLICATION_PACKAGE_SUBMISSION_WINDOW_FIELD_DEFINITIONS: Applicatio
     },
   ];
 
-/** Agency contact fields from the competition page. */
+/** Agency contact fields from the applicationPackage page. */
 export const APPLICATION_PACKAGE_AGENCY_CONTACT_FIELD_DEFINITIONS: ApplicationPackagePageFieldDefinition[] =
   [
     {
@@ -145,7 +145,7 @@ export const APPLICATION_PACKAGE_AGENCY_CONTACT_FIELD_DEFINITIONS: ApplicationPa
     },
   ];
 
-/** Combined field definitions for the competition/application-package page. */
+/** Combined field definitions for the applicationPackage/application-package page. */
 export const APPLICATION_PACKAGE_FIELD_DEFINITIONS: ApplicationPackagePageFieldDefinition[] =
   [
     ...APPLICATION_PACKAGE_SUBMISSION_SETUP_FIELD_DEFINITIONS,
