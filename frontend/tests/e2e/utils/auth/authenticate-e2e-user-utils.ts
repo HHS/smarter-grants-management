@@ -11,8 +11,8 @@
 
 import { type BrowserContext, type Page } from "@playwright/test";
 import playwrightEnv from "tests/e2e/playwright-env";
-import { createSpoofedSessionCookie } from "tests/e2e/utils/auth/login-utils";
 import { openMobileNav } from "tests/e2e/playwrightUtils";
+import { createSpoofedSessionCookie } from "tests/e2e/utils/auth/login-utils";
 import {
   getTestUserId,
   type TestUserKey,
@@ -266,7 +266,9 @@ export const fetchE2eSessionToken = async (
         `Target environment: ${playwrightEnv.targetEnv || "unknown"}.`,
         `Request URL: ${requestUrl}.`,
         `Current TEST_USER_API_KEY: ${maskedTestUserApiKey}.`,
-        responseBody ? `Response body: ${responseBody}` : "Response body: empty.",
+        responseBody
+          ? `Response body: ${responseBody}`
+          : "Response body: empty.",
         responseHint,
       ].join("\n"),
     );
