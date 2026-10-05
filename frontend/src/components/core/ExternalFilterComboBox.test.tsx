@@ -177,7 +177,7 @@ describe("ExternalFilterComboBox", () => {
   });
 
   // when a search request is sent: minimum length hint, one request per typing pause,
-  // default and custom request body, no request without a login token
+  // default and custom request body, and waiting for the login token before searching
   describe("search", () => {
     it("shows the minimum length hint and does not search below the minimum", async () => {
       renderComboBox();
@@ -240,6 +240,25 @@ describe("ExternalFilterComboBox", () => {
       await waitForDebounce();
 
       expect(mockClientFetch).not.toHaveBeenCalled();
+    });
+
+    it("searches the typed text once the login token arrives", async () => {
+      mockUserToken = undefined;
+      const { rerender } = renderComboBox();
+      typeInSearch("che");
+      await waitForDebounce();
+      expect(mockClientFetch).not.toHaveBeenCalled();
+
+      // the session finishes loading
+      mockUserToken = "a token";
+      rerender(<ExternalFilterComboBox {...props} />);
+      await waitForDebounce();
+
+      expect(mockClientFetch).toHaveBeenCalledTimes(1);
+      expect(mockClientFetch).toHaveBeenCalledWith(props.fetchOptionsUrl, {
+        method: "POST",
+        body: JSON.stringify({ searchTerm: "che" }),
+      });
     });
   });
 

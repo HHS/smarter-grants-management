@@ -101,6 +101,7 @@ export function ExternalFilterComboBox({
   // typed again (or after a newer search started) are ignored
   const latestRequestId = useRef(0);
   const { user } = useUser();
+  const hasToken = Boolean(user?.token);
   const { clientFetch } = useClientFetch<unknown>(
     "Error fetching combo box options",
   );
@@ -133,12 +134,13 @@ export function ExternalFilterComboBox({
   });
 
   // searches once typing pauses for debounceMs; the cleanup cancels the pending
-  // search on every keystroke and when the component unmounts
+  // search on every keystroke and when the component unmounts. Text typed before the
+  // session loads is searched as soon as the token arrives.
   useEffect(() => {
-    if (isBelowMinimumLength) return;
+    if (isBelowMinimumLength || !hasToken) return;
     const timer = setTimeout(() => search(searchTerm), debounceMs);
     return () => clearTimeout(timer);
-  }, [searchTerm, isBelowMinimumLength, debounceMs]);
+  }, [searchTerm, isBelowMinimumLength, debounceMs, hasToken]);
 
   // trussworks ComboBox copies new options into its state without re-rendering
   // (https://github.com/trussworks/react-uswds/issues/3592), so results would not
