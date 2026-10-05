@@ -554,10 +554,12 @@ describe("ExternalFilterComboBox", () => {
         defaultSelectedOptions: [options[0]],
         onSelectionChange,
       });
+      const removeButton = screen.getByRole("button", {
+        name: `Remove ${options[0].label} pill`,
+      });
 
-      fireEvent.click(
-        screen.getByRole("button", { name: `Remove ${options[0].label} pill` }),
-      );
+      expect(removeButton).toBeDisabled();
+      fireEvent.click(removeButton);
 
       expect(onSelectionChange).not.toHaveBeenCalled();
       expect(pillNames()).toEqual([`Remove ${options[0].label} pill`]);

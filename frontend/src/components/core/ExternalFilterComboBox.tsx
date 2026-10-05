@@ -206,7 +206,6 @@ export function ExternalFilterComboBox({
   };
 
   const removeOption = (value: string) => {
-    if (disabled) return;
     updateSelection(
       selectedOptions.filter((selected) => selected.value !== value),
     );
@@ -295,6 +294,7 @@ export function ExternalFilterComboBox({
               <Pill
                 label={option.label}
                 onClose={() => removeOption(option.value)}
+                disabled={disabled}
               />
             </div>
           ))}
