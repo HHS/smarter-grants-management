@@ -1,21 +1,18 @@
 /**
- * authenticateE2eUser is a high-level helper for E2E test authentication.
+ * E2E auth entry point for the frontend Playwright suite.
  *
- * This helper supports two auth paths:
- * - local: bypass normal app login by fetching a server JWT from
- *   /v1/internal/api-jwt and encoding it into a spoofed client session cookie.
- * - staging: navigate to the deployed frontend, click Sign in, and submit the
- *   test user's API key in the staging API-key login modal.
+ * The test suite supports two real login paths:
+ * - local: fetch a JWT from the app's internal API and create a spoofed client session
+ * - staging: open the deployed frontend, click Sign in, and submit the seeded API key in the modal
  *
- * Test users are chosen via a TestUserKey (see test-users.ts). Spoofing is the
- * only supported path — seeded test users have no login credentials or MFA — so
- * any failure throws and fails the test rather than falling back to a real login.
+ * The app only has seeded test users and no normal login credentials for E2E, so the suite
+ * fails fast when required environment values are missing.
  */
 
 import { type BrowserContext, type Page } from "@playwright/test";
 import playwrightEnv from "tests/e2e/playwright-env";
 import { createSpoofedSessionCookie } from "tests/e2e/utils/auth/login-utils";
-import { authenticateWithTemporaryApiKeyModal } from "tests/e2e/utils/auth/temporary-api-key-modal-auth-utils";
+import { openMobileNav } from "tests/e2e/playwrightUtils";
 import {
   getTestUserId,
   type TestUserKey,
@@ -23,8 +20,204 @@ import {
 
 const { baseUrl, apiUrl } = playwrightEnv;
 
-// Fetches a JWT for a test user by calling the internal API-key JWT endpoint.
-// This direct spoof-login path is used by local runs.
+const TEMPORARY_MODAL_HOST_PREFIXES = ["frontend-dev-", "frontend-staging-"];
+const TEMPORARY_MODAL_HOST_SUFFIX = ".us-east-1.elb.amazonaws.com";
+const TEMPORARY_MODAL_LOGIN_TIMEOUT_MS = 60_000;
+
+const isTemporaryModalHost = (hostname: string): boolean =>
+  TEMPORARY_MODAL_HOST_PREFIXES.some((prefix) => hostname.startsWith(prefix)) &&
+  hostname.endsWith(TEMPORARY_MODAL_HOST_SUFFIX);
+
+const effectiveTemporaryModalBaseUrl = (() => {
+  try {
+    const parsedUrl = new URL(baseUrl);
+    if (
+      isTemporaryModalHost(parsedUrl.hostname) &&
+      parsedUrl.protocol === "https:"
+    ) {
+      parsedUrl.protocol = "http:";
+      return parsedUrl.toString();
+    }
+  } catch {
+    return baseUrl;
+  }
+
+  return baseUrl;
+})();
+
+const getMissingStagingApiKeyErrorMessage = ({
+  targetEnv,
+  baseUrl: currentBaseUrl,
+}: {
+  targetEnv: string;
+  baseUrl: string;
+}): string =>
+  [
+    "Missing required E2E API key for the deployed frontend login flow.",
+    `Target environment: ${targetEnv || "unknown"}.`,
+    `Base URL: ${currentBaseUrl || "unknown"}.`,
+    "The run cannot continue until one of these values is populated:",
+    "- STAGING_TEST_USER_API_KEY (GitHub Actions secret) mapped to TEST_USER_API_KEY",
+    "- TEST_USER_API_KEY set in the workflow env",
+    "This is the active staging sign-in flow for the E2E suite.",
+  ].join("\n");
+
+const isTemporaryApiKeyModalFlow = (): boolean => {
+  try {
+    const { hostname } = new URL(baseUrl);
+    return isTemporaryModalHost(hostname);
+  } catch {
+    return false;
+  }
+};
+
+const clickTemporaryApiKeySignInTrigger = async (page: Page) => {
+  const candidateTriggers = [
+    page.getByRole("button", { name: /open login modal/i }).first(),
+    page.getByRole("button", { name: /sign in/i }).first(),
+    page.getByRole("link", { name: /sign in/i }).first(),
+  ];
+
+  for (const trigger of candidateTriggers) {
+    const isVisible = await trigger
+      .isVisible({ timeout: 3000 })
+      .catch(() => false);
+
+    if (isVisible) {
+      await trigger.click();
+      return;
+    }
+  }
+
+  throw new Error(
+    "The staging API-key modal did not open: no visible Sign in trigger was found.",
+  );
+};
+
+const waitForTemporaryApiKeyModalReady = async (page: Page) => {
+  const apiKeyInput = page.locator('input[name="apiKey"]').first();
+
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const inputVisible = await apiKeyInput.isVisible().catch(() => false);
+    if (inputVisible) {
+      return apiKeyInput;
+    }
+
+    await clickTemporaryApiKeySignInTrigger(page);
+    await page.waitForTimeout(800);
+  }
+
+  throw new Error(
+    [
+      "The staging API-key modal did not open after the Sign in button was clicked.",
+      `Target environment: ${playwrightEnv.targetEnv || "unknown"}.`,
+      `Base URL: ${effectiveTemporaryModalBaseUrl}.`,
+    ].join("\n"),
+  );
+};
+
+const isAnySignInTriggerVisible = async (page: Page): Promise<boolean> => {
+  const triggerLocators = [
+    page.getByRole("button", { name: /open login modal/i }).first(),
+    page.getByRole("button", { name: /sign in/i }).first(),
+    page.getByRole("link", { name: /sign in/i }).first(),
+  ];
+
+  for (const locator of triggerLocators) {
+    const visible = await locator.isVisible().catch(() => false);
+    if (visible) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+const waitForTemporaryApiKeyModalLoginState = async (page: Page) => {
+  const startedAt = Date.now();
+  const invalidApiKeyAlert = page
+    .getByRole("alert")
+    .filter({ hasText: /invalid api key/i })
+    .first();
+  const authenticatedMarker = page
+    .locator(
+      'button[aria-controls="Account"], [data-testid="user-menu-trigger"], a:has-text("Sign out"), button:has-text("Sign out")',
+    )
+    .first();
+  const loginHeading = page.getByRole("heading", {
+    name: /login with api key/i,
+  });
+
+  while (Date.now() - startedAt < TEMPORARY_MODAL_LOGIN_TIMEOUT_MS) {
+    if (await invalidApiKeyAlert.isVisible().catch(() => false)) {
+      throw new Error(
+        [
+          "The staging login failed: the UI returned an invalid API key message.",
+          `Target environment: ${playwrightEnv.targetEnv || "unknown"}.`,
+          `Base URL: ${effectiveTemporaryModalBaseUrl}.`,
+          "Use a valid TEST_USER_API_KEY for this host.",
+        ].join("\n"),
+      );
+    }
+
+    if (await authenticatedMarker.isVisible().catch(() => false)) {
+      return;
+    }
+
+    const signInVisible = await isAnySignInTriggerVisible(page);
+    const loginModalVisible = await loginHeading.isVisible().catch(() => false);
+    if (!signInVisible && !loginModalVisible) {
+      return;
+    }
+
+    await page.waitForTimeout(500);
+  }
+
+  throw new Error(
+    [
+      "The staging sign-in flow timed out before the user was marked as authenticated.",
+      `Target environment: ${playwrightEnv.targetEnv || "unknown"}.`,
+      `Base URL: ${effectiveTemporaryModalBaseUrl}.`,
+    ].join("\n"),
+  );
+};
+
+const authenticateWithTemporaryApiKeyModal = async (
+  page: Page,
+  isMobile: boolean,
+) => {
+  const apiKey = playwrightEnv.testUserApiKey;
+
+  if (!apiKey) {
+    throw new Error(
+      getMissingStagingApiKeyErrorMessage({
+        targetEnv: playwrightEnv.targetEnv,
+        baseUrl: effectiveTemporaryModalBaseUrl,
+      }),
+    );
+  }
+
+  await page.goto(effectiveTemporaryModalBaseUrl, {
+    waitUntil: "domcontentloaded",
+  });
+
+  if (isMobile) {
+    await openMobileNav(page);
+  }
+
+  const apiKeyInput = await waitForTemporaryApiKeyModalReady(page);
+  await apiKeyInput.fill(apiKey);
+
+  const loginButton = page.getByRole("button", { name: /^login$/i }).first();
+  await loginButton.waitFor({
+    state: "visible",
+    timeout: TEMPORARY_MODAL_LOGIN_TIMEOUT_MS,
+  });
+  await loginButton.click();
+
+  await waitForTemporaryApiKeyModalLoginState(page);
+};
+
 export const fetchE2eSessionToken = async (
   testUserApiKey: string,
 ): Promise<string> => {
@@ -42,10 +235,9 @@ export const fetchE2eSessionToken = async (
 
     throw new Error(
       [
-        `Unable to fetch E2E session token: missing auth configuration for ${playwrightEnv.targetEnv || "unknown"} environment.`,
-        `Missing required variables: ${missingConfig || "none"}.`,
-        "For staging in CI, set STAGING_API_URL and STAGING_TEST_USER_API_KEY in workflow secrets/env.",
-        "CI mapping must pass STAGING_API_URL -> PLAYWRIGHT_API_URL and STAGING_TEST_USER_API_KEY -> TEST_USER_API_KEY before running Playwright.",
+        `Unable to fetch the E2E session token for ${playwrightEnv.targetEnv || "unknown"}.`,
+        `Missing required values: ${missingConfig || "none"}.`,
+        "For staging in CI, set STAGING_API_URL and STAGING_TEST_USER_API_KEY before the Playwright run begins.",
         `Current PLAYWRIGHT_API_URL: ${apiUrl || "unset"}.`,
         `Current TEST_USER_API_KEY: ${maskedTestUserApiKey}.`,
       ].join("\n"),
@@ -61,26 +253,21 @@ export const fetchE2eSessionToken = async (
     method: "GET",
   });
 
-  const errorTimestamp = new Date().toISOString();
-
   if (!response.ok) {
     const responseBody = await response.text();
-    const statusSpecificHint =
+    const responseHint =
       response.status === 404
-        ? "Backend : verify the staging deployment exposes GET /v1/internal/api-jwt and that PLAYWRIGHT_API_URL points at the correct deployed API."
-        : "Backend : verify the API key is valid and active for /v1/internal/api-jwt in this environment.";
+        ? "Check that the deployed API is exposing GET /v1/internal/api-jwt and that PLAYWRIGHT_API_URL points to the correct host."
+        : "Check that the API key is valid for this environment.";
 
     throw new Error(
       [
-        `unable to fetch e2e user token: response.status ${response.status}.`,
-        `Timestamp: ${errorTimestamp}.`,
+        `Unable to fetch the E2E session token. Status: ${response.status}.`,
         `Target environment: ${playwrightEnv.targetEnv || "unknown"}.`,
         `Request URL: ${requestUrl}.`,
         `Current TEST_USER_API_KEY: ${maskedTestUserApiKey}.`,
-        responseBody
-          ? `Response body: ${responseBody}`
-          : "Response body: empty.",
-        statusSpecificHint,
+        responseBody ? `Response body: ${responseBody}` : "Response body: empty.",
+        responseHint,
       ].join("\n"),
     );
   }
@@ -89,40 +276,23 @@ export const fetchE2eSessionToken = async (
   return json.data.jwt_token;
 };
 
-// Legacy e2e-token flow retained only as a rollback reference.
-// const response = await fetch(`${apiUrl}/v1/internal/e2e-token`, {
-//   headers: {
-//     "X-API-Key": testUserManagerApiKey,
-//     "Content-Type": "application/json",
-//   },
-//   method: "POST",
-//   body: JSON.stringify({ user_id: userId }),
-// });
-
 export async function authenticateE2eUser(
   page: Page,
   context: BrowserContext,
   isMobile: boolean,
   testUserKey: TestUserKey = "primaryOrgAdmin",
-  // Pass through explicitly so both local spoof-login and staging UI
-  // API-key modal login do not rely on hidden/global env lookups at the
-  // request boundary.
   testUserApiKeyOverride: string = playwrightEnv.testUserApiKey,
 ): Promise<void> {
   const maskedTestUserApiKey = testUserApiKeyOverride
     ? `${testUserApiKeyOverride.slice(0, 4)}...${testUserApiKeyOverride.slice(-4)}`
     : "empty";
-  const errorTimestamp = new Date().toISOString();
 
   if (playwrightEnv.targetEnv === "staging") {
-    // Staging uses the UI API-key modal flow instead of GET /v1/internal/api-jwt.
     if (!testUserApiKeyOverride) {
       throw new Error(
         [
-          "Unable to run staging UI API-key login: TEST_USER_API_KEY is not set.",
-          "For CI, set STAGING_TEST_USER_API_KEY and map it to TEST_USER_API_KEY.",
-          `Timestamp: ${errorTimestamp}.`,
-          `Target environment: ${playwrightEnv.targetEnv || "unknown"}.`,
+          "Unable to log in to staging: the E2E API key is missing.",
+          "Set STAGING_TEST_USER_API_KEY and pass it through to TEST_USER_API_KEY for the run.",
           `Current TEST_USER_API_KEY: ${maskedTestUserApiKey}.`,
         ].join("\n"),
       );
@@ -142,12 +312,8 @@ export async function authenticateE2eUser(
 
     throw new Error(
       [
-        `Unable to spoof login: missing E2E auth config for ${playwrightEnv.targetEnv || "unknown"} environment.`,
-        `Missing required variables: ${missingConfig || "none"}.`,
-        "For staging in CI, set STAGING_API_URL and STAGING_TEST_USER_API_KEY in workflow secrets/env.",
-        "CI mapping must pass STAGING_API_URL -> PLAYWRIGHT_API_URL and STAGING_TEST_USER_API_KEY -> TEST_USER_API_KEY before the direct /v1/internal/api-jwt flow can run.",
-        `Timestamp: ${errorTimestamp}.`,
-        `Target environment: ${playwrightEnv.targetEnv || "unknown"}.`,
+        `Unable to create the local E2E session for ${playwrightEnv.targetEnv || "unknown"}.`,
+        `Missing required values: ${missingConfig || "none"}.`,
         `Current PLAYWRIGHT_API_URL: ${apiUrl || "unset"}.`,
         `Current TEST_USER_API_KEY: ${maskedTestUserApiKey}.`,
       ].join("\n"),
@@ -159,11 +325,11 @@ export async function authenticateE2eUser(
   const token = await fetchE2eSessionToken(testUserApiKeyOverride);
   await createSpoofedSessionCookie(context, token);
 
-  // Let the spoofed session cookie settle before navigating. Mobile keeps a
-  // longer delay because smaller viewports hydrate more slowly.
   const preNavWait = isMobile ? 2000 : 1000;
   const postNavWait = isMobile ? 4000 : 2000;
   await page.waitForTimeout(preNavWait);
   await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
   await page.waitForTimeout(postNavWait);
 }
+
+export { isTemporaryApiKeyModalFlow };
