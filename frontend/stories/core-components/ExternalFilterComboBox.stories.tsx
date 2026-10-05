@@ -1,54 +1,26 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { fakeExternalFilterComboBox } from "src/utils/testing/fixtures";
 import { action } from "storybook/actions";
-import { fn } from "storybook/test";
+import { expect, fn, userEvent, within } from "storybook/test";
 
 import { FormEvent } from "react";
-import { Button, ComboBoxOption } from "@trussworks/react-uswds";
+import { Button } from "@trussworks/react-uswds";
 
 import { ExternalFilterComboBox } from "src/components/core/ExternalFilterComboBox";
 
-const mockSearchUrl = "/api/storybook/external-filter-combo-box";
-
-// canned search response, returned for every search regardless of the text typed
-const mockSearchResponse = {
-  data: [
-    {
-      assistance_listing_number: "10.001",
-      program_title: "Agricultural Research",
-    },
-    { assistance_listing_number: "12.345", program_title: "Chemistry Program" },
-    { assistance_listing_number: "66.111", program_title: "Chemical Safety" },
-    {
-      assistance_listing_number: "93.110",
-      program_title: "Maternal and Child Health",
-    },
-  ],
-};
-
-type MockSearchResponse = typeof mockSearchResponse;
-
-const formatMockOptions = (response: unknown): ComboBoxOption[] =>
-  (response as MockSearchResponse).data.map((listing) => ({
-    value: listing.assistance_listing_number,
-    label: `${listing.assistance_listing_number} - ${listing.program_title}`,
-  }));
+// searchResponse is the canned response, returned for every search regardless of the text typed
+const { props, searchResponse, options } = fakeExternalFilterComboBox;
 
 const meta: Meta<typeof ExternalFilterComboBox> = {
   title: "Core Components/ExternalFilterComboBox",
   component: ExternalFilterComboBox,
   args: {
-    id: "external-filter-combo-box",
-    name: "assistance_listing_numbers",
-    labelText: "Assistance listing",
-    description: "Search by assistance listing number or program title",
-    placeholder: "Search assistance listings",
+    ...props,
     isRequired: false,
     rawErrors: [],
     disabled: false,
     minSearchLength: 3,
     debounceMs: 500,
-    fetchOptionsUrl: mockSearchUrl,
-    formatOptions: formatMockOptions,
     multiSelect: false,
     defaultSelectedOptions: [],
     // logged in the Actions panel
@@ -160,8 +132,8 @@ const meta: Meta<typeof ExternalFilterComboBox> = {
   parameters: {
     // handled by the withMockedClientFetch decorator, no real API call is made
     mockFetch: {
-      url: mockSearchUrl,
-      responseBody: mockSearchResponse,
+      url: props.fetchOptionsUrl,
+      responseBody: searchResponse,
       delayMs: 300,
     },
   },
@@ -174,18 +146,44 @@ export const Default: Story = {};
 
 export const DefaultSelection: Story = {
   args: {
-    defaultSelectedOptions: [
-      { value: "12.345", label: "12.345 - Chemistry Program" },
-    ],
+    defaultSelectedOptions: [options[1]],
   },
 };
 
 export const MultiSelect: Story = {
   args: {
     multiSelect: true,
-    defaultSelectedOptions: [
-      { value: "93.110", label: "93.110 - Maternal and Child Health" },
-    ],
+    defaultSelectedOptions: [options[3]],
+  },
+};
+
+// the container is as wide as the input, so the pills wrap onto several lines
+export const SeveralPills: Story = {
+  args: {
+    multiSelect: true,
+    defaultSelectedOptions: options,
+  },
+  decorators: [
+    (StoryComponent) => (
+      <div className="maxw-mobile-lg">
+        <StoryComponent />
+      </div>
+    ),
+  ],
+};
+
+export const Disabled: Story = {
+  args: {
+    disabled: true,
+    multiSelect: true,
+    defaultSelectedOptions: [options[0]],
+  },
+};
+
+export const RequiredWithError: Story = {
+  args: {
+    isRequired: true,
+    rawErrors: ["This is a required field."],
   },
 };
 
@@ -215,9 +213,7 @@ export const FormSubmission: Story = {
 export const FormSubmissionMultiSelect: Story = {
   args: {
     multiSelect: true,
-    defaultSelectedOptions: [
-      { value: "93.110", label: "93.110 - Maternal and Child Health" },
-    ],
+    defaultSelectedOptions: [options[3]],
   },
   render: renderInForm,
 };
@@ -225,8 +221,8 @@ export const FormSubmissionMultiSelect: Story = {
 export const Loading: Story = {
   parameters: {
     mockFetch: {
-      url: mockSearchUrl,
-      responseBody: mockSearchResponse,
+      url: props.fetchOptionsUrl,
+      responseBody: searchResponse,
       delayMs: 5000,
     },
   },
@@ -237,9 +233,34 @@ export const ErrorStory: Story = {
   name: "Error",
   parameters: {
     mockFetch: {
-      url: mockSearchUrl,
+      url: props.fetchOptionsUrl,
       responseBody: { message: "Internal server error" },
       status: 500,
+    },
+  },
+};
+
+// types a search when the story loads, so the dropdown opens with results
+export const PopulatedResults: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.type(canvas.getByRole("combobox"), "che");
+    await expect(
+      await canvas.findByRole(
+        "option",
+        { name: options[0].label },
+        { timeout: 3000 },
+      ),
+    ).toBeVisible();
+  },
+};
+
+export const NoResults: Story = {
+  parameters: {
+    mockFetch: {
+      url: props.fetchOptionsUrl,
+      responseBody: { ...searchResponse, data: [] },
+      delayMs: 300,
     },
   },
 };
