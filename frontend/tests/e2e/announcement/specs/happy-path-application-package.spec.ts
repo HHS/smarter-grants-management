@@ -36,7 +36,7 @@ import {
 import { buildApplicationPackageHappyPathFillData } from "tests/e2e/announcement/fixtures/application-package-fill-data";
 import playwrightEnv from "tests/e2e/playwright-env";
 import { VALID_TAGS } from "tests/e2e/tags";
-import { createOpportunity } from "tests/e2e/utils/announcement/create-announcement-utils";
+import { createOpportunity } from "tests/e2e/utils/announcements/create-announcement-utils";
 import { assertOverviewSectionStatus } from "tests/e2e/utils/announcements/overview-status-utils";
 import { waitForOpportunityRowByStatus } from "tests/e2e/utils/announcements/table-row-utils";
 import { authenticateE2eUser } from "tests/e2e/utils/auth/authenticate-e2e-user-utils";
@@ -63,13 +63,16 @@ test.describe("Grantor Opportunity ApplicationPackage Happy Path", () => {
       { page, context }: { page: Page; context: BrowserContext },
       testInfo: TestInfo,
     ) => {
-      test.setTimeout(300_000);
+      test.setTimeout(150_000);
 
       //--------------Test setup start here----------------
       await authenticateE2eUser(
         page,
         context,
         !!testInfo.project.name.match(/[Mm]obile/),
+        "primaryOrgAdmin",
+        // Temporary use of testUserApiKey for authentication
+        playwrightEnv.testUserApiKey,
       );
 
       const opportunityFillData = buildOpportunityHappyPathFillData(new Date());
