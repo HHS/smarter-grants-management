@@ -669,9 +669,9 @@ describe("AnnouncementEditForm - funding details interactions", () => {
     const textarea = screen.getByRole("textbox", {
       name: /labels\.closeDateExplanation/i,
     });
-    fireEvent.change(textarea, { target: { value: "No close date set" } });
+    fireEvent.change(textarea, { target: { value: "Test description text" } });
 
-    expect(textarea).toHaveValue("No close date set");
+    expect(textarea).toHaveValue("Test description text");
   });
 });
 

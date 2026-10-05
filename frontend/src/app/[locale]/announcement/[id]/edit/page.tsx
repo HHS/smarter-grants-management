@@ -1,5 +1,3 @@
-import SummaryEditView from "src/components/announcement/SummaryEditView";
-
 export const dynamic = "force-dynamic";
 
 type PageProps = {
@@ -9,5 +7,5 @@ type PageProps = {
 // this needs to be changed from a summary edit page into an announcement edit page
 export default async function AnnouncementEditPage({ params }: PageProps) {
   const { id } = await params;
-  return <SummaryEditView announcementId={id} isForecast={false} />;
+  return <div>Edit the base announcement fields for {id}!!!</div>;
 }

@@ -744,7 +744,7 @@ export default function AnnouncementEditForm({
                 <DynamicFieldLabel
                   idFor={getTimestampFieldForSummaryType(
                     isForecast,
-                    "close_timestamp",
+                    "close_timestamp_description",
                   )}
                   title={t("labels.closeDateExplanation")}
                   description={t("content.closeDateExplanationHint")}
@@ -752,17 +752,17 @@ export default function AnnouncementEditForm({
                 <Textarea
                   id={getTimestampFieldForSummaryType(
                     isForecast,
-                    "close_timestamp",
+                    "close_timestamp_description",
                   )}
                   name={getTimestampFieldForSummaryType(
                     isForecast,
-                    "close_timestamp",
+                    "close_timestamp_description",
                   )}
                   defaultValue={
                     initialValues[
                       getTimestampFieldForSummaryType(
                         isForecast,
-                        "close_timestamp",
+                        "close_timestamp_description",
                       )
                     ]
                   }
