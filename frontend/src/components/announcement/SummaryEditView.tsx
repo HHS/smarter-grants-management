@@ -238,7 +238,7 @@ export default async function SummaryEditView({
   const stateValidationError = validateProperState({
     announcementId,
     summaryId,
-    isForecast,
+    isForecast: forecastMode,
     createMode,
     announcementData,
   });
@@ -264,6 +264,7 @@ export default async function SummaryEditView({
       summary: activeSummary,
     },
     createMode,
+    forecastMode,
   );
 
   return (
@@ -296,6 +297,7 @@ export default async function SummaryEditView({
                       .announcement_summary_id
               }
               isForecast={forecastMode}
+              createMode={createMode}
               initialValues={initialValues}
               initialAttachments={
                 announcementData.announcement_attachments ?? []

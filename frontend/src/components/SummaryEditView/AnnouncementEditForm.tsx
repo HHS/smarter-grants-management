@@ -14,6 +14,7 @@ import { AnnouncementAttachment } from "src/types/announcement/announcementAttac
 import { AnnouncementEditFormValues } from "src/utils/announcementEditFormConfig";
 import { getConfiguredDayJs } from "src/utils/dateUtil";
 import { getNumericAmountFromString } from "src/utils/formatCurrencyUtil";
+import { id } from "zod/v4/locales";
 
 import { useTranslations } from "next-intl";
 import {
@@ -126,6 +127,7 @@ type AnnouncementEditFormProps = {
   initialValues: AnnouncementEditFormValues;
   initialAttachments?: AnnouncementAttachment[];
   disable?: boolean;
+  createMode?: boolean;
 };
 
 export default function AnnouncementEditForm({
@@ -135,6 +137,7 @@ export default function AnnouncementEditForm({
   initialValues,
   initialAttachments = [],
   disable = false,
+  createMode = false,
 }: AnnouncementEditFormProps) {
   const t = useTranslations("OpportunityEdit");
   const formRef = useRef<HTMLFormElement>(null);
@@ -152,7 +155,12 @@ export default function AnnouncementEditForm({
     initialValues.applicant_types,
   );
   const [formState, formAction] = useActionState(
-    announcementEditFormAction.bind(null, isForecast),
+    announcementEditFormAction.bind(
+      null,
+      isForecast,
+      createMode,
+      announcementId,
+    ),
     {
       validationErrors: {},
     },

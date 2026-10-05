@@ -509,6 +509,8 @@ export async function saveAnnouncementEditAction(
 
 export async function announcementEditFormAction(
   isForecast: boolean,
+  createMode: boolean,
+  announcementId: string,
   _prevState: OpportunityEditActionState,
   formData: FormData,
 ): Promise<OpportunityEditActionState> {
@@ -517,18 +519,9 @@ export async function announcementEditFormAction(
   const hasValidationErrors =
     saveResult.validationErrors &&
     Object.keys(saveResult.validationErrors).length > 0;
-  if (saveResult.errorMessage || hasValidationErrors) {
+  if (saveResult.errorMessage || hasValidationErrors || !createMode) {
     return saveResult;
   }
 
-  const submitType = formData.get("submitType");
-  if (submitType === "saveAndExit") {
-    redirect("../overview");
-  } else if (submitType === "saveAndGoBack") {
-    redirect("../overview");
-  } else if (submitType === "saveAndContinue") {
-    redirect("../application-package");
-  } else {
-    return saveResult;
-  }
+  return redirect(`/announcement/${announcementId}/overview`);
 }
