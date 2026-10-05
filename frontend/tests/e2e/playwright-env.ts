@@ -8,10 +8,7 @@ if (fs.existsSync(envPath)) {
   dotenv.config({ path: envPath, quiet: true });
 }
 
-export const SUPPORTED_ENVS = [
-  "local",
-  "staging",
-] as const;
+export const SUPPORTED_ENVS = ["local", "staging"] as const;
 
 export type SupportedEnvs = (typeof SUPPORTED_ENVS)[number];
 
