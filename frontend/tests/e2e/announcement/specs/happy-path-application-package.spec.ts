@@ -48,10 +48,10 @@ const { targetEnv } = playwrightEnv;
 
 test.describe("Grantor Opportunity ApplicationPackage Happy Path", () => {
   test.beforeEach(({ page: _ }, testInfo) => {
-    if (targetEnv === "staging" || targetEnv === "dev") {
+    if (targetEnv === "staging") {
       test.skip(
         testInfo.project.name !== "Chrome",
-        "Deployed login targets (staging/dev) are limited to Chrome to avoid OTP and auth-provider rate-limiting",
+        "Staging login target is limited to Chrome to avoid OTP and auth-provider rate-limiting",
       );
     }
   });

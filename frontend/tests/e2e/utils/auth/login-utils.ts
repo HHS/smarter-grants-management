@@ -4,12 +4,15 @@ import playwrightEnv from "tests/e2e/playwright-env";
 
 /*
 
-  this file contains functionality for creating client side cookies to spoof a logged in user
-  for use in locally running Playwright targeted environments.
+  This file creates the client-side session cookie used by Playwright to spoof a
+  logged-in user in local/dev E2E runs.
 
-  this won't work in any deployed environment
+  The app validates the spoofed session exactly as it does for the real server
+  session, so this helper intentionally mirrors the app's session semantics
+  without depending on the full browser login flow.
 
-  most of this is copied from src/services/auth/session in order to keep app logic and test logic separate
+  Most of this logic is copied from src/services/auth/session so the app logic
+  and test logic remain intentionally separate.
 
 */
 
@@ -36,8 +39,8 @@ export const newExpirationDate = () =>
   new Date(Date.now() + 12 * 60 * 60 * 1000);
 
 /*
-  encrypts a server session token (fetched from GET /v1/internal/api-jwt)
-  into a fake client token.
+  Encrypts a server session token (fetched from GET /v1/internal/api-jwt in the
+  local/dev auth flow) into a fake client token.
 */
 export const generateSpoofedSession = async (
   serverToken: string,

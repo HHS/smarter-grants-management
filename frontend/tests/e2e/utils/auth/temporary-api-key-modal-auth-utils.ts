@@ -1,8 +1,9 @@
 /*
-  Temporary API-key modal authentication helpers
-  This module is intentionally scoped to frontend-dev/frontend-staging deployed hosts and is
-  called by authenticate-e2e-user-utils when the PLAYWRIGHT_BASE_URL hostname
-  matches the temporary modal URL gate.
+  Staging API-key modal login helpers.
+
+  Staging runs authenticate by opening the deployed frontend and completing the
+  "Login with API key" modal UI with TEST_USER_API_KEY. Local/dev continue to
+  use the direct spoof-login flow in authenticate-e2e-user-utils.ts.
 */
 
 import { type Page } from "@playwright/test";
@@ -48,9 +49,8 @@ export const getMissingTemporaryApiKeyErrorMessage = ({
     `Base URL: ${currentBaseUrl || "unknown"}.`,
     "Expected one of the following secrets/vars to be populated before the run starts:",
     "- STAGING_TEST_USER_API_KEY (GitHub Actions secret) -> mapped to TEST_USER_API_KEY in the workflow",
-    "- E2E_API_KEY (local/CI env override) -> used before TEST_USER_API_KEY as a fallback",
     "- TEST_USER_API_KEY (workflow env) -> direct API key used by the E2E auth helper",
-    "This temporary fallback is enabled only for frontend-dev-* or frontend-staging-* URLs.",
+    "This helper is the active auth path for staging UI API-key sign in.",
     "The job cannot authenticate without a valid key, so the E2E suite exits before the scenario assertions run.",
   ].join("\n");
 };
@@ -147,7 +147,7 @@ const waitForTemporaryApiKeyModalLoginState = async (page: Page) => {
           "Temporary API-key modal login failed: UI returned 'Invalid API key'.",
           `Target environment: ${playwrightEnv.targetEnv || "unknown"}.`,
           `Base URL: ${effectiveTemporaryModalBaseUrl}.`,
-          "Set E2E_API_KEY (or TEST_USER_API_KEY fallback) to a valid key for this host.",
+          "Set TEST_USER_API_KEY to a valid key for this host.",
         ].join("\n"),
       );
     }
@@ -179,7 +179,7 @@ export const authenticateWithTemporaryApiKeyModal = async (
   page: Page,
   isMobile: boolean,
 ) => {
-  const apiKeyForTemporaryModal = playwrightEnv.e2eApiKey;
+  const apiKeyForTemporaryModal = playwrightEnv.testUserApiKey;
 
   if (!apiKeyForTemporaryModal) {
     throw new Error(
@@ -190,7 +190,8 @@ export const authenticateWithTemporaryApiKeyModal = async (
     );
   }
 
-  // Temporary fallback. Remove after dev/staging auth is unified.
+  // Active staging flow: navigate to the deployed frontend and authenticate
+  // through the API-key modal instead of API JWT fetch.
 
   await page.goto(effectiveTemporaryModalBaseUrl, {
     waitUntil: "domcontentloaded",

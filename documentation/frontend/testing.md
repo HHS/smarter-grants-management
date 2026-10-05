@@ -12,12 +12,8 @@ Playwright tests can be directed at any deployed environment by adjusting enviro
 PLAYWRIGHT_TARGET_ENV=staging
 PLAYWRIGHT_BASE_URL=<mgmt staging URL>
 PLAYWRIGHT_API_URL=<mgmt staging API URL>
-TEST_USER_EMAIL=<from 1password>
-TEST_USER_PASSWORD=<from 1password>
-TEST_USER_MFA_KEY=<from 1password>
 SESSION_SECRET=<from 1password>
 TEST_USER_API_KEY=<from 1password>
-E2E_API_KEY=<from 1password, temporary dev modal fallback>
 ```
 
 Note that tests will still run without having secret env vars set, but tests involving login will fail.
@@ -28,11 +24,14 @@ The correct values for secrets can be found in 1Password, AWS SSM, or ask a team
 
 There are situations where we want to be able to test a "logged in" experience without having to script the test through the full login flow. In order to support this we have built a system to spoof the user login by placing a session cookie into the browser context. This system works by creating a client side cookie on the browser context within Playwright that will function the same as the session cookie produced as the output of the real login process.
 
-Local and most deployed environments use the same mechanism: Playwright fetches a JWT for a seeded test user from the internal endpoint `GET /v1/internal/api-jwt`, then encodes it into a spoofed client session cookie. The request is authorized by a direct user API key, and the target test user is chosen per test via a readable key (see [test-users.ts](../../frontend/tests/e2e/utils/auth/test-users.ts)). Seeded test users have no login credentials, so if spoofing fails the test fails.
+Auth behavior differs by target environment:
 
-Temporary exception: for frontend dev/staging URLs that match `frontend-dev-*.us-east-1.elb.amazonaws.com` or `frontend-staging-*.us-east-1.elb.amazonaws.com`, E2E uses a temporary API key modal login fallback (Issue #517) instead of cookie spoofing. This fallback is gated to those deployed hosts and reads `E2E_API_KEY` from environment configuration. If `E2E_API_KEY` is missing for that target, tests fail fast with a clear error.
+- local/dev: Playwright fetches a JWT for a seeded test user from `GET /v1/internal/api-jwt`, then encodes it into a spoofed client session cookie.
+- staging: Playwright navigates to the deployed frontend, clicks **Sign in**, and submits `TEST_USER_API_KEY` in the UI "Login with API key" modal.
 
-The system is defined in [Login Utils](../../frontend/tests/e2e/utils/auth/login-utils.ts), [Authenticate E2E User Utils](../../frontend/tests/e2e/utils/auth/authenticate-e2e-user-utils.ts), and the temporary modal fallback helper [Temporary API Key Modal Auth Utils](../../frontend/tests/e2e/utils/auth/temporary-api-key-modal-auth-utils.ts).
+The target test user is chosen per test via a readable key (see [test-users.ts](../../frontend/tests/e2e/utils/auth/test-users.ts)). Seeded test users have no login credentials, so if authentication fails the test fails.
+
+The system is defined in [Login Utils](../../frontend/tests/e2e/utils/auth/login-utils.ts) and [Authenticate E2E User Utils](../../frontend/tests/e2e/utils/auth/authenticate-e2e-user-utils.ts).
 
 #### Local setup
 
@@ -42,9 +41,7 @@ The system is defined in [Login Utils](../../frontend/tests/e2e/utils/auth/login
 
 #### Switching between local and deployed environments
 
-Whether running against a local or deployed environment, Playwright reads the **same** env var, `TEST_USER_API_KEY` — only its value differs (the local seeded key vs. the key for the deployed environment). So to switch targets on your machine, change `PLAYWRIGHT_TARGET_ENV` and swap the `TEST_USER_API_KEY` (and `SESSION_SECRET`) value to match. In CI this is handled automatically: the local workflow passes the seeded local API key and the deployed workflow injects the key for the deployed environment, both into `TEST_USER_API_KEY`.
-
-For temporary dev/staging modal fallback runs, also set `E2E_API_KEY` to the API key expected by that frontend environment.
+Whether running against a local or deployed environment, Playwright reads the **same** env var, `TEST_USER_API_KEY` (with `STAGING_TEST_USER_API_KEY` accepted as a CI compatibility fallback) — only its value differs (the local seeded key vs. the key for the deployed environment). So to switch targets on your machine, change `PLAYWRIGHT_TARGET_ENV` and swap the `TEST_USER_API_KEY` (and `SESSION_SECRET` for spoof-login environments) value to match.
 
 ### Test groups
 

@@ -5,11 +5,12 @@ import playwrightEnv, { SupportedEnvs } from "tests/e2e/playwright-env";
   the static user id for the active target environment. Tests pass a TestUserKey
   to authenticateE2eUser to choose which seeded user to log in as.
 
-  Each seeded user is configured in the API seed so its JWT can be fetched via
-  GET /v1/internal/api-jwt using that user's direct API key. This file exposes
-  the logical test-user keys that correspond to seeded identities prepared
-  before the E2E tests run. To add a test user: seed it with a static id in
-  api/tests/lib/seed_e2e.py, then add a matching entry here.
+  For local spoof-login runs, each seeded user is configured in the API seed
+  so its JWT can be fetched via GET /v1/internal/api-jwt using that user's
+  direct API key. This file exposes the logical test-user keys that correspond
+  to seeded identities prepared before the E2E tests run. To add a test user:
+  seed it with a static id in api/tests/lib/seed_e2e.py, then add a matching
+  entry here.
 */
 
 export type TestUserKey =
@@ -64,24 +65,12 @@ const STAGING_TEST_ORG_IDS: Record<TestOrgKey, string> = {
 
 export const TEST_USER_IDS = {
   local: LOCAL_TEST_USER_IDS,
-  // Dev reuses the same provisioned identities as staging-like deployed targets.
-  dev: STAGING_TEST_USER_IDS,
   staging: STAGING_TEST_USER_IDS,
-  grantee1: STAGING_TEST_USER_IDS,
-  grantee2: STAGING_TEST_USER_IDS,
-  grantor1: STAGING_TEST_USER_IDS,
-  grantor2: STAGING_TEST_USER_IDS,
 };
 
 export const TEST_ORG_IDS = {
   local: LOCAL_TEST_ORG_IDS,
-  // Dev reuses the same org fixtures as staging-like deployed targets.
-  dev: STAGING_TEST_ORG_IDS,
   staging: STAGING_TEST_ORG_IDS,
-  grantee1: STAGING_TEST_ORG_IDS,
-  grantee2: STAGING_TEST_ORG_IDS,
-  grantor1: STAGING_TEST_ORG_IDS,
-  grantor2: STAGING_TEST_ORG_IDS,
 };
 
 export const getTestUserId = (key: TestUserKey): string =>
