@@ -14,7 +14,6 @@ import { AnnouncementAttachment } from "src/types/announcement/announcementAttac
 import { AnnouncementEditFormValues } from "src/utils/announcementEditFormConfig";
 import { getConfiguredDayJs } from "src/utils/dateUtil";
 import { getNumericAmountFromString } from "src/utils/formatCurrencyUtil";
-import { id } from "zod/v4/locales";
 
 import { useTranslations } from "next-intl";
 import {

@@ -9,7 +9,6 @@ import {
   GrantorAnnouncementDetail,
 } from "src/types/announcement/announcementResponseTypes";
 import { buildAnnouncementEditInitialValues } from "src/utils/announcementEditFormConfig";
-import { timestampPassed } from "src/utils/dateUtil";
 
 import { notFound } from "next/navigation";
 import { Alert, Button, GridContainer } from "@trussworks/react-uswds";
@@ -106,6 +105,7 @@ const validateProperState = ({
   return false;
 };
 
+// determind whether we're dealing with a forecast or non-forecast summary
 const determineForecastMode = (
   announcemenData: GrantorAnnouncementDetail,
   announcementSummaryId?: string,
@@ -145,26 +145,6 @@ const getActiveSummary = (
     : announcementData.non_forecast_summary;
 };
 
-/*
-  forecast vs non_forecast differences
-
-  - disable editing on forecast if
-    - not create mode
-    - forecast mode
-    - non_forecast_summary exists
-    - forecast_summary.forecasted_close_timestamp has passed
-  - disable overview forecast link if
-    - non_forecast_summary exists
-    - forecast_summary.forecasted_close_timestamp has passed
-  - disable forecast specific fields when non forecast mode
-    - forecasted_post_timestamp
-    - forecasted_close_timestamp
-    - forecasted_close_timestamp_description
-  - disable synopsis specific fields when in forecast mode
-    - post_timestamp
-    - close_timestamp
-    - close_timestamp_description
-*/
 export default async function SummaryEditView({
   announcementId,
   summaryId,
@@ -225,15 +205,6 @@ export default async function SummaryEditView({
       </GridContainer>
     );
   }
-
-  const disableForecastEditing =
-    !createMode &&
-    forecastMode &&
-    announcementData.forecast_summary?.forecasted_close_timestamp
-      ? timestampPassed(
-          announcementData.forecast_summary?.forecasted_close_timestamp,
-        )
-      : false;
 
   const stateValidationError = validateProperState({
     announcementId,
@@ -302,7 +273,7 @@ export default async function SummaryEditView({
               initialAttachments={
                 announcementData.announcement_attachments ?? []
               }
-              disable={disableForecastEditing}
+              disable={false} // logic for this is unclear, we'll come back to it
             />
           </section>
         </div>
