@@ -243,8 +243,8 @@ describe("ExternalFilterComboBox", () => {
     });
   });
 
-  // what the user sees while and after a search runs: results and their count, focus kept,
-  // no results, loading spinner, error, and out-of-order responses ignored
+  // what the user sees before, while and after a search runs: results and their count, focus
+  // kept, no results, loading spinner and message, error, out-of-order responses ignored
   describe("async states", () => {
     it("shows results as soon as they arrive and announces how many", async () => {
       renderComboBox();
@@ -314,6 +314,18 @@ describe("ExternalFilterComboBox", () => {
       });
 
       expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
+    });
+
+    it("shows loading, not no results, while waiting for typing to pause", () => {
+      renderComboBox();
+      focusSearch();
+
+      typeInSearch("che");
+
+      expect(mockClientFetch).not.toHaveBeenCalled();
+      expect(
+        within(screen.getByRole("listbox")).getByText("Loading results..."),
+      ).toBeVisible();
     });
 
     it("shows the error message and drops earlier results when a search fails", async () => {

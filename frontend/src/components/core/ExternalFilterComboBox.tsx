@@ -213,13 +213,14 @@ export function ExternalFilterComboBox({
   // the only text trussworks can show inside the dropdown, shown when there are no options
   const dropdownMessage = isBelowMinimumLength
     ? minimumLengthHint(minSearchLength)
-    : searchStatus === "loading"
-      ? loadingMessage
-      : searchStatus === "error"
-        ? errorMessage
-        : hasOnlySelectedResults
+    : searchStatus === "error"
+      ? errorMessage
+      : searchStatus === "success"
+        ? hasOnlySelectedResults
           ? noNewResultsMessage
-          : noResultsMessage;
+          : noResultsMessage
+        : // the search is waiting for typing to pause, or still loading
+          loadingMessage;
 
   // trussworks' own screen reader status is computed before async results arrive,
   // so the search state is announced here instead
