@@ -19,6 +19,7 @@ from src.services.announcements.authorization import has_access
 
 def announcement_response_options() -> tuple[ORMOption, ...]:
     return (
+        selectinload(Announcement.opportunity),
         selectinload(Announcement.announcement_assistance_listings).selectinload(
             AnnouncementAssistanceListing.assistance_listing
         ),
@@ -28,6 +29,7 @@ def announcement_response_options() -> tuple[ORMOption, ...]:
             selectinload(AnnouncementSummary.link_funding_instruments),
         ),
         selectinload(Announcement.application_packages).options(
+            selectinload(ApplicationPackage.announcement).selectinload(Announcement.opportunity),
             selectinload(ApplicationPackage.application_package_forms),
             selectinload(ApplicationPackage.announcement_assistance_listing),
             selectinload(ApplicationPackage.link_application_package_open_to_applicant),

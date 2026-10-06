@@ -28,6 +28,7 @@ def get_application_package(
         .where(ApplicationPackage.is_deleted.is_(False))
         .where(Announcement.is_deleted.is_(False))
         .options(
+            selectinload(ApplicationPackage.announcement).selectinload(Announcement.opportunity),
             selectinload(ApplicationPackage.application_package_forms),
             selectinload(ApplicationPackage.link_application_package_open_to_applicant),
             selectinload(ApplicationPackage.application_package_instructions).selectinload(

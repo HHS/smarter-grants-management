@@ -1,7 +1,34 @@
 import pytest
 from sqlalchemy.exc import IntegrityError
 
-from tests.db.models.factories import AnnouncementFactory, AnnouncementSummaryFactory
+from tests.db.models.factories import (
+    AnnouncementFactory,
+    AnnouncementSummaryFactory,
+    OpportunityFactory,
+)
+
+
+def test_opportunity_factory_create(db_session, enable_factory_create):
+    opportunity = OpportunityFactory.create()
+
+    assert opportunity.opportunity_id is not None
+    assert opportunity.partner_code
+
+
+def test_opportunity_has_many_announcements(db_session, enable_factory_create):
+    opportunity = OpportunityFactory.create()
+    announcements = AnnouncementFactory.create_batch(size=2, opportunity=opportunity)
+
+    db_session.refresh(opportunity)
+    assert {a.announcement_id for a in opportunity.announcements} == {
+        a.announcement_id for a in announcements
+    }
+    assert announcements[0].partner_code == opportunity.partner_code
+
+
+def test_opportunity_partner_code_required(db_session, enable_factory_create):
+    with pytest.raises(IntegrityError, match="not-null constraint"):
+        OpportunityFactory.create(partner_code=None)
 
 
 def test_announcement_summary_unique_constraint(db_session, enable_factory_create):

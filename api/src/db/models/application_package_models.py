@@ -82,6 +82,10 @@ class ApplicationPackage(GrantorSchemaTable, TimestampMixin):
         ),
     )
 
+    @property
+    def partner_code(self) -> str:
+        return self.announcement.partner_code
+
 
 class ApplicationPackageForm(GrantorSchemaTable, TimestampMixin):
     __tablename__ = "application_package_form"
