@@ -50,8 +50,10 @@ export function ApplicationPackageForm({
   const existingFiles: UploadFileMetadata[] =
     applicationPackage?.application_package_instructions?.map(
       (instruction) => ({
-        id: instruction.applicationPackage_instruction_id,
+        id: instruction.application_package_instruction_id,
         fileName: instruction.file_name,
+        fileSize: instruction.file_size_bytes,
+        mimeType: instruction.mime_type,
         updatedAt: instruction.updated_at,
         downloadUrl: instruction.download_path,
       }),

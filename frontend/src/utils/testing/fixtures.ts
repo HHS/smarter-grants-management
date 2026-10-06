@@ -342,7 +342,7 @@ export const fakeApplicationPackage = {
         "https://cdn.example.com/application-package-instructions/file.pdf",
       file_name: "applicationPackage_instructions.pdf",
       updated_at: "2025-06-13T20:17:16.491Z",
-      applicationPackage_instruction_id: "1",
+      application_package_instruction_id: "1",
     },
   ],
   applicationPackage_title: "cool applicationPackage",
