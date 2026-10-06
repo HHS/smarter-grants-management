@@ -85,6 +85,9 @@ class ApplicationPackage(GrantorSchemaTable, TimestampMixin):
     @property
     def partner_code(self) -> str:
         return self.announcement.partner_code
+    application_package_recipients: Mapped[list[ApplicationPackageRecipient]] = relationship(
+        back_populates="application_package", uselist=True, cascade="all, delete-orphan"
+    )
 
 
 class ApplicationPackageForm(GrantorSchemaTable, TimestampMixin):
@@ -132,6 +135,29 @@ class LinkApplicationPackageOpenToApplicant(GrantorSchemaTable, TimestampMixin):
             primary_key=True,
         )
     )
+
+
+class ApplicationPackageRecipient(GrantorSchemaTable, TimestampMixin):
+    __tablename__ = "application_package_recipient"
+
+    recipient_id: Mapped[uuid.UUID] = mapped_column(UUID, primary_key=True, default=uuid.uuid4)
+
+    application_package_id: Mapped[uuid.UUID] = mapped_column(
+        UUID, ForeignKey(ApplicationPackage.application_package_id), index=True
+    )
+    application_package: Mapped[ApplicationPackage] = relationship(
+        ApplicationPackage, back_populates="application_package_recipients"
+    )
+
+    recipient_name: Mapped[str]
+
+    recipient_type: Mapped[ApplicationPackageOpenToApplicant] = mapped_column(
+        "recipient_type_id",
+        LookupColumn(LkApplicationPackageOpenToApplicant),
+        ForeignKey(LkApplicationPackageOpenToApplicant.application_package_open_to_applicant_id),
+    )
+
+    email_address: Mapped[str]
 
 
 class ApplicationPackageInstruction(GrantorSchemaTable, TimestampMixin):

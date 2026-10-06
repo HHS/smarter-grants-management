@@ -1037,6 +1037,22 @@ class ApplicationPackageInstructionFactory(BaseFactory):
     is_deleted = False
 
 
+class ApplicationPackageRecipientFactory(BaseFactory):
+    class Meta:
+        model = application_package_models.ApplicationPackageRecipient
+
+    recipient_id = Generators.UuidObj
+
+    application_package = factory.SubFactory(ApplicationPackageFactory)
+    application_package_id = factory.LazyAttribute(
+        lambda a: a.application_package.application_package_id
+    )
+
+    recipient_name = factory.Faker("company")
+    recipient_type = ApplicationPackageOpenToApplicant.ORGANIZATION
+    email_address = factory.Faker("email")
+
+
 class AnnouncementAuditFactory(BaseFactory):
     class Meta:
         model = announcement_models.AnnouncementAudit
