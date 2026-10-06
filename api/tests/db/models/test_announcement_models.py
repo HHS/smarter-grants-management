@@ -1,9 +1,17 @@
 import pytest
 from sqlalchemy.exc import IntegrityError
 
+from src.constants.lookup_constants import (
+    AnnouncementType,
+    ApplicationPackageOpenToApplicant,
+    PerformancePeriodType,
+    SourceSelectionMethod,
+)
 from tests.db.models.factories import (
     AnnouncementFactory,
     AnnouncementSummaryFactory,
+    ApplicationPackageFactory,
+    ApplicationPackageRecipientFactory,
     OpportunityFactory,
 )
 
@@ -29,18 +37,6 @@ def test_opportunity_has_many_announcements(db_session, enable_factory_create):
 def test_opportunity_partner_code_required(db_session, enable_factory_create):
     with pytest.raises(IntegrityError, match="not-null constraint"):
         OpportunityFactory.create(partner_code=None)
-from src.constants.lookup_constants import (
-    AnnouncementType,
-    ApplicationPackageOpenToApplicant,
-    PerformancePeriodType,
-    SourceSelectionMethod,
-)
-from tests.db.models.factories import (
-    AnnouncementFactory,
-    AnnouncementSummaryFactory,
-    ApplicationPackageFactory,
-    ApplicationPackageRecipientFactory,
-)
 
 
 def test_announcement_summary_unique_constraint(db_session, enable_factory_create):

@@ -85,6 +85,7 @@ class ApplicationPackage(GrantorSchemaTable, TimestampMixin):
     @property
     def partner_code(self) -> str:
         return self.announcement.partner_code
+
     application_package_recipients: Mapped[list[ApplicationPackageRecipient]] = relationship(
         back_populates="application_package", uselist=True, cascade="all, delete-orphan"
     )

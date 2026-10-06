@@ -1,8 +1,8 @@
 """Create Opportunity Base Record Model
 
-Revision ID: f712c8a39ea3
-Revises: 058f456bcef7
-Create Date: 2026-10-05 16:23:52.623905
+Revision ID: 38549d7016ca
+Revises: 4b7e2c9d1a63
+Create Date: 2026-10-06 20:57:36.091829
 
 """
 
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "f712c8a39ea3"
-down_revision = "058f456bcef7"
+revision = "38549d7016ca"
+down_revision = "4b7e2c9d1a63"
 branch_labels = None
 depends_on = None
 
