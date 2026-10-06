@@ -28,7 +28,6 @@ export const useFileUpload = ({
   maxFileSizeBytes,
 }: FileUploadCallbacks) => {
   const { clientFetch } = useClientFetch<Response>("unable to upload file", {
-    authGatedRequest: true,
     jsonResponse: false,
   });
 

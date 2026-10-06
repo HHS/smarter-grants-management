@@ -165,6 +165,9 @@ export const messages = {
     unauthenticated: {
       pageTitle: "Unauthenticated | Simpler.Grants.gov",
     },
+    sessionExpired: {
+      pageTitle: "Session Expired | Simpler.Grants.gov",
+    },
     pageNotFound: {
       pageTitle: "Page Not Found | Simpler.Grants.gov",
       title: "Oops, we can't find that page.",
@@ -266,6 +269,10 @@ export const messages = {
       "Sign in or user authorization failed. Please try again.",
     signInCTA: "Sign in first in order to view this page",
     unauthorizedExplanation: "This content is not available",
+    sessionExpiredHeading: "Your session has expired",
+    sessionExpiredBody:
+      "For your security, you were signed out. Sign in again to continue where you left off.",
+    signInAgainCTA: "Sign in again",
   },
   CommonWordLimit: {
     wordsAllowed: "words allowed",

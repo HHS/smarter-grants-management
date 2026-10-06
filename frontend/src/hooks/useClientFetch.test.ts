@@ -50,32 +50,17 @@ describe("useClientFetch", () => {
     expect(refreshMock).toHaveBeenCalledTimes(0);
     expect(refreshUserMock).toHaveBeenCalledTimes(0);
   });
-  it("if user logged out and auth gated, throw and refresh page before fetching", async () => {
-    refreshIfExpiredMock.mockReturnValue(true);
-    const { result } = renderHook(() =>
-      useClientFetch("an error!", { authGatedRequest: true }),
-    );
-    await wrapForExpectedError(() =>
-      result.current.clientFetch("http://wherever"),
-    );
-
-    expect(refreshIfExpiredMock).toHaveBeenCalledTimes(1);
-    expect(refreshMock).toHaveBeenCalledTimes(1);
-    expect(fetchMock).toHaveBeenCalledTimes(0);
-    expect(refreshUserMock).toHaveBeenCalledTimes(0);
-  });
-  it("on 401 and auth gated, refresh page and user", async () => {
+  it("on 401, refreshes the user, refreshes the page, and throws an UnauthorizedError", async () => {
     fetchMock.mockResolvedValue({ status: 401 });
-    const { result } = renderHook(() =>
-      useClientFetch("an error!", { authGatedRequest: true }),
-    );
-    await wrapForExpectedError(() =>
+    const { result } = renderHook(() => useClientFetch("an error!"));
+    const error = await wrapForExpectedError(() =>
       result.current.clientFetch("http://wherever"),
     );
 
+    expect(refreshUserMock).toHaveBeenCalledTimes(1);
     expect(refreshMock).toHaveBeenCalledTimes(1);
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(refreshUserMock).toHaveBeenCalledTimes(1);
+    expect((error.cause as { status: number }).status).toEqual(401);
   });
   it("calls json and returns json data on success by default", async () => {
     jsonMock.mockResolvedValue({ oh: "hi" });

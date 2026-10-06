@@ -131,7 +131,10 @@ export default function proxy(request: NextRequest): NextResponse {
       headers: response.headers,
     });
   }
-  if (request.url.includes("/unauthorized")) {
+  if (
+    request.url.includes("/unauthenticated") ||
+    request.url.includes("/session-expired")
+  ) {
     return new NextResponse(response.body, {
       status: 401,
       headers: response.headers,
