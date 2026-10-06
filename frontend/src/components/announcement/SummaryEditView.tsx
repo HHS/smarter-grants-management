@@ -92,10 +92,12 @@ const validateProperState = ({
   }
 
   if (
-    isForecast &&
-    announcementData.forecast_summary?.announcement_summary_id !== summaryId &&
-    !isForecast &&
-    announcementData.non_forecast_summary?.announcement_summary_id !== summaryId
+    (isForecast &&
+      announcementData.forecast_summary?.announcement_summary_id !==
+        summaryId) ||
+    (!isForecast &&
+      announcementData.non_forecast_summary?.announcement_summary_id !==
+        summaryId)
   ) {
     console.error(
       "Announcement summary id does not match id from fetched announcement",
@@ -105,7 +107,7 @@ const validateProperState = ({
   return false;
 };
 
-// determind whether we're dealing with a forecast or non-forecast summary
+// determine whether we're dealing with a forecast or non-forecast summary
 const determineForecastMode = (
   announcemenData: GrantorAnnouncementDetail,
   announcementSummaryId?: string,

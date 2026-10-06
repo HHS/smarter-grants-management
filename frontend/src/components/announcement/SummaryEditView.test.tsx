@@ -1,6 +1,12 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { axe } from "jest-axe";
 import {
+  ForbiddenError,
+  InternalServerError,
+  MissingAuthError,
+  NotFoundError,
+} from "src/errors";
+import {
   fakeForecastSummary,
   fakeSynopsisSummary,
   mockAnnouncement,
@@ -10,12 +16,13 @@ import SummaryEditView from "./SummaryEditView";
 
 const mockAnnouncementEditFormAction = jest.fn();
 const mockClientFetch = jest.fn();
-const mockGetAnnouncement = jest.fn().mockResolvedValue({
-  data: {
-    announcement_id: "1",
-    forecast_summary: { announcement_summary_id: "2" },
-  },
-});
+const mockGetAnnouncement = jest.fn();
+
+const mockNotFound = jest.fn();
+
+jest.mock("next/navigation", () => ({
+  notFound: (...args: unknown[]) => mockNotFound(...args) as unknown,
+}));
 
 jest.mock("src/hooks/useClientFetch", () => ({
   useClientFetch: jest.fn(() => ({
@@ -37,6 +44,14 @@ jest.mock("src/services/fetch/fetchers/grantorAnnouncementFetcher", () => ({
 }));
 
 describe("SummaryEditView", () => {
+  beforeEach(() => {
+    mockGetAnnouncement.mockResolvedValue({
+      data: {
+        announcement_id: "1",
+        forecast_summary: { announcement_summary_id: "2" },
+      },
+    });
+  });
   afterEach(() => {
     jest.resetAllMocks();
   });
@@ -128,17 +143,176 @@ describe("SummaryEditView", () => {
   });
 
   describe("error handling", () => {
-    it("displays error if summary type not specified when creating", () => {});
-    it("handles pre-emptive authentication errors when fetching announcement data", () => {});
-    it("handles 404 when fetching announcement data", () => {});
-    it("handles 403 when fetching announcement data", () => {});
-    it("handles other errors when fetching announcement data", () => {});
-    it("displays error when summary id is not suppplied in edit mode", () => {});
-    it("displays error if no announcement summaries match provided summary id", () => {});
-    it("displays error if announcement id in url doesnt match fetched announcement id", () => {});
-    it("displays error if forecast already exists in forecast create mode", () => {});
-    it("displays error if synopsis already exists in synopsis create mode", () => {});
-    it("displays error if attempting to edit non-existent forecast", () => {});
-    it("displays error if attempting to edit non-existent synopsis", () => {});
+    it("displays error if summary type not specified when creating", async () => {
+      const component = await SummaryEditView({
+        announcementId: "1",
+        summaryId: "2",
+        createMode: true,
+      });
+      render(component);
+
+      const title = screen.getByText("genericMessage");
+      expect(title).toBeInTheDocument();
+      const saveButton = screen.queryByRole("button", { name: "Save" });
+      expect(saveButton).not.toBeInTheDocument();
+    });
+    it("handles pre-emptive authentication errors when fetching announcement data", async () => {
+      mockGetAnnouncement.mockRejectedValue(new MissingAuthError());
+
+      const component = await SummaryEditView({
+        announcementId: "1",
+        summaryId: "2",
+      });
+      render(component);
+
+      const title = screen.getByText("unauthorized");
+      expect(title).toBeInTheDocument();
+      const saveButton = screen.queryByRole("button", { name: "Save" });
+      expect(saveButton).not.toBeInTheDocument();
+    });
+    it("handles 404 when fetching announcement data", async () => {
+      mockGetAnnouncement.mockRejectedValue(new NotFoundError("not found"));
+
+      // the real notFound() throws to halt rendering, the mock does not
+      await SummaryEditView({
+        announcementId: "1",
+        summaryId: "2",
+      });
+
+      expect(mockNotFound).toHaveBeenCalledTimes(1);
+    });
+    it("handles 403 when fetching announcement data", async () => {
+      mockGetAnnouncement.mockRejectedValue(new ForbiddenError("forbidden"));
+
+      const component = await SummaryEditView({
+        announcementId: "1",
+        summaryId: "2",
+      });
+      render(component);
+
+      const title = screen.getByText("unauthorized");
+      expect(title).toBeInTheDocument();
+      const saveButton = screen.queryByRole("button", { name: "Save" });
+      expect(saveButton).not.toBeInTheDocument();
+    });
+    it("handles other errors when fetching announcement data", async () => {
+      mockGetAnnouncement.mockRejectedValue(
+        new InternalServerError("server error"),
+      );
+
+      const component = await SummaryEditView({
+        announcementId: "1",
+        summaryId: "2",
+      });
+      render(component);
+
+      const title = screen.getByText("genericMessage");
+      expect(title).toBeInTheDocument();
+      const saveButton = screen.queryByRole("button", { name: "Save" });
+      expect(saveButton).not.toBeInTheDocument();
+    });
+    it("displays error when summary id is not suppplied in edit mode", async () => {
+      mockGetAnnouncement.mockResolvedValue({
+        data: { ...mockAnnouncement, announcement_id: "1" },
+      });
+
+      const component = await SummaryEditView({
+        announcementId: "1",
+      });
+      render(component);
+
+      const title = screen.getByText("genericMessage");
+      expect(title).toBeInTheDocument();
+      const saveButton = screen.queryByRole("button", { name: "Save" });
+      expect(saveButton).not.toBeInTheDocument();
+    });
+    it("displays error if no announcement summaries match provided summary id", async () => {
+      mockGetAnnouncement.mockResolvedValue({
+        data: {
+          ...mockAnnouncement,
+          announcement_id: "1",
+          non_forecast_summary: {
+            ...fakeSynopsisSummary,
+            announcement_summary_id: "3",
+          },
+        },
+      });
+
+      const component = await SummaryEditView({
+        announcementId: "1",
+        summaryId: "2",
+      });
+      render(component);
+
+      const title = screen.getByText("genericMessage");
+      expect(title).toBeInTheDocument();
+      const saveButton = screen.queryByRole("button", { name: "Save" });
+      expect(saveButton).not.toBeInTheDocument();
+    });
+    it("displays error if announcement id in url doesnt match fetched announcement id", async () => {
+      mockGetAnnouncement.mockResolvedValue({
+        data: {
+          ...mockAnnouncement,
+          announcement_id: "999",
+          non_forecast_summary: {
+            ...fakeSynopsisSummary,
+            announcement_summary_id: "2",
+          },
+        },
+      });
+
+      const component = await SummaryEditView({
+        announcementId: "1",
+        summaryId: "2",
+      });
+      render(component);
+
+      const title = screen.getByText("We're sorry.");
+      expect(title).toBeInTheDocument();
+      const saveButton = screen.queryByRole("button", { name: "Save" });
+      expect(saveButton).not.toBeInTheDocument();
+    });
+    it("displays error if forecast already exists in forecast create mode", async () => {
+      mockGetAnnouncement.mockResolvedValue({
+        data: {
+          ...mockAnnouncement,
+          announcement_id: "1",
+          forecast_summary: fakeForecastSummary,
+        },
+      });
+
+      const component = await SummaryEditView({
+        announcementId: "1",
+        createMode: true,
+        isForecast: true,
+      });
+      render(component);
+
+      const title = screen.getByText("We're sorry.");
+      expect(title).toBeInTheDocument();
+      const saveButton = screen.queryByRole("button", { name: "Save" });
+      expect(saveButton).not.toBeInTheDocument();
+    });
+    it("displays error if synopsis already exists in synopsis create mode", async () => {
+      mockGetAnnouncement.mockResolvedValue({
+        data: {
+          ...mockAnnouncement,
+          announcement_id: "1",
+          non_forecast_summary: fakeSynopsisSummary,
+        },
+      });
+
+      const component = await SummaryEditView({
+        announcementId: "1",
+        createMode: true,
+        isForecast: false,
+      });
+      render(component);
+
+      const title = screen.getByText("We're sorry.");
+      expect(title).toBeInTheDocument();
+      const saveButton = screen.queryByRole("button", { name: "Save" });
+      expect(saveButton).not.toBeInTheDocument();
+    });
   });
 });
