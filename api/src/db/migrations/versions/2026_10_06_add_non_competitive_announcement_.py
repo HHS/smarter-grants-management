@@ -56,9 +56,7 @@ def upgrade():
     )
     op.add_column(
         "announcement",
-        sa.Column(
-            "is_budget_period_renewal", sa.Boolean(), server_default="false", nullable=False
-        ),
+        sa.Column("is_budget_period_renewal", sa.Boolean(), server_default="false", nullable=False),
         schema="grantor",
     )
     op.add_column(
@@ -203,7 +201,9 @@ def upgrade():
         sa.ForeignKeyConstraint(
             ["application_package_id"],
             ["grantor.application_package.application_package_id"],
-            name=op.f("application_package_recipient_application_package_id_application_package_fkey"),
+            name=op.f(
+                "application_package_recipient_application_package_id_application_package_fkey"
+            ),
         ),
         sa.ForeignKeyConstraint(
             ["recipient_type_id"],
