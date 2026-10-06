@@ -18,6 +18,9 @@ const customJestConfig = {
   moduleNameMapper: {
     "@zip.js/zip.js": "<rootDir>/tests/__mocks__/zipjs.ts",
   },
+  // testEnvironmentOptions: {
+  //   customExportConditions: ["react-server"],
+  // },
 };
 
 module.exports = createJestConfig(customJestConfig);

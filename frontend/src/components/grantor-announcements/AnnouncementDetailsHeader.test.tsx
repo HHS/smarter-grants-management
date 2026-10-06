@@ -168,7 +168,7 @@ describe("AnnouncementDetailsHeader", () => {
 
     const link = screen.getByRole("link", { name: "backToOverview" });
     expect(link).toBeInTheDocument();
-    expect(link).toHaveAttribute("href", "../abc-123/overview");
+    expect(link).toHaveAttribute("href", "/announcement/abc-123/overview");
   });
 
   it("does not render the back to overview link when hasBackToOverview is false", () => {

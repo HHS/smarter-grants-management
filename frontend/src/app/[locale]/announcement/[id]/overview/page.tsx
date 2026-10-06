@@ -87,7 +87,7 @@ export default async function OpportunityOverviewPage({
     );
   }
 
-  const applicationPackageUrl = "../" + id + "/application-package";
+  const applicationPackageUrl = `/announcement/${id}/application-package`;
   let applicationPackage = {};
   if (
     announcementData.application_packages &&
@@ -124,7 +124,7 @@ export default async function OpportunityOverviewPage({
         )}
         <div
           className="grid-row grid-gap-2 padding-top-2"
-          data-testid="overview-row-edit"
+          data-testid="overview-row-forecast"
         >
           <div className="tablet:grid-col">
             <SummaryLink
@@ -146,7 +146,7 @@ export default async function OpportunityOverviewPage({
         <hr />
         <div
           className="grid-row grid-gap-2 padding-top-2"
-          data-testid="overview-row-edit"
+          data-testid="overview-row-synopsis"
         >
           <div className="tablet:grid-col">
             <SummaryLink

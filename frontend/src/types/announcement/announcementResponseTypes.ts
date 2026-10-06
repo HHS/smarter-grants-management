@@ -209,15 +209,8 @@ export interface AnnouncementListItem {
   non_forecast_summary: AnnouncementListSummary | null;
 }
 
-// all fields captured in this form
-export const EDIT_FORM_FIELD_NAMES = [
-  // hidden
-  "announcement_id",
-  "announcement_summary_id",
-  "is_forecast",
-  "announcement_title",
-  "category",
-  // editable
+// all fields in the edit form that are visible / editable
+export const EDIT_FORM_VALIDATION_FIELD_NAMES = [
   "funding_instruments",
   "is_cost_sharing",
   "funding_categories",
@@ -240,6 +233,16 @@ export const EDIT_FORM_FIELD_NAMES = [
   "agency_contact_description",
   "agency_email_address",
   "agency_email_address_description",
+] as const;
+
+// all fields captured in this form, including hidden fields
+export const EDIT_FORM_FIELD_NAMES = [
+  ...EDIT_FORM_VALIDATION_FIELD_NAMES,
+  "announcement_id",
+  "announcement_summary_id",
+  "is_forecast",
+  "announcement_title",
+  "category",
 ] as const;
 
 export type EditFormFields = (typeof EDIT_FORM_FIELD_NAMES)[number];

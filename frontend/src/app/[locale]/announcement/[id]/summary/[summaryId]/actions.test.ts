@@ -191,7 +191,7 @@ describe("saveAnnouncementEditAction", () => {
     const result = await saveAnnouncementEditAction(false, formData);
 
     expect(result.validationErrors).toEqual({
-      closeDate: ["closeDateOrder"],
+      close_timestamp: ["closeDateOrder"],
     });
   });
 
@@ -202,7 +202,7 @@ describe("saveAnnouncementEditAction", () => {
     const result = await saveAnnouncementEditAction(false, formData);
 
     expect(result.validationErrors).toEqual({
-      closeDate: ["closeDateOrder"],
+      close_timestamp: ["closeDateOrder"],
     });
   });
 
@@ -213,7 +213,7 @@ describe("saveAnnouncementEditAction", () => {
     const result = await saveAnnouncementEditAction(false, formData);
 
     expect(result.validationErrors).toEqual({
-      closeDate: ["closeDateOrder"],
+      close_timestamp: ["closeDateOrder"],
     });
   });
 
@@ -322,7 +322,7 @@ describe("saveAnnouncementEditAction", () => {
 
     mockCreateAnnouncementSummary.mockResolvedValue(createResponse);
 
-    const result = await saveAnnouncementEditAction(false, formData);
+    const result = await saveAnnouncementEditAction(true, formData);
 
     const firstCall = mockCreateAnnouncementSummary.mock.calls[0];
     expect(firstCall).toBeDefined();
@@ -993,59 +993,25 @@ describe("announcementEditFormAction", () => {
     jest.resetAllMocks();
   });
 
-  it("delegates to saveAnnouncementEditAction and redirects to the overview page when submitType = saveAndExit", async () => {
+  it("delegates to saveAnnouncementEditAction and redirects to the overview page in create mode", async () => {
     const formData = buildValidFormData();
     formData.set("announcement_id", "opp-123");
     formData.set("announcement_summary_id", "sum-456");
-    formData.set("submitType", "saveAndExit");
 
     mockUpdateAnnouncementSummary.mockResolvedValue(
       successfulSummaryUpdateResponse,
     );
 
-    await announcementEditFormAction(false, false, "1", initialState, formData);
+    await announcementEditFormAction(false, true, "1", initialState, formData);
 
     expect(mockUpdateAnnouncementSummary).toHaveBeenCalledTimes(1);
-    expect(mockRedirect).toHaveBeenCalledWith("../overview");
+    expect(mockRedirect).toHaveBeenCalledWith("/announcement/1/overview");
   });
 
-  it("delegates to saveAnnouncementEditAction and redirects to the overview page when submitType = saveAndGoBack", async () => {
+  it("delegates to saveAnnouncementEditAction and returns success when not in create mode", async () => {
     const formData = buildValidFormData();
     formData.set("announcement_id", "opp-123");
     formData.set("announcement_summary_id", "sum-456");
-    formData.set("submitType", "saveAndGoBack");
-
-    mockUpdateAnnouncementSummary.mockResolvedValue(
-      successfulSummaryUpdateResponse,
-    );
-
-    await announcementEditFormAction(false, false, "1", initialState, formData);
-
-    expect(mockUpdateAnnouncementSummary).toHaveBeenCalledTimes(1);
-    expect(mockRedirect).toHaveBeenCalledWith("../overview");
-  });
-
-  it("delegates to saveAnnouncementEditAction and redirects to the applicationPackage page when submitType = saveAndContinue", async () => {
-    const formData = buildValidFormData();
-    formData.set("announcement_id", "opp-123");
-    formData.set("announcement_summary_id", "sum-456");
-    formData.set("submitType", "saveAndContinue");
-
-    mockUpdateAnnouncementSummary.mockResolvedValue(
-      successfulSummaryUpdateResponse,
-    );
-
-    await announcementEditFormAction(false, false, "1", initialState, formData);
-
-    expect(mockUpdateAnnouncementSummary).toHaveBeenCalledTimes(1);
-    expect(mockRedirect).toHaveBeenCalledWith("../application-package");
-  });
-
-  it("delegates to saveAnnouncementEditAction and returns success when submitType none of three expected", async () => {
-    const formData = buildValidFormData();
-    formData.set("announcement_id", "opp-123");
-    formData.set("announcement_summary_id", "sum-456");
-    formData.set("submitType", "save");
 
     mockUpdateAnnouncementSummary.mockResolvedValue(
       successfulSummaryUpdateResponse,
@@ -1067,7 +1033,6 @@ describe("announcementEditFormAction", () => {
     const formData = buildValidFormData();
     formData.set("announcement_id", "opp-123");
     formData.set("announcement_summary_id", "sum-456");
-    formData.set("submitType", "saveAndContinue");
     formData.set("agency_email_address", "not-an-email");
 
     mockUpdateAnnouncementSummary.mockResolvedValue(
@@ -1083,7 +1048,7 @@ describe("announcementEditFormAction", () => {
     );
 
     expect(mockUpdateAnnouncementSummary).not.toHaveBeenCalledTimes(1);
-    expect(mockRedirect).not.toHaveBeenCalledWith("../application-package");
+    expect(mockRedirect).not.toHaveBeenCalled();
     expect(result.validationErrors).toEqual({
       agency_email_address: ["contactEmailInvalid"],
     });

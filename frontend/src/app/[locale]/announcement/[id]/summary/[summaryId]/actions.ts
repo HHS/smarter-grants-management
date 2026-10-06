@@ -11,7 +11,7 @@ import {
 } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
 import {
   AnnouncementSummaryUpdateRawData,
-  EDIT_FORM_FIELD_NAMES,
+  EDIT_FORM_VALIDATION_FIELD_NAMES,
   EditFormFields,
 } from "src/types/announcement/announcementResponseTypes";
 import { dateToTimestampOrNull, getConfiguredDayJs } from "src/utils/dateUtil";
@@ -105,7 +105,7 @@ async function processAttachmentChanges(
       const { errorMessage } = mapApiValidationErrors(
         response,
         genericMessage,
-        EDIT_FORM_FIELD_NAMES,
+        EDIT_FORM_VALIDATION_FIELD_NAMES,
       );
       return { errorMessage: errorMessage ?? genericMessage };
     }
@@ -120,7 +120,7 @@ async function processAttachmentChanges(
       const { errorMessage } = mapApiValidationErrors(
         response,
         genericMessage,
-        EDIT_FORM_FIELD_NAMES,
+        EDIT_FORM_VALIDATION_FIELD_NAMES,
       );
       return { errorMessage: errorMessage ?? genericMessage };
     }
@@ -439,7 +439,7 @@ export async function saveAnnouncementEditAction(
         return mapApiValidationErrors(
           createResponse,
           alerts("genericError"),
-          EDIT_FORM_FIELD_NAMES,
+          EDIT_FORM_VALIDATION_FIELD_NAMES,
         );
       }
 
@@ -502,7 +502,7 @@ export async function saveAnnouncementEditAction(
       return mapApiValidationErrors(
         response,
         alerts("genericError"),
-        EDIT_FORM_FIELD_NAMES,
+        EDIT_FORM_VALIDATION_FIELD_NAMES,
       );
     }
 

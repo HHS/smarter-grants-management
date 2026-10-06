@@ -165,9 +165,7 @@ describe("AnnouncementEditForm - rendering", () => {
 
     fireEvent.click(checkboxOne);
     expect(checkboxOne).toBeChecked();
-    fireEvent.click(
-      screen.getByRole("button", { name: "button.saveAndContinue" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
     expect(mockFormAction).toHaveBeenCalledTimes(1);
     expect(mockFormAction).toHaveBeenCalledWith(expect.any(FormData));
@@ -177,9 +175,7 @@ describe("AnnouncementEditForm - rendering", () => {
 
     fireEvent.click(checkboxTwo);
     expect(checkboxTwo).toBeChecked();
-    fireEvent.click(
-      screen.getByRole("button", { name: "button.saveAndContinue" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
     expect(mockFormAction).toHaveBeenCalledTimes(2);
     expect(mockFormAction).toHaveBeenCalledWith(expect.any(FormData));
@@ -882,18 +878,14 @@ describe("AnnouncementEditForm - action buttons", () => {
     jest.resetAllMocks();
   });
 
-  it("renders two Save buttons", () => {
+  // the other save button is in the header
+  it("renders a Save button", () => {
     renderAnnouncementEditForm();
-    // NOTE: the third save button is in the header
-    expect(
-      screen.getByRole("button", { name: "button.saveAndGoBack" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "button.saveAndContinue" }),
-    ).toBeInTheDocument();
+    const buttons = screen.getByRole("button", { name: "Save" });
+    expect(buttons).toBeInTheDocument();
   });
 
-  it("calls the form action when saveAndGoBack is clicked", () => {
+  it("calls the form action when save is clicked", () => {
     const mockFormAction = jest.fn();
     mockUseActionState.mockReturnValue([
       { validationErrors: {} },
@@ -903,26 +895,7 @@ describe("AnnouncementEditForm - action buttons", () => {
 
     renderAnnouncementEditForm();
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "button.saveAndGoBack" }),
-    );
-
-    expect(mockFormAction).toHaveBeenCalledTimes(1);
-  });
-
-  it("calls the form action when saveAndContinue is clicked", () => {
-    const mockFormAction = jest.fn();
-    mockUseActionState.mockReturnValue([
-      { validationErrors: {} },
-      mockFormAction,
-      false,
-    ]);
-
-    renderAnnouncementEditForm();
-
-    fireEvent.click(
-      screen.getByRole("button", { name: "button.saveAndContinue" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
     expect(mockFormAction).toHaveBeenCalledTimes(1);
   });

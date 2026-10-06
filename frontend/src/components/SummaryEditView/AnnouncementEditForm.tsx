@@ -333,9 +333,7 @@ export default function AnnouncementEditForm({
       id="announcement-edit-form"
       onSubmit={(e) => {
         e.preventDefault();
-        const formData = new FormData(e.currentTarget);
-        formData.set("submitType", "saveAndExit");
-        startTransition(() => formAction(formData));
+        startTransition(() => formAction(new FormData(e.currentTarget)));
       }}
       noValidate
     >
@@ -1032,32 +1030,17 @@ export default function AnnouncementEditForm({
       </section>
 
       <div className="display-flex flex-justify margin-top-4">
-        <div className="display-flex gap-2">
-          <Button
-            outline
-            type="button"
-            onClick={() => {
-              if (!formRef.current) return;
-              const formData = new FormData(formRef.current);
-              formData.set("submitType", "saveAndGoBack");
-              startTransition(() => formAction(formData));
-            }}
-            className="height-auto margin-0 margin-bottom-1 font-sans-sm text-bold line-height-sans-1"
-          >
-            {t("button.saveAndGoBack")}
-          </Button>
-        </div>
         <Button
           type="button"
           onClick={() => {
             if (!formRef.current) return;
-            const formData = new FormData(formRef.current);
-            formData.set("submitType", "saveAndContinue");
-            startTransition(() => formAction(formData));
+            startTransition(() =>
+              formAction(new FormData(formRef.current || undefined)),
+            );
           }}
           className="height-auto margin-0 margin-bottom-1 font-sans-sm text-bold line-height-sans-1"
         >
-          {t("button.saveAndContinue")}
+          Save
         </Button>
       </div>
     </form>
