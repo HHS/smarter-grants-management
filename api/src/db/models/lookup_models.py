@@ -4,6 +4,7 @@ from src.adapters.db.lookup import Lookup, LookupConfig, LookupRegistry, LookupS
 from src.constants.lookup_constants import (
     AnnouncementAuditEvent,
     AnnouncementCategory,
+    AnnouncementType,
     ApplicantType,
     ApplicationPackageOpenToApplicant,
     ApprovalResponseType,
@@ -17,8 +18,10 @@ from src.constants.lookup_constants import (
     GrantorOrganizationType,
     JobStatus,
     PartnerAuditEvent,
+    PerformancePeriodType,
     Privilege,
     ResourceType,
+    SourceSelectionMethod,
     UserType,
     WorkflowType,
 )
@@ -167,6 +170,28 @@ APPLICATION_PACKAGE_OPEN_TO_APPLICANT_CONFIG: LookupConfig[ApplicationPackageOpe
             LookupStr(ApplicationPackageOpenToApplicant.ORGANIZATION, 2),
         ]
     )
+)
+
+ANNOUNCEMENT_TYPE_CONFIG: LookupConfig[AnnouncementType] = LookupConfig(
+    [
+        LookupStr(AnnouncementType.DISCRETIONARY, 1),
+        LookupStr(AnnouncementType.NON_DISCRETIONARY, 2),
+        LookupStr(AnnouncementType.SPECIAL_INSTANCE, 3),
+    ]
+)
+
+SOURCE_SELECTION_METHOD_CONFIG: LookupConfig[SourceSelectionMethod] = LookupConfig(
+    [
+        LookupStr(SourceSelectionMethod.SINGLE_SOURCE, 1),
+        LookupStr(SourceSelectionMethod.SOLE_SOURCE, 2),
+    ]
+)
+
+PERFORMANCE_PERIOD_TYPE_CONFIG: LookupConfig[PerformancePeriodType] = LookupConfig(
+    [
+        LookupStr(PerformancePeriodType.SINGLE_YEAR, 1),
+        LookupStr(PerformancePeriodType.MULTIPLE_YEARS, 2),
+    ]
 )
 
 FORM_FAMILY_CONFIG: LookupConfig[FormFamily] = LookupConfig(
@@ -433,6 +458,51 @@ class LkApplicationPackageOpenToApplicant(GrantorLookupTable, TimestampMixin):
     def from_lookup(cls, lookup: Lookup) -> LkApplicationPackageOpenToApplicant:
         return LkApplicationPackageOpenToApplicant(
             application_package_open_to_applicant_id=lookup.lookup_val,
+            description=lookup.get_description(),
+        )
+
+
+@LookupRegistry.register_lookup(ANNOUNCEMENT_TYPE_CONFIG)
+class LkAnnouncementType(GrantorLookupTable, TimestampMixin):
+    __tablename__ = "lk_announcement_type"
+
+    announcement_type_id: Mapped[int] = mapped_column(primary_key=True)
+    description: Mapped[str]
+
+    @classmethod
+    def from_lookup(cls, lookup: Lookup) -> LkAnnouncementType:
+        return LkAnnouncementType(
+            announcement_type_id=lookup.lookup_val,
+            description=lookup.get_description(),
+        )
+
+
+@LookupRegistry.register_lookup(SOURCE_SELECTION_METHOD_CONFIG)
+class LkSourceSelectionMethod(GrantorLookupTable, TimestampMixin):
+    __tablename__ = "lk_source_selection_method"
+
+    source_selection_method_id: Mapped[int] = mapped_column(primary_key=True)
+    description: Mapped[str]
+
+    @classmethod
+    def from_lookup(cls, lookup: Lookup) -> LkSourceSelectionMethod:
+        return LkSourceSelectionMethod(
+            source_selection_method_id=lookup.lookup_val,
+            description=lookup.get_description(),
+        )
+
+
+@LookupRegistry.register_lookup(PERFORMANCE_PERIOD_TYPE_CONFIG)
+class LkPerformancePeriodType(GrantorLookupTable, TimestampMixin):
+    __tablename__ = "lk_performance_period_type"
+
+    performance_period_type_id: Mapped[int] = mapped_column(primary_key=True)
+    description: Mapped[str]
+
+    @classmethod
+    def from_lookup(cls, lookup: Lookup) -> LkPerformancePeriodType:
+        return LkPerformancePeriodType(
+            performance_period_type_id=lookup.lookup_val,
             description=lookup.get_description(),
         )
 
