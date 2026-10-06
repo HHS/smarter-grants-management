@@ -1,6 +1,60 @@
+import fs from "fs";
+import path from "path";
 import { defineConfig, devices, Project } from "@playwright/test";
 
 import playwrightEnv from "./e2e/playwright-env";
+
+type DeferredTestConfig = {
+  testFiles?: string[];
+};
+
+const deferredTestFilesConfigPath = path.resolve(
+  __dirname,
+  "e2e",
+  "deferred-test-files.json",
+);
+
+const normalizeDeferredTestPath = (testPath: string): string => {
+  const normalizedPath = testPath.replace(/\\/g, "/");
+  if (normalizedPath.startsWith("tests/e2e/")) {
+    return normalizedPath.replace("tests/e2e/", "");
+  }
+  if (normalizedPath.startsWith("./e2e/")) {
+    return normalizedPath.replace("./e2e/", "");
+  }
+  if (normalizedPath.startsWith("e2e/")) {
+    return normalizedPath.replace("e2e/", "");
+  }
+  return normalizedPath;
+};
+
+const loadDeferredTestIgnores = (): string[] => {
+  if (!fs.existsSync(deferredTestFilesConfigPath)) {
+    return [];
+  }
+
+  try {
+    const parsedConfig = JSON.parse(
+      fs.readFileSync(deferredTestFilesConfigPath, "utf-8"),
+    ) as DeferredTestConfig;
+    const testFiles = Array.isArray(parsedConfig.testFiles)
+      ? parsedConfig.testFiles
+      : [];
+
+    return testFiles
+      .filter((entry): entry is string => typeof entry === "string")
+      .map((entry) => normalizeDeferredTestPath(entry));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Failed to parse deferred test list at ${deferredTestFilesConfigPath}: ${message}`,
+    );
+  }
+};
+
+// Keep temporary file-level skips in JSON so flaky specs can be deferred
+// without editing test code. Paths are interpreted relative to `testDir`.
+const deferredTestIgnores = loadDeferredTestIgnores();
 
 const {
   baseUrl,
@@ -31,6 +85,8 @@ const filterProjects = (allProjects: Project[]): Project[] =>
 export default defineConfig({
   timeout: targetEnv === "local" ? 75000 : 120000,
   testDir: "./e2e",
+  // Files listed in tests/e2e/deferred-test-files.json are not discovered.
+  testIgnore: deferredTestIgnores,
   /* Run tests in files in parallel */
   fullyParallel: targetEnv !== "staging",
   /* Fail the build on CI if you accidentally left test.only in the source code. */

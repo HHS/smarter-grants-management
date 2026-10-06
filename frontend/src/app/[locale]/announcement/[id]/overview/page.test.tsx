@@ -44,19 +44,10 @@ jest.mock(
   "src/components/grantor-announcements/AnnouncementDetailsHeader",
   () => ({
     AnnouncementDetailsHeader: ({
-      isNewlyCreated,
       children,
     }: {
-      isNewlyCreated?: boolean;
       children?: React.ReactNode;
-    }) => (
-      <div
-        data-testid="opportunity-details-header"
-        data-is-newly-created={String(!!isNewlyCreated)}
-      >
-        {children}
-      </div>
-    ),
+    }) => <div data-testid="opportunity-details-header">{children}</div>,
   }),
 );
 
@@ -74,7 +65,7 @@ jest.mock("./_components/OverviewButtons", () => ({
   ),
 }));
 
-// Fixture builders   shaped relative to summaryRequiredFields / competitionRequiredFields
+// Fixture builders   shaped relative to summaryRequiredFields / applicationPackageRequiredFields
 // (RequiredFields.tsx) so ProgressChecker's real getProgress() logic determines the
 // status - not mocked, exercised for real.
 type ProgressStatus = "notStarted" | "inProgress" | "complete";
@@ -90,16 +81,16 @@ function buildSummaryFixture(status: ProgressStatus) {
   };
 }
 
-function buildCompetitionFixture(
+function buildApplicationPackageFixture(
   status: ProgressStatus,
 ): DeepPartial<[ApplicationPackage]> | null {
   if (status === "notStarted") return null;
-  if (status === "inProgress") return [{ competition_id: "comp-1" }];
+  if (status === "inProgress") return [{ application_package_id: "comp-1" }];
   return [
     {
-      competition_id: "comp-1",
+      application_package_id: "comp-1",
       open_to_applicants: ["individual"],
-      competition_title: "comp-1",
+      application_package_title: "comp-1",
     },
   ];
 }
@@ -125,17 +116,17 @@ type OverviewSectionCase = {
 
 const OVERVIEW_SECTIONS: OverviewSectionCase[] = [
   {
-    name: "Opportunity Summary",
+    name: "Announcement Summary",
     linkNameKey: "labels.editOpportunityLink",
     hrefSuffix: "edit",
     buildData: (status) => ({ summary: buildSummaryFixture(status) }),
   },
   {
     name: "Application Package",
-    linkNameKey: "labels.competitionLink",
+    linkNameKey: "labels.applicationPackageLink",
     hrefSuffix: "application-package",
     buildData: (status) => ({
-      application_packages: buildCompetitionFixture(status),
+      application_packages: buildApplicationPackageFixture(status),
     }),
   },
 ];
@@ -146,7 +137,7 @@ describe("OpportunityOverviewPage", () => {
   });
 
   describe.each(OVERVIEW_SECTIONS)("$name section", (section) => {
-    // "complete" omitted: summaryRequiredFields/competitionRequiredFields check
+    // "complete" omitted: summaryRequiredFields/applicationPackageRequiredFields check
     // post_timestamp/application_package_title, but Summary/ApplicationPackage
     // don't declare those fields yet - see #261/#262.
     it.each(["notStarted", "inProgress"] as const)(
@@ -231,7 +222,7 @@ describe("OpportunityOverviewPage", () => {
           ...baseOpportunityData,
           is_draft: true,
           summary: buildSummaryFixture("complete"),
-          application_packages: buildCompetitionFixture("complete"),
+          application_packages: buildApplicationPackageFixture("complete"),
         },
       });
 
@@ -249,7 +240,7 @@ describe("OpportunityOverviewPage", () => {
   });
 
   describe("isNewlyCreated", () => {
-    it("passes isNewlyCreated through when fromCreate=true", async () => {
+    it("renders the newly-created alert outside the header when fromCreate=true", async () => {
       mockGetAnnouncement.mockResolvedValue({
         data: { ...baseOpportunityData },
       });
@@ -260,13 +251,13 @@ describe("OpportunityOverviewPage", () => {
       });
       render(component);
 
-      expect(screen.getByTestId("opportunity-details-header")).toHaveAttribute(
-        "data-is-newly-created",
-        "true",
-      );
+      const header = screen.getByTestId("opportunity-details-header");
+      const alertHeading = screen.getByText("alerts.newOpportunityHeading");
+      expect(alertHeading).toBeInTheDocument();
+      expect(header).not.toContainElement(alertHeading);
     });
 
-    it("does not set isNewlyCreated when fromCreate is absent", async () => {
+    it("does not render the newly-created alert when fromCreate is absent", async () => {
       mockGetAnnouncement.mockResolvedValue({
         data: { ...baseOpportunityData },
       });
@@ -277,10 +268,9 @@ describe("OpportunityOverviewPage", () => {
       });
       render(component);
 
-      expect(screen.getByTestId("opportunity-details-header")).toHaveAttribute(
-        "data-is-newly-created",
-        "false",
-      );
+      expect(
+        screen.queryByText("alerts.newOpportunityHeading"),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -290,7 +280,7 @@ describe("OpportunityOverviewPage", () => {
         data: {
           ...baseOpportunityData,
           summary: buildSummaryFixture("notStarted"),
-          application_packages: buildCompetitionFixture("notStarted"),
+          application_packages: buildApplicationPackageFixture("notStarted"),
         },
       });
 
@@ -309,7 +299,7 @@ describe("OpportunityOverviewPage", () => {
         data: {
           ...baseOpportunityData,
           summary: buildSummaryFixture("complete"),
-          application_packages: buildCompetitionFixture("complete"),
+          application_packages: buildApplicationPackageFixture("complete"),
         },
       });
 

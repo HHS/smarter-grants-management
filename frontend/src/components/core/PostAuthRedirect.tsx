@@ -10,27 +10,28 @@ type PostAuthRedirectProps = {
   checkPiv?: boolean;
   displayMessage?: string;
   errorMessage: string;
+  redirectUrl?: string | null;
 };
 
 export function PostAuthRedirect({
   checkPiv,
   displayMessage,
   errorMessage,
+  redirectUrl,
 }: PostAuthRedirectProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   useEffect(() => {
     try {
-      const redirectURL = SessionStorage.getItem("post-auth-redirect");
       SessionStorage.removeItem("post-auth-redirect");
       if (checkPiv && searchParams.get("pivError")) {
         SessionStorage.setItem("showPivError", "true");
       }
 
-      if (redirectURL?.substring(0, 1) !== "/") {
+      if (redirectUrl?.substring(0, 1) !== "/") {
         router.push("/");
       }
-      router.push(redirectURL || "/");
+      router.push(redirectUrl || "/");
       return () => {
         return SessionStorage.removeItem("post-auth-redirect");
       };
@@ -38,7 +39,7 @@ export function PostAuthRedirect({
       console.error(errorMessage, e);
       router.push("/");
     }
-  }, [router, searchParams, errorMessage, checkPiv]);
+  }, [router, searchParams, errorMessage, checkPiv, redirectUrl]);
 
   return (
     <GridContainer className="margin-y-5">

@@ -81,7 +81,7 @@ describe("logRequest", () => {
           "user-agent": "sure",
           "accept-language": "ES",
           "X-Amz-Cf-Id": "a trace id",
-          Cookies: "session=abc;",
+          Cookies: "sgm-session=abc;",
         }),
       }),
       new NextResponse(null, {

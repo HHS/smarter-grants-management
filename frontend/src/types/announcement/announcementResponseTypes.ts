@@ -6,8 +6,10 @@ export type AnnouncementStatus =
   "archived" | "closed" | "posted" | "forecasted";
 
 export interface AnnouncementAssistanceListing {
-  assistance_listing_number: string;
-  program_title: string;
+  announcement_assistance_listing_id: string;
+  assistance_listing_id: string;
+  program_title: string | null;
+  assistance_listing_number: string | null;
 }
 
 export interface AnnouncementDocument {
@@ -162,7 +164,7 @@ export interface GrantorAnnouncementDetail extends Omit<
   is_draft: boolean;
   forecast_summary?: AnnouncementSummaryDetail;
   non_forecast_summary?: AnnouncementSummaryDetail;
-  attachments?: AnnouncementAttachment[];
+  announcement_attachments?: AnnouncementAttachment[];
 }
 
 export interface GrantorAnnouncementApiResponse extends APIResponse {

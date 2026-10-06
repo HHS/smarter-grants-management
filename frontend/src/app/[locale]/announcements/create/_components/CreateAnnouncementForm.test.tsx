@@ -27,37 +27,9 @@ jest.mock("next/navigation", () => ({
   useSearchParams: jest.fn(() => new URLSearchParams()),
 }));
 
-const fakeId = "456-XYZ";
-const fakeAgencies = {
-  "123-ABC": "Agency Alpha",
-  "456-XYZ": "Agency Beta",
-};
-
 describe("createOpportunityForm", () => {
   afterEach(() => {
     jest.resetAllMocks();
-  });
-
-  it("displays values from agency list props and defaults agency selection", () => {
-    mockUseActionState.mockReturnValue([{}, noop, false]);
-
-    render(
-      <CreateAnnouncementForm
-        defaultAgencyId={fakeId}
-        userAgencies={fakeAgencies}
-      />,
-    );
-
-    // check that all agencies are in the select options
-    expect(screen.getByText("Agency Beta")).toBeInTheDocument();
-    expect(screen.getByText("Agency Alpha")).toBeInTheDocument();
-
-    // check that the default agency was selected
-    const selectedOption = screen.getByRole("option", {
-      name: "Agency Beta",
-      selected: true,
-    });
-    expect(selectedOption).toBeInTheDocument();
   });
 
   // --- Test the return values from action ---
@@ -65,10 +37,9 @@ describe("createOpportunityForm", () => {
     mockUseActionState.mockReturnValue([
       {
         data: {
-          opportunity_id: "opp-001",
-          agency_id: "123-ABC",
-          opportunity_number: "MY-TEST-001",
-          opportunity_title: "Test Opportunity 001",
+          announcement_id: "opp-001",
+          announcement_number: "MY-TEST-001",
+          announcement_title: "Test Opportunity 001",
           category: "other",
           category_explanation: "",
           assistance_listing_number: "12.345",
@@ -78,12 +49,7 @@ describe("createOpportunityForm", () => {
       false,
     ]);
 
-    render(
-      <CreateAnnouncementForm
-        defaultAgencyId={fakeId}
-        userAgencies={fakeAgencies}
-      />,
-    );
+    render(<CreateAnnouncementForm />);
 
     expect(screen.getByDisplayValue("MY-TEST-001")).toBeInTheDocument();
     expect(
@@ -100,12 +66,7 @@ describe("createOpportunityForm", () => {
       false,
     ]);
 
-    render(
-      <CreateAnnouncementForm
-        defaultAgencyId={fakeId}
-        userAgencies={fakeAgencies}
-      />,
-    );
+    render(<CreateAnnouncementForm />);
 
     const alert = screen.getByRole("heading", { name: "errorHeading" });
     expect(alert).toBeInTheDocument();
@@ -124,19 +85,9 @@ describe("createOpportunityForm field change events", () => {
   it("the save button is enabled when required fields have values", async () => {
     mockUseActionState.mockReturnValue([{}, noop, false]);
 
-    render(
-      <CreateAnnouncementForm
-        defaultAgencyId={fakeId}
-        userAgencies={fakeAgencies}
-      />,
-    );
+    render(<CreateAnnouncementForm />);
 
-    // 1. Initially default agency is selected and save button is disabled
-    const selectedOption = screen.getByRole("option", {
-      name: "Agency Beta",
-      selected: true,
-    });
-    expect(selectedOption).toBeInTheDocument();
+    // 1. Initially the save button is disabled
     const saveButton = screen.queryByText("saveAndContinue");
     expect(saveButton).toBeInTheDocument();
     expect(saveButton).toBeDisabled();

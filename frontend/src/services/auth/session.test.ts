@@ -126,7 +126,7 @@ describe("createSession", () => {
     ]);
     expect(setCookiesMock).toHaveBeenCalledTimes(1);
     expect(setCookiesMock).toHaveBeenCalledWith(
-      "session",
+      "sgm-session",
       "encrypted session",
       {
         httpOnly: true,
@@ -153,7 +153,7 @@ describe("createAndReturnSession", () => {
     ]);
     expect(setCookiesMock).toHaveBeenCalledTimes(1);
     expect(setCookiesMock).toHaveBeenCalledWith(
-      "session",
+      "sgm-session",
       "encrypted session",
       {
         httpOnly: true,
@@ -202,7 +202,7 @@ describe("refreshSession", () => {
     ]);
     expect(setCookiesMock).toHaveBeenCalledTimes(1);
     expect(setCookiesMock).toHaveBeenCalledWith(
-      "session",
+      "sgm-session",
       "encrypted session",
       {
         httpOnly: true,

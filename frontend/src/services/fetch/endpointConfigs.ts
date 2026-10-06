@@ -9,10 +9,10 @@ export interface EndpointConfig {
   requiresAuth?: boolean;
 }
 
-export const fetchCompetitionEndpoint = {
+export const fetchApplicationPackageEndpoint = {
   basePath: environment.API_URL,
   version: "alpha",
-  namespace: "competitions",
+  namespace: "applicationPackages",
   method: "GET" as ApiMethod,
 };
 
@@ -40,14 +40,7 @@ export const fetchFormsEndpoint = {
   basePath: environment.API_URL,
   version: "v1",
   namespace: "forms",
-  method: "GET" as ApiMethod,
-};
-
-export const fetchCompetitionFormsEndpoint = {
-  basePath: environment.API_URL,
-  version: "alpha",
-  namespace: "competitions",
-  method: "PUT" as ApiMethod,
+  method: "POST" as ApiMethod,
   requiresAuth: true,
 };
 
@@ -124,4 +117,11 @@ export const fetchWorkflowEndpoint = {
   namespace: "workflows",
   method: "GET" as ApiMethod,
   requiresAuth: true,
+};
+
+export const apiKeyLoginEndpoint = {
+  basePath: environment.API_URL,
+  version: "v1",
+  namespace: "/internal/api-jwt",
+  method: "GET" as ApiMethod,
 };

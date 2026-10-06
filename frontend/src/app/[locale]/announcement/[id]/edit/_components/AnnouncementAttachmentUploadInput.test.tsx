@@ -76,11 +76,12 @@ const getHiddenInputValue = (container: HTMLElement, name: string) =>
   )?.value;
 
 const existingAttachment: AnnouncementAttachment = {
-  opportunity_attachment_id: "existing-1",
+  announcement_attachment_id: "existing-1",
   file_name: "already-saved.pdf",
   mime_type: "application/pdf",
-  file_size: 2048,
+  file_size_bytes: 2048,
   created_at: "2024-01-01T00:00:00.000Z",
+  updated_at: "2024-01-01T00:00:00.000Z",
 };
 
 describe("AnnouncementAttachmentUploadInput", () => {

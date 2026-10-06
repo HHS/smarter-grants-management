@@ -17,7 +17,13 @@ import { getConfiguredDayJs } from "src/utils/dateUtil";
 import { getNumericAmountFromString } from "src/utils/formatCurrencyUtil";
 
 import { useTranslations } from "next-intl";
-import { startTransition, useActionState, useRef, useState } from "react";
+import {
+  startTransition,
+  useActionState,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   Alert,
   Button,
@@ -120,12 +126,26 @@ export default function AnnouncementEditForm({
     validationErrors: {},
   });
 
-  const validationErrors: AnnouncementEditValidationErrors | undefined =
-    formState.validationErrors;
-
   //--- Validations for Award Minimum, Award Maximum and Total Program Funding ---
   const [frontendErrors, setFrontendErrors] =
     useState<AnnouncementEditValidationErrors>({});
+
+  useEffect(() => {
+    if (formState.newAnnouncementSummaryId) {
+      // TODO #9633
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setCurrentSummaryId(formState.newAnnouncementSummaryId);
+    }
+  }, [formState.newAnnouncementSummaryId]);
+
+  useEffect(() => {
+    if (Object.keys(formState.validationErrors || {}).length) {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }
+  }, [formState.validationErrors]);
 
   function setSingleFrontendError<
     K extends keyof AnnouncementEditValidationErrors,
@@ -220,7 +240,7 @@ export default function AnnouncementEditForm({
   function getFieldError(
     fieldName: keyof AnnouncementEditValidationErrors,
   ): string | undefined {
-    let fieldErrors = validationErrors?.[fieldName];
+    let fieldErrors = formState.validationErrors?.[fieldName];
     if (!fieldErrors) {
       fieldErrors = frontendErrors?.[fieldName];
     }
@@ -312,13 +332,13 @@ export default function AnnouncementEditForm({
             <span className="display-block margin-top-1 margin-bottom-1">
               {t("content.alerts.validationErrorBody")}
             </span>
-            {Array.from(
-              new Set(Object.values(formState.validationErrors).flat()),
-            ).map((error, i) => (
-              <span key={i} className="display-block">
-                {error}
-              </span>
-            ))}
+            {Object.values(formState.validationErrors)
+              .flat()
+              .map((error, i) => (
+                <span key={i} className="display-block">
+                  {error}
+                </span>
+              ))}
           </Alert>
         </div>
       ) : null}
