@@ -3,21 +3,23 @@ import { mapAnnouncementAttachmentsToFileMetadata } from "src/utils/announcement
 
 describe("mapAnnouncementAttachmentsToFileMetadata", () => {
   const attachment: AnnouncementAttachment = {
-    opportunity_attachment_id: "uuid-1",
+    announcement_attachment_id: "uuid-1",
     file_name: "document1.pdf",
     mime_type: "application/pdf",
-    file_size: 12345,
+    file_size_bytes: 12345,
+    file_description: null,
     created_at: "2024-01-01T00:00:00.000Z",
+    updated_at: "2024-01-02T00:00:00.000Z",
   };
 
-  it("maps attachment fields to upload file metadata, using created_at as updatedAt and omitting downloadUrl", () => {
+  it("maps attachment fields to upload file metadata and omits downloadUrl", () => {
     expect(mapAnnouncementAttachmentsToFileMetadata([attachment])).toEqual([
       {
         id: "uuid-1",
         fileName: "document1.pdf",
         fileSize: 12345,
         mimeType: "application/pdf",
-        updatedAt: "2024-01-01T00:00:00.000Z",
+        updatedAt: "2024-01-02T00:00:00.000Z",
       },
     ]);
   });
@@ -25,7 +27,7 @@ describe("mapAnnouncementAttachmentsToFileMetadata", () => {
   it("maps multiple attachments and preserves their order", () => {
     const secondAttachment: AnnouncementAttachment = {
       ...attachment,
-      opportunity_attachment_id: "uuid-2",
+      announcement_attachment_id: "uuid-2",
       file_name: "document2.pdf",
     };
 

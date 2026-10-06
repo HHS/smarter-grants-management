@@ -76,6 +76,31 @@ export const searchAccessibleAnnouncements = async (
   return (await response.json()) as AnnouncementListAPIResponse;
 };
 
+export const fetchAnnouncements = async (
+  page: number,
+): Promise<{
+  announcements: AnnouncementListResponseData;
+  totalRecords: number;
+  totalPages: number;
+}> => {
+  const pageRequest: PaginationRequestBody = {
+    page_offset: page,
+    page_size: 25,
+    sort_order: [
+      {
+        order_by: "created_at",
+        sort_direction: "descending",
+      },
+    ],
+  };
+  const json = await searchAccessibleAnnouncements(pageRequest);
+  return {
+    announcements: json.data,
+    totalRecords: json.pagination_info.total_records,
+    totalPages: json.pagination_info.total_pages,
+  };
+};
+
 export async function getAnnouncement(
   opportunityId: string,
 ): Promise<GrantorAnnouncementApiResponse> {
@@ -132,6 +157,18 @@ export async function publishOpportunityForGrantor(
   });
 
   return (await response.json()) as GrantorAnnouncementApiResponse;
+}
+
+// the application packages nested in the announcement response do not include instructions,
+// only this endpoint does
+export async function getApplicationPackage(
+  announcementId: string,
+  applicationPackageId: string,
+): Promise<ApplicationPackageSaveApiResponse> {
+  const response = await fetchAnnouncementWithMethod("GET")({
+    subPath: `${announcementId}/application-packages/${applicationPackageId}`,
+  });
+  return (await response.json()) as ApplicationPackageSaveApiResponse;
 }
 
 export async function createApplicationPackage(

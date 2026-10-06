@@ -164,7 +164,7 @@ export interface GrantorAnnouncementDetail extends Omit<
   is_draft: boolean;
   forecast_summary?: AnnouncementSummaryDetail;
   non_forecast_summary?: AnnouncementSummaryDetail;
-  attachments?: AnnouncementAttachment[];
+  announcement_attachments?: AnnouncementAttachment[];
 }
 
 export interface GrantorAnnouncementApiResponse extends APIResponse {
