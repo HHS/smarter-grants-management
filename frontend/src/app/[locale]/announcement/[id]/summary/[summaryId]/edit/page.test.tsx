@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { render, waitFor } from "@testing-library/react";
 import { axe } from "jest-axe";
 import AnnouncementSummaryEditPage from "src/app/[locale]/announcement/[id]/summary/[summaryId]/edit/page";
 

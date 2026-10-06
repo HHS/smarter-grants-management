@@ -125,7 +125,7 @@ export type MinimalAnnouncement = {
   announcement_status?: AnnouncementStatus;
   opportunity_title: string | null;
   announcement_title?: string | null;
-  summary: MinimalSummary;
+  summary?: MinimalSummary;
   saved_to_organizations?: SavedToOrganization[];
 };
 
@@ -138,7 +138,8 @@ export interface BaseAnnouncement extends MinimalAnnouncement {
   opportunity_assistance_listings: AnnouncementAssistanceListing[]; // need to true up vs AnnouncementAssistanceListing
   opportunity_number: string;
   announcement_number?: string;
-  summary: Summary;
+  forecast_summary: AnnouncementSummaryDetail | null;
+  non_forecast_summary: AnnouncementSummaryDetail | null;
   top_level_agency_name: string | null;
   updated_at: string;
   is_draft: boolean;
@@ -152,10 +153,6 @@ export interface AnnouncementDetail extends BaseAnnouncement {
   application_packages: [ApplicationPackage] | null;
 }
 
-export interface AnnouncementApiResponse extends APIResponse {
-  data: AnnouncementDetail;
-}
-
 export interface AnnouncementSummaryDetailApiResponse extends APIResponse {
   data: AnnouncementSummaryDetail;
 }
@@ -165,17 +162,19 @@ export interface GrantorAnnouncementDetail extends Omit<
   "attachments"
 > {
   is_draft: boolean;
-  forecast_summary?: AnnouncementSummaryDetail;
-  non_forecast_summary?: AnnouncementSummaryDetail;
+  forecast_summary: AnnouncementSummaryDetail | null;
+  non_forecast_summary: AnnouncementSummaryDetail | null;
   announcement_attachments?: AnnouncementAttachment[];
 }
 
+// change to AnnouncementApiResponse
 export interface GrantorAnnouncementApiResponse extends APIResponse {
   data: GrantorAnnouncementDetail;
 }
 
-export interface PossiblySavedBaseAnnouncement extends BaseAnnouncement {
-  opportunitySaved?: boolean;
+// after a single summary is assigned - ex. for editing
+export interface AnnouncementWithActiveSummary extends GrantorAnnouncementDetail {
+  summary: AnnouncementSummaryDetail;
 }
 
 export type AnnouncementOverview = Pick<

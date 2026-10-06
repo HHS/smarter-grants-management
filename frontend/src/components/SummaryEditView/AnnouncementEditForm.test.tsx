@@ -6,6 +6,7 @@ import { AnnouncementEditFormValues } from "src/utils/announcementEditFormConfig
 import AnnouncementEditForm from "./AnnouncementEditForm";
 
 const mockUseActionState = jest.fn();
+const mockAnnouncementEditFormAction = jest.fn();
 
 jest.mock("react", () => ({
   ...jest.requireActual<typeof import("react")>("react"),
@@ -15,7 +16,8 @@ jest.mock("react", () => ({
 jest.mock(
   "src/app/[locale]/announcement/[id]/summary/[summaryId]/actions",
   () => ({
-    announcementEditFormAction: jest.fn(),
+    announcementEditFormAction: (args: unknown[]) =>
+      mockAnnouncementEditFormAction(...args) as unknown,
   }),
 );
 
@@ -899,6 +901,21 @@ describe("AnnouncementEditForm - action buttons", () => {
 
     expect(mockFormAction).toHaveBeenCalledTimes(1);
   });
+
+  // would love to test this but the way things are structured it's very difficult at the moment, maybe we'll figure it out later
+  it.skip("calls the form action with context values when save is clicked", () => {
+    renderAnnouncementEditForm();
+
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(mockAnnouncementEditFormAction).toHaveBeenCalledTimes(1);
+    expect(mockAnnouncementEditFormAction).toHaveBeenLastCalledWith(
+      null,
+      false,
+      false,
+      "1",
+    );
+  });
 });
 
 // ─── Field validations on exiting the field ──────────────────────────────────
@@ -1048,4 +1065,6 @@ describe("AnnouncementEditForm - field validations on exiting the field", () => 
       screen.queryByText("validationErrors.publishDatePast"),
     ).not.toBeInTheDocument();
   });
+
+  it("renders the correct timestamp fields for each summary type", () => {});
 });

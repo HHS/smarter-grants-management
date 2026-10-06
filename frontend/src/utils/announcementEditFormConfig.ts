@@ -1,5 +1,5 @@
 import {
-  AnnouncementDetail,
+  AnnouncementWithActiveSummary,
   Summary,
 } from "src/types/announcement/announcementResponseTypes";
 
@@ -90,7 +90,7 @@ const getDefaultAnnouncement = (isForecast: boolean) => {
 };
 
 export const buildAnnouncementEditInitialValues = (
-  announcement: AnnouncementDetail | object,
+  announcement: AnnouncementWithActiveSummary | object,
   createMode = false,
   isForecast = false,
 ): AnnouncementEditFormValues => {
@@ -98,7 +98,7 @@ export const buildAnnouncementEditInitialValues = (
     return getDefaultAnnouncement(isForecast);
   }
 
-  const announcementDetail = announcement as AnnouncementDetail;
+  const announcementDetail = announcement as AnnouncementWithActiveSummary;
   const summary = announcementDetail.summary;
 
   return {

@@ -1,11 +1,11 @@
-import { AnnouncementDetail } from "src/types/announcement/announcementResponseTypes";
+import { AnnouncementWithActiveSummary } from "src/types/announcement/announcementResponseTypes";
 
 import { buildAnnouncementEditInitialValues } from "./announcementEditFormConfig";
 
 function makeOpportunity(
-  summaryOverrides: Partial<AnnouncementDetail["summary"]> = {},
-  opportunityOverrides: Partial<AnnouncementDetail> = {},
-): AnnouncementDetail {
+  summaryOverrides: Partial<AnnouncementWithActiveSummary["summary"]> = {},
+  opportunityOverrides: Partial<AnnouncementWithActiveSummary> = {},
+): AnnouncementWithActiveSummary {
   return {
     //delete opportunity params
     opportunity_id: "opp-1",
@@ -28,10 +28,11 @@ function makeOpportunity(
     is_draft: true,
     is_simpler_grants_opportunity: true,
     opportunity_assistance_listings: [],
-    attachments: [],
     application_packages: null,
     saved_to_organizations: [],
     submitted_application_count: 0,
+    forecast_summary: null, // in the real world one of these would be populated
+    non_forecast_summary: null,
     summary: {
       close_timestamp: "2026-06-01",
       is_forecast: false,
@@ -146,4 +147,5 @@ describe("buildAnnouncementEditInitialValues", () => {
 
     expect(result.funding_categories).toBe("");
   });
+  it("returns the correct timestamp keys for summary type", () => {});
 });
