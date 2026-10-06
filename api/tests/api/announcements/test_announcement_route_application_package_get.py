@@ -27,6 +27,10 @@ def test_application_package_get_200(client, api_key_headers, mock_s3_bucket):
     )
     assert response_package["announcement_id"] == str(application_package.announcement_id)
     assert (
+        response_package["partner_code"]
+        == application_package.announcement.opportunity.partner_code
+    )
+    assert (
         response_package["application_package_title"]
         == application_package.application_package_title
     )
