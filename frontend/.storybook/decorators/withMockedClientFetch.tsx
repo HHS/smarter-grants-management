@@ -1,15 +1,17 @@
 /**
  * @file Storybook decorator for components that call useClientFetch.
- * Provides a logged in user (useClientFetch reads its auth helpers from UserContext,
- * which is empty outside of the app's UserProvider) and answers requests to
- * `parameters.mockFetch.url` with a canned response, so stories never call a real API.
+ * Provides a logged in user (components read the session from UserContext, which is
+ * empty outside of the app's UserProvider) and the story's `parameters.mockFetch`
+ * response. preview.tsx replaces useClientFetch with useMockedClientFetch in every
+ * story, so stories never call a real API. Each story reads its response from its own
+ * context, so stories rendered together on the Docs page do not share responses.
  * @see https://storybook.js.org/docs/writing-stories/decorators
  */
 import { Decorator } from "@storybook/react";
 import { UserContext } from "src/services/auth/useUser";
 import { UserProviderState } from "src/types/authTypes";
 
-import React, { PropsWithChildren, useEffect } from "react";
+import React, { createContext, useCallback, useContext } from "react";
 
 export type MockFetchParameters = {
   url: string;
@@ -32,36 +34,32 @@ const mockUserState: UserProviderState = {
   defaultFeatureFlags: {},
 };
 
-const requestUrl = (input: RequestInfo | URL) => {
-  if (typeof input === "string") return input;
-  if (input instanceof URL) return input.href;
-  return input.url;
-};
+const MockFetchContext = createContext<MockFetchParameters | undefined>(
+  undefined,
+);
 
-const MockFetch = ({
-  mockFetch,
-  children,
-}: PropsWithChildren<{ mockFetch: MockFetchParameters }>) => {
-  useEffect(() => {
-    const originalFetch = window.fetch;
-    window.fetch = async (input, init) => {
-      if (requestUrl(input) !== mockFetch.url) {
-        return originalFetch(input, init);
+// stands in for useClientFetch (see preview.tsx) with the same shape: clientFetch
+// resolves with the story's response body, or throws `${errorMessage}: ${status}`
+// for any status other than 200, as useClientFetch does
+export const useMockedClientFetch = <T,>(errorMessage: string) => {
+  const mockFetch = useContext(MockFetchContext);
+  const clientFetch = useCallback(
+    async (url: string): Promise<T> => {
+      if (!mockFetch || url !== mockFetch.url) {
+        throw new Error(`No mocked response for ${url} in this story`);
       }
       await new Promise((resolve) =>
         setTimeout(resolve, mockFetch.delayMs ?? 0),
       );
-      return new Response(JSON.stringify(mockFetch.responseBody ?? {}), {
-        status: mockFetch.status ?? 200,
-        headers: { "Content-Type": "application/json" },
-      });
-    };
-    return () => {
-      window.fetch = originalFetch;
-    };
-  }, [mockFetch]);
-
-  return <>{children}</>;
+      const status = mockFetch.status ?? 200;
+      if (status !== 200) {
+        throw new Error(`${errorMessage}: ${status}`);
+      }
+      return (mockFetch.responseBody ?? {}) as T;
+    },
+    [mockFetch, errorMessage],
+  );
+  return { clientFetch };
 };
 
 // registered globally in preview.tsx, but only takes effect for stories that set
@@ -72,9 +70,9 @@ const withMockedClientFetch: Decorator = (Story, context) => {
   if (!mockFetch) return <Story />;
   return (
     <UserContext.Provider value={mockUserState}>
-      <MockFetch mockFetch={mockFetch}>
+      <MockFetchContext.Provider value={mockFetch}>
         <Story />
-      </MockFetch>
+      </MockFetchContext.Provider>
     </UserContext.Provider>
   );
 };
