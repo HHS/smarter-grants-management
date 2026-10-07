@@ -25,9 +25,7 @@ jest.mock("next/navigation", () => ({
 }));
 
 jest.mock("src/hooks/useClientFetch", () => ({
-  useClientFetch: jest.fn(() => ({
-    clientFetch: mockClientFetch,
-  })),
+  useClientFetch: () => mockClientFetch() as unknown,
 }));
 
 jest.mock(
@@ -51,6 +49,7 @@ describe("SummaryEditView", () => {
         forecast_summary: { announcement_summary_id: "2" },
       },
     });
+    mockClientFetch.mockReturnValue({ clientFetch: jest.fn() });
   });
   afterEach(() => {
     jest.resetAllMocks();
