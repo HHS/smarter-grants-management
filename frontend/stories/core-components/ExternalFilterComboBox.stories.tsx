@@ -131,7 +131,7 @@ const meta: Meta<typeof ExternalFilterComboBox> = {
   },
   parameters: {
     // handled by the withMockedClientFetch decorator, no real API call is made
-    mockFetch: {
+    mockFetchConfiguration: {
       url: props.fetchOptionsUrl,
       responseBody: searchResponse,
       delayMs: 300,
@@ -220,7 +220,7 @@ export const FormSubmissionMultiSelect: Story = {
 
 export const Loading: Story = {
   parameters: {
-    mockFetch: {
+    mockFetchConfiguration: {
       url: props.fetchOptionsUrl,
       responseBody: searchResponse,
       delayMs: 5000,
@@ -232,7 +232,7 @@ export const Loading: Story = {
 export const ErrorStory: Story = {
   name: "Error",
   parameters: {
-    mockFetch: {
+    mockFetchConfiguration: {
       url: props.fetchOptionsUrl,
       responseBody: { message: "Internal server error" },
       status: 500,
@@ -257,7 +257,7 @@ export const PopulatedResults: Story = {
 
 export const NoResults: Story = {
   parameters: {
-    mockFetch: {
+    mockFetchConfiguration: {
       url: props.fetchOptionsUrl,
       responseBody: { ...searchResponse, data: [] },
       delayMs: 300,
