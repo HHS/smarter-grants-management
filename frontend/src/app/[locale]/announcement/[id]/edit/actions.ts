@@ -267,6 +267,22 @@ async function validateOpportunityEditForm(formData: FormData) {
         });
       }
     })
+    .superRefine(({ post_timestamp }, ctx) => {
+      if (!post_timestamp) {
+        return;
+      }
+
+      const publish = dayjs(post_timestamp);
+      const today = dayjs().startOf("day");
+
+      if (publish.isValid() && publish.isBefore(today)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["post_timestamp"],
+          message: validationErrors("publishDatePast"),
+        });
+      }
+    })
     .superRefine(
       (
         { award_floor, award_ceiling, estimated_total_program_funding },

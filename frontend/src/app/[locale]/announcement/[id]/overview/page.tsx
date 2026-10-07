@@ -100,7 +100,11 @@ export default async function OpportunityOverviewPage({
         opportunityData={opportunityData}
         locale={locale}
       >
-        <OverviewButtons opportunityId={id} publishEnabled={publishEnabled} />
+        <OverviewButtons
+          opportunityId={id}
+          publishEnabled={publishEnabled}
+          postDate={summary.post_timestamp ?? null}
+        />
       </AnnouncementDetailsHeader>
       <div className="grid-container padding-top-4 padding-bottom-4">
         {isNewlyCreated && (
