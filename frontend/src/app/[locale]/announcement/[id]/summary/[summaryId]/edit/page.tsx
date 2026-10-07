@@ -1,5 +1,3 @@
-import { Suspense } from "react";
-
 import SummaryEditView from "src/components/announcement/SummaryEditView";
 
 export const dynamic = "force-dynamic";

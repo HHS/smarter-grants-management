@@ -108,7 +108,7 @@ export default async function OpportunityOverviewPage({
         <OverviewButtons
           opportunityId={id}
           publishEnabled={publishEnabled}
-          postDate={summary.post_timestamp ?? null}
+          postDate={announcementData.forecast_summary?.post_timestamp ?? null}
         />
       </AnnouncementDetailsHeader>
       <div className="grid-container padding-top-4 padding-bottom-4">
