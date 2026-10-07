@@ -3,13 +3,32 @@ import { fakeExternalFilterComboBox } from "src/utils/testing/externalFilterComb
 import { action } from "storybook/actions";
 import { expect, fn, userEvent, within } from "storybook/test";
 
-import { FormEvent } from "react";
+import { SubmitEvent } from "react";
 import { Button } from "@trussworks/react-uswds";
 
 import { ExternalFilterComboBox } from "src/components/core/ExternalFilterComboBox";
 
 // searchResponse is the canned response, returned for every search regardless of the text typed
 const { props, searchResponse, options } = fakeExternalFilterComboBox;
+
+const logFormSubmission = action("form submitted");
+
+// wraps the combo box in a form, and logs what the form would submit in the
+// Actions panel instead of submitting it
+const renderInForm: Story["render"] = (args) => (
+  <form
+    aria-label="Example form"
+    onSubmit={(event: SubmitEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      logFormSubmission(Array.from(new FormData(event.currentTarget)));
+    }}
+  >
+    <ExternalFilterComboBox {...args} />
+    <Button type="submit" className="margin-top-2">
+      Submit
+    </Button>
+  </form>
+);
 
 const meta: Meta<typeof ExternalFilterComboBox> = {
   title: "Core Components/ExternalFilterComboBox",
@@ -186,25 +205,6 @@ export const RequiredWithError: Story = {
     rawErrors: ["This is a required field."],
   },
 };
-
-const logFormSubmission = action("form submitted");
-
-// wraps the combo box in a form, and logs what the form would submit in the
-// Actions panel instead of submitting it
-const renderInForm: Story["render"] = (args) => (
-  <form
-    aria-label="Example form"
-    onSubmit={(event: FormEvent<HTMLFormElement>) => {
-      event.preventDefault();
-      logFormSubmission(Array.from(new FormData(event.currentTarget)));
-    }}
-  >
-    <ExternalFilterComboBox {...args} />
-    <Button type="submit" className="margin-top-2">
-      Submit
-    </Button>
-  </form>
-);
 
 export const FormSubmission: Story = {
   render: renderInForm,
