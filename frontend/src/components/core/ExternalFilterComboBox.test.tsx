@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { axe } from "jest-axe";
-import { fakeExternalFilterComboBox } from "src/utils/testing/fixtures";
+import { fakeExternalFilterComboBox } from "src/utils/testing/externalFilterComboBoxTestUtils";
 
 import { ComponentProps } from "react";
 import { ComboBoxOption } from "@trussworks/react-uswds";

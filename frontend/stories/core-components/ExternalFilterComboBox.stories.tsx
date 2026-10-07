@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { fakeExternalFilterComboBox } from "src/utils/testing/fixtures";
+import { fakeExternalFilterComboBox } from "src/utils/testing/externalFilterComboBoxTestUtils";
 import { action } from "storybook/actions";
 import { expect, fn, userEvent, within } from "storybook/test";
 
