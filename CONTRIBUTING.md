@@ -116,7 +116,7 @@ gpg --list-secret-keys --keyid-format=long
 Example output:
 ```
 sec   rsa4096/B5690EEEBB952194 2026-09-28 [SC]
-              ↑ This is your key ID
+              ↑ This is your key ID (after rsa4096/ prefix)
 uid           [ultimate] Your Name <your.email@company.com>
 ```
 
