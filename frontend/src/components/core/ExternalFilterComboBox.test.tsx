@@ -212,10 +212,13 @@ describe("ExternalFilterComboBox", () => {
       await waitForDebounce(1);
 
       expect(mockClientFetch).toHaveBeenCalledTimes(1);
-      expect(mockClientFetch).toHaveBeenCalledWith(props.fetchOptionsUrl, {
-        method: "POST",
-        body: JSON.stringify({ searchTerm: "che" }),
-      });
+      expect(mockClientFetch).toHaveBeenCalledWith(
+        props.fetchOptionsUrl,
+        expect.objectContaining({
+          method: "POST",
+          body: JSON.stringify({ searchTerm: "che" }),
+        }),
+      );
     });
 
     it("sends the request body built by buildRequestBody", async () => {
@@ -226,10 +229,13 @@ describe("ExternalFilterComboBox", () => {
       typeInSearch("che");
       await waitForDebounce();
 
-      expect(mockClientFetch).toHaveBeenCalledWith(props.fetchOptionsUrl, {
-        method: "POST",
-        body: JSON.stringify({ query: "che" }),
-      });
+      expect(mockClientFetch).toHaveBeenCalledWith(
+        props.fetchOptionsUrl,
+        expect.objectContaining({
+          method: "POST",
+          body: JSON.stringify({ query: "che" }),
+        }),
+      );
     });
 
     it("does not search without a login token", async () => {
@@ -255,15 +261,19 @@ describe("ExternalFilterComboBox", () => {
       await waitForDebounce();
 
       expect(mockClientFetch).toHaveBeenCalledTimes(1);
-      expect(mockClientFetch).toHaveBeenCalledWith(props.fetchOptionsUrl, {
-        method: "POST",
-        body: JSON.stringify({ searchTerm: "che" }),
-      });
+      expect(mockClientFetch).toHaveBeenCalledWith(
+        props.fetchOptionsUrl,
+        expect.objectContaining({
+          method: "POST",
+          body: JSON.stringify({ searchTerm: "che" }),
+        }),
+      );
     });
   });
 
   // what the user sees before, while and after a search runs: results and their count, focus
-  // kept, no results, loading spinner and message, error, out-of-order responses ignored
+  // kept, no results, loading spinner and message, error, out-of-order responses ignored, and
+  // the search in progress cancelled by a newer one
   describe("async states", () => {
     it("shows results as soon as they arrive and announces how many", async () => {
       renderComboBox();
@@ -404,6 +414,39 @@ describe("ExternalFilterComboBox", () => {
       expect(
         screen.getAllByRole("option").map((option) => option.textContent),
       ).toEqual([options[0].label]);
+    });
+
+    it("cancels the search in progress when a newer search starts", async () => {
+      const consoleError = jest
+        .spyOn(console, "error")
+        .mockImplementation(() => undefined);
+      // like fetch, the first search rejects with an AbortError once it is aborted
+      mockClientFetch
+        .mockImplementationOnce(
+          (_url: string, { signal }: RequestInit) =>
+            new Promise((_resolve, reject) => {
+              signal?.addEventListener("abort", () =>
+                reject(
+                  new DOMException("The operation was aborted.", "AbortError"),
+                ),
+              );
+            }),
+        )
+        .mockResolvedValueOnce(searchResponse);
+      renderComboBox();
+      focusSearch();
+      typeInSearch("che");
+      await waitForDebounce();
+      typeInSearch("chem");
+      await waitForDebounce();
+
+      const signals = mockClientFetch.mock.calls.map(
+        ([, requestOptions]) => (requestOptions as RequestInit).signal,
+      );
+      expect(signals.map((signal) => signal?.aborted)).toEqual([true, false]);
+      expect(screen.getAllByRole("option")).toHaveLength(options.length);
+      expect(consoleError).not.toHaveBeenCalled();
+      consoleError.mockRestore();
     });
   });
 

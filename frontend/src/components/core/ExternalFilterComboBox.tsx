@@ -127,11 +127,13 @@ export function ExternalFilterComboBox({
     if (term.length < minSearchLength || !hasToken) return;
     latestRequestId.current += 1;
     const requestId = latestRequestId.current;
+    const searchAbortController = new AbortController();
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSearchStatus("loading");
     clientFetch(fetchOptionsUrl, {
       method: "POST",
       body: JSON.stringify(buildRequestBody(term)),
+      signal: searchAbortController.signal,
     })
       .then((response) => {
         if (requestId === latestRequestId.current) {
@@ -140,12 +142,17 @@ export function ExternalFilterComboBox({
         }
         return null;
       })
-      .catch((e) => {
-        if (requestId !== latestRequestId.current) return;
+      .catch((e: Error) => {
+        // skip handling for expected abort related errors
+        if (e.name === "AbortError" || requestId !== latestRequestId.current) {
+          return;
+        }
         console.error("Unable to fetch combo box options", e);
         setOptions([]);
         setSearchStatus("error");
       });
+    // a newer search, or the component going away, cancels this request
+    return () => searchAbortController.abort();
     // only a new debounced search or the token arriving starts a search. clientFetch
     // as a dependency causes an infinite re-render loop (see the note in
     // useClientFetch), and the props are read when the search starts.
