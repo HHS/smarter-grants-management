@@ -8,7 +8,15 @@ import { ComboBoxOption } from "@trussworks/react-uswds";
 import { ExternalFilterComboBox } from "src/components/core/ExternalFilterComboBox";
 
 const mockClientFetch = jest.fn();
+const mockDebounce = jest.fn();
 let mockUserToken: string | undefined;
+
+// Next.js compiles `import { debounce } from "lodash"` to an import of
+// "lodash/debounce", so that is the module mocked here
+jest.mock("lodash/debounce", () => ({
+  __esModule: true,
+  default: (...args: unknown[]) => mockDebounce(...args) as unknown,
+}));
 
 jest.mock("src/hooks/useClientFetch", () => ({
   useClientFetch: () => ({
@@ -26,16 +34,12 @@ const renderComboBox = (
   overrides: Partial<ComponentProps<typeof ExternalFilterComboBox>> = {},
 ) => render(<ExternalFilterComboBox {...props} {...overrides} />);
 
-// the component's default debounceMs
-const defaultDebounceMs = 500;
-
 const typeInSearch = (text: string) =>
   fireEvent.change(screen.getByRole("combobox"), { target: { value: text } });
 
-// runs the pending debounced search and lets its response settle
-const waitForDebounce = (ms = defaultDebounceMs) =>
+// lets the search response settle
+const waitForSearch = () =>
   act(async () => {
-    jest.advanceTimersByTime(ms);
     await Promise.resolve();
   });
 
@@ -44,7 +48,7 @@ const focusSearch = () => act(() => screen.getByRole("combobox").focus());
 const searchFor = async (text: string) => {
   focusSearch();
   typeInSearch(text);
-  await waitForDebounce();
+  await waitForSearch();
 };
 
 const pickOption = (option: ComboBoxOption) =>
@@ -89,19 +93,19 @@ const pendingResponse = () => {
 // field errors, placeholder, and default selections in both modes
 describe("ExternalFilterComboBox", () => {
   beforeEach(() => {
-    jest.useFakeTimers();
     mockUserToken = "a token";
     mockClientFetch.mockResolvedValue(searchResponse);
+    // the debounced function runs right away; cancel is called on unmount
+    mockDebounce.mockImplementation((debouncedFunction: () => void) =>
+      Object.assign(debouncedFunction, { cancel: () => undefined }),
+    );
   });
 
   afterEach(() => {
-    jest.useRealTimers();
     jest.resetAllMocks();
   });
 
   it("has no accessibility violations", async () => {
-    // axe schedules its own timers, which would never run under fake timers
-    jest.useRealTimers();
     const { container } = renderComboBox();
 
     const results = await axe(container);
@@ -176,14 +180,14 @@ describe("ExternalFilterComboBox", () => {
     ]);
   });
 
-  // when a search request is sent: minimum length hint, one request per typing pause,
-  // default and custom request body, and waiting for the login token before searching
+  // when a search request is sent: minimum length hint, debounce delay, default and
+  // custom request body, and waiting for the login token before searching
   describe("search", () => {
     it("shows the minimum length hint and does not search below the minimum", async () => {
       renderComboBox();
 
       typeInSearch("ch ");
-      await waitForDebounce();
+      await waitForSearch();
 
       expect(
         screen.getByText("Type at least 3 characters to search"),
@@ -201,15 +205,24 @@ describe("ExternalFilterComboBox", () => {
       ).toBeVisible();
     });
 
-    it("searches once, after typing pauses, with the default request body", async () => {
+    it("debounces typing by debounceMs, 500 by default", () => {
+      const { unmount } = renderComboBox();
+      unmount();
+      renderComboBox({ debounceMs: 250 });
+
+      expect(mockDebounce).toHaveBeenNthCalledWith(
+        1,
+        expect.any(Function),
+        500,
+      );
+      expect(mockDebounce).toHaveBeenLastCalledWith(expect.any(Function), 250);
+    });
+
+    it("searches with the default request body", async () => {
       renderComboBox();
 
-      typeInSearch("c");
-      typeInSearch("ch");
       typeInSearch("che");
-      await waitForDebounce(defaultDebounceMs - 1);
-      expect(mockClientFetch).not.toHaveBeenCalled();
-      await waitForDebounce(1);
+      await waitForSearch();
 
       expect(mockClientFetch).toHaveBeenCalledTimes(1);
       expect(mockClientFetch).toHaveBeenCalledWith(
@@ -227,7 +240,7 @@ describe("ExternalFilterComboBox", () => {
       });
 
       typeInSearch("che");
-      await waitForDebounce();
+      await waitForSearch();
 
       expect(mockClientFetch).toHaveBeenCalledWith(
         props.fetchOptionsUrl,
@@ -243,7 +256,7 @@ describe("ExternalFilterComboBox", () => {
       renderComboBox();
 
       typeInSearch("che");
-      await waitForDebounce();
+      await waitForSearch();
 
       expect(mockClientFetch).not.toHaveBeenCalled();
     });
@@ -252,13 +265,13 @@ describe("ExternalFilterComboBox", () => {
       mockUserToken = undefined;
       const { rerender } = renderComboBox();
       typeInSearch("che");
-      await waitForDebounce();
+      await waitForSearch();
       expect(mockClientFetch).not.toHaveBeenCalled();
 
       // the session finishes loading
       mockUserToken = "a token";
       rerender(<ExternalFilterComboBox {...props} />);
-      await waitForDebounce();
+      await waitForSearch();
 
       expect(mockClientFetch).toHaveBeenCalledTimes(1);
       expect(mockClientFetch).toHaveBeenCalledWith(
@@ -280,7 +293,7 @@ describe("ExternalFilterComboBox", () => {
       focusSearch();
 
       typeInSearch("che");
-      await waitForDebounce();
+      await waitForSearch();
 
       expect(
         screen.getAllByRole("option").map((option) => option.textContent),
@@ -300,7 +313,7 @@ describe("ExternalFilterComboBox", () => {
       const nextField = screen.getByRole("button", { name: "Next field" });
 
       act(() => nextField.focus());
-      await waitForDebounce();
+      await waitForSearch();
 
       expect(mockClientFetch).toHaveBeenCalledTimes(1);
       expect(nextField).toHaveFocus();
@@ -312,7 +325,7 @@ describe("ExternalFilterComboBox", () => {
       focusSearch();
 
       typeInSearch("zzz");
-      await waitForDebounce();
+      await waitForSearch();
 
       expect(
         within(screen.getByRole("listbox")).getByText("No results found"),
@@ -327,7 +340,7 @@ describe("ExternalFilterComboBox", () => {
       focusSearch();
 
       typeInSearch("che");
-      await waitForDebounce();
+      await waitForSearch();
 
       expect(
         screen.getByRole("progressbar", { name: "Loading!" }),
@@ -345,18 +358,6 @@ describe("ExternalFilterComboBox", () => {
       expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
     });
 
-    it("shows loading, not no results, while waiting for typing to pause", () => {
-      renderComboBox();
-      focusSearch();
-
-      typeInSearch("che");
-
-      expect(mockClientFetch).not.toHaveBeenCalled();
-      expect(
-        within(screen.getByRole("listbox")).getByText("Loading results..."),
-      ).toBeVisible();
-    });
-
     it("shows the error message and drops earlier results when a search fails", async () => {
       const consoleError = jest
         .spyOn(console, "error")
@@ -364,12 +365,12 @@ describe("ExternalFilterComboBox", () => {
       renderComboBox();
       focusSearch();
       typeInSearch("che");
-      await waitForDebounce();
+      await waitForSearch();
       expect(screen.getAllByRole("option")).toHaveLength(options.length);
 
       mockClientFetch.mockRejectedValue(new Error("search failed"));
       typeInSearch("chem");
-      await waitForDebounce();
+      await waitForSearch();
 
       expect(screen.queryAllByRole("option")).toHaveLength(0);
       expect(
@@ -394,9 +395,9 @@ describe("ExternalFilterComboBox", () => {
       renderComboBox();
       focusSearch();
       typeInSearch("che");
-      await waitForDebounce();
+      await waitForSearch();
       typeInSearch("chem");
-      await waitForDebounce();
+      await waitForSearch();
 
       await act(async () => {
         secondResponse.resolve({
@@ -436,9 +437,9 @@ describe("ExternalFilterComboBox", () => {
       renderComboBox();
       focusSearch();
       typeInSearch("che");
-      await waitForDebounce();
+      await waitForSearch();
       typeInSearch("chem");
-      await waitForDebounce();
+      await waitForSearch();
 
       const signals = mockClientFetch.mock.calls.map(
         ([, requestOptions]) => (requestOptions as RequestInit).signal,
@@ -662,13 +663,12 @@ describe("ExternalFilterComboBox", () => {
   });
 
   // axe in the states the closed-field check above does not cover: the open dropdown
-  // with results, several pills, and a field error (axe needs real timers)
+  // with results, several pills, and a field error
   describe("accessibility", () => {
     it("has no violations with the dropdown open", async () => {
       const { container } = renderComboBox();
       await searchFor("che");
       expect(screen.getByRole("listbox")).toBeVisible();
-      jest.useRealTimers();
 
       const results = await axe(container);
 
@@ -676,7 +676,6 @@ describe("ExternalFilterComboBox", () => {
     });
 
     it("has no violations with several pills", async () => {
-      jest.useRealTimers();
       const { container } = renderComboBox({
         multiSelect: true,
         defaultSelectedOptions: options.slice(0, 2),
@@ -688,7 +687,6 @@ describe("ExternalFilterComboBox", () => {
     });
 
     it("has no violations with a field error", async () => {
-      jest.useRealTimers();
       const { container } = renderComboBox({
         isRequired: true,
         rawErrors: ["This is a required field."],
