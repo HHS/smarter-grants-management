@@ -39,9 +39,10 @@ const MockFetchContext = createContext<MockFetchConfiguration | undefined>(
   undefined,
 );
 
-// stands in for useClientFetch (see preview.tsx) with the same shape: clientFetch
-// resolves with the story's response body, or throws `${errorMessage}: ${status}`
-// for any status other than 200, as useClientFetch does
+// stands in for useClientFetch (see preview.tsx): clientFetch resolves with the
+// story's response body, or throws `${errorMessage}: ${status}` for any status other
+// than 200, as useClientFetch does. Request options are ignored, so an aborted
+// request still resolves (callers discard responses they no longer need).
 export const useMockedClientFetch = <T,>(errorMessage: string) => {
   const mockFetchConfiguration = useContext(MockFetchContext);
   const clientFetch = useCallback(

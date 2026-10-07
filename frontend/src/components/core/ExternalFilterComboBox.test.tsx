@@ -358,6 +358,22 @@ describe("ExternalFilterComboBox", () => {
       expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
     });
 
+    it("shows loading, not no results, while waiting for typing to pause", () => {
+      // the debounced function holds the call, as while typing has not paused yet
+      mockDebounce.mockImplementationOnce(() =>
+        Object.assign(() => undefined, { cancel: () => undefined }),
+      );
+      renderComboBox();
+      focusSearch();
+
+      typeInSearch("che");
+
+      expect(mockClientFetch).not.toHaveBeenCalled();
+      expect(
+        within(screen.getByRole("listbox")).getByText("Loading results..."),
+      ).toBeVisible();
+    });
+
     it("shows the error message and drops earlier results when a search fails", async () => {
       const consoleError = jest
         .spyOn(console, "error")
