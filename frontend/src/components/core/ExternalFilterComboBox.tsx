@@ -73,7 +73,7 @@ export function ExternalFilterComboBox({
   onSelectionChange,
 }: ExternalFilterComboBoxProps) {
   const hasErrors = rawErrors.length > 0;
-  const [inputValue, setInputValue] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   // trussworks only shows a default value that is among the options present on mount,
   // and search results have not arrived yet then, so a single-select default starts
   // as the options. Multi-select defaults show as pills instead.
@@ -84,7 +84,6 @@ export function ExternalFilterComboBox({
     defaultSelectedOptions,
   );
   const [searchStatus, setSearchStatus] = useState<SearchStatus>("idle");
-  const searchTerm = inputValue.trim();
   const isBelowMinimumLength = searchTerm.length < minSearchLength;
 
   // multi-select does not offer options that are already selected
@@ -184,12 +183,13 @@ export function ExternalFilterComboBox({
   }, [id, hasErrors]);
 
   const onInputChange = (value: string) => {
-    setInputValue(value);
-    updateDebouncedSearch(value.trim());
+    const term = value.trim();
+    setSearchTerm(term);
+    updateDebouncedSearch(term);
     // any response still on its way is for text the user has since changed
     latestRequestId.current += 1;
     // results for a longer search no longer apply once the text drops below the minimum
-    if (value.trim().length < minSearchLength) {
+    if (term.length < minSearchLength) {
       setOptions([]);
       setSearchStatus("idle");
     }
