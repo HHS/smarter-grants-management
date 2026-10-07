@@ -39,6 +39,8 @@ def create_application_package_request(
     grace_period: int = 5,
     opening_timestamp: datetime | None = None,
     closing_timestamp: datetime | None = None,
+        forecasted_opening_timestamp: datetime | None = None,
+    forecasted_closing_timestamp: datetime | None = None,
     contact_info: str | None = "Bob Smith\nFakeMail@fake.com",
     open_to_applicants: list[ApplicationPackageOpenToApplicant] | None = None,
 ) -> dict[str, Any]:

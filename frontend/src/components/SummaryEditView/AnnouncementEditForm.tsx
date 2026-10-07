@@ -692,7 +692,10 @@ export default function AnnouncementEditForm({
                 }
               >
                 <DynamicFieldLabel
-                  idFor="close_timestamp"
+                  idFor={getTimestampFieldForSummaryType(
+                    isForecast,
+                    "close_timestamp",
+                  )}
                   title={t("labels.closeDate")}
                   description={t("content.closeDateHint")}
                 />

@@ -12,9 +12,5 @@ export default async function AnnouncementSummaryEditPage({
   params,
 }: PageProps) {
   const { id, summaryId } = await params;
-  return (
-    <Suspense fallback={<div>hi</div>}>
-      <SummaryEditView announcementId={id} summaryId={summaryId} />
-    </Suspense>
-  );
+  return <SummaryEditView announcementId={id} summaryId={summaryId} />;
 }

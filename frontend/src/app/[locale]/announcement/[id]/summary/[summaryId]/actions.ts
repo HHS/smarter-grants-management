@@ -58,6 +58,9 @@ const editOpportunityFormSchema = {
   agency_contact_description: { type: "string" },
   agency_email_address: { type: "string" },
   agency_email_address_description: { type: "string" },
+  forecasted_post_timestamp: { type: "string" },
+  forecasted_close_timestamp: { type: "string" },
+  forecasted_close_timestamp_description: { type: "string" },
 };
 
 function readStringValue(value: FormDataEntryValue | null): string {

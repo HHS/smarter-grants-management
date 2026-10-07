@@ -1066,5 +1066,40 @@ describe("AnnouncementEditForm - field validations on exiting the field", () => 
     ).not.toBeInTheDocument();
   });
 
-  it("renders the correct timestamp fields for each summary type", () => {});
+  it("renders the correct timestamp fields for each summary type", () => {
+    const mockFormAction = jest.fn<void, [FormData]>();
+    mockUseActionState.mockReturnValue([
+      { validationErrors: {} },
+      mockFormAction,
+      false,
+    ]);
+    render(
+      <AnnouncementEditForm
+        announcementId="opportunity-123"
+        announcementSummaryId="summary-456"
+        initialValues={{
+          ...initialValues,
+          forecasted_post_timestamp: "2026-03-11",
+          forecasted_close_timestamp: "2026-04-11",
+        }}
+        isForecast={true}
+      />,
+    );
+
+    const inputs = screen.getAllByTestId("date-picker-internal-input");
+    expect(inputs).toHaveLength(2);
+    const postInput = inputs[0];
+    const closeInput = inputs[1];
+
+    expect(postInput).toHaveValue("2026-03-11");
+    expect(closeInput).toHaveValue("2026-04-11");
+
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(mockFormAction).toHaveBeenCalledTimes(1);
+    expect(mockFormAction).toHaveBeenCalledWith(expect.any(FormData));
+    const formDataArg = mockFormAction.mock.calls[0][0];
+    expect(formDataArg.get("forecasted_post_timestamp")).toEqual("2026-03-11");
+    expect(formDataArg.get("forecasted_close_timestamp")).toEqual("2026-04-11");
+  });
 });
