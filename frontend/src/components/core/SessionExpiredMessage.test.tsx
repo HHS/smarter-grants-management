@@ -10,7 +10,7 @@ describe("SessionExpiredMessage", () => {
     expect(screen.getByText("sessionExpiredBody")).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "signInAgainCTA" }),
-    ).toHaveAttribute("href", "/api/auth/logout");
+    ).toHaveAttribute("href", "/api/auth/login");
   });
 
   it("should not have any accessibility violations", async () => {
