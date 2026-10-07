@@ -170,7 +170,7 @@ describe("OpportunityOverviewPage", () => {
           "href",
           `/announcement/${testOpportunityId}/${section.hrefSuffix}`,
         );
-        // let's test this in the progress checker component instead
+        // let's come back to this after we've fixed up the progress indication
         // expect(within(row).getByText(status)).toBeInTheDocument();
       },
     );

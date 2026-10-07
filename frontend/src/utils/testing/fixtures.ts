@@ -478,8 +478,8 @@ export const fakeUserProfile: UserProfile = {
 };
 
 export const fakeSynopsisSummary: AnnouncementSummaryDetail = {
-  close_timestamp: "2026-06-01",
   is_forecast: false,
+  close_timestamp: "2026-06-01",
   post_timestamp: "2026-05-01",
   additional_info_url: "https://example.com",
   additional_info_url_description: "More info",
@@ -515,9 +515,11 @@ export const fakeSynopsisSummary: AnnouncementSummaryDetail = {
 export const fakeForecastSummary: AnnouncementSummaryDetail = {
   ...fakeSynopsisSummary,
   summary_description: "A FORECAST description",
-  close_timestamp: "2026-05-01",
+  forecasted_close_timestamp: "2026-05-01",
   is_forecast: true,
-  post_timestamp: "2026-04-01",
+  forecasted_post_timestamp: "2026-04-01",
+  close_timestamp: null,
+  post_timestamp: null,
 };
 
 export const mockAnnouncement: GrantorAnnouncementDetail = {

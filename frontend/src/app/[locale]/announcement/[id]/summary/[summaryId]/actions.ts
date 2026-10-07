@@ -182,7 +182,6 @@ async function validateOpportunityEditForm(formData: FormData) {
         .min(1, { message: validationErrors("description") }),
       post_timestamp: z.string().trim(),
       forecasted_post_timestamp: z.string().trim(),
-      // .min(1, { message: validationErrors("publishDate") }),
       close_timestamp: z.string().trim(),
       agency_email_address: z
         .string()
@@ -395,8 +394,6 @@ export async function saveAnnouncementEditAction(
   const announcementSummaryId = readStringValue(
     formData.get("announcement_summary_id"),
   ).trim();
-  // const isForecast =
-  //   readStringValue(formData.get("is_forecast")).trim() === "true";
 
   if (!announcementId) {
     return {

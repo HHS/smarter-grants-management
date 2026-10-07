@@ -62,7 +62,7 @@ const getTimestamps = (
       };
 };
 
-const getDefaultAnnouncement = (isForecast: boolean) => {
+export const getDefaultAnnouncement = (isForecast: boolean) => {
   const timestamps = getTimestamps(isForecast);
   return {
     ...timestamps,

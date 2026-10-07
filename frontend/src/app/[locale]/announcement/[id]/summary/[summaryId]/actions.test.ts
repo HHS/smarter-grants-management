@@ -887,9 +887,57 @@ describe("saveAnnouncementEditAction", () => {
       });
     });
   });
+  it("makes request with forecast timestamp fields when creating forecast", async () => {
+    const formData = buildValidFormData();
+    formData.set("announcement_id", "opp-123");
+    formData.set("forecasted_post_timestamp", "2026-10-07");
+    formData.set("forecasted_close_timestamp", "2026-10-08");
+    formData.set("forecasted_close_timestamp_description", "whatever");
+
+    mockCreateAnnouncementSummary.mockResolvedValue({
+      message: "success",
+      status_code: 201,
+      data: { announcement_summary_id: "new-sum-789" },
+    } as unknown as Awaited<ReturnType<typeof createAnnouncementSummary>>);
+
+    await saveAnnouncementEditAction(true, formData);
+
+    const firstCall = mockCreateAnnouncementSummary.mock.calls[0];
+    expect(firstCall?.[0].body.forecasted_post_timestamp).toBe(
+      "2026-10-07T00:00:00.000Z",
+    );
+    expect(firstCall?.[0].body.forecasted_close_timestamp).toBe(
+      "2026-10-08T00:00:00.000Z",
+    );
+    expect(firstCall?.[0].body.forecasted_close_timestamp_description).toBe(
+      "whatever",
+    );
+  });
+  it("makes request with non forecast timestamp fields when creating synopsis", async () => {
+    const formData = buildValidFormData();
+    formData.set("announcement_id", "opp-123");
+    formData.set("post_timestamp", "2026-10-07");
+    formData.set("close_timestamp", "2026-10-08");
+    formData.set("close_timestamp_description", "whatever");
+
+    mockCreateAnnouncementSummary.mockResolvedValue({
+      message: "success",
+      status_code: 201,
+      data: { announcement_summary_id: "new-sum-789" },
+    } as unknown as Awaited<ReturnType<typeof createAnnouncementSummary>>);
+
+    await saveAnnouncementEditAction(false, formData);
+
+    const firstCall = mockCreateAnnouncementSummary.mock.calls[0];
+    expect(firstCall?.[0].body.post_timestamp).toBe("2026-10-07T00:00:00.000Z");
+    expect(firstCall?.[0].body.close_timestamp).toBe(
+      "2026-10-08T00:00:00.000Z",
+    );
+    expect(firstCall?.[0].body.close_timestamp_description).toBe("whatever");
+  });
 });
 
-describe("announcementEditFormAction", () => {
+describe("announcementEditFormAction error handling", () => {
   beforeEach(() => {
     jest.resetAllMocks();
   });

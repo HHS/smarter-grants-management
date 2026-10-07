@@ -1,6 +1,13 @@
 import { AnnouncementWithActiveSummary } from "src/types/announcement/announcementResponseTypes";
 
-import { buildAnnouncementEditInitialValues } from "./announcementEditFormConfig";
+import {
+  buildAnnouncementEditInitialValues,
+  getDefaultAnnouncement,
+} from "./announcementEditFormConfig";
+import {
+  fakeForecastSummary,
+  mockAnnouncementWithActiveSummary,
+} from "./testing/fixtures";
 
 function makeOpportunity(
   summaryOverrides: Partial<AnnouncementWithActiveSummary["summary"]> = {},
@@ -147,5 +154,27 @@ describe("buildAnnouncementEditInitialValues", () => {
 
     expect(result.funding_categories).toBe("");
   });
-  it("returns the correct timestamp keys for summary type", () => {});
+  it("returns the correct timestamp keys for forecast summary type", () => {
+    const result = buildAnnouncementEditInitialValues(
+      { ...mockAnnouncementWithActiveSummary, summary: fakeForecastSummary },
+      false,
+      true,
+    );
+
+    expect(result.forecasted_close_timestamp).toBe(
+      fakeForecastSummary.forecasted_close_timestamp,
+    );
+    expect(result.forecasted_post_timestamp).toBe(
+      fakeForecastSummary.forecasted_post_timestamp,
+    );
+    expect(result.forecasted_close_timestamp_description).toBe("");
+  });
+  it("returns an empty summary in create mode", () => {
+    const result = buildAnnouncementEditInitialValues(
+      mockAnnouncementWithActiveSummary,
+      true,
+      true,
+    );
+    expect(result).toEqual(getDefaultAnnouncement(true));
+  });
 });

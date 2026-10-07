@@ -141,6 +141,30 @@ describe("SummaryEditView", () => {
     expect(title).toBeInTheDocument();
   });
 
+  it("selects the correct summary for create mode", async () => {
+    mockAnnouncementEditFormAction.mockReturnValue({});
+    mockGetAnnouncement.mockResolvedValue({
+      data: {
+        ...mockAnnouncement,
+        announcement_id: "1",
+      },
+    });
+
+    const component = await SummaryEditView({
+      announcementId: "1",
+      summaryId: "2",
+      isForecast: true,
+      createMode: true,
+    });
+    render(component);
+
+    const forecastTitle = screen.queryByText("A FORECAST description");
+    expect(forecastTitle).not.toBeInTheDocument();
+
+    const synopsisTitle = screen.queryByText("A test synopsis description");
+    expect(synopsisTitle).not.toBeInTheDocument();
+  });
+
   describe("error handling", () => {
     it("displays error if summary type not specified when creating", async () => {
       const component = await SummaryEditView({
