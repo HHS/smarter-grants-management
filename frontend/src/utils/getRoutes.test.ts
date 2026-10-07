@@ -19,7 +19,6 @@ describe("getNextRoutes", () => {
       "/award-recommendation/create",
       "/award-recommendation",
       "/award-recommendation/select-opportunity",
-      "/dev/external-filter-combo-box",
       "/dev/feature-flags",
       "/error",
       "/login",
