@@ -127,7 +127,9 @@ export default async function AnnouncementEditPage({ params }: PageProps) {
               announcementSummaryId={announcementSummaryId}
               isForecast={!!announcementData.forecast_summary}
               initialValues={initialValues}
-              initialAttachments={announcementData.attachments ?? []}
+              initialAttachments={
+                announcementData.announcement_attachments ?? []
+              }
             />
           </section>
         </div>

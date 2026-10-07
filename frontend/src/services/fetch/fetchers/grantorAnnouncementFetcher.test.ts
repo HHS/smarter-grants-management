@@ -3,11 +3,14 @@ import {
   createApplicationPackage,
   createOpportunity,
   deleteApplicationPackageInstructions,
+  fetchAnnouncements,
+  getApplicationPackage,
   saveApplicationPackageInstructions,
   searchOpportunitiesByAgency,
   updateApplicationPackage,
   updateApplicationPackageForms,
 } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
+import { AnnouncementListItem } from "src/types/announcement/announcementResponseTypes";
 import {
   ApplicationPackageFormsSubmitApi,
   ApplicationPackageSaveRequest,
@@ -360,13 +363,39 @@ describe("updateApplicationPackageForms", () => {
   });
 });
 
+describe("getApplicationPackage", () => {
+  afterEach(() => jest.clearAllMocks());
+
+  it("calls fetchAnnouncementWithMethod with GET and the correct subPath, and returns the parsed JSON response", async () => {
+    const responseBody = {
+      data: {
+        application_package_id: "compete-321",
+        application_package_instructions: [
+          { application_package_instruction_id: "instruction-123" },
+        ],
+      },
+    };
+    mockFetcher.mockResolvedValue({
+      json: () => Promise.resolve(responseBody),
+    });
+
+    const result = await getApplicationPackage("opp-123", "compete-321");
+
+    expect(mockFetchGrantorOpportunityWithMethod).toHaveBeenCalledWith("GET");
+    expect(mockFetcher).toHaveBeenCalledWith({
+      subPath: "opp-123/application-packages/compete-321",
+    });
+    expect(result).toEqual(responseBody);
+  });
+});
+
 describe("saveApplicationPackageInstructions", () => {
   afterEach(() => jest.clearAllMocks());
 
   it("calls fetchAnnouncementWithMethod with POST, the correct subPath and body, and returns the parsed JSON response", async () => {
     const responseBody = {
       data: {
-        applicationPackage_instruction_id: "instruction-123",
+        application_package_instruction_id: "instruction-123",
         file_name: "instructions.pdf",
         created_at: "2026-08-20T00:00:00Z",
       },
@@ -442,5 +471,78 @@ describe("deleteApplicationPackageInstructions", () => {
         "instruction-123",
       ),
     ).rejects.toThrow("Network failure");
+  });
+});
+
+// ---------------------------------------------
+// Tests for fetchAnnouncements
+// ---------------------------------------------
+const baseAnnouncement: AnnouncementListItem = {
+  announcement_id: "89a44d32-0d90-4514-85a9-d5491f1c454d",
+  announcement_title: "Test Announcement",
+  announcement_number: "FO-26-00001",
+  created_at: "2024-04-29T06:43:00Z",
+  updated_at: "2024-04-29T06:43:00Z",
+  forecast_summary: null,
+  non_forecast_summary: {
+    close_timestamp: null,
+    is_forecast: false,
+    post_timestamp: "2024-04-29T06:43:00Z",
+    archive_timestamp: null,
+    funding_instruments: [],
+  },
+};
+
+describe("fetchAnnouncements", () => {
+  afterEach(() => jest.clearAllMocks());
+
+  it("calls fetchAnnouncementWithMethod with POST, subPath 'list', and a paginated request body", async () => {
+    mockFetcher.mockResolvedValue({
+      json: () =>
+        Promise.resolve({
+          data: [baseAnnouncement],
+          pagination_info: { total_pages: 1, total_records: 1 },
+        }),
+    });
+
+    await fetchAnnouncements(1);
+
+    expect(mockFetchGrantorOpportunityWithMethod).toHaveBeenCalledWith("POST");
+    expect(mockFetcher).toHaveBeenCalledWith({
+      subPath: "list",
+      body: {
+        pagination: {
+          page_offset: 1,
+          page_size: 25,
+          sort_order: [
+            { order_by: "created_at", sort_direction: "descending" },
+          ],
+        },
+      },
+    });
+  });
+
+  it("reshapes the response into announcements, totalRecords, and totalPages", async () => {
+    mockFetcher.mockResolvedValue({
+      json: () =>
+        Promise.resolve({
+          data: [baseAnnouncement],
+          pagination_info: { total_pages: 3, total_records: 61 },
+        }),
+    });
+
+    const result = await fetchAnnouncements(2);
+
+    expect(result).toEqual({
+      announcements: [baseAnnouncement],
+      totalRecords: 61,
+      totalPages: 3,
+    });
+  });
+
+  it("propagates request errors", async () => {
+    mockFetcher.mockRejectedValue(new Error("Network failure"));
+
+    await expect(fetchAnnouncements(1)).rejects.toThrow("Network failure");
   });
 });
