@@ -1,9 +1,10 @@
 "use client";
 
+import { debounce } from "lodash";
 import { useClientFetch } from "src/hooks/useClientFetch";
 import { useUser } from "src/services/auth/useUser";
 
-import { useEffect, useEffectEvent, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ComboBox,
   ComboBoxOption,
@@ -106,13 +107,27 @@ export function ExternalFilterComboBox({
     "Error fetching combo box options",
   );
 
-  // an effect event always sees the latest props and clientFetch without them being
-  // effect dependencies (clientFetch as a dependency causes an infinite re-render
-  // loop, see the note in useClientFetch)
-  const search = useEffectEvent((term: string) => {
-    if (!user?.token) return;
+  // the text to search for, set once typing pauses for debounceMs. A new object each
+  // time, so a pause on the same text as the last search still searches again (that
+  // search's response is ignored once the text changed in between).
+  const [debouncedSearch, setDebouncedSearch] = useState({ term: "" });
+  const updateDebouncedSearch = useMemo(
+    () => debounce((term: string) => setDebouncedSearch({ term }), debounceMs),
+    [debounceMs],
+  );
+  useEffect(
+    () => () => updateDebouncedSearch.cancel(),
+    [updateDebouncedSearch],
+  );
+
+  // searches for the debounced text. Text typed before the session loads is searched
+  // as soon as the token arrives.
+  useEffect(() => {
+    const term = debouncedSearch.term;
+    if (term.length < minSearchLength || !hasToken) return;
     latestRequestId.current += 1;
     const requestId = latestRequestId.current;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSearchStatus("loading");
     clientFetch(fetchOptionsUrl, {
       method: "POST",
@@ -131,16 +146,11 @@ export function ExternalFilterComboBox({
         setOptions([]);
         setSearchStatus("error");
       });
-  });
-
-  // searches once typing pauses for debounceMs; the cleanup cancels the pending
-  // search on every keystroke and when the component unmounts. Text typed before the
-  // session loads is searched as soon as the token arrives.
-  useEffect(() => {
-    if (isBelowMinimumLength || !hasToken) return;
-    const timer = setTimeout(() => search(searchTerm), debounceMs);
-    return () => clearTimeout(timer);
-  }, [searchTerm, isBelowMinimumLength, debounceMs, hasToken]);
+    // only a new debounced search or the token arriving starts a search. clientFetch
+    // as a dependency causes an infinite re-render loop (see the note in
+    // useClientFetch), and the props are read when the search starts.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch, hasToken]);
 
   // trussworks ComboBox copies new options into its state without re-rendering
   // (https://github.com/trussworks/react-uswds/issues/3592), so results would not
@@ -168,6 +178,7 @@ export function ExternalFilterComboBox({
 
   const onInputChange = (value: string) => {
     setInputValue(value);
+    updateDebouncedSearch(value.trim());
     // any response still on its way is for text the user has since changed
     latestRequestId.current += 1;
     // results for a longer search no longer apply once the text drops below the minimum
