@@ -140,15 +140,33 @@ describe("ExternalFilterComboBox", () => {
     expect(screen.getByText("This is a required field.")).toBeInTheDocument();
     const input = screen.getByRole("combobox");
     expect(input).toHaveAttribute("aria-invalid", "true");
-    expect(input).toHaveAttribute("aria-describedby", `error-for-${props.id}`);
+    expect(input).toHaveAttribute(
+      "aria-describedby",
+      `description-for-${props.id} error-for-${props.id}`,
+    );
   });
 
-  it("does not mark the input invalid without errors", () => {
+  it("links only the description to the input without errors", () => {
     renderComboBox();
 
     const input = screen.getByRole("combobox");
     expect(input).not.toHaveAttribute("aria-invalid");
-    expect(input).not.toHaveAttribute("aria-describedby");
+    expect(input).toHaveAttribute(
+      "aria-describedby",
+      `description-for-${props.id}`,
+    );
+    expect(screen.getByText(props.description)).toHaveAttribute(
+      "id",
+      `description-for-${props.id}`,
+    );
+  });
+
+  it("has no aria-describedby without a description or errors", () => {
+    renderComboBox({ description: undefined });
+
+    expect(screen.getByRole("combobox")).not.toHaveAttribute(
+      "aria-describedby",
+    );
   });
 
   it("shows the placeholder in the empty input", () => {

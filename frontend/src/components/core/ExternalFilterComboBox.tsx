@@ -190,16 +190,22 @@ export function ExternalFilterComboBox({
 
   // trussworks ComboBox overwrites any aria-describedby passed through inputProps
   // (https://github.com/trussworks/react-uswds/issues/3449), so it is set on the
-  // rendered input directly
+  // rendered input directly: the description, then any errors
   useEffect(() => {
     const input = document.getElementById(id);
     if (!input) return;
-    if (hasErrors) {
-      input.setAttribute("aria-describedby", `error-for-${id}`);
+    const describedBy = [
+      description ? `description-for-${id}` : "",
+      hasErrors ? `error-for-${id}` : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+    if (describedBy) {
+      input.setAttribute("aria-describedby", describedBy);
     } else {
       input.removeAttribute("aria-describedby");
     }
-  }, [id, hasErrors]);
+  }, [id, description, hasErrors]);
 
   const onInputChange = (value: string) => {
     const term = value.trim();
