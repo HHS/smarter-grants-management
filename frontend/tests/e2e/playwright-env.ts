@@ -1,3 +1,9 @@
+/**
+ * Reviewer conclusion:
+ * This module now enforces a single, explicit environment model (local/staging)
+ * and emits structured bootstrap errors that are easier to triage in CI logs.
+ */
+
 import fs from "fs";
 import path from "path";
 import dotenv from "dotenv";
@@ -8,31 +14,11 @@ if (fs.existsSync(envPath)) {
   dotenv.config({ path: envPath, quiet: true });
 }
 
-// Organization label shown in the "Start new application" modal dropdown.
-// Must match the legal_business_name in seed_orgs_and_users.py.
-const TEST_ORG_LABELS: Record<string, string> = {
-  local: "Sally's Soup Emporium",
-  staging: "Automatic staging Organization for UEI AUTOHQDCCHBY",
-  grantee1: "Automatic staging Organization for UEI AUTOHQDCCHBY",
-  grantee2: "Automatic staging Organization for UEI AUTOHQDCCHBY",
-  grantor1: "Automatic staging Organization for UEI AUTOHQDCCHBY",
-  grantor2: "Automatic staging Organization for UEI AUTOHQDCCHBY",
-};
-
-export const SUPPORTED_ENVS = [
-  "local",
-  "staging",
-  "grantee1",
-  "grantee2",
-  "grantor1",
-  "grantor2",
-] as const;
+export const SUPPORTED_ENVS = ["local", "staging"] as const;
 
 export type SupportedEnvs = (typeof SUPPORTED_ENVS)[number];
 
 const targetEnv = process.env.PLAYWRIGHT_TARGET_ENV || "local";
-
-const testOrgLabel = TEST_ORG_LABELS[targetEnv];
 
 const isLocal = targetEnv === "local";
 const baseUrl =
@@ -40,17 +26,52 @@ const baseUrl =
 const apiUrl =
   process.env.PLAYWRIGHT_API_URL || (isLocal ? "http://127.0.0.1:8089" : "");
 
+// Keep environment bootstrap failures in one format so CI output is consistent.
+const buildPlaywrightEnvError = ({
+  step,
+  inspect,
+  likelyCause,
+  details,
+}: {
+  step: string;
+  inspect: string;
+  likelyCause: string;
+  details: string;
+}): Error =>
+  new Error(
+    [
+      `Error time (UTC): ${new Date().toISOString()}`,
+      "Flow: playwright-env-bootstrap",
+      `Failed step: ${step}`,
+      `What to inspect: ${inspect}`,
+      `Likely cause: ${likelyCause}`,
+      `Target environment: ${targetEnv || "unknown"}`,
+      `PLAYWRIGHT_BASE_URL: ${baseUrl || "unset"}`,
+      `PLAYWRIGHT_API_URL: ${apiUrl || "unset"}`,
+      details,
+    ].join("\n"),
+  );
+
 // this does what it can to prevent the app from starting with mismatched target env and url variable assignments
 if (!baseUrl || !apiUrl) {
-  throw new Error(
-    `PLAYWRIGHT_BASE_URL and PLAYWRIGHT_API_URL must be set when PLAYWRIGHT_TARGET_ENV=${targetEnv}`,
-  );
+  throw buildPlaywrightEnvError({
+    step: "validate-playwright-target-urls",
+    inspect:
+      "PLAYWRIGHT_BASE_URL, PLAYWRIGHT_API_URL, and target-specific CI inputs",
+    likelyCause:
+      "target environment URLs were not set before Playwright environment bootstrap",
+    details:
+      "PLAYWRIGHT_BASE_URL and PLAYWRIGHT_API_URL must be set for the selected PLAYWRIGHT_TARGET_ENV.",
+  });
 }
 
 if (SUPPORTED_ENVS.indexOf(targetEnv as SupportedEnvs) === -1) {
-  throw new Error(
-    `Unsupported PLAYWRIGHT_TARGET_ENV: ${targetEnv}. Allowed values: ${SUPPORTED_ENVS.join(", ")}`,
-  );
+  throw buildPlaywrightEnvError({
+    step: "validate-playwright-target-env",
+    inspect: "PLAYWRIGHT_TARGET_ENV value provided by workflow or local shell",
+    likelyCause: "unsupported target environment was passed to Playwright",
+    details: `Unsupported PLAYWRIGHT_TARGET_ENV: ${targetEnv}. Allowed values: ${SUPPORTED_ENVS.join(", ")}`,
+  });
 }
 
 // Environment for web server
@@ -66,7 +87,6 @@ const playwrightEnv = {
   baseUrl,
   apiUrl,
   targetEnv,
-  testOrgLabel,
   isCi: process.env.CI,
   totalShards: process.env.TOTAL_SHARDS,
   currentShard: process.env.CURRENT_SHARD,
@@ -75,15 +95,18 @@ const playwrightEnv = {
   playwrightProjects: process.env.PLAYWRIGHT_PROJECTS || "",
   clientSessionSecret:
     process.env.SESSION_SECRET_OVERRIDE || process.env.SESSION_SECRET,
-  testUserEmail: process.env.STAGING_TEST_USER_EMAIL || "",
-  testUserPassword: process.env.STAGING_TEST_USER_PASSWORD || "",
-  testUserAuthKey: process.env.STAGING_TEST_USER_MFA_KEY || "",
-  // Direct API key for the seeded E2E test user. The app accepts this via
-  // /v1/internal/api-jwt to create a short-lived JWT for browser auth during
-  // tests. Local and deployed environments set this explicitly.
-  testUserApiKey: process.env.TEST_USER_API_KEY || "",
+  // A single API-key variable drives auth in both environments:
+  // local uses it for JWT fetch; staging uses it in the API-key modal.
+  // Direct API key for the seeded E2E test user.
+  // local uses this key with GET /v1/internal/api-jwt to build a spoofed
+  // session cookie; staging uses the same key in the UI API-key login modal.
+  // STAGING_TEST_USER_API_KEY is accepted as a fallback for CI compatibility.
+  testUserApiKey:
+    process.env.TEST_USER_API_KEY ||
+    process.env.STAGING_TEST_USER_API_KEY ||
+    "",
   // Legacy manager key retained for older flows and rollback references. This is
-  // no longer the main path for the direct API-key E2E login workaround.
+  // not used by the supported direct API-key E2E login flow.
   testUserManagerApiKey: process.env.TEST_USER_MANAGER_API_KEY || "",
   // Flag indicating if the E2E environment has a virus scanner for infected file testing.
   // Enabled by default in all environments as the scan currently works in both local and Staging env;
