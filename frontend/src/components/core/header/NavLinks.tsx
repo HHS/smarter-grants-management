@@ -209,7 +209,8 @@ export const NavLinks = ({
     }
 
     return anonymousNavLinks.toSpliced(
-      anonymousNavLinks.length, 0,
+      anonymousNavLinks.length,
+      0,
       {
         text: t("nofos"),
         children: [

@@ -1016,12 +1016,14 @@ export const messages = {
     List: {
       pageTitle: "NOFO Templates",
       pageApplication: "Smarter Grants Management",
-      metaDescription: "Templates for creating Notice of Funding Opportunities (NOFOs)",
+      metaDescription:
+        "Templates for creating Notice of Funding Opportunities (NOFOs)",
     },
     Create: {
       pageTitle: "Create a NOFO Template",
       pageApplication: "Smarter Grants Management",
-      metaDescription: "Create a Notice of Funding Opportunities (NOFO) Template",
+      metaDescription:
+        "Create a Notice of Funding Opportunities (NOFO) Template",
     },
   },
 };
