@@ -16,12 +16,10 @@ from tests.db.models.factories import AnnouncementFactory, AnnouncementSummaryFa
 
 
 def build_summary_request(is_forecast: bool = False) -> dict:
-
-    return {
+    now = datetime_util.utcnow()
+    request = {
         "summary_description": "A summary for testing the Announcement API.",
         "is_cost_sharing": False,
-        "post_timestamp": datetime_util.utcnow().isoformat(),
-        "close_timestamp": (datetime_util.utcnow() + timedelta(days=30)).isoformat(),
         "award_floor": 10_000,
         "award_ceiling": 100_000,
         "funding_categories": random.choices(list(FundingCategory)),
@@ -32,6 +30,16 @@ def build_summary_request(is_forecast: bool = False) -> dict:
         "agency_email_address_description": None,
         "is_forecast": is_forecast,
     }
+
+    if is_forecast:
+        # Forecasts use forecasted_post_timestamp instead of post_timestamp
+        request["forecasted_post_timestamp"] = (now + timedelta(days=30)).isoformat()
+    else:
+        # Non-forecasts use post_timestamp and close_timestamp
+        request["post_timestamp"] = now.isoformat()
+        request["close_timestamp"] = (now + timedelta(days=30)).isoformat()
+
+    return request
 
 
 def build_summary_update_request() -> dict:
