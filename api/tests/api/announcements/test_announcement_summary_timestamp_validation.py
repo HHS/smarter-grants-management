@@ -1,7 +1,6 @@
 """Tests for announcement summary timestamp validation based on forecast status."""
 
-import uuid
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from src.constants.lookup_constants import ApplicantType, FundingCategory, FundingInstrument
 from src.util import datetime_util
