@@ -29,6 +29,10 @@ describe("getNextRoutes", () => {
       "/announcement/1/application-package",
       "/announcement/1/edit",
       "/announcement/1/overview",
+      "/nofo",
+      "/nofo-template",
+      "/nofo-template/create",
+      "/nofo/create",
       "/",
       "/unauthenticated",
     ].sort();
