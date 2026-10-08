@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import { LOGIN_URL } from "src/constants/auth";
+import { useLoginModal } from "src/services/auth/LoginModalProvider";
 import { useUser } from "src/services/auth/useUser";
 import { IndexType } from "src/types/generalTypes";
 import { isCurrentPath, isExternalLink } from "src/utils/generalUtils";
@@ -16,7 +17,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { PrimaryNav } from "@trussworks/react-uswds";
+import { ModalToggleButton, PrimaryNav } from "@trussworks/react-uswds";
 
 import NavDropdown from "src/components/core/header/NavDropdown";
 import { USWDSIcon } from "src/components/core/USWDSIcon";
@@ -173,15 +174,18 @@ export const NavLinks = ({
   mobileExpanded,
   onToggleMobileNav,
   loggedInNavConfig,
+  useApiKeyLogin = true,
 }: {
   mobileExpanded: boolean;
   onToggleMobileNav: () => void;
   loggedInNavConfig: LoggedInNavConfig;
+  useApiKeyLogin?: boolean;
 }) => {
   const t = useTranslations("Header.navLinks");
 
   const path = usePathname();
   const { user } = useUser();
+  const { loginModalRef } = useLoginModal();
 
   const closeMobileNav = useCallback(() => {
     if (mobileExpanded) {
@@ -258,22 +262,35 @@ export const NavLinks = ({
     ));
     // add user account nav depending on login status
     if (!user?.token) {
-      items.push(
-        <a
-          href={LOGIN_URL}
-          key="sign-in"
-          className={clsx({
-            "usa-nav__link": true,
-            "text-normal": true,
-          })}
-          onClick={() => {
-            storeCurrentPage(location.pathname, location.search);
-            closeDropdownAndMobileNav();
-          }}
-        >
-          {t("login")}
-        </a>,
-      );
+      if (useApiKeyLogin) {
+        items.push(
+          <ModalToggleButton
+            key="sign-in"
+            id="login-modal-toggle"
+            modalRef={loginModalRef}
+            opener
+            className="usa-button--unstyled usa-nav__link text-normal"
+            aria-label="open login modal"
+            onClick={() => closeDropdownAndMobileNav()}
+          >
+            {t("login")}
+          </ModalToggleButton>,
+        );
+      } else {
+        items.push(
+          <a
+            href={LOGIN_URL}
+            key="sign-in"
+            className="usa-nav__link text-normal"
+            onClick={() => {
+              storeCurrentPage(location.pathname, location.search);
+              closeDropdownAndMobileNav();
+            }}
+          >
+            {t("login")}
+          </a>,
+        );
+      }
     } else if (loggedInNavConfig) {
       const accountIndex = navLinkList.length;
       items.push(
@@ -311,6 +328,8 @@ export const NavLinks = ({
     setActiveNavDropdownIndex,
     user?.token,
     loggedInNavConfig,
+    loginModalRef,
+    useApiKeyLogin,
   ]);
 
   return (

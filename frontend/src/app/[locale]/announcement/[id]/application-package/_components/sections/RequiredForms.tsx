@@ -48,7 +48,7 @@ export function RequiredForms({
             (details) => details.form_id === form.form_id,
           );
           {
-            if (!formData) return <span />; // this should never happen
+            if (!formData) return <span key={`forms-table-row-${index}`} />; // this should never happen
           }
           return (
             <Grid
@@ -69,8 +69,7 @@ export function RequiredForms({
                       fontWeight: "normal",
                     }}
                   >
-                    v{formData.current_version.major_version}.
-                    {formData.current_version.minor_version}
+                    v{formData.version}
                   </span>
                   {alwaysRequired ? (
                     <span className="always-required-label">

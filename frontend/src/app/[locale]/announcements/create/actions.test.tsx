@@ -34,7 +34,6 @@ describe("create opportunity form action", () => {
     });
 
     const createFormData = new FormData();
-    createFormData.append("agencyId", "ABC-123-EFG-456");
     createFormData.append("opportunityNumber", "MY-TEST-001");
     createFormData.append("opportunityTitle", "Test Opportunity 001");
     createFormData.append("tagline", "Test Tagline 001");
@@ -44,9 +43,8 @@ describe("create opportunity form action", () => {
 
     const result = await createOpportunityAction(null, createFormData);
     expect(result.data).toEqual({
-      agency_id: "ABC-123-EFG-456",
-      opportunity_number: "MY-TEST-001",
-      opportunity_title: "Test Opportunity 001",
+      announcement_number: "MY-TEST-001",
+      announcement_title: "Test Opportunity 001",
       tagline: "Test Tagline 001",
       purpose_statement: "Test Purpose Statement 001",
       category: "discretionary",
@@ -61,7 +59,6 @@ describe("create opportunity form action", () => {
     });
 
     const createFormData = new FormData();
-    createFormData.append("agencyId", "ABC-123-EFG-456");
     createFormData.append("opportunityNumber", "MY-TEST-001");
     createFormData.append("opportunityTitle", "Test Opportunity 001");
     createFormData.append("tagline", "Test Tagline 001");
@@ -72,9 +69,8 @@ describe("create opportunity form action", () => {
 
     const result = await createOpportunityAction(null, createFormData);
     expect(result.data).toEqual({
-      agency_id: "ABC-123-EFG-456",
-      opportunity_number: "MY-TEST-001",
-      opportunity_title: "Test Opportunity 001",
+      announcement_number: "MY-TEST-001",
+      announcement_title: "Test Opportunity 001",
       tagline: "Test Tagline 001",
       purpose_statement: "Test Purpose Statement 001",
       category: "other",
@@ -87,7 +83,6 @@ describe("create opportunity form action", () => {
     mockCreateOpportunity.mockRejectedValue(new Error("fake error"));
 
     const createFormData = new FormData();
-    createFormData.append("agencyId", "ABC-123-EFG-456");
     createFormData.append("opportunityNumber", "MY-TEST-001");
     createFormData.append("opportunityTitle", "Test Opportunity 001");
     createFormData.append("category", "discretionary");

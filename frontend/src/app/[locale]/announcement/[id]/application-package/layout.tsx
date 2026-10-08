@@ -21,6 +21,6 @@ export async function generateMetadata({
   };
 }
 
-export default function CompetitionLayout({ children }: LayoutProps) {
+export default function ApplicationPackageLayout({ children }: LayoutProps) {
   return <AuthenticationGate>{children}</AuthenticationGate>;
 }

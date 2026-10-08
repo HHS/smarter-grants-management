@@ -2,49 +2,55 @@
  * @jest-environment node
  */
 
-import { getCompetition } from "src/app/api/application-packages/[applicationPackageId]/handler";
+import { getApplicationPackage } from "src/app/api/application-packages/[applicationPackageId]/handler";
 import { ApplicationPackage } from "src/types/applicationPackageResponseTypes";
-import { fakeCompetition } from "src/utils/testing/fixtures";
+import { fakeApplicationPackage } from "src/utils/testing/fixtures";
 
 import { NextRequest } from "next/server";
 
-const mockGetCompetitionDetails = jest.fn();
+const mockGetApplicationPackageDetails = jest.fn();
 
-jest.mock("src/services/fetch/fetchers/competitionsFetcher", () => ({
-  getCompetitionDetails: (id: string) =>
-    mockGetCompetitionDetails(id) as unknown,
+jest.mock("src/services/fetch/fetchers/applicationPackagesFetcher", () => ({
+  getApplicationPackageDetails: (id: string) =>
+    mockGetApplicationPackageDetails(id) as unknown,
 }));
 
 describe("application-packages/[applicationPackageId] GET requests", () => {
   afterEach(() => jest.resetAllMocks());
   it("calls opportunityDetails with expected arguments", async () => {
-    await getCompetition(new NextRequest("http://hi.gov"), {
+    await getApplicationPackage(new NextRequest("http://hi.gov"), {
       params: Promise.resolve({
         applicationPackageId: "1",
       }),
     });
-    expect(mockGetCompetitionDetails).toHaveBeenCalledWith("1");
+    expect(mockGetApplicationPackageDetails).toHaveBeenCalledWith("1");
   });
 
-  it("returns a new response with competition data", async () => {
-    mockGetCompetitionDetails.mockResolvedValue(fakeCompetition);
-    const response = await getCompetition(new NextRequest("http://hi.gov"), {
-      params: Promise.resolve({
-        applicationPackageId: "1",
-      }),
-    });
+  it("returns a new response with applicationPackage data", async () => {
+    mockGetApplicationPackageDetails.mockResolvedValue(fakeApplicationPackage);
+    const response = await getApplicationPackage(
+      new NextRequest("http://hi.gov"),
+      {
+        params: Promise.resolve({
+          applicationPackageId: "1",
+        }),
+      },
+    );
     expect(response.status).toEqual(200);
     const body = (await response.json()) as ApplicationPackage;
-    expect(body).toEqual(fakeCompetition);
+    expect(body).toEqual(fakeApplicationPackage);
   });
 
   it("returns a new response with with error if error on data fetch", async () => {
-    mockGetCompetitionDetails.mockRejectedValue(new Error());
-    const response = await getCompetition(new NextRequest("http://hi.gov"), {
-      params: Promise.resolve({
-        applicationPackageId: "1",
-      }),
-    });
+    mockGetApplicationPackageDetails.mockRejectedValue(new Error());
+    const response = await getApplicationPackage(
+      new NextRequest("http://hi.gov"),
+      {
+        params: Promise.resolve({
+          applicationPackageId: "1",
+        }),
+      },
+    );
     expect(response.status).toEqual(500);
   });
 });

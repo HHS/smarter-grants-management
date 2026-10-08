@@ -13,10 +13,17 @@ import {
 } from "src/constants/announcement";
 import { AnnouncementAttachment } from "src/types/announcement/announcementAttachmentTypes";
 import { AnnouncementEditFormValues } from "src/utils/announcementEditFormConfig";
+import { getConfiguredDayJs } from "src/utils/dateUtil";
 import { getNumericAmountFromString } from "src/utils/formatCurrencyUtil";
 
 import { useTranslations } from "next-intl";
-import { startTransition, useActionState, useRef, useState } from "react";
+import {
+  startTransition,
+  useActionState,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   Alert,
   Button,
@@ -119,12 +126,26 @@ export default function AnnouncementEditForm({
     validationErrors: {},
   });
 
-  const validationErrors: AnnouncementEditValidationErrors | undefined =
-    formState.validationErrors;
-
   //--- Validations for Award Minimum, Award Maximum and Total Program Funding ---
   const [frontendErrors, setFrontendErrors] =
     useState<AnnouncementEditValidationErrors>({});
+
+  useEffect(() => {
+    if (formState.newAnnouncementSummaryId) {
+      // TODO #9633
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setCurrentSummaryId(formState.newAnnouncementSummaryId);
+    }
+  }, [formState.newAnnouncementSummaryId]);
+
+  useEffect(() => {
+    if (Object.keys(formState.validationErrors || {}).length) {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }
+  }, [formState.validationErrors]);
 
   function setSingleFrontendError<
     K extends keyof AnnouncementEditValidationErrors,
@@ -187,6 +208,27 @@ export default function AnnouncementEditForm({
     }
   };
 
+  const validatePublishDate = (value: string | undefined) => {
+    if (!value) {
+      // required-ness is handled separately by the "Enter a publish date." check
+      setSingleFrontendError("post_timestamp", null);
+      return;
+    }
+
+    const dayjs = getConfiguredDayJs();
+    const publish = dayjs(value, "MM/DD/YYYY", true);
+    const today = dayjs().startOf("day");
+
+    if (publish.isValid() && publish.isBefore(today)) {
+      setSingleFrontendError(
+        "post_timestamp",
+        t("validationErrors.publishDatePast"),
+      );
+    } else {
+      setSingleFrontendError("post_timestamp", null);
+    }
+  };
+
   // Shared toggle handler for eligibility checkboxes.
   function handleEligibilityToggle(value: string) {
     const next = selectedEligibility.includes(value)
@@ -195,15 +237,37 @@ export default function AnnouncementEditForm({
     setSelectedEligibility(next);
   }
 
+  // Once a field has been live-validated on the frontend, that result is
+  // fresher than whatever the last form submission returned from the
+  // server, so it takes priority for the inline field error - otherwise a
+  // stale server error for a field the user has since corrected would
+  // never clear until the next submit. Fields the user hasn't touched
+  // locally still fall back to the server's validationErrors.
+  const displayedErrors: AnnouncementEditValidationErrors = {
+    ...formState.validationErrors,
+    ...frontendErrors,
+  };
+
   function getFieldError(
     fieldName: keyof AnnouncementEditValidationErrors,
   ): string | undefined {
-    let fieldErrors = validationErrors?.[fieldName];
-    if (!fieldErrors) {
-      fieldErrors = frontendErrors?.[fieldName];
-    }
-    return fieldErrors?.join(" ");
+    return displayedErrors[fieldName]?.join(" ");
   }
+
+  // The summary banner below only ever reflects fields the server actually
+  // flagged on the last submit - it overlays live frontend corrections onto
+  // those same fields (so a resolved field drops out of the banner) rather
+  // than pulling in fields that have only ever been validated locally.
+  const summaryErrors: AnnouncementEditValidationErrors = {
+    ...formState.validationErrors,
+  };
+  (
+    Object.keys(summaryErrors) as (keyof AnnouncementEditValidationErrors)[]
+  ).forEach((fieldName) => {
+    if (frontendErrors[fieldName] !== undefined) {
+      summaryErrors[fieldName] = frontendErrors[fieldName];
+    }
+  });
 
   if (
     formState.newAnnouncementSummaryId &&
@@ -279,8 +343,7 @@ export default function AnnouncementEditForm({
         </div>
       ) : null}
 
-      {formState.validationErrors &&
-      Object.keys(formState.validationErrors).length > 0 ? (
+      {Object.values(summaryErrors).flat().length > 0 ? (
         <div className="margin-top-2">
           <Alert
             type="error"
@@ -290,13 +353,13 @@ export default function AnnouncementEditForm({
             <span className="display-block margin-top-1 margin-bottom-1">
               {t("content.alerts.validationErrorBody")}
             </span>
-            {Array.from(
-              new Set(Object.values(formState.validationErrors).flat()),
-            ).map((error, i) => (
-              <span key={i} className="display-block">
-                {error}
-              </span>
-            ))}
+            {Array.from(new Set(Object.values(summaryErrors).flat())).map(
+              (error, i) => (
+                <span key={i} className="display-block">
+                  {error}
+                </span>
+              ),
+            )}
           </Alert>
         </div>
       ) : null}
@@ -533,6 +596,7 @@ export default function AnnouncementEditForm({
                   name="post_timestamp"
                   defaultValue={initialValues.post_timestamp}
                   placeholder="mm/dd/yyyy"
+                  onChange={(value) => validatePublishDate(value)}
                   className="width-full"
                 />
               </FormGroup>

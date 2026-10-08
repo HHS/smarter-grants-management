@@ -118,6 +118,8 @@ export const messages = {
       contactEmailInvalid: "Enter a valid contact email.",
       contactEmailText: "Enter email display text.",
       closeDateOrder: "Close date must be on or after publish date.",
+      publishDatePast:
+        "Publish date must be the current date or a future date.",
       awardMinimum: "Enter an award minimum.",
       awardMaximum: "Enter an award maximum.",
       fundingType: "Select a funding type.",
@@ -769,35 +771,35 @@ export const messages = {
     },
   },
   AnnouncementOverview: {
-    pageTitle: "Opportunity Overview",
+    pageTitle: "Announcement Overview",
     pageApplication: "Smarter Grants Management",
-    metaDescription: "Opportunity publishing progress overview",
+    metaDescription: "Announcement publishing progress overview",
     labels: {
-      editOpportunityLink: "Opportunity Summary",
-      competitionLink: "Application Package",
+      editOpportunityLink: "Announcement Summary",
+      applicationPackageLink: "Application Package",
       previewButton: "Preview",
       publishButton: "Publish",
     },
   },
   CreateOpportunity: {
-    pageTitle: "Create Opportunity",
+    pageTitle: "Create Announcement",
     pageApplication: "Smarter Grants Management",
-    metaDescription: "Create a new funding opportunity",
+    metaDescription: "Create a new funding announcement",
     errorMessage:
       "We have encountered an error loading this page, please try again later.",
     keyInfo: "Key information",
     basicInstructions:
-      "Fill out the basic details below to begin. Once you save this information, a draft will be created, allowing you to return at any time to add more details, upload documents, and finalize your opportunity.",
+      "Fill out the basic details below to begin. Once you save this information, a draft will be created, allowing you to return at any time to add more details, upload documents, and finalize your announcement.",
     cancel: "Cancel",
     saveAndContinue: "Save and continue",
     pending: "Pending...",
     errorHeading: "Error",
     successHeading: "Success",
     CreateAnnouncementForm: {
-      opportunityNumber: "Opportunity number",
+      opportunityNumber: "Announcement number",
       opportunityNumberDesc:
-        "Enter the unique ID assigned to this funding opportunity.",
-      opportunityTitle: "Opportunity title",
+        "Enter the unique ID assigned to this funding announcement.",
+      opportunityTitle: "Announcement title",
       opportunityTitleDesc:
         "Provide a concise, descriptive name that helps applicants identify the grant's purpose.",
       tagline: "Tagline",
@@ -806,7 +808,6 @@ export const messages = {
       purposeStatement: "Purpose statement",
       purposeStatementDesc:
         "Provide a one-line statement that helps applicants understand the grant's purpose.",
-      agency: "Agency",
       category: "Grant selection method",
       categoryDesc: "Choose the evaluation process used to award these funds.",
       categoryExplanation: "Grant selection method explanation",
@@ -815,7 +816,7 @@ export const messages = {
       assistanceListingNumber: "Assistance listing number",
       assistanceListingNumberDesc:
         "Enter the 5-digit code from SAM.gov that identifies the specific federal assistance program (e.g., 10.500)",
-      successMessage: "Opportunity started. Continuing shortly...",
+      successMessage: "Announcement started. Continuing shortly...",
     },
   },
   OpportunityCompetition: {
@@ -849,11 +850,12 @@ export const messages = {
       header: "Submission set-up",
       subHeader:
         "An application package is one apply-window inside an announcement. Most announcements have only one.",
-      publicCompetitionId: "Application package ID",
-      publicCompetitionIdHint:
+      publicApplicationPackageId: "Application package ID",
+      publicApplicationPackageIdHint:
         "An ID if this announcement has multiple application packages.",
-      competitionTitle: "Application package title",
-      competitionTitleHint: "Shown to applicants. Plain language is best.",
+      applicationPackageTitle: "Application package title",
+      applicationPackageTitleHint:
+        "Shown to applicants. Plain language is best.",
       whoCanApply: "Who can apply?",
       whoCanApplyHint:
         "Applicants who don't match this type won't see the application package in search.",

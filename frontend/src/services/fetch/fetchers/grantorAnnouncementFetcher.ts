@@ -11,7 +11,9 @@ import {
   GrantorAnnouncementApiResponse,
 } from "src/types/announcement/announcementResponseTypes";
 import { APIResponse, PaginationInfo } from "src/types/apiResponseTypes";
+import { ApplicationPackageFormsApiResponse } from "src/types/applicationPackageFormsResponseTypes";
 import {
+  ApplicationPackageFormsSubmitApi,
   ApplicationPackageInstructionsApiResponse,
   ApplicationPackageSaveApiResponse,
   ApplicationPackageSaveRequest,
@@ -40,6 +42,12 @@ type CreateAnnouncementSummaryParams = {
   body: AnnouncementSummaryCreateRequest;
 };
 
+type UpdateApplicationPackageFormsParams = {
+  announcementId: string;
+  applicationPackageId: string;
+  body: { forms: ApplicationPackageFormsSubmitApi };
+};
+
 export const searchOpportunitiesByAgency = async (
   agencyId: string,
   pageInputs: PaginationRequestBody,
@@ -66,6 +74,31 @@ export const searchAccessibleAnnouncements = async (
   });
 
   return (await response.json()) as AnnouncementListAPIResponse;
+};
+
+export const fetchAnnouncements = async (
+  page: number,
+): Promise<{
+  announcements: AnnouncementListResponseData;
+  totalRecords: number;
+  totalPages: number;
+}> => {
+  const pageRequest: PaginationRequestBody = {
+    page_offset: page,
+    page_size: 25,
+    sort_order: [
+      {
+        order_by: "created_at",
+        sort_direction: "descending",
+      },
+    ],
+  };
+  const json = await searchAccessibleAnnouncements(pageRequest);
+  return {
+    announcements: json.data,
+    totalRecords: json.pagination_info.total_records,
+    totalPages: json.pagination_info.total_pages,
+  };
 };
 
 export async function getAnnouncement(
@@ -126,48 +159,74 @@ export async function publishOpportunityForGrantor(
   return (await response.json()) as GrantorAnnouncementApiResponse;
 }
 
-export async function createCompetitionForGrantor(
-  opportunityId: string,
-  data: ApplicationPackageSaveRequest,
+// the application packages nested in the announcement response do not include instructions,
+// only this endpoint does
+export async function getApplicationPackage(
+  announcementId: string,
+  applicationPackageId: string,
 ): Promise<ApplicationPackageSaveApiResponse> {
-  const response = await fetchAnnouncementWithMethod("POST")({
-    subPath: `${opportunityId}/application-packages`,
-    body: data,
+  const response = await fetchAnnouncementWithMethod("GET")({
+    subPath: `${announcementId}/application-packages/${applicationPackageId}`,
   });
   return (await response.json()) as ApplicationPackageSaveApiResponse;
 }
 
-export async function updateCompetitionForGrantor(
-  opportunityId: string,
-  competitionId: string,
+export async function createApplicationPackage(
+  announcementId: string,
+  data: ApplicationPackageSaveRequest,
+): Promise<ApplicationPackageSaveApiResponse> {
+  const response = await fetchAnnouncementWithMethod("POST")({
+    subPath: `${announcementId}/application-packages`,
+    body: data,
+    allowedErrorStatuses: [422],
+  });
+  return (await response.json()) as ApplicationPackageSaveApiResponse;
+}
+
+export async function updateApplicationPackage(
+  announcementId: string,
+  applicationPackageId: string,
   data: ApplicationPackageSaveRequest,
 ): Promise<ApplicationPackageSaveApiResponse> {
   const response = await fetchAnnouncementWithMethod("PUT")({
-    subPath: `${opportunityId}/application-packages/${competitionId}`,
+    subPath: `${announcementId}/application-packages/${applicationPackageId}`,
     body: data,
+    allowedErrorStatuses: [422],
   });
   return (await response.json()) as ApplicationPackageSaveApiResponse;
 }
 
-export async function saveCompetitionInstructions(
+export async function updateApplicationPackageForms({
+  announcementId,
+  applicationPackageId,
+  body,
+}: UpdateApplicationPackageFormsParams): Promise<ApplicationPackageFormsApiResponse> {
+  const response = await fetchAnnouncementWithMethod("PUT")({
+    subPath: `${announcementId}/application-packages/${applicationPackageId}/forms`,
+    body,
+  });
+  return (await response.json()) as ApplicationPackageFormsApiResponse;
+}
+
+export async function saveApplicationPackageInstructions(
   opportunityId: string,
-  competitionId: string,
+  applicationPackageId: string,
   pendingFileId: string,
 ): Promise<ApplicationPackageInstructionsApiResponse> {
   const response = await fetchAnnouncementWithMethod("POST")({
-    subPath: `${opportunityId}/application-packages/${competitionId}/instructions`,
+    subPath: `${opportunityId}/application-packages/${applicationPackageId}/instructions`,
     body: { pending_file_id: pendingFileId },
   });
   return (await response.json()) as ApplicationPackageInstructionsApiResponse;
 }
 
-export async function deleteCompetitionInstructions(
+export async function deleteApplicationPackageInstructions(
   opportunityId: string,
-  competitionId: string,
-  competitionInstructionId: string,
+  applicationPackageId: string,
+  applicationPackageInstructionId: string,
 ): Promise<APIResponse> {
   const response = await fetchAnnouncementWithMethod("DELETE")({
-    subPath: `${opportunityId}/application-packages/${competitionId}/instructions/${competitionInstructionId}`,
+    subPath: `${opportunityId}/application-packages/${applicationPackageId}/instructions/${applicationPackageInstructionId}`,
   });
   return (await response.json()) as APIResponse;
 }

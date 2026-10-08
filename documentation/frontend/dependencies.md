@@ -60,10 +60,6 @@ Directions TBD
 
 The list below is meant as a running list of overrides, explaining their current state and path towards resolution.
 
-### next-navigation-guard
-
-This package has been patched to support next 16, but that patched version has never been deployed to NPM. We could work around this by going directly to github for the package, but this override works just as well, since the latest version doesn't contain any other important changes. Unclear if the maintainer will bother posting updates to npm in the future, so this may need to stay here. Eventually we may want to copy-paste or find a different solution here since the package is not well maintained.
-
 ### ws
 
 WS (websockets) has a vulnerability in 8.20.1 up to 8.21.
@@ -78,6 +74,14 @@ Tracking this in https://github.com/HHS/smarter-grants-management/issues/279
 
 v0.34.5 contains a vuln fixed in v 0.35.0. Latest stable next version (16.2.x) does not contain a patch, but latest canary (16.3.x) does so a fix should be forthcoming shortly.
 
-### postcss
+### undici
 
-v8.4.31 contains a vuln fixed in v8.5.10. 8.5.10 is included as top level dep, but next 16.2.x includes v8.4.31 so will need to wait until a patch comes out in next to remove the override
+### nanoid
+
+### fast-uri
+
+### dompurify
+
+### source-map-js
+
+v1.2.1 has a vulnerability that is resolved in 1.2.2. This depends on a number of packages updating including sass, and csstree, which is included indirectly via jsdom, jest-environment-jsdom, isomorphic-dompurify, css-stylie, and specificity. This will be a tough one to untangle, best to check back in later and try to update everything?

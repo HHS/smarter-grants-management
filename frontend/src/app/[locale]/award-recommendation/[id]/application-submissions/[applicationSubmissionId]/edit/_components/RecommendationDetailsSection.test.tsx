@@ -16,7 +16,7 @@ const mockSubmission: AwardRecommendationSubmission = {
     total_requested_amount: "100000.00",
     application: {
       application_id: "app-1",
-      competition_id: "comp-1",
+      applicationPackage_id: "comp-1",
       organization: {
         organization_id: "org-1",
         organization_name: "Test Org",
@@ -41,7 +41,7 @@ const mockSubmission2: AwardRecommendationSubmission = {
     total_requested_amount: "50000.00",
     application: {
       application_id: "app-2",
-      competition_id: "comp-1",
+      applicationPackage_id: "comp-1",
     },
   },
   submission_detail: {

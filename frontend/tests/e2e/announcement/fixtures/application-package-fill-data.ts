@@ -1,5 +1,5 @@
 /**
- * Builds deterministic happy-path data for the competition/application-package page.
+ * Builds deterministic happy-path data for the applicationPackage/application-package page.
  * Usage: import { buildApplicationPackageHappyPathFillData } from "tests/e2e/opportunity/fixtures/application-package-fill-data";
  */
 
@@ -30,8 +30,11 @@ export const buildApplicationPackageHappyPathFillData = (
   now: Date,
 ): Record<ApplicationPackageFieldValueKey, string> => {
   return {
-    competitionId: buildTimestampValue("ApplicationPackage", now),
-    competitionTitle: buildTimestampValue("ApplicationPackage Title", now),
+    applicationPackageId: buildTimestampValue("ApplicationPackage", now),
+    applicationPackageTitle: buildTimestampValue(
+      "ApplicationPackage Title",
+      now,
+    ),
     whoCanApply: "Organizations only",
     submissionsOpen: toDateInputValue(now),
     submissionsClose: toDateInputValue(addDays(now, 30)),

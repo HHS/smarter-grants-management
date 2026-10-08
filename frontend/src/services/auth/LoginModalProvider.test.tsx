@@ -7,6 +7,12 @@ import {
 
 import { ModalToggleButton } from "@trussworks/react-uswds";
 
+const mockApiKeyLoginAction = jest.fn();
+
+jest.mock("src/components/core/loginModal/actions", () => ({
+  apiKeyLoginAction: () => mockApiKeyLoginAction() as unknown,
+}));
+
 describe("LoginModalProvider", () => {
   it("renders a login modal", () => {
     render(<LoginModalProvider />);
@@ -63,5 +69,27 @@ describe("LoginModalProvider", () => {
     await userEvent.click(modalToggle);
 
     expect(screen.getByRole("dialog")).not.toHaveClass("is-hidden");
+  });
+  it("populates initial text values", () => {
+    const Consumer = () => {
+      useLoginModal();
+      return <></>;
+    };
+    render(
+      <LoginModalProvider
+        helpText="help"
+        titleText="title"
+        descriptionText="description"
+        buttonText="button"
+        closeText="close"
+      >
+        <Consumer />
+      </LoginModalProvider>,
+    );
+    expect(screen.getByText("help")).toBeInTheDocument();
+    expect(screen.getByText("title")).toBeInTheDocument();
+    expect(screen.getByText("description")).toBeInTheDocument();
+    expect(screen.getByText("button")).toBeInTheDocument();
+    expect(screen.getByText("close")).toBeInTheDocument();
   });
 });

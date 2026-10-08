@@ -1,7 +1,18 @@
 import pytest
 from sqlalchemy.exc import IntegrityError
 
-from tests.db.models.factories import AnnouncementFactory, AnnouncementSummaryFactory
+from src.constants.lookup_constants import (
+    AnnouncementType,
+    ApplicationPackageOpenToApplicant,
+    PerformancePeriodType,
+    SourceSelectionMethod,
+)
+from tests.db.models.factories import (
+    AnnouncementFactory,
+    AnnouncementSummaryFactory,
+    ApplicationPackageFactory,
+    ApplicationPackageRecipientFactory,
+)
 
 
 def test_announcement_summary_unique_constraint(db_session, enable_factory_create):
@@ -41,3 +52,51 @@ def test_announcement_summary_unique_constraint(db_session, enable_factory_creat
         AnnouncementSummaryFactory.create(
             is_forecast=True, is_deleted=False, announcement=announcement
         )
+
+
+def test_announcement_non_competitive_defaults(db_session, enable_factory_create):
+    announcement = AnnouncementFactory.create()
+    db_session.refresh(announcement)
+
+    assert announcement.announcement_type == AnnouncementType.DISCRETIONARY
+    assert announcement.is_budget_period_renewal is False
+    assert announcement.allows_cash_contributions is False
+    assert announcement.allows_in_kind_contributions is False
+    assert announcement.budget_period_months == 12
+    assert announcement.source_announcement is None
+    assert announcement.source_selection_method is None
+    assert announcement.performance_period_type is None
+
+
+def test_special_instance_budget_period_renewal(db_session, enable_factory_create):
+    source = AnnouncementFactory.create()
+    announcement = AnnouncementFactory.create(
+        announcement_type=AnnouncementType.SPECIAL_INSTANCE,
+        is_budget_period_renewal=True,
+        source_announcement=source,
+        original_announcement_number=source.announcement_number,
+        source_selection_method=SourceSelectionMethod.SOLE_SOURCE,
+        performance_period_type=PerformancePeriodType.MULTIPLE_YEARS,
+        performance_period_years=3,
+        cost_sharing_percentage=25,
+        agency_contact_name="Jane Doe",
+    )
+    application_package = ApplicationPackageFactory.create(announcement=announcement)
+    ApplicationPackageRecipientFactory.create_batch(
+        size=2,
+        application_package=application_package,
+        recipient_type=ApplicationPackageOpenToApplicant.INDIVIDUAL,
+        email_address="shared@example.com",
+    )
+
+    db_session.expire_all()
+
+    assert announcement.announcement_type == AnnouncementType.SPECIAL_INSTANCE
+    assert announcement.source_announcement_id == source.announcement_id
+    assert announcement.source_selection_method == SourceSelectionMethod.SOLE_SOURCE
+    assert announcement.performance_period_type == PerformancePeriodType.MULTIPLE_YEARS
+
+    recipients = announcement.application_packages[0].application_package_recipients
+    assert len(recipients) == 2
+    assert {r.recipient_type for r in recipients} == {ApplicationPackageOpenToApplicant.INDIVIDUAL}
+    assert {r.email_address for r in recipients} == {"shared@example.com"}

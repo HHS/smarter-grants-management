@@ -31,7 +31,7 @@ const mockSelectedSubmissions = [
       total_requested_amount: "100000.00",
       application: {
         application_id: "app-id-1",
-        competition_id: "comp-1",
+        applicationPackage_id: "comp-1",
         organization: {
           organization_id: "org-1",
           organization_name: "Test Organization",
