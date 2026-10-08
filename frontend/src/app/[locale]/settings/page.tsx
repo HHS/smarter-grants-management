@@ -1,5 +1,5 @@
-import { GridContainer } from "@trussworks/react-uswds";
 import { useTranslations } from "next-intl";
+import { GridContainer } from "@trussworks/react-uswds";
 
 export default function SettingsPage() {
   const t = useTranslations("Settings");
