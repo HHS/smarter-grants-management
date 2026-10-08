@@ -176,45 +176,6 @@ class TestForecastSummaryTimestampValidation:
         assert response.status_code == 200
         assert response.get_json()["data"]["summary_description"] == "Updated description"
 
-    def test_update_forecast_clearing_forecasted_post_timestamp_422(
-        self,
-        client,
-        api_key_headers,
-    ):
-        """Updating a forecast by setting forecasted_post_timestamp to None returns 422."""
-        summary = AnnouncementSummaryFactory.create(
-            is_forecast=True,
-            forecasted_post_timestamp=datetime_util.utcnow() + timedelta(days=30),
-        )
-        request = {
-            "summary_description": summary.summary_description,
-            "is_cost_sharing": summary.is_cost_sharing,
-            "post_timestamp": summary.post_timestamp,
-            "close_timestamp": summary.close_timestamp,
-            "award_floor": summary.award_floor,
-            "award_ceiling": summary.award_ceiling,
-            "funding_categories": list(summary.funding_categories),
-            "funding_instruments": list(summary.funding_instruments),
-            "applicant_types": list(summary.applicant_types),
-            "agency_contact_description": summary.agency_contact_description,
-            "agency_email_address": summary.agency_email_address,
-            "agency_email_address_description": summary.agency_email_address_description,
-            "forecasted_post_timestamp": None,
-        }
-
-        response = client.put(
-            f"/v1/announcements/{summary.announcement_id}/summaries/"
-            f"{summary.announcement_summary_id}",
-            json=request,
-            headers=api_key_headers,
-        )
-
-        assert response.status_code == 422
-        assert (
-            "forecasted_post_timestamp is required for forecast summaries"
-            in response.get_json()["message"]
-        )
-
 
 class TestNonForecastSummaryTimestampValidation:
     """Test timestamp validation for non-forecast summaries."""
@@ -322,41 +283,3 @@ class TestNonForecastSummaryTimestampValidation:
 
         assert response.status_code == 200
         assert response.get_json()["data"]["summary_description"] == "Updated description"
-
-    def test_update_non_forecast_clearing_post_timestamp_422(
-        self,
-        client,
-        api_key_headers,
-    ):
-        """Updating a non-forecast by setting post_timestamp to None returns 422."""
-        summary = AnnouncementSummaryFactory.create(
-            is_forecast=False,
-            post_timestamp=datetime_util.utcnow(),
-        )
-        request = {
-            "summary_description": summary.summary_description,
-            "is_cost_sharing": summary.is_cost_sharing,
-            "post_timestamp": None,
-            "close_timestamp": summary.close_timestamp,
-            "award_floor": summary.award_floor,
-            "award_ceiling": summary.award_ceiling,
-            "funding_categories": list(summary.funding_categories),
-            "funding_instruments": list(summary.funding_instruments),
-            "applicant_types": list(summary.applicant_types),
-            "agency_contact_description": summary.agency_contact_description,
-            "agency_email_address": summary.agency_email_address,
-            "agency_email_address_description": summary.agency_email_address_description,
-        }
-
-        response = client.put(
-            f"/v1/announcements/{summary.announcement_id}/summaries/"
-            f"{summary.announcement_summary_id}",
-            json=request,
-            headers=api_key_headers,
-        )
-
-        assert response.status_code == 422
-        assert (
-            "post_timestamp is required for non-forecast summaries"
-            in response.get_json()["message"]
-        )

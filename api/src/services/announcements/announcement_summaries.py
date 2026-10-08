@@ -92,23 +92,28 @@ def _get_announcement_summary(
 
 def _validate_summary_timestamps(
     is_forecast: bool,
-    post_timestamp: object,
-    forecasted_post_timestamp: object,
+    summary_data: dict,
     existing_summary: AnnouncementSummary | None = None,
 ) -> None:
     """Validate that the appropriate post date is provided based on summary type.
 
     For forecast summaries, requires forecasted_post_timestamp.
     For non-forecast summaries, requires post_timestamp.
-    When updating, uses existing values if new ones are not provided.
+
+    When updating:
+    - If field is not in request, uses existing value
+    - If field is in request but None, validates that a value exists (either from request or existing)
     """
     if is_forecast:
-        # Use provided value or fall back to existing value
-        effective_forecasted = (
-            forecasted_post_timestamp
-            if forecasted_post_timestamp is not None
-            else (existing_summary.forecasted_post_timestamp if existing_summary else None)
-        )
+        # Check if forecasted_post_timestamp is in the request
+        if "forecasted_post_timestamp" in summary_data:
+            # Explicitly provided (or explicitly set to None)
+            effective_forecasted = summary_data.get("forecasted_post_timestamp")
+        else:
+            # Not provided in request - use existing value
+            effective_forecasted = (
+                existing_summary.forecasted_post_timestamp if existing_summary else None
+            )
 
         if effective_forecasted is None:
             raise_flask_error(
@@ -116,12 +121,13 @@ def _validate_summary_timestamps(
                 "forecasted_post_timestamp is required for forecast summaries",
             )
     else:
-        # Use provided value or fall back to existing value
-        effective_post = (
-            post_timestamp
-            if post_timestamp is not None
-            else (existing_summary.post_timestamp if existing_summary else None)
-        )
+        # Check if post_timestamp is in the request
+        if "post_timestamp" in summary_data:
+            # Explicitly provided (or explicitly set to None)
+            effective_post = summary_data.get("post_timestamp")
+        else:
+            # Not provided in request - use existing value
+            effective_post = existing_summary.post_timestamp if existing_summary else None
 
         if effective_post is None:
             raise_flask_error(
@@ -146,8 +152,7 @@ def create_announcement_summary(
     # Validate that the appropriate timestamp is provided based on summary type
     _validate_summary_timestamps(
         is_forecast=summary_data["is_forecast"],
-        post_timestamp=summary_data.get("post_timestamp"),
-        forecasted_post_timestamp=summary_data.get("forecasted_post_timestamp"),
+        summary_data=summary_data,
     )
 
     before = snapshot_fields(None, ANNOUNCEMENT_SUMMARY_CREATE_FIELDS)
@@ -205,8 +210,7 @@ def update_announcement_summary(
     # Validate that the appropriate timestamp is provided based on the existing summary type
     _validate_summary_timestamps(
         is_forecast=summary.is_forecast,
-        post_timestamp=summary_data.get("post_timestamp"),
-        forecasted_post_timestamp=summary_data.get("forecasted_post_timestamp"),
+        summary_data=summary_data,
         existing_summary=summary,
     )
 
