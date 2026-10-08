@@ -997,4 +997,11 @@ export const messages = {
     inProgress: "In progress",
     complete: "Complete",
   },
+  Settings: {
+    pageTitle: "Settings",
+    pageApplication: "Smarter Grants Management",
+    metaDescription: "Manage your account settings",
+    heading: "Settings",
+    body: "Account settings will be available here soon.",
+  },
 };
