@@ -23,6 +23,30 @@ let clientJwtKey: Uint8Array;
 const encodeText = (valueToEncode: string) =>
   new TextEncoder().encode(valueToEncode);
 
+const createSpoofLoginError = ({
+  step,
+  inspect,
+  likelyCause,
+  details,
+}: {
+  step: string;
+  inspect: string;
+  likelyCause: string;
+  details: string;
+}): Error =>
+  new Error(
+    [
+      `Error time (UTC): ${new Date().toISOString()}`,
+      "Flow: local-spoofed-session",
+      `Failed step: ${step}`,
+      `What to inspect: ${inspect}`,
+      `Likely cause: ${likelyCause}`,
+      `Target environment: ${playwrightEnv.targetEnv || "unknown"}`,
+      `Base URL: ${playwrightEnv.baseUrl || "unset"}`,
+      details,
+    ].join("\n"),
+  );
+
 export const initializePlaywrightSessionSecrets = () => {
   if (!playwrightEnv.clientSessionSecret) {
     // eslint-disable-next-line
@@ -46,11 +70,24 @@ export const generateSpoofedSession = async (
   serverToken: string,
 ): Promise<string> => {
   if (!clientJwtKey) {
-    throw new Error("Unable to spoof login, missing auth key");
+    throw createSpoofLoginError({
+      step: "generate-spoofed-session-signing-key",
+      inspect:
+        "SESSION_SECRET / SESSION_SECRET_OVERRIDE used for test cookie signing",
+      likelyCause:
+        "client session secret was not loaded before spoofed session generation",
+      details: "Unable to spoof login because auth signing key is missing.",
+    });
   }
 
   if (!serverToken) {
-    throw new Error("Unable to spoof login, missing server token");
+    throw createSpoofLoginError({
+      step: "generate-spoofed-session-server-token",
+      inspect: "JWT token returned by GET /v1/internal/api-jwt",
+      likelyCause:
+        "upstream token fetch returned an empty value before cookie generation",
+      details: "Unable to spoof login because server token is missing.",
+    });
   }
 
   const fakeToken = await new SignJWT({

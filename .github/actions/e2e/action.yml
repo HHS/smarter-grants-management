@@ -20,12 +20,6 @@ inputs:
     description: "application environment to run tests against (dev / prod TK)"
     required: true
     default: "local"
-  staging_test_user_email:
-    description: "email for staging test user"
-  staging_test_user_password:
-    description: "password for staging test user"
-  staging_test_user_mfa_key:
-    description: "mfa key for staging test user"
   playwright_tags:
     description: "pipe separated list of tags denoting groups of tests to run"
   total_shards:
@@ -156,7 +150,8 @@ runs:
         TEST_USER_API_KEY: ${{ inputs.test_user_api_key }}
       run: |
         if [[ -z "$TEST_USER_API_KEY" ]]; then
-          echo "::error::Missing required E2E API key for staging. Set the GitHub Actions secret STAGING_TEST_USER_API_KEY and map it to test_user_api_key before the workflow runs."
+          ERROR_TIME_UTC="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          echo "::error::Error time (UTC): ${ERROR_TIME_UTC} | Failed step: validate-required-deployed-e2e-credentials | What to inspect: STAGING_TEST_USER_API_KEY secret and test_user_api_key input mapping | Likely cause: staging API key secret is missing or was not mapped into the composite action inputs | Missing required E2E API key for staging. Set the GitHub Actions secret STAGING_TEST_USER_API_KEY and map it to test_user_api_key before the workflow runs."
           exit 1
         fi
     - name: Set target urls for environment
@@ -178,9 +173,6 @@ runs:
         PLAYWRIGHT_BASE_URL: ${{ env.base_url }}
         PLAYWRIGHT_API_URL: ${{ env.api_url }}
         PLAYWRIGHT_WORKERS: ${{ inputs.workers }}
-        STAGING_TEST_USER_EMAIL: ${{ inputs.staging_test_user_email }}
-        STAGING_TEST_USER_PASSWORD: ${{ inputs.staging_test_user_password }}
-        STAGING_TEST_USER_MFA_KEY: ${{ inputs.staging_test_user_mfa_key }}
         SESSION_SECRET_OVERRIDE: ${{ inputs.staging_client_session_secret }}
         TEST_USER_MANAGER_API_KEY: ${{ inputs.test_user_manager_api_key }}
         TEST_USER_API_KEY: ${{ inputs.test_user_api_key }}
@@ -201,9 +193,6 @@ runs:
         PLAYWRIGHT_BASE_URL: ${{ env.base_url }}
         PLAYWRIGHT_API_URL: ${{ env.api_url }}
         PLAYWRIGHT_WORKERS: ${{ inputs.workers }}
-        STAGING_TEST_USER_EMAIL: ${{ inputs.staging_test_user_email }}
-        STAGING_TEST_USER_PASSWORD: ${{ inputs.staging_test_user_password }}
-        STAGING_TEST_USER_MFA_KEY: ${{ inputs.staging_test_user_mfa_key }}
         SESSION_SECRET_OVERRIDE: ${{ inputs.staging_client_session_secret }}
         TEST_USER_MANAGER_API_KEY: ${{ inputs.test_user_manager_api_key }}
         TEST_USER_API_KEY: ${{ inputs.test_user_api_key }}
@@ -224,9 +213,6 @@ runs:
         PLAYWRIGHT_BASE_URL: ${{ env.base_url }}
         PLAYWRIGHT_API_URL: ${{ env.api_url }}
         PLAYWRIGHT_WORKERS: ${{ inputs.workers }}
-        STAGING_TEST_USER_EMAIL: ${{ inputs.staging_test_user_email }}
-        STAGING_TEST_USER_PASSWORD: ${{ inputs.staging_test_user_password }}
-        STAGING_TEST_USER_MFA_KEY: ${{ inputs.staging_test_user_mfa_key }}
         SESSION_SECRET_OVERRIDE: ${{ inputs.staging_client_session_secret }}
         TEST_USER_MANAGER_API_KEY: ${{ inputs.test_user_manager_api_key }}
         TEST_USER_API_KEY: ${{ inputs.test_user_api_key }}

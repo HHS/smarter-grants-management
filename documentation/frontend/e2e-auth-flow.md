@@ -21,8 +21,8 @@ flowchart TD
    L4 --> L5["Navigate app with same BrowserContext"]
    L5 --> L6["Rest of the local test reuses authenticated session"]
 
-   S1 --> S2["Lookup staging API key in GitHub secret / env"]
-   S2 --> S3["TEST_USER_API_KEY or STAGING_TEST_USER_API_KEY"]
+   S1 --> S2["Resolve API key input for staging login"]
+   S2 --> S3["Use testUserApiKeyOverride (default: TEST_USER_API_KEY / STAGING_TEST_USER_API_KEY)"]
    S3 --> S4["Open sign-in UI"]
    S4 --> S5["Complete staging login flow using API key"]
    S5 --> S6["Navigate app with same BrowserContext"]
@@ -147,7 +147,7 @@ The branching logic lives here:
 
 The decision is straightforward:
 
-- if the target is `staging`, use the real frontend API-key modal flow
+- if the target is `staging`, use the real frontend API-key modal flow with `testUserApiKeyOverride`
 - otherwise, use the local JWT spoof flow
 
 ## Related files
