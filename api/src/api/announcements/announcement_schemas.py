@@ -422,7 +422,8 @@ class AnnouncementSummaryBaseRequestSchema(Schema):
     )
 
     post_timestamp = fields.DateTime(
-        required=True,
+        required=False,
+        allow_none=True,
         metadata={
             "description": "The datetime the announcement was posted",
         },

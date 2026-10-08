@@ -90,6 +90,46 @@ def _get_announcement_summary(
     return summary
 
 
+def _validate_summary_timestamps(
+    is_forecast: bool,
+    post_timestamp: object,
+    forecasted_post_timestamp: object,
+    existing_summary: AnnouncementSummary | None = None,
+) -> None:
+    """Validate that the appropriate post date is provided based on summary type.
+
+    For forecast summaries, requires forecasted_post_timestamp.
+    For non-forecast summaries, requires post_timestamp.
+    When updating, uses existing values if new ones are not provided.
+    """
+    if is_forecast:
+        # Use provided value or fall back to existing value
+        effective_forecasted = (
+            forecasted_post_timestamp
+            if forecasted_post_timestamp is not None
+            else (existing_summary.forecasted_post_timestamp if existing_summary else None)
+        )
+
+        if effective_forecasted is None:
+            raise_flask_error(
+                422,
+                "forecasted_post_timestamp is required for forecast summaries",
+            )
+    else:
+        # Use provided value or fall back to existing value
+        effective_post = (
+            post_timestamp
+            if post_timestamp is not None
+            else (existing_summary.post_timestamp if existing_summary else None)
+        )
+
+        if effective_post is None:
+            raise_flask_error(
+                422,
+                "post_timestamp is required for non-forecast summaries",
+            )
+
+
 def create_announcement_summary(
     db_session: db.Session,
     announcement_id: uuid.UUID,
@@ -102,6 +142,13 @@ def create_announcement_summary(
         raise_flask_error(403, "User does not have access to update this announcement")
 
     _check_existing_summary(db_session, announcement_id, summary_data["is_forecast"])
+
+    # Validate that the appropriate timestamp is provided based on summary type
+    _validate_summary_timestamps(
+        is_forecast=summary_data["is_forecast"],
+        post_timestamp=summary_data.get("post_timestamp"),
+        forecasted_post_timestamp=summary_data.get("forecasted_post_timestamp"),
+    )
 
     before = snapshot_fields(None, ANNOUNCEMENT_SUMMARY_CREATE_FIELDS)
 
@@ -153,6 +200,14 @@ def update_announcement_summary(
         db_session,
         announcement_id,
         announcement_summary_id,
+    )
+
+    # Validate that the appropriate timestamp is provided based on the existing summary type
+    _validate_summary_timestamps(
+        is_forecast=summary.is_forecast,
+        post_timestamp=summary_data.get("post_timestamp"),
+        forecasted_post_timestamp=summary_data.get("forecasted_post_timestamp"),
+        existing_summary=summary,
     )
 
     before = snapshot_fields(summary, ANNOUNCEMENT_SUMMARY_UPDATE_FIELDS)
