@@ -100,6 +100,9 @@ export function ExternalFilterComboBox({
   // identifies the most recent search, so responses that arrive after the user has
   // typed again (or after a newer search started) are ignored
   const latestRequestId = useRef(0);
+  const pillsRef = useRef<HTMLDivElement>(null);
+  // position of a pill just removed, so focus can move to the pill now in its place
+  const removedPillIndex = useRef<number | null>(null);
   const { user } = useUser();
   const hasToken = Boolean(user?.token);
   const { clientFetch } = useClientFetch<unknown>(
@@ -169,6 +172,22 @@ export function ExternalFilterComboBox({
     }
   }, [options, id]);
 
+  // the remove button of a removed pill disappears, so keyboard focus moves to the
+  // pill now in its place, the previous pill if it was the last, or the search input
+  useEffect(() => {
+    const index = removedPillIndex.current;
+    if (index === null) return;
+    removedPillIndex.current = null;
+    const removeButtons = pillsRef.current?.querySelectorAll("button") ?? [];
+    const nextButton =
+      removeButtons[Math.min(index, removeButtons.length - 1)] ?? null;
+    if (nextButton) {
+      nextButton.focus();
+    } else {
+      comboBoxRef.current?.focus();
+    }
+  }, [selectedOptions]);
+
   // trussworks ComboBox overwrites any aria-describedby passed through inputProps
   // (https://github.com/trussworks/react-uswds/issues/3449), so it is set on the
   // rendered input directly
@@ -224,6 +243,9 @@ export function ExternalFilterComboBox({
   };
 
   const removeOption = (value: string) => {
+    removedPillIndex.current = selectedOptions.findIndex(
+      (selected) => selected.value === value,
+    );
     updateSelection(
       selectedOptions.filter((selected) => selected.value !== value),
     );
@@ -306,7 +328,7 @@ export function ExternalFilterComboBox({
         ) : null}
       </div>
       {multiSelect && selectedOptions.length > 0 ? (
-        <div className="margin-top-1 display-flex flex-wrap">
+        <div ref={pillsRef} className="margin-top-1 display-flex flex-wrap">
           {selectedOptions.map((option) => (
             <div key={option.value} className="margin-right-1 margin-bottom-1">
               <Pill

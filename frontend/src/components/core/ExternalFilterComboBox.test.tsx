@@ -524,8 +524,9 @@ describe("ExternalFilterComboBox", () => {
     });
   });
 
-  // pills in multi-select: adding, hiding picked options, no new results, removing one,
-  // input cleared and refocused after a pick, no removal while disabled
+  // pills in multi-select: adding, hiding picked options, no new results, removing one
+  // and where focus goes next, input cleared and refocused after a pick, no removal
+  // while disabled
   describe("multi-select", () => {
     it("adds a pill for each picked option and reports the full selection", async () => {
       const onSelectionChange = jest.fn();
@@ -589,6 +590,49 @@ describe("ExternalFilterComboBox", () => {
         `Remove ${options[0].label} pill`,
         `Remove ${options[2].label} pill`,
       ]);
+    });
+
+    it("moves focus to the next pill after removing one", () => {
+      renderComboBox({
+        multiSelect: true,
+        defaultSelectedOptions: options.slice(0, 3),
+      });
+
+      fireEvent.click(
+        screen.getByRole("button", { name: `Remove ${options[1].label} pill` }),
+      );
+
+      expect(
+        screen.getByRole("button", { name: `Remove ${options[2].label} pill` }),
+      ).toHaveFocus();
+    });
+
+    it("moves focus to the previous pill after removing the last one", () => {
+      renderComboBox({
+        multiSelect: true,
+        defaultSelectedOptions: options.slice(0, 3),
+      });
+
+      fireEvent.click(
+        screen.getByRole("button", { name: `Remove ${options[2].label} pill` }),
+      );
+
+      expect(
+        screen.getByRole("button", { name: `Remove ${options[1].label} pill` }),
+      ).toHaveFocus();
+    });
+
+    it("moves focus to the input after removing the only pill", () => {
+      renderComboBox({
+        multiSelect: true,
+        defaultSelectedOptions: [options[0]],
+      });
+
+      fireEvent.click(
+        screen.getByRole("button", { name: `Remove ${options[0].label} pill` }),
+      );
+
+      expect(screen.getByRole("combobox")).toHaveFocus();
     });
 
     it("clears the input and moves focus back to it after a pick", async () => {
