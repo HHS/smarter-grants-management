@@ -10,7 +10,9 @@ export async function generateMetadata({ params }: LocalizedPageProps) {
   const { locale } = await params;
   const t = await getTranslations({ locale });
   const pageTitle =
-    t("NofoTemplate.Create.pageTitle") + " | " + t("NofoTemplate.Create.pageApplication");
+    t("NofoTemplate.Create.pageTitle") +
+    " | " +
+    t("NofoTemplate.Create.pageApplication");
   const meta: Metadata = {
     title: pageTitle,
     description: t("NofoTemplate.Create.metaDescription"),

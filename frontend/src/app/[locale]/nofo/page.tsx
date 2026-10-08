@@ -1,6 +1,5 @@
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
-
 import { GridContainer } from "@trussworks/react-uswds";
 
 export default async function NofoListPage() {
