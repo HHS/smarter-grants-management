@@ -76,11 +76,64 @@ v0.34.5 contains a vuln fixed in v 0.35.0. Latest stable next version (16.2.x) d
 
 ### undici
 
+Override: `^7.29.1`. Currently resolves to 7.30.0.
+
+undici 7.0.0 to 7.29.0 has a DoS via unrequested WebSocket subprotocol ([GHSA-rfgv-xxqx-mfg5](https://github.com/advisories/GHSA-rfgv-xxqx-mfg5)) and a TLS certificate validation bypass in BalancedPool ([GHSA-w293-vg96-wgc3](https://github.com/advisories/GHSA-w293-vg96-wgc3)). 
+
+All of them are fixed in 7.29.1.
+
+It is referenced at ^7.21.0 in jsdom v28.1.0 (via isomorphic-dompurify; production)
+It is referenced at ^7.19.0 in @newrelic/security-agent v3.0.4 (via newrelic; production)
+It is referenced at ^6.19.5 in cheerio v1.0.0 (via pa11y-ci; dev only)
+
+No current flags for undici 6.x (cheerio would resolve to 6.29.0 without the override).
+
+Path to resolution: We could remove the override. If we want cheerio to use version 7.x, we could update pa11y-ci v5 for cheerio 1.2.0, which wants undici ^7.19.0. Then all versions would be 7.30.0
+
 ### nanoid
+
+Override: `^3.3.17`. Currently resolves to 3.3.18.
+
+nanoid below 3.3.18 can loop forever when a custom generator is called with size zero ([GHSA-2v37-7h3g-55p8](https://github.com/advisories/GHSA-2v37-7h3g-55p8), high).
+
+It is referenced at ^3.3.19 in postcss v8.5.29 (top-level devDependency)
+It is referenced at ^3.3.16 in postcss v8.5.23 (pinned by next v16.4.0)
+
+Both ranges already allow a patched version. The override still allows the vulnerable 3.3.17, and the lockfile has 3.3.18.
+
+Path to resolution: Remove the override, should resolve to 3.3.20.
 
 ### fast-uri
 
+Override: `^3.1.6`. Currently resolves to `3.1.8`.
+
+fast-uri 3.0.0 up to (but not including) 3.1.6 
+Advisories in URI normalization (e.g. [GHSA-f65p-4m7j-42xc](https://github.com/advisories/GHSA-f65p-4m7j-42xc), [GHSA-fph4-wmhf-6fwf](https://github.com/advisories/GHSA-fph4-wmhf-6fwf)). 
+
+Authority injection via unvalidated port, fixed in 3.1.7 ([GHSA-qw65-cvwx-89v3](https://github.com/advisories/GHSA-qw65-cvwx-89v3), high) 
+host case normalization, fixed in 3.1.8 ([GHSA-hrr3-gc8f-f4qj](https://github.com/advisories/GHSA-hrr3-gc8f-f4qj), moderate). 
+
+The override as written (`^3.1.6`) would still allow two of the vulnerabilities
+
+The ajv range already allows the patched version.
+
+Path to resolution: Remove the override or increase it to (`3.1.8`). 
+I see no change to the lockfile removing this locally.
+
 ### dompurify
+
+Override: `^3.4.16`. Currently resolves to 3.4.16 (latest).
+
+DOMPurify has XSS / sanitizer bypass advisories. Affecting everything up to 3.4.15 ([GHSA-p98j-92pf-mc4p](https://github.com/advisories/GHSA-p98j-92pf-mc4p), [GHSA-6688-9rhm-gjv2](https://github.com/advisories/GHSA-6688-9rhm-gjv2)).
+
+It is referenced at ^3.3.1 in isomorphic-dompurify v2.36.0 (direct dependency)
+
+The isomorphic-dompurify range allows 3.4.16.
+
+Path to resolution: I see no change to the lockfile removing the override. However upgrading isomorphic-dompurify to v4.x. v4.5.0 depends on `dompurify ^3.4.16` and `jsdom ^30.1.2`, so the floor would come from upstream. 
+This is a major version bump though and may have larger impact. 
+
+It might help with untangling source-map-js, since isomorphic-dompurify is one of the paths that pulls in jsdom/csstree.
 
 ### source-map-js
 
