@@ -177,7 +177,10 @@ export const messages = {
       home: "Home",
       login: "Sign in",
       logout: "Sign out",
+      manageNofos: "Manage NOFOs",
       menuToggle: "Menu",
+      nofos: "NOFOs",
+      nofoTemplates: "NOFO Templates",
       opportunities: "Announcements",
       settings: "Settings",
       notifications: "Notifications",
@@ -994,5 +997,29 @@ export const messages = {
     notStarted: "Not started",
     inProgress: "In progress",
     complete: "Complete",
+  },
+  Nofo: {
+    List: {
+      pageTitle: "Notice of Funding Opportunities (NOFOs)",
+      pageApplication: "Smarter Grants Management",
+      metaDescription: "Manage Notice of Funding Opportunities (NOFOs)",
+    },
+    Create: {
+      pageTitle: "Create a NOFO",
+      pageApplication: "Smarter Grants Management",
+      metaDescription: "Create a Notice of Funding Opportunities (NOFO)",
+    },
+  },
+  NofoTemplate: {
+    List: {
+      pageTitle: "NOFO Templates",
+      pageApplication: "Smarter Grants Management",
+      metaDescription: "Templates for creating Notice of Funding Opportunities (NOFOs)",
+    },
+    Create: {
+      pageTitle: "Create a NOFO Template",
+      pageApplication: "Smarter Grants Management",
+      metaDescription: "Create a Notice of Funding Opportunities (NOFO) Template",
+    },
   },
 };
