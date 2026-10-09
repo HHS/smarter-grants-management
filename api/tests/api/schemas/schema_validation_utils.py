@@ -1,3 +1,4 @@
+import dataclasses
 from enum import Enum, StrEnum
 from random import choice
 from string import ascii_uppercase
@@ -46,7 +47,7 @@ INVALID_SPECIAL_DECIMAL = MarshmallowErrorContainer(
     "Special numeric values (nan or infinity) are not permitted.",
 )
 INVALID_EMAIL = MarshmallowErrorContainer(
-    SchemaValidationError.FORMAT, "Not a valid email address."
+    SchemaValidationError.FORMAT, "Not a valid email address.", metadata={"type": "email"}
 )
 INVALID_FILE = MarshmallowErrorContainer(SchemaValidationError.INVALID, "Not a valid file.")
 UNKNOWN_FIELD = MarshmallowErrorContainer(SchemaValidationError.UNKNOWN, "Unknown field.")
@@ -55,6 +56,11 @@ UNKNOWN_FIELD = MarshmallowErrorContainer(SchemaValidationError.UNKNOWN, "Unknow
 ########################
 # Validation Utilities
 ########################
+def with_value(error_container: MarshmallowErrorContainer, value) -> MarshmallowErrorContainer:
+    """Copy an error container and attach the rejected value to it."""
+    return dataclasses.replace(error_container, value=value)
+
+
 def get_random_string(length: int):
     return "".join(choice(ascii_uppercase) for i in range(length))
 
@@ -65,81 +71,134 @@ def get_enum_error_msg(*enums: type[Enum]):
         possible_values.extend([e.value for e in enum])
 
     return MarshmallowErrorContainer(
-        SchemaValidationError.INVALID_CHOICE, f"Must be one of: {', '.join(possible_values)}."
+        SchemaValidationError.INVALID_CHOICE,
+        f"Must be one of: {', '.join(possible_values)}.",
+        metadata={"choices": possible_values},
     )
 
 
-def get_one_of_error_msg(choices: list[str]):
+def get_one_of_error_msg(choices: list[str], value=None):
     choices_text = ", ".join([c for c in choices])
 
     return MarshmallowErrorContainer(
-        SchemaValidationError.INVALID_CHOICE, f"Value must be one of: {choices_text}"
+        SchemaValidationError.INVALID_CHOICE,
+        f"Value must be one of: {choices_text}",
+        value=value,
+        metadata={"choices": choices},
     )
 
 
-def get_min_word_error_msg(length: int):
+def _bound_metadata(min: int | None, max: int | None, equal: int | None):
+    return {"minimum": min, "maximum": max, "equal": equal}
+
+
+def get_min_word_error_msg(length: int, value=None):
     return MarshmallowErrorContainer(
-        SchemaValidationError.MIN_WORDS, f"Shorter than minimum word count {length}."
+        SchemaValidationError.MIN_WORDS,
+        f"Shorter than minimum word count {length}.",
+        value=value,
+        metadata=_bound_metadata(length, None, None),
     )
 
 
-def get_max_word_error_msg(length: int):
+def get_max_word_error_msg(length: int, value=None):
     return MarshmallowErrorContainer(
-        SchemaValidationError.MAX_WORDS, f"Longer than maximum word count {length}."
+        SchemaValidationError.MAX_WORDS,
+        f"Longer than maximum word count {length}.",
+        value=value,
+        metadata=_bound_metadata(None, length, None),
     )
 
 
-def get_word_range_error_msg(min: int, max: int):
+def get_word_range_error_msg(min: int, max: int, value=None):
     return MarshmallowErrorContainer(
-        SchemaValidationError.MIN_OR_MAX_WORDS, f"Word count must be between {min} and {max}."
+        SchemaValidationError.MIN_OR_MAX_WORDS,
+        f"Word count must be between {min} and {max}.",
+        value=value,
+        metadata=_bound_metadata(min, max, None),
     )
 
 
-def get_word_equal_error_msg(equal: int):
+def get_word_equal_error_msg(equal: int, value=None):
     return MarshmallowErrorContainer(
-        SchemaValidationError.EQUALS_WORDS, f"Word count must be {equal}."
+        SchemaValidationError.EQUALS_WORDS,
+        f"Word count must be {equal}.",
+        value=value,
+        metadata=_bound_metadata(None, None, equal),
     )
 
 
-def get_min_length_error_msg(length: int):
+def get_min_length_error_msg(length: int, value=None):
     return MarshmallowErrorContainer(
-        SchemaValidationError.MIN_LENGTH, f"Shorter than minimum length {length}."
+        SchemaValidationError.MIN_LENGTH,
+        f"Shorter than minimum length {length}.",
+        value=value,
+        metadata=_bound_metadata(length, None, None),
     )
 
 
-def get_max_length_error_msg(length: int):
+def get_max_length_error_msg(length: int, value=None):
     return MarshmallowErrorContainer(
-        SchemaValidationError.MAX_LENGTH, f"Longer than maximum length {length}."
+        SchemaValidationError.MAX_LENGTH,
+        f"Longer than maximum length {length}.",
+        value=value,
+        metadata=_bound_metadata(None, length, None),
     )
 
 
-def get_length_range_error_msg(min: int, max: int):
+def get_length_range_error_msg(min: int, max: int, value=None):
     return MarshmallowErrorContainer(
-        SchemaValidationError.MIN_OR_MAX_LENGTH, f"Length must be between {min} and {max}."
+        SchemaValidationError.MIN_OR_MAX_LENGTH,
+        f"Length must be between {min} and {max}.",
+        value=value,
+        metadata=_bound_metadata(min, max, None),
     )
 
 
-def get_length_equal_error_msg(equal: int):
-    return MarshmallowErrorContainer(SchemaValidationError.EQUALS, f"Length must be {equal}.")
-
-
-def get_min_value_error_msg(min: int):
+def get_length_equal_error_msg(equal: int, value=None):
     return MarshmallowErrorContainer(
-        SchemaValidationError.MIN_VALUE, f"Must be greater than or equal to {min}."
+        SchemaValidationError.EQUALS,
+        f"Length must be {equal}.",
+        value=value,
+        metadata=_bound_metadata(None, None, equal),
     )
 
 
-def get_max_value_error_msg(max: int):
+def _range_metadata(min: int | None, max: int | None):
+    # Range validator defaults to inclusive bounds
+    return {
+        "minimum": min,
+        "maximum": max,
+        "minimum_inclusive": True,
+        "maximum_inclusive": True,
+    }
+
+
+def get_min_value_error_msg(min: int, value=None):
     return MarshmallowErrorContainer(
-        SchemaValidationError.MAX_VALUE, f"Must be less than or equal to {max}."
+        SchemaValidationError.MIN_VALUE,
+        f"Must be greater than or equal to {min}.",
+        value=value,
+        metadata=_range_metadata(min, None),
     )
 
 
-def get_max_or_min_value_error_msg(min: int = -2147483648, max: int = 2147483647):
+def get_max_value_error_msg(max: int, value=None):
+    return MarshmallowErrorContainer(
+        SchemaValidationError.MAX_VALUE,
+        f"Must be less than or equal to {max}.",
+        value=value,
+        metadata=_range_metadata(None, max),
+    )
+
+
+def get_max_or_min_value_error_msg(min: int = -2147483648, max: int = 2147483647, value=None):
     # defaults are the 32-bit integer min/max
     return MarshmallowErrorContainer(
         SchemaValidationError.MIN_OR_MAX_VALUE,
         f"Must be greater than or equal to {min} and less than or equal to {max}.",
+        value=value,
+        metadata=_range_metadata(min, max),
     )
 
 
@@ -451,68 +510,76 @@ def get_expected_validation_errors():
     # This is the expected output of the above
     # get_invalid_field_test_schema_req function
     return {
-        "field_str": [INVALID_STRING],
+        "field_str": [with_value(INVALID_STRING, 1234)],
         "field_str_required": [MISSING_DATA],
-        "field_str_min": [get_min_length_error_msg(2)],
-        "field_str_max": [get_max_length_error_msg(3)],
-        "field_str_min_and_max": [get_length_range_error_msg(2, 3)],
-        "field_str_equal": [get_length_equal_error_msg(3)],
-        "field_word_min": [get_min_word_error_msg(2)],
-        "field_word_max": [get_max_word_error_msg(3)],
-        "field_word_min_and_max": [get_word_range_error_msg(2, 3)],
-        "field_word_equal": [get_word_equal_error_msg(2)],
-        "field_str_regex": [INVALID_STRING_PATTERN],
+        "field_str_min": [get_min_length_error_msg(2, "a")],
+        "field_str_max": [get_max_length_error_msg(3, "abcdef")],
+        "field_str_min_and_max": [get_length_range_error_msg(2, 3, "a")],
+        "field_str_equal": [get_length_equal_error_msg(3, "a")],
+        "field_word_min": [get_min_word_error_msg(2, "abc")],
+        "field_word_max": [get_max_word_error_msg(3, "abc abc abc abc")],
+        "field_word_min_and_max": [get_word_range_error_msg(2, 3, "abc abc abc abc")],
+        "field_word_equal": [get_word_equal_error_msg(2, "abc abc abc")],
+        "field_str_regex": [with_value(INVALID_STRING_PATTERN, "abc")],
         "field_str_regex_msg": [
-            MarshmallowErrorContainer(SchemaValidationError.FORMAT, "This is the override error")
+            MarshmallowErrorContainer(
+                SchemaValidationError.FORMAT, "This is the override error", value="abc"
+            )
         ],
-        "field_str_email": [INVALID_EMAIL],
-        "field_str_one_of": [get_one_of_error_msg(["a", "b"])],
-        "field_url": [INVALID_URL],
-        "field_int": [INVALID_INTEGER],
+        "field_str_email": [with_value(INVALID_EMAIL, "not an email")],
+        "field_str_one_of": [get_one_of_error_msg(["a", "b"], "hello")],
+        "field_url": [with_value(INVALID_URL, "not a url")],
+        "field_int": [with_value(INVALID_INTEGER, {})],
         "field_int_required": [MISSING_DATA],
-        "field_int_strict": [INVALID_INTEGER],
-        "field_int_32bit": [INVALID_INTEGER_32BIT],
-        "field_int_min": [get_min_value_error_msg(10)],
-        "field_int_max": [get_max_value_error_msg(99)],
-        "field_int_min_max": [get_max_or_min_value_error_msg(40, 60)],
-        "field_int_min_max_with_32bit": [get_max_or_min_value_error_msg(1, 10)],
-        "field_bool": [INVALID_BOOLEAN],
+        "field_int_strict": [with_value(INVALID_INTEGER, "123")],
+        "field_int_32bit": [get_max_or_min_value_error_msg(value=1_000_000_000_000_000)],
+        "field_int_min": [get_min_value_error_msg(10, 1)],
+        "field_int_max": [get_max_value_error_msg(99, 255)],
+        "field_int_min_max": [get_max_or_min_value_error_msg(40, 60, 100)],
+        "field_int_min_max_with_32bit": [get_max_or_min_value_error_msg(1, 10, 55)],
+        "field_bool": [with_value(INVALID_BOOLEAN, 1234)],
         "field_bool_required": [MISSING_DATA],
-        "field_decimal": [INVALID_DECIMAL],
+        "field_decimal": [with_value(INVALID_DECIMAL, "hello")],
         "field_decimal_required": [MISSING_DATA],
-        "field_decimal_special": [INVALID_SPECIAL_DECIMAL],
-        "field_float": [INVALID_FLOAT],
+        "field_decimal_special": [with_value(INVALID_SPECIAL_DECIMAL, "NaN")],
+        "field_float": [with_value(INVALID_FLOAT, "not a number")],
         "field_float_required": [MISSING_DATA],
-        "field_float_special": [INVALID_SPECIAL_FLOAT],
-        "field_uuid": [INVALID_UUID],
+        "field_float_special": [with_value(INVALID_SPECIAL_FLOAT, "inf")],
+        "field_uuid": [with_value(INVALID_UUID, "hello")],
         "field_uuid_required": [MISSING_DATA],
-        "field_date": [INVALID_DATE],
+        "field_date": [with_value(INVALID_DATE, 1234)],
         "field_date_required": [MISSING_DATA],
-        "field_date_format": [INVALID_DATE],
-        "field_datetime": [INVALID_DATETIME],
+        "field_date_format": [with_value(INVALID_DATE, "20220202020202")],
+        "field_datetime": [with_value(INVALID_DATETIME, 1234)],
         "field_datetime_required": [MISSING_DATA],
-        "field_datetime_format": [INVALID_DATETIME],
-        "field_time": [INVALID_TIME],
+        "field_datetime_format": [with_value(INVALID_DATETIME, "02022020 7-20PM PDT")],
+        "field_time": [with_value(INVALID_TIME, 1234)],
         "field_time_required": [MISSING_DATA],
-        "field_time_format": [INVALID_TIME],
-        "field_list": [INVALID_LIST],
+        "field_time_format": [with_value(INVALID_TIME, "not a time")],
+        "field_list": [with_value(INVALID_LIST, "not_a_list")],
         "field_list_required": [MISSING_DATA],
-        "field_list_indexed": {0: [INVALID_INTEGER], 2: [INVALID_INTEGER]},
-        "field_nested": {"inner_str": [INVALID_STRING], "inner_required_str": [MISSING_DATA]},
+        "field_list_indexed": {
+            0: [with_value(INVALID_INTEGER, "text")],
+            2: [with_value(INVALID_INTEGER, "text")],
+        },
+        "field_nested": {
+            "inner_str": [with_value(INVALID_STRING, 1234)],
+            "inner_required_str": [MISSING_DATA],
+        },
         "field_nested_invalid": INVALID_SCHEMA,
         "field_nested_required": [MISSING_DATA],
         "field_list_nested": {
-            0: {"inner_str": [INVALID_STRING]},
+            0: {"inner_str": [with_value(INVALID_STRING, 5678)]},
             1: {"inner_required_str": [MISSING_DATA]},
             2: INVALID_SCHEMA,
         },
-        "field_list_nested_invalid": [INVALID_LIST],
+        "field_list_nested_invalid": [with_value(INVALID_LIST, 54321)],
         "field_list_nested_required": [MISSING_DATA],
         "field_raw_required": [MISSING_DATA],
-        "field_enum": [get_enum_error_msg(EnumA)],
-        "field_enum_invalid_choice": [get_enum_error_msg(EnumA)],
-        "field_enum_invalid_type": [get_enum_error_msg(EnumA)],
+        "field_enum": [with_value(get_enum_error_msg(EnumA), 12345)],
+        "field_enum_invalid_choice": [with_value(get_enum_error_msg(EnumA), "notvalid")],
+        "field_enum_invalid_type": [with_value(get_enum_error_msg(EnumA), {})],
         "field_enum_required": [MISSING_DATA],
-        "field_file": [INVALID_FILE],
+        "field_file": [with_value(INVALID_FILE, 10)],
         "field_file_required": [MISSING_DATA],
     }

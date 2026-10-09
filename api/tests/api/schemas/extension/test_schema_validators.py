@@ -96,6 +96,11 @@ def test_relational_validation_uses_invalid_comparison_error():
 
     assert error.key == SchemaValidationError.INVALID_COMPARISON
     assert error.message == "Relational validation failed: left must be less than or equal right"
+    assert error.metadata == {
+        "left": "left",
+        "right": "right",
+        "operator": "less_than_or_equal",
+    }
 
 
 def test_relational_validation_skips_when_left_is_none():

@@ -286,7 +286,8 @@ def test_marshmallow_validation(simple_client, monkeypatch):
                     "type": error.key,
                     "message": error.message,
                     "field": field.removesuffix("._schema"),
-                    "value": None,
+                    "metadata": error.metadata,
+                    "value": error.value,
                 }
             )
 

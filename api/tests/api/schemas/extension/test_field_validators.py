@@ -29,6 +29,8 @@ def test_regexp_rejects_non_matching_value():
     error = get_error_container(exc_info.value)
     assert error.key == SchemaValidationError.FORMAT
     assert error.message == "Must match abc."
+    assert error.value == "def"
+    assert error.metadata is None
 
 
 @pytest.mark.parametrize(
@@ -45,32 +47,37 @@ def test_length_accepts_valid_values(validator, value):
 
 
 @pytest.mark.parametrize(
-    "validator,value,error_type",
+    "validator,value,error_type,expected_metadata",
     [
         (
             validators.Length(min=2),
             "a",
             SchemaValidationError.MIN_LENGTH,
+            {"minimum": 2, "maximum": None, "equal": None},
         ),
         (
             validators.Length(max=2),
             "abc",
             SchemaValidationError.MAX_LENGTH,
+            {"minimum": None, "maximum": 2, "equal": None},
         ),
         (
             validators.Length(min=2, max=4),
             "a",
             SchemaValidationError.MIN_OR_MAX_LENGTH,
+            {"minimum": 2, "maximum": 4, "equal": None},
         ),
         (
             validators.Length(min=2, max=4),
             "abcde",
             SchemaValidationError.MIN_OR_MAX_LENGTH,
+            {"minimum": 2, "maximum": 4, "equal": None},
         ),
         (
             validators.Length(equal=3),
             "ab",
             SchemaValidationError.EQUALS,
+            {"minimum": None, "maximum": None, "equal": 3},
         ),
     ],
 )
@@ -78,12 +85,15 @@ def test_length_rejects_invalid_values(
     validator,
     value,
     error_type,
+    expected_metadata,
 ):
     with pytest.raises(ValidationError) as exc_info:
         validator(value)
 
     error = get_error_container(exc_info.value)
     assert error.key == error_type
+    assert error.value == value
+    assert error.metadata == expected_metadata
 
 
 @pytest.mark.parametrize(
@@ -100,32 +110,37 @@ def test_word_limit_accepts_valid_values(validator, value):
 
 
 @pytest.mark.parametrize(
-    "validator,value,error_type",
+    "validator,value,error_type,expected_metadata",
     [
         (
             validators.WordLimit(min=2),
             "one",
             SchemaValidationError.MIN_WORDS,
+            {"minimum": 2, "maximum": None, "equal": None},
         ),
         (
             validators.WordLimit(max=2),
             "one two three",
             SchemaValidationError.MAX_WORDS,
+            {"minimum": None, "maximum": 2, "equal": None},
         ),
         (
             validators.WordLimit(min=2, max=4),
             "one",
             SchemaValidationError.MIN_OR_MAX_WORDS,
+            {"minimum": 2, "maximum": 4, "equal": None},
         ),
         (
             validators.WordLimit(min=2, max=4),
             "one two three four five",
             SchemaValidationError.MIN_OR_MAX_WORDS,
+            {"minimum": 2, "maximum": 4, "equal": None},
         ),
         (
             validators.WordLimit(equal=3),
             "one two",
             SchemaValidationError.EQUALS_WORDS,
+            {"minimum": None, "maximum": None, "equal": 3},
         ),
     ],
 )
@@ -133,12 +148,15 @@ def test_word_limit_rejects_invalid_values(
     validator,
     value,
     error_type,
+    expected_metadata,
 ):
     with pytest.raises(ValidationError) as exc_info:
         validator(value)
 
     error = get_error_container(exc_info.value)
     assert error.key == error_type
+    assert error.value == value
+    assert error.metadata == expected_metadata
 
 
 def test_email_accepts_valid_email():
@@ -156,6 +174,8 @@ def test_email_rejects_invalid_email():
     error = get_error_container(exc_info.value)
     assert error.key == SchemaValidationError.FORMAT
     assert error.message == "Not a valid email address."
+    assert error.value == "not-an-email"
+    assert error.metadata == {"type": "email"}
 
 
 def test_url_accepts_valid_url():
@@ -173,6 +193,8 @@ def test_url_rejects_invalid_url():
     error = get_error_container(exc_info.value)
     assert error.key == SchemaValidationError.INVALID
     assert error.message == "Not a valid URL."
+    assert error.value == "not-a-url"
+    assert error.metadata is None
 
 
 def test_one_of_accepts_valid_choice():
@@ -192,6 +214,8 @@ def test_one_of_rejects_invalid_choice():
     assert "a" in error.message
     assert "b" in error.message
     assert "c" in error.message
+    assert error.value == "d"
+    assert error.metadata == {"choices": ["a", "b", "c"]}
 
 
 @pytest.mark.parametrize(
@@ -207,27 +231,51 @@ def test_range_accepts_valid_values(validator, value):
 
 
 @pytest.mark.parametrize(
-    "validator,value,error_type",
+    "validator,value,error_type,expected_metadata",
     [
         (
             validators.Range(min=1),
             0,
             SchemaValidationError.MIN_VALUE,
+            {
+                "minimum": 1,
+                "maximum": None,
+                "minimum_inclusive": True,
+                "maximum_inclusive": True,
+            },
         ),
         (
             validators.Range(max=10),
             11,
             SchemaValidationError.MAX_VALUE,
+            {
+                "minimum": None,
+                "maximum": 10,
+                "minimum_inclusive": True,
+                "maximum_inclusive": True,
+            },
         ),
         (
             validators.Range(min=1, max=10),
             0,
             SchemaValidationError.MIN_OR_MAX_VALUE,
+            {
+                "minimum": 1,
+                "maximum": 10,
+                "minimum_inclusive": True,
+                "maximum_inclusive": True,
+            },
         ),
         (
             validators.Range(min=1, max=10),
             11,
             SchemaValidationError.MIN_OR_MAX_VALUE,
+            {
+                "minimum": 1,
+                "maximum": 10,
+                "minimum_inclusive": True,
+                "maximum_inclusive": True,
+            },
         ),
     ],
 )
@@ -235,9 +283,12 @@ def test_range_rejects_invalid_values(
     validator,
     value,
     error_type,
+    expected_metadata,
 ):
     with pytest.raises(ValidationError) as exc_info:
         validator(value)
 
     error = get_error_container(exc_info.value)
     assert error.key == error_type
+    assert error.value == value
+    assert error.metadata == expected_metadata
