@@ -193,7 +193,9 @@ class Date(original_fields.Date, MixinField):
     error_mapping: dict[str, MarshmallowErrorContainer] = {
         "invalid": MarshmallowErrorContainer(SchemaValidationError.INVALID, "Not a valid date."),
         "format": MarshmallowErrorContainer(
-            SchemaValidationError.FORMAT, "'{input}' cannot be formatted as a date."
+            SchemaValidationError.FORMAT,
+            "'{input}' cannot be formatted as a date.",
+            metadata={"type": "date"},
         ),
     }
 
@@ -207,7 +209,9 @@ class DateTime(original_fields.DateTime, MixinField):
             SchemaValidationError.INVALID, "Not a valid datetime."
         ),
         "format": MarshmallowErrorContainer(
-            SchemaValidationError.FORMAT, "'{input}' cannot be formatted as a datetime."
+            SchemaValidationError.FORMAT,
+            "'{input}' cannot be formatted as a datetime.",
+            metadata={"type": "datetime"},
         ),
     }
 
@@ -276,6 +280,7 @@ class Enum(MixinField):
                 self.enum_mapping[enum_value] = e
 
         self.choices_text = ", ".join(possible_choices)
+        self.choices = possible_choices
         # Set the enum metadata
         self.metadata["enum"] = possible_choices
 
@@ -312,11 +317,15 @@ class Enum(MixinField):
         # If the value isn't a string, we know
         # it can't be a StrEnum
         if not isinstance(val, str):
-            raise self.make_error("unknown", choices=self.choices_text)
+            error = self.make_error("unknown", choices=self.choices_text)
+            error.args[0][0].metadata = {"choices": self.choices}
+            raise error
 
         enum_type = self.enum_mapping.get(val)
         if not enum_type:
-            raise self.make_error("unknown", choices=self.choices_text)
+            error = self.make_error("unknown", choices=self.choices_text)
+            error.args[0][0].metadata = {"choices": self.choices}
+            raise error
 
         return enum_type(val)
 
@@ -343,7 +352,9 @@ class Time(MixinField, original_fields.Time):
             SchemaValidationError.INVALID, "Not a valid time."
         ),
         "format": MarshmallowErrorContainer(
-            SchemaValidationError.FORMAT, "'{input}' cannot be formatted as a time."
+            SchemaValidationError.FORMAT,
+            "'{input}' cannot be formatted as a time.",
+            metadata={"type": "time"},
         ),
     }
 

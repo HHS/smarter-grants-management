@@ -202,7 +202,7 @@ class WordLimit(validators.Validator):
 
 class Email(validators.Email):
     EMAIL_ERROR = MarshmallowErrorContainer(
-        SchemaValidationError.FORMAT, "Not a valid email address."
+        SchemaValidationError.FORMAT, "Not a valid email address.", metadata={"type": "email"}
     )
 
     def get_openapi_metadata(self) -> dict[str, typing.Any]:
@@ -280,8 +280,8 @@ class Range(validators.Range):
                 metadata={
                     "minimum": self.min,
                     "maximum": self.max,
-                    "minimum_exclusive": self.min_inclusive,
-                    "maximum_exclusive": self.max_inclusive,
+                    "minimum_inclusive": self.min_inclusive,
+                    "maximum_inclusive": self.max_inclusive,
                 },
             )
         ]

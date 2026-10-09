@@ -175,7 +175,7 @@ def test_email_rejects_invalid_email():
     assert error.key == SchemaValidationError.FORMAT
     assert error.message == "Not a valid email address."
     assert error.value == "not-an-email"
-    assert error.metadata is None
+    assert error.metadata == {"type": "email"}
 
 
 def test_url_accepts_valid_url():
@@ -240,8 +240,8 @@ def test_range_accepts_valid_values(validator, value):
             {
                 "minimum": 1,
                 "maximum": None,
-                "minimum_exclusive": True,
-                "maximum_exclusive": True,
+                "minimum_inclusive": True,
+                "maximum_inclusive": True,
             },
         ),
         (
@@ -251,8 +251,8 @@ def test_range_accepts_valid_values(validator, value):
             {
                 "minimum": None,
                 "maximum": 10,
-                "minimum_exclusive": True,
-                "maximum_exclusive": True,
+                "minimum_inclusive": True,
+                "maximum_inclusive": True,
             },
         ),
         (
@@ -262,8 +262,8 @@ def test_range_accepts_valid_values(validator, value):
             {
                 "minimum": 1,
                 "maximum": 10,
-                "minimum_exclusive": True,
-                "maximum_exclusive": True,
+                "minimum_inclusive": True,
+                "maximum_inclusive": True,
             },
         ),
         (
@@ -273,8 +273,8 @@ def test_range_accepts_valid_values(validator, value):
             {
                 "minimum": 1,
                 "maximum": 10,
-                "minimum_exclusive": True,
-                "maximum_exclusive": True,
+                "minimum_inclusive": True,
+                "maximum_inclusive": True,
             },
         ),
     ],

@@ -137,6 +137,11 @@ def relational_validation(
                         MarshmallowErrorContainer(
                             SchemaValidationError.INVALID_COMPARISON,
                             message,
+                            metadata={
+                                "left": left_field,
+                                "right": right_field,
+                                "operator": operator.value,
+                            },
                         )
                     ]
                 )

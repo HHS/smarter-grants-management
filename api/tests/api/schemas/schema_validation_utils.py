@@ -47,7 +47,7 @@ INVALID_SPECIAL_DECIMAL = MarshmallowErrorContainer(
     "Special numeric values (nan or infinity) are not permitted.",
 )
 INVALID_EMAIL = MarshmallowErrorContainer(
-    SchemaValidationError.FORMAT, "Not a valid email address."
+    SchemaValidationError.FORMAT, "Not a valid email address.", metadata={"type": "email"}
 )
 INVALID_FILE = MarshmallowErrorContainer(SchemaValidationError.INVALID, "Not a valid file.")
 UNKNOWN_FIELD = MarshmallowErrorContainer(SchemaValidationError.UNKNOWN, "Unknown field.")
@@ -71,7 +71,9 @@ def get_enum_error_msg(*enums: type[Enum]):
         possible_values.extend([e.value for e in enum])
 
     return MarshmallowErrorContainer(
-        SchemaValidationError.INVALID_CHOICE, f"Must be one of: {', '.join(possible_values)}."
+        SchemaValidationError.INVALID_CHOICE,
+        f"Must be one of: {', '.join(possible_values)}.",
+        metadata={"choices": possible_values},
     )
 
 
@@ -167,8 +169,8 @@ def _range_metadata(min: int | None, max: int | None):
     return {
         "minimum": min,
         "maximum": max,
-        "minimum_exclusive": True,
-        "maximum_exclusive": True,
+        "minimum_inclusive": True,
+        "maximum_inclusive": True,
     }
 
 
