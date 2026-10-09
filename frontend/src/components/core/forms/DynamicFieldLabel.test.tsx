@@ -41,7 +41,10 @@ describe("DynamicFieldLabel", () => {
       />,
     );
 
-    expect(screen.getByText("Helpful hint text")).toBeInTheDocument();
+    expect(screen.getByText("Helpful hint text")).toHaveAttribute(
+      "id",
+      "description-for-test",
+    );
   });
 
   it("hides the description when labelType is 'hide-helper-text'", () => {
