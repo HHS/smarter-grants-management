@@ -27,9 +27,9 @@ export const createOpportunityAction = async (
     purpose_statement: formData.get("purposeStatement") as string,
     category: formData.get("category") as string,
     category_explanation: formData.get("categoryExplanation") as string,
-    assistance_listing_number: formData.get(
-      "assistanceListingNumber",
-    ) as string,
+    assistance_listing_number: [
+      formData.get("assistanceListingNumber") as string,
+    ],
   };
 
   let createOpportunityResponse;

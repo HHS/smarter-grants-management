@@ -35,7 +35,7 @@ class AnnouncementCreateRequest(BaseModel):
     purpose_statement: str
     category: AnnouncementCategory
     category_explanation: str | None = None
-    assistance_listing_number: str
+    assistance_listing_number: list[str]
 
 
 def check_announcement_number_exists(db_session: db.Session, announcement_number: str) -> None:
@@ -53,12 +53,16 @@ def check_announcement_number_exists(db_session: db.Session, announcement_number
 def create_announcement(db_session: db.Session, user: User, json_data: dict) -> Announcement:
     request = AnnouncementCreateRequest(**json_data)
 
+    if len(request.assistance_listing_number) != len(set(request.assistance_listing_number)):
+        raise_flask_error(
+            422,
+            message="A duplicate was found in the list of Assistance Listing Numbers",
+        )
+
     if not has_access(user, None, "create"):
         raise_flask_error(403, "User does not have access to create an announcement")
 
     check_announcement_number_exists(db_session, request.announcement_number)
-
-    assistance_listing = get_assistance_listing(db_session, request.assistance_listing_number)
 
     announcement = Announcement(
         announcement_id=uuid.uuid4(),
@@ -71,12 +75,14 @@ def create_announcement(db_session: db.Session, user: User, json_data: dict) -> 
     )
     db_session.add(announcement)
 
-    announcement_assistance_listing = AnnouncementAssistanceListing(
-        announcement_assistance_listing_id=uuid.uuid4(),
-        announcement=announcement,
-        assistance_listing=assistance_listing,
-    )
-    db_session.add(announcement_assistance_listing)
+    for assistance_listing_number in request.assistance_listing_number:
+        assistance_listing = get_assistance_listing(db_session, assistance_listing_number)
+        announcement_assistance_listing = AnnouncementAssistanceListing(
+            announcement_assistance_listing_id=uuid.uuid4(),
+            announcement=announcement,
+            assistance_listing=assistance_listing,
+        )
+        db_session.add(announcement_assistance_listing)
 
     logger.info("Created announcement", extra={"announcement_id": announcement.announcement_id})
 

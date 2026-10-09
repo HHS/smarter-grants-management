@@ -29,7 +29,7 @@ def announcement_request(assistance_listing):
         "purpose_statement": "Test the Announcement API.",
         "category": AnnouncementCategory.DISCRETIONARY.value,
         "category_explanation": None,
-        "assistance_listing_number": assistance_listing.assistance_listing_number,
+        "assistance_listing_number": [assistance_listing.assistance_listing_number],
     }
 
 

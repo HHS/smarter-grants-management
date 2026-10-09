@@ -6,7 +6,7 @@ export interface CreateAnnouncementRecord {
   purpose_statement: string;
   category: string;
   category_explanation?: string;
-  assistance_listing_number: string;
+  assistance_listing_number: string[];
 }
 
 export type FieldValidationErrors = {

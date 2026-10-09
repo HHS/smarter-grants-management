@@ -1644,10 +1644,14 @@ components:
           description: Explanation of the category (required when category is 'other')
           example: Competitive research grant
         assistance_listing_number:
-          type: string
-          maxLength: 6
-          description: The Assistance Listing Number
-          example: 12.ABC
+          type: array
+          items:
+            type: string
+            maxLength: 6
+          description: The Assistance Listing Numbers
+          example:
+          - 10.415
+          - 10.420
       required:
       - announcement_number
       - announcement_title
