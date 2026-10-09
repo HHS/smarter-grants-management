@@ -19,6 +19,8 @@ from src.constants.lookup_constants import (
     ApplicationPackageOpenToApplicant,
     FundingCategory,
     FundingInstrument,
+    PerformancePeriodType,
+    SourceSelectionMethod,
 )
 from src.pagination.pagination_schema import generate_pagination_schema
 
@@ -292,13 +294,6 @@ class AnnouncementSummarySchema(Schema):
             "example": "All types of domestic applicants are eligible to apply",
         },
     )
-    agency_contact_description = fields.String(
-        allow_none=True,
-        metadata={
-            "description": "Information regarding contacting the agency who owns the announcement",
-            "example": "For more information, reach out to Jane Smith at agency US-ABC",
-        },
-    )
     agency_email_address = fields.String(
         allow_none=True,
         metadata={
@@ -400,6 +395,111 @@ class AnnouncementSchema(Schema):
         fields.Nested(AnnouncementAttachmentSchema),
         metadata={
             "description": "List of announcement attachments associated with the announcement - does not include download path"
+        },
+    )
+
+    is_budget_period_renewal = fields.Boolean(
+        required=False,
+        allow_none=True,
+        metadata={"description": "Whether this announcement is a rewnewal copy"},
+    )
+
+    source_announcement_id = fields.UUID(
+        required=False,
+        allow_none=True,
+        metadata={
+            "description": "For renewal, identifies the immediate source of the announcement."
+        },
+    )
+
+    original_announcement_number = fields.String(
+        required=False,
+        allow_none=True,
+        metadata={"description": "Read-only field populated when an announcement is copied"},
+    )
+
+    announcement_type_id = fields.Integer(
+        required=True,
+        metadata={
+            "description": "Specifies whether the announcement is Discretionary, Non-Discretionary, or Special Instance"
+        },
+    )
+
+    source_selection_method = fields.Enum(
+        SourceSelectionMethod,
+        required=False,
+        allow_none=True,
+        metadata={
+            "description": "For Special Selection announcements, this will be Single Source or Sole Source"
+        },
+    )
+
+    cost_sharing_percentage = fields.Integer(
+        required=False,
+        allow_none=True,
+        validators=validators.Range(min=0, max=100),
+        metadata={
+            "description": "Whole number representing a percentage of total project costs to be shared."
+        },
+    )
+
+    allows_cash_contributions = fields.Boolean(required=False, allow_none=True)
+
+    allows_in_kind_contributions = fields.Boolean(required=False, allow_none=True)
+
+    performance_period_types = fields.Enum(
+        PerformancePeriodType,
+        required=False,
+        allow_none=True,
+        metadata={"description": "Select between Single Year and Multiple Years"},
+    )
+
+    performance_period_years = fields.Integer(
+        required=False,
+        allow_none=True,
+        validators=validators.Range(min=1),
+        metadata={"description": "Always 1 for Single Year and greater than 1 for Multiple Years."},
+    )
+
+    budget_period_months = fields.Integer(
+        required=False,
+        allow_none=True,
+        validators=validators.Range(min=1),
+        metadata={
+            "description": "A positive integer to determine length of budget period. Does not need to be divisible into 12."
+        },
+    )
+
+    agency_contact_name = fields.String(
+        required=False,
+        allow_none=True,
+        metadata={
+            "description": "Full name for the person to contact at the agency regarding the announcement."
+        },
+    )
+
+    agency_contact_phone = fields.String(
+        required=False,
+        allow_none=True,
+        metadata={"description": "Contact phone number for the agency who owns the announcement."},
+    )
+
+    agency_email_address = fields.String(
+        required=False,
+        allow_none=True,
+        validators=validators.Email(),
+        metadata={
+            "description": "The contact email of the agency who owns the announcement",
+            "example": "fake_email@grants.gov",
+        },
+    )
+
+    agency_email_address_description = fields.String(
+        required=False,
+        allow_none=True,
+        metadata={
+            "description": "The text for the link to the agency email address",
+            "example": "Click me to email the agency",
         },
     )
 
@@ -597,15 +697,6 @@ class AnnouncementSummaryBaseRequestSchema(Schema):
         },
     )
 
-    agency_contact_description = fields.String(
-        required=True,
-        allow_none=True,
-        validate=validators.Length(max=1000),
-        metadata={
-            "description": "Information regarding contacting the agency who owns the announcement",
-            "example": "For more information, reach out to Jane Smith at agency US-ABC",
-        },
-    )
     agency_email_address = fields.String(
         required=True,
         allow_none=True,
@@ -748,6 +839,168 @@ class AnnouncementCreateRequestSchema(Schema):
         },
     )
 
+    is_budget_period_renewal = fields.Boolean(
+        required=False,
+        allow_none=True,
+        metadata={"description": "Whether this announcement is a rewnewal copy"},
+    )
+
+    source_announcement_id = fields.UUID(
+        required=False,
+        allow_none=True,
+        metadata={
+            "description": "For renewal, identifies the immediate source of the announcement."
+        },
+    )
+
+    original_announcement_number = fields.String(
+        required=False,
+        allow_none=True,
+        metadata={"description": "Read-only field populated when an announcement is copied"},
+    )
+
+    announcement_type_id = fields.Integer(
+        required=True,
+        metadata={
+            "description": "Specifies whether the announcement is Discretionary, Non-Discretionary, or Special Instance"
+        },
+    )
+
+    source_selection_method = fields.Enum(
+        SourceSelectionMethod,
+        required=False,
+        allow_none=True,
+        metadata={
+            "description": "For Special Selection announcements, this will be Single Source or Sole Source"
+        },
+    )
+
+    cost_sharing_percentage = fields.Integer(
+        required=False,
+        allow_none=True,
+        validators=validators.Range(min=0, max=100),
+        metadata={
+            "description": "Whole number representing a percentage of total project costs to be shared."
+        },
+    )
+
+    allows_cash_contributions = fields.Boolean(required=False, allow_none=True)
+
+    allows_in_kind_contributions = fields.Boolean(required=False, allow_none=True)
+
+    performance_period_types = fields.Enum(
+        PerformancePeriodType,
+        required=False,
+        allow_none=True,
+        metadata={"description": "Select between Single Year and Multiple Years"},
+    )
+
+    performance_period_years = fields.Integer(
+        required=False,
+        allow_none=True,
+        validators=validators.Range(min=1),
+        metadata={"description": "Always 1 for Single Year and greater than 1 for Multiple Years."},
+    )
+
+    budget_period_months = fields.Integer(
+        required=False,
+        allow_none=True,
+        validators=validators.Range(min=1),
+        metadata={
+            "description": "A positive integer to determine length of budget period. Does not need to be divisible into 12."
+        },
+    )
+
+    agency_contact_name = fields.String(
+        required=False,
+        allow_none=True,
+        metadata={
+            "description": "Full name for the person to contact at the agency regarding the announcement."
+        },
+    )
+
+    agency_contact_phone = fields.String(
+        required=False,
+        allow_none=True,
+        metadata={"description": "Contact phone number for the agency who owns the announcement."},
+    )
+
+    agency_email_address = fields.String(
+        required=False,
+        allow_none=True,
+        validators=validators.Email(),
+        metadata={
+            "description": "The contact email of the agency who owns the announcement",
+            "example": "fake_email@grants.gov",
+        },
+    )
+
+    agency_email_address_description = fields.String(
+        required=False,
+        allow_none=True,
+        metadata={
+            "description": "The text for the link to the agency email address",
+            "example": "Click me to email the agency",
+        },
+    )
+
+    @validates_schema
+    def validate_renewal_source(self, data: dict, **kwargs: dict) -> None:
+        if data.get("is_budget_period_renewal") == True:
+            source = data.get("source_announcement_id")
+            if source.strip() == "":
+                raise ValidationError(
+                    [
+                        MarshmallowErrorContainer(
+                            SchemaValidationError.REQUIRED,
+                            "Source Announcement Id is required for renewals.",
+                        )
+                    ],
+                    "source_announcement_id",
+                )
+
+    @validates_schema
+    def validate_period_years(self, data: dict, **kwargs: dict) -> None:
+        years = data.get("performance_period_years")
+        type = data.get("performance_period_type")
+        if type == PerformancePeriodType.SINGLE_YEAR:
+            if years != 1:
+                raise ValidationError(
+                    [
+                        MarshmallowErrorContainer(
+                            SchemaValidationError.REQUIRED,
+                            "Performance Period Years must be 1 when Performance Period is Single Year",
+                        )
+                    ],
+                    "performance_period_years",
+                )
+        elif type == PerformancePeriodType.MULTIPLE_YEARS:
+            if not (years > 1):
+                raise ValidationError(
+                    [
+                        MarshmallowErrorContainer(
+                            SchemaValidationError.REQUIRED,
+                            "Performance Period Years must be greater than 1 when Performance Period is Multiple Years",
+                        )
+                    ],
+                    "performance_period_years",
+                )
+
+    @validates_schema
+    def validate_source_selection_method(self, data: dict, **kwargs: dict) -> None:
+        if data.get("announcement_type_id") == 3:
+            method = data.get("source_selection_method") or ""
+            if method.strip() == "":
+                raise ValidationError(
+                    [
+                        MarshmallowErrorContainer(
+                            SchemaValidationError.REQUIRED,
+                            "Source Selection Method is required when Announcement Type is 'Special Instance'.",
+                        )
+                    ],
+                    "source_selection_method",
+                )
+
     @validates_schema
     def validate_category_explanation(self, data: dict, **kwargs: dict) -> None:
         if data.get("category") == AnnouncementCategory.OTHER:
@@ -804,6 +1057,139 @@ class AnnouncementUpdateRequestSchema(Schema):
             "description": "Explanation of the category (required when category is 'other')",
         },
     )
+
+    is_budget_period_renewal = fields.Boolean(
+        required=False,
+        allow_none=True,
+        metadata={"description": "Whether this announcement is a rewnewal copy"},
+    )
+
+    announcement_type_id = fields.Integer(
+        required=True,
+        metadata={
+            "description": "Specifies whether the announcement is Discretionary, Non-Discretionary, or Special Instance"
+        },
+    )
+
+    source_selection_method = fields.Enum(
+        SourceSelectionMethod,
+        required=False,
+        allow_none=True,
+        metadata={
+            "description": "For Special Selection announcements, this will be Single Source or Sole Source"
+        },
+    )
+
+    cost_sharing_percentage = fields.Integer(
+        required=False,
+        allow_none=True,
+        validators=validators.Range(min=0, max=100),
+        metadata={
+            "description": "Whole number representing a percentage of total project costs to be shared."
+        },
+    )
+
+    allows_cash_contributions = fields.Boolean(required=False, allow_none=True)
+
+    allows_in_kind_contributions = fields.Boolean(required=False, allow_none=True)
+
+    performance_period_types = fields.Enum(
+        PerformancePeriodType,
+        required=False,
+        allow_none=True,
+        metadata={"description": "Select between Single Year and Multiple Years"},
+    )
+
+    performance_period_years = fields.Integer(
+        required=False,
+        allow_none=True,
+        validators=validators.Range(min=1),
+        metadata={"description": "Always 1 for Single Year and greater than 1 for Multiple Years."},
+    )
+
+    budget_period_months = fields.Integer(
+        required=False,
+        allow_none=True,
+        validators=validators.Range(min=1),
+        metadata={
+            "description": "A positive integer to determine length of budget period. Does not need to be divisible into 12."
+        },
+    )
+
+    agency_contact_name = fields.String(
+        required=False,
+        allow_none=True,
+        metadata={
+            "description": "Full name for the person to contact at the agency regarding the announcement."
+        },
+    )
+
+    agency_contact_phone = fields.String(
+        required=False,
+        allow_none=True,
+        metadata={"description": "Contact phone number for the agency who owns the announcement."},
+    )
+
+    agency_email_address = fields.String(
+        required=False,
+        allow_none=True,
+        validators=validators.Email(),
+        metadata={
+            "description": "The contact email of the agency who owns the announcement",
+            "example": "fake_email@grants.gov",
+        },
+    )
+
+    agency_email_address_description = fields.String(
+        required=False,
+        allow_none=True,
+        metadata={
+            "description": "The text for the link to the agency email address",
+            "example": "Click me to email the agency",
+        },
+    )
+
+    @validates_schema
+    def validate_period_years(self, data: dict, **kwargs: dict) -> None:
+        years = data.get("performance_period_years")
+        type = data.get("performance_period_type")
+        if type == PerformancePeriodType.SINGLE_YEAR:
+            if years != 1:
+                raise ValidationError(
+                    [
+                        MarshmallowErrorContainer(
+                            SchemaValidationError.REQUIRED,
+                            "Performance Period Years must be 1 when Performance Period is Single Year",
+                        )
+                    ],
+                    "performance_period_years",
+                )
+        elif type == PerformancePeriodType.MULTIPLE_YEARS:
+            if not (years > 1):
+                raise ValidationError(
+                    [
+                        MarshmallowErrorContainer(
+                            SchemaValidationError.REQUIRED,
+                            "Performance Period Years must be greater than 1 when Performance Period is Multiple Years",
+                        )
+                    ],
+                    "performance_period_years",
+                )
+
+    @validates_schema
+    def validate_source_selection_method(self, data: dict, **kwargs: dict) -> None:
+        if data.get("announcement_type_id") == 3:
+            method = data.get("source_selection_method") or ""
+            if method.strip() == "":
+                raise ValidationError(
+                    [
+                        MarshmallowErrorContainer(
+                            SchemaValidationError.REQUIRED,
+                            "Source Selection Method is required when Announcement Type is 'Special Instance'.",
+                        )
+                    ],
+                    "source_selection_method",
+                )
 
     @validates_schema
     def validate_category_explanation(self, data: dict, **kwargs: dict) -> None:
