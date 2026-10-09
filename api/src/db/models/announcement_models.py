@@ -246,7 +246,7 @@ class AnnouncementSummary(GrantorSchemaTable, TimestampMixin):
     is_cost_sharing: Mapped[bool]
     is_forecast: Mapped[bool]
 
-    post_timestamp: Mapped[datetime]
+    post_timestamp: Mapped[datetime | None]
     close_timestamp: Mapped[datetime | None]
     close_timestamp_description: Mapped[str | None]
     archive_timestamp: Mapped[datetime | None]

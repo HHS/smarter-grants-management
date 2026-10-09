@@ -36,6 +36,14 @@ export const toDynamicAwardRecommendationEndpoint = (
   };
 };
 
+export const fetchAssistanceListingsEndpoint = {
+  basePath: environment.API_URL,
+  version: "v1",
+  namespace: "assistance-listings",
+  method: "POST" as ApiMethod,
+  requiresAuth: true,
+};
+
 export const fetchFormsEndpoint = {
   basePath: environment.API_URL,
   version: "v1",

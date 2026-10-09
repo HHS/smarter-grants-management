@@ -1,10 +1,9 @@
 "use client";
 
-import { AnnouncementAttachmentUploadInput } from "src/app/[locale]/announcement/[id]/edit/_components/AnnouncementAttachmentUploadInput";
 import {
   announcementEditFormAction,
   type AnnouncementEditValidationErrors,
-} from "src/app/[locale]/announcement/[id]/edit/actions";
+} from "src/app/[locale]/announcement/[id]/summary/[summaryId]/actions";
 import {
   categoryOptions,
   eligbilityValueToGroup,
@@ -13,6 +12,7 @@ import {
 } from "src/constants/announcement";
 import { AnnouncementAttachment } from "src/types/announcement/announcementAttachmentTypes";
 import { AnnouncementEditFormValues } from "src/utils/announcementEditFormConfig";
+import { getConfiguredDayJs } from "src/utils/dateUtil";
 import { getNumericAmountFromString } from "src/utils/formatCurrencyUtil";
 
 import { useTranslations } from "next-intl";
@@ -42,6 +42,34 @@ import {
   CommonWordLimit,
 } from "src/components/core/forms/CommonFormFields";
 import { DynamicFieldLabel } from "src/components/core/forms/DynamicFieldLabel";
+import { AnnouncementAttachmentUploadInput } from "src/components/SummaryEditView/AnnouncementAttachmentUploadInput";
+
+type TimestampFieldKeys =
+  "post_timestamp" | "close_timestamp" | "close_timestamp_description";
+
+const timestampFieldMap = {
+  forecast: {
+    post_timestamp: "forecasted_post_timestamp",
+    close_timestamp: "forecasted_close_timestamp",
+    close_timestamp_description: "forecasted_close_timestamp_description",
+  },
+  synopsis: {
+    post_timestamp: "post_timestamp",
+    close_timestamp: "close_timestamp",
+    close_timestamp_description: "close_timestamp_description",
+  },
+} as const;
+
+const getTimestampFieldForSummaryType = (
+  isForecast: boolean,
+  fieldName:
+    "post_timestamp" | "close_timestamp" | "close_timestamp_description",
+):
+  | (typeof timestampFieldMap.forecast)[TimestampFieldKeys]
+  | (typeof timestampFieldMap.synopsis)[TimestampFieldKeys] => {
+  const key = isForecast ? "forecast" : "synopsis";
+  return timestampFieldMap[key][fieldName];
+};
 
 function formatNumber(value: string): string {
   const raw = value.replace(/,/g, "");
@@ -93,10 +121,12 @@ function EligibilityCheckboxGroup({
 
 type AnnouncementEditFormProps = {
   announcementId: string;
-  announcementSummaryId: string;
+  announcementSummaryId?: string;
   isForecast?: boolean;
   initialValues: AnnouncementEditFormValues;
   initialAttachments?: AnnouncementAttachment[];
+  disable?: boolean;
+  createMode?: boolean;
 };
 
 export default function AnnouncementEditForm({
@@ -105,6 +135,8 @@ export default function AnnouncementEditForm({
   isForecast = false,
   initialValues,
   initialAttachments = [],
+  disable = false,
+  createMode = false,
 }: AnnouncementEditFormProps) {
   const t = useTranslations("OpportunityEdit");
   const formRef = useRef<HTMLFormElement>(null);
@@ -121,9 +153,17 @@ export default function AnnouncementEditForm({
   const [selectedEligibility, setSelectedEligibility] = useState<string[]>(
     initialValues.applicant_types,
   );
-  const [formState, formAction] = useActionState(announcementEditFormAction, {
-    validationErrors: {},
-  });
+  const [formState, formAction] = useActionState(
+    announcementEditFormAction.bind(
+      null,
+      isForecast,
+      createMode,
+      announcementId,
+    ),
+    {
+      validationErrors: {},
+    },
+  );
 
   //--- Validations for Award Minimum, Award Maximum and Total Program Funding ---
   const [frontendErrors, setFrontendErrors] =
@@ -207,6 +247,27 @@ export default function AnnouncementEditForm({
     }
   };
 
+  const validatePublishDate = (value: string | undefined) => {
+    if (!value) {
+      // required-ness is handled separately by the "Enter a publish date." check
+      setSingleFrontendError("post_timestamp", null);
+      return;
+    }
+
+    const dayjs = getConfiguredDayJs();
+    const publish = dayjs(value, "MM/DD/YYYY", true);
+    const today = dayjs().startOf("day");
+
+    if (publish.isValid() && publish.isBefore(today)) {
+      setSingleFrontendError(
+        "post_timestamp",
+        t("validationErrors.publishDatePast"),
+      );
+    } else {
+      setSingleFrontendError("post_timestamp", null);
+    }
+  };
+
   // Shared toggle handler for eligibility checkboxes.
   function handleEligibilityToggle(value: string) {
     const next = selectedEligibility.includes(value)
@@ -215,15 +276,37 @@ export default function AnnouncementEditForm({
     setSelectedEligibility(next);
   }
 
+  // Once a field has been live-validated on the frontend, that result is
+  // fresher than whatever the last form submission returned from the
+  // server, so it takes priority for the inline field error - otherwise a
+  // stale server error for a field the user has since corrected would
+  // never clear until the next submit. Fields the user hasn't touched
+  // locally still fall back to the server's validationErrors.
+  const displayedErrors: AnnouncementEditValidationErrors = {
+    ...formState.validationErrors,
+    ...frontendErrors,
+  };
+
   function getFieldError(
     fieldName: keyof AnnouncementEditValidationErrors,
   ): string | undefined {
-    let fieldErrors = formState.validationErrors?.[fieldName];
-    if (!fieldErrors) {
-      fieldErrors = frontendErrors?.[fieldName];
-    }
-    return fieldErrors?.join(" ");
+    return displayedErrors[fieldName]?.join(" ");
   }
+
+  // The summary banner below only ever reflects fields the server actually
+  // flagged on the last submit - it overlays live frontend corrections onto
+  // those same fields (so a resolved field drops out of the banner) rather
+  // than pulling in fields that have only ever been validated locally.
+  const summaryErrors: AnnouncementEditValidationErrors = {
+    ...formState.validationErrors,
+  };
+  (
+    Object.keys(summaryErrors) as (keyof AnnouncementEditValidationErrors)[]
+  ).forEach((fieldName) => {
+    if (frontendErrors[fieldName] !== undefined) {
+      summaryErrors[fieldName] = frontendErrors[fieldName];
+    }
+  });
 
   if (
     formState.newAnnouncementSummaryId &&
@@ -250,9 +333,7 @@ export default function AnnouncementEditForm({
       id="announcement-edit-form"
       onSubmit={(e) => {
         e.preventDefault();
-        const formData = new FormData(e.currentTarget);
-        formData.set("submitType", "saveAndExit");
-        startTransition(() => formAction(formData));
+        startTransition(() => formAction(new FormData(e.currentTarget)));
       }}
       noValidate
     >
@@ -299,8 +380,7 @@ export default function AnnouncementEditForm({
         </div>
       ) : null}
 
-      {formState.validationErrors &&
-      Object.keys(formState.validationErrors).length > 0 ? (
+      {Object.values(summaryErrors).flat().length > 0 ? (
         <div className="margin-top-2">
           <Alert
             type="error"
@@ -310,13 +390,13 @@ export default function AnnouncementEditForm({
             <span className="display-block margin-top-1 margin-bottom-1">
               {t("content.alerts.validationErrorBody")}
             </span>
-            {Object.values(formState.validationErrors)
-              .flat()
-              .map((error, i) => (
+            {Array.from(new Set(Object.values(summaryErrors).flat())).map(
+              (error, i) => (
                 <span key={i} className="display-block">
                   {error}
                 </span>
-              ))}
+              ),
+            )}
           </Alert>
         </div>
       ) : null}
@@ -326,6 +406,7 @@ export default function AnnouncementEditForm({
         className="margin-top-4 simpler-page-anchor-offset"
       >
         <h2 className="margin-top-0 margin-bottom-4 font-heading-xl">
+          {isForecast ? "Forecast" : "Synopsis"} -{" "}
           {t("sections.fundingDetails")}
         </h2>
         <p className="margin-top-0 margin-bottom-4 font-sans-lg text-base-dark">
@@ -348,6 +429,7 @@ export default function AnnouncementEditForm({
                   </ErrorMessage>
                 ) : null}
                 <Select
+                  disabled={disable}
                   id="funding_instruments"
                   name="funding_instruments"
                   defaultValue={initialValues.funding_instruments}
@@ -372,6 +454,7 @@ export default function AnnouncementEditForm({
                 <div className="grid-row">
                   <div className="grid-col-6">
                     <Radio
+                      disabled={disable}
                       id="cost-sharing-yes"
                       name="is_cost_sharing"
                       label={t("labels.yes")}
@@ -381,6 +464,7 @@ export default function AnnouncementEditForm({
                   </div>
                   <div className="grid-col-6">
                     <Radio
+                      disabled={disable}
                       id="cost-sharing-no"
                       name="is_cost_sharing"
                       label={t("labels.no")}
@@ -408,6 +492,7 @@ export default function AnnouncementEditForm({
                   </ErrorMessage>
                 ) : null}
                 <Select
+                  disabled={disable}
                   id="funding_categories"
                   name="funding_categories"
                   value={fundingCategory}
@@ -430,6 +515,7 @@ export default function AnnouncementEditForm({
           {fundingCategory === "other" && (
             <div className="width-full">
               <CommonCharacterCount
+                disabled={disable}
                 isTextArea={true}
                 labelText={t("labels.fundingCategoryExplanation")}
                 description={t("content.fundingCategoryExplanationHint")}
@@ -456,6 +542,7 @@ export default function AnnouncementEditForm({
                   </ErrorMessage>
                 ) : null}
                 <TextInput
+                  disabled={disable}
                   id="expected_number_of_awards"
                   name="expected_number_of_awards"
                   type="text"
@@ -480,6 +567,7 @@ export default function AnnouncementEditForm({
                   </ErrorMessage>
                 ) : null}
                 <TextInput
+                  disabled={disable}
                   id="estimated_total_program_funding"
                   name="estimated_total_program_funding"
                   type="text"
@@ -538,41 +626,111 @@ export default function AnnouncementEditForm({
 
           <div className="grid-row grid-gap-lg">
             <div className="tablet:grid-col-6">
-              <FormGroup error={!!getFieldError("post_timestamp")}>
+              <FormGroup
+                error={
+                  !!getFieldError(
+                    getTimestampFieldForSummaryType(
+                      isForecast,
+                      "post_timestamp",
+                    ),
+                  )
+                }
+              >
                 <DynamicFieldLabel
-                  idFor="post_timestamp"
+                  idFor={getTimestampFieldForSummaryType(
+                    isForecast,
+                    "post_timestamp",
+                  )}
                   title={t("labels.publishDate")}
                   required
                   description={t("content.publishDateHint")}
                 />
-                {getFieldError("post_timestamp") ? (
-                  <ErrorMessage>{getFieldError("post_timestamp")}</ErrorMessage>
+                {getFieldError(
+                  getTimestampFieldForSummaryType(isForecast, "post_timestamp"),
+                ) ? (
+                  <ErrorMessage>
+                    {getFieldError(
+                      getTimestampFieldForSummaryType(
+                        isForecast,
+                        "post_timestamp",
+                      ),
+                    )}
+                  </ErrorMessage>
                 ) : null}
                 <DatePicker
-                  id="post_timestamp"
-                  name="post_timestamp"
-                  defaultValue={initialValues.post_timestamp}
+                  id={getTimestampFieldForSummaryType(
+                    isForecast,
+                    "post_timestamp",
+                  )}
+                  name={getTimestampFieldForSummaryType(
+                    isForecast,
+                    "post_timestamp",
+                  )}
+                  defaultValue={
+                    initialValues[
+                      getTimestampFieldForSummaryType(
+                        isForecast,
+                        "post_timestamp",
+                      )
+                    ]
+                  }
                   placeholder="mm/dd/yyyy"
+                  onChange={(value) => validatePublishDate(value)}
                   className="width-full"
                 />
               </FormGroup>
             </div>
             <div className="tablet:grid-col-6">
-              <FormGroup error={!!getFieldError("close_timestamp")}>
+              <FormGroup
+                error={
+                  !!getFieldError(
+                    getTimestampFieldForSummaryType(
+                      isForecast,
+                      "close_timestamp",
+                    ),
+                  )
+                }
+              >
                 <DynamicFieldLabel
-                  idFor="close_timestamp"
+                  idFor={getTimestampFieldForSummaryType(
+                    isForecast,
+                    "close_timestamp",
+                  )}
                   title={t("labels.closeDate")}
                   description={t("content.closeDateHint")}
                 />
-                {getFieldError("close_timestamp") ? (
+                {getFieldError(
+                  getTimestampFieldForSummaryType(
+                    isForecast,
+                    "close_timestamp",
+                  ),
+                ) ? (
                   <ErrorMessage>
-                    {getFieldError("close_timestamp")}
+                    {getFieldError(
+                      getTimestampFieldForSummaryType(
+                        isForecast,
+                        "close_timestamp",
+                      ),
+                    )}
                   </ErrorMessage>
                 ) : null}
                 <DatePicker
-                  id="close_timestamp"
-                  name="close_timestamp"
-                  defaultValue={initialValues.close_timestamp}
+                  id={getTimestampFieldForSummaryType(
+                    isForecast,
+                    "close_timestamp",
+                  )}
+                  name={getTimestampFieldForSummaryType(
+                    isForecast,
+                    "close_timestamp",
+                  )}
+                  defaultValue={
+                    initialValues[
+                      getTimestampFieldForSummaryType(
+                        isForecast,
+                        "close_timestamp",
+                      )
+                    ]
+                  }
                   placeholder="mm/dd/yyyy"
                   onChange={(value) => setCloseDate(value ?? "")}
                   className="width-full"
@@ -585,14 +743,30 @@ export default function AnnouncementEditForm({
             <div className="width-full">
               <FormGroup>
                 <DynamicFieldLabel
-                  idFor="close_timestamp_description"
+                  idFor={getTimestampFieldForSummaryType(
+                    isForecast,
+                    "close_timestamp_description",
+                  )}
                   title={t("labels.closeDateExplanation")}
                   description={t("content.closeDateExplanationHint")}
                 />
                 <Textarea
-                  id="close_timestamp_description"
-                  name="close_timestamp_description"
-                  defaultValue={initialValues.close_timestamp_description}
+                  id={getTimestampFieldForSummaryType(
+                    isForecast,
+                    "close_timestamp_description",
+                  )}
+                  name={getTimestampFieldForSummaryType(
+                    isForecast,
+                    "close_timestamp_description",
+                  )}
+                  defaultValue={
+                    initialValues[
+                      getTimestampFieldForSummaryType(
+                        isForecast,
+                        "close_timestamp_description",
+                      )
+                    ]
+                  }
                   rows={5}
                   className="width-full"
                 />
@@ -674,6 +848,7 @@ export default function AnnouncementEditForm({
             </div>
             {selectedEligibility.map((eligibility, index) => (
               <input
+                disabled={disable}
                 key={`eligibility-${index}`}
                 type="hidden"
                 name={`applicant_types[${index}]`}
@@ -858,32 +1033,17 @@ export default function AnnouncementEditForm({
       </section>
 
       <div className="display-flex flex-justify margin-top-4">
-        <div className="display-flex gap-2">
-          <Button
-            outline
-            type="button"
-            onClick={() => {
-              if (!formRef.current) return;
-              const formData = new FormData(formRef.current);
-              formData.set("submitType", "saveAndGoBack");
-              startTransition(() => formAction(formData));
-            }}
-            className="height-auto margin-0 margin-bottom-1 font-sans-sm text-bold line-height-sans-1"
-          >
-            {t("button.saveAndGoBack")}
-          </Button>
-        </div>
         <Button
           type="button"
           onClick={() => {
             if (!formRef.current) return;
-            const formData = new FormData(formRef.current);
-            formData.set("submitType", "saveAndContinue");
-            startTransition(() => formAction(formData));
+            startTransition(() =>
+              formAction(new FormData(formRef.current || undefined)),
+            );
           }}
           className="height-auto margin-0 margin-bottom-1 font-sans-sm text-bold line-height-sans-1"
         >
-          {t("button.saveAndContinue")}
+          Save
         </Button>
       </div>
     </form>

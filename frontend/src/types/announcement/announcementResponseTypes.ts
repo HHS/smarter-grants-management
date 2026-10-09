@@ -73,12 +73,15 @@ export interface AnnouncementSummaryDetail extends Summary {
 type AnnouncementSummaryUpdateBase = {
   is_cost_sharing: boolean | null;
   summary_description: string | null;
-  post_date?: string | null;
+  post_date?: string | null; // delete me
   post_timestamp?: string | null;
-  close_date?: string | null;
+  forecasted_post_timestamp?: string | null;
+  close_date?: string | null; // delete me
   close_timestamp?: string | null;
-  close_date_description?: string | null;
+  forecasted_close_timestamp?: string | null;
+  close_date_description?: string | null; // delete me
   close_timestamp_description?: string | null;
+  forecasted_close_timestamp_description?: string | null;
   expected_number_of_awards: number | null;
   estimated_total_program_funding: number | null;
   award_floor: number | null;
@@ -122,7 +125,7 @@ export type MinimalAnnouncement = {
   announcement_status?: AnnouncementStatus;
   opportunity_title: string | null;
   announcement_title?: string | null;
-  summary: MinimalSummary;
+  summary?: MinimalSummary;
   saved_to_organizations?: SavedToOrganization[];
 };
 
@@ -135,7 +138,8 @@ export interface BaseAnnouncement extends MinimalAnnouncement {
   opportunity_assistance_listings: AnnouncementAssistanceListing[]; // need to true up vs AnnouncementAssistanceListing
   opportunity_number: string;
   announcement_number?: string;
-  summary: Summary;
+  forecast_summary: AnnouncementSummaryDetail | null;
+  non_forecast_summary: AnnouncementSummaryDetail | null;
   top_level_agency_name: string | null;
   updated_at: string;
   is_draft: boolean;
@@ -149,10 +153,6 @@ export interface AnnouncementDetail extends BaseAnnouncement {
   application_packages: [ApplicationPackage] | null;
 }
 
-export interface AnnouncementApiResponse extends APIResponse {
-  data: AnnouncementDetail;
-}
-
 export interface AnnouncementSummaryDetailApiResponse extends APIResponse {
   data: AnnouncementSummaryDetail;
 }
@@ -162,17 +162,19 @@ export interface GrantorAnnouncementDetail extends Omit<
   "attachments"
 > {
   is_draft: boolean;
-  forecast_summary?: AnnouncementSummaryDetail;
-  non_forecast_summary?: AnnouncementSummaryDetail;
+  forecast_summary: AnnouncementSummaryDetail | null;
+  non_forecast_summary: AnnouncementSummaryDetail | null;
   announcement_attachments?: AnnouncementAttachment[];
 }
 
+// change to AnnouncementApiResponse
 export interface GrantorAnnouncementApiResponse extends APIResponse {
   data: GrantorAnnouncementDetail;
 }
 
-export interface PossiblySavedBaseAnnouncement extends BaseAnnouncement {
-  opportunitySaved?: boolean;
+// after a single summary is assigned - ex. for editing
+export interface AnnouncementWithActiveSummary extends GrantorAnnouncementDetail {
+  summary: AnnouncementSummaryDetail;
 }
 
 export type AnnouncementOverview = Pick<
@@ -205,3 +207,41 @@ export interface AnnouncementListItem {
   forecast_summary: AnnouncementListSummary | null;
   non_forecast_summary: AnnouncementListSummary | null;
 }
+
+// all fields in the edit form that are visible / editable
+export const EDIT_FORM_VALIDATION_FIELD_NAMES = [
+  "funding_instruments",
+  "is_cost_sharing",
+  "funding_categories",
+  "funding_category_description",
+  "expected_number_of_awards",
+  "estimated_total_program_funding",
+  "award_floor",
+  "award_ceiling",
+  "post_timestamp",
+  "forecasted_post_timestamp",
+  "close_timestamp",
+  "forecasted_close_timestamp",
+  "close_timestamp_description",
+  "forecasted_close_timestamp_description",
+  "applicant_types",
+  "applicant_eligibility_description",
+  "summary_description",
+  "additional_info_url",
+  "additional_info_url_description",
+  "agency_contact_description",
+  "agency_email_address",
+  "agency_email_address_description",
+] as const;
+
+// all fields captured in this form, including hidden fields
+export const EDIT_FORM_FIELD_NAMES = [
+  ...EDIT_FORM_VALIDATION_FIELD_NAMES,
+  "announcement_id",
+  "announcement_summary_id",
+  "is_forecast",
+  "announcement_title",
+  "category",
+] as const;
+
+export type EditFormFields = (typeof EDIT_FORM_FIELD_NAMES)[number];

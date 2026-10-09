@@ -8,12 +8,24 @@ import {
   createAnnouncementSummary,
   updateAnnouncementSummary,
 } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
+import {
+  dateToTimestamp,
+  dateToTimestampOrNull,
+  getConfiguredDayJs,
+} from "src/utils/dateUtil";
 
 import {
   announcementEditFormAction,
   saveAnnouncementEditAction,
   type OpportunityEditActionState,
 } from "./actions";
+
+// Computed relative to "today" (rather than hardcoded) so these stay valid
+// indefinitely - post_timestamp must never be in the past for a valid submission.
+const dayJs = getConfiguredDayJs();
+const today = dayJs().startOf("day");
+const validPostDate = today.add(30, "day").format("YYYY-MM-DD");
+const validCloseDate = today.add(60, "day").format("YYYY-MM-DD");
 
 jest.mock("next-intl/server", () => ({
   getTranslations: () => identity,
@@ -59,8 +71,8 @@ const successfulSummaryUpdateResponse: Awaited<
     is_forecast: false,
     summary_description: "Summary text",
     is_cost_sharing: null,
-    post_timestamp: "2026-03-11",
-    close_timestamp: "2026-04-11",
+    post_timestamp: validPostDate,
+    close_timestamp: validCloseDate,
     close_timestamp_description: null,
     archive_date: null,
     updated_at: "2026-03-11T00:00:00Z",
@@ -97,8 +109,8 @@ function buildValidFormData() {
   formData.set("opportunity_title", "Example opportunity");
   formData.set("caetgory", "discretionary");
   formData.set("summary_description", "Summary text");
-  formData.set("post_timestamp", "2026-03-11");
-  formData.set("close_timestamp", "2026-04-11");
+  formData.set("post_timestamp", validPostDate);
+  formData.set("close_timestamp", validCloseDate);
   formData.set("agency_email_address", "grants@example.com");
   formData.set("funding_instruments", "grant");
   formData.set("funding_categories", "health");
@@ -125,7 +137,7 @@ describe("saveAnnouncementEditAction", () => {
     const formData = new FormData();
     formData.set("announcement_id", "opp-123");
 
-    const result = await saveAnnouncementEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(false, formData);
 
     expect(result.validationErrors).toEqual({
       post_timestamp: ["publishDate"],
@@ -140,7 +152,7 @@ describe("saveAnnouncementEditAction", () => {
     const formData = buildValidFormData();
     formData.set("agency_email_address", "not-an-email");
 
-    const result = await saveAnnouncementEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(false, formData);
 
     expect(result.validationErrors).toEqual({
       agency_email_address: ["contactEmailInvalid"],
@@ -152,7 +164,7 @@ describe("saveAnnouncementEditAction", () => {
     formData.set("award_floor", "5000");
     formData.set("award_ceiling", "1000");
 
-    const result = await saveAnnouncementEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(false, formData);
 
     expect(result.validationErrors).toEqual({
       award_floor: ["awardMinLessThanMax"],
@@ -166,7 +178,7 @@ describe("saveAnnouncementEditAction", () => {
     formData.set("award_floor", "5000");
     formData.set("award_ceiling", "6000");
 
-    const result = await saveAnnouncementEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(false, formData);
 
     expect(result.validationErrors).toEqual({
       award_floor: ["awardMinLessThanTotal"],
@@ -176,13 +188,14 @@ describe("saveAnnouncementEditAction", () => {
 
   it("returns a close date error when close date is before publish date", async () => {
     const formData = buildValidFormData();
-    formData.set("post_timestamp", "2026-04-11");
-    formData.set("close_timestamp", "2026-03-11");
+    // Both still in the future - this test is only about their relative order.
+    formData.set("post_timestamp", validCloseDate);
+    formData.set("close_timestamp", validPostDate);
 
-    const result = await saveAnnouncementEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(false, formData);
 
     expect(result.validationErrors).toEqual({
-      closeDate: ["closeDateOrder"],
+      close_timestamp: ["closeDateOrder"],
     });
   });
 
@@ -190,10 +203,10 @@ describe("saveAnnouncementEditAction", () => {
     const formData = buildValidFormData();
     formData.set("post_timestamp", "not-a-date");
 
-    const result = await saveAnnouncementEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(false, formData);
 
     expect(result.validationErrors).toEqual({
-      closeDate: ["closeDateOrder"],
+      close_timestamp: ["closeDateOrder"],
     });
   });
 
@@ -201,18 +214,62 @@ describe("saveAnnouncementEditAction", () => {
     const formData = buildValidFormData();
     formData.set("close_timestamp", "not-a-date");
 
-    const result = await saveAnnouncementEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(false, formData);
 
     expect(result.validationErrors).toEqual({
-      closeDate: ["closeDateOrder"],
+      close_timestamp: ["closeDateOrder"],
     });
+  });
+
+  it("returns a publishDatePast error when publish date is in the past", async () => {
+    const formData = buildValidFormData();
+    const pastPostDate = today.subtract(1, "day").format("YYYY-MM-DD");
+    formData.set("post_timestamp", pastPostDate);
+    // Keep close_timestamp after post_timestamp so closeDateOrder doesn't also fire.
+    formData.set("close_timestamp", validCloseDate);
+
+    const result = await saveAnnouncementEditAction(false, formData);
+
+    expect(result.validationErrors).toEqual({
+      post_timestamp: ["publishDatePast"],
+    });
+  });
+
+  it("accepts a publish date of today", async () => {
+    const formData = buildValidFormData();
+    formData.set("post_timestamp", today.format("YYYY-MM-DD"));
+    formData.set("close_timestamp", validCloseDate);
+
+    mockUpdateAnnouncementSummary.mockResolvedValue(
+      successfulSummaryUpdateResponse,
+    );
+    formData.set("announcement_summary_id", "sum-456");
+
+    const result = await saveAnnouncementEditAction(false, formData);
+
+    expect(result.validationErrors).toBeUndefined();
+    expect(result.successMessage).toBe("success");
+  });
+
+  it("accepts a publish date in the future", async () => {
+    const formData = buildValidFormData();
+
+    mockUpdateAnnouncementSummary.mockResolvedValue(
+      successfulSummaryUpdateResponse,
+    );
+    formData.set("announcement_summary_id", "sum-456");
+
+    const result = await saveAnnouncementEditAction(false, formData);
+
+    expect(result.validationErrors).toBeUndefined();
+    expect(result.successMessage).toBe("success");
   });
 
   it("returns an error when announcement_id is missing", async () => {
     const formData = buildValidFormData();
     formData.delete("announcement_id"); // summary context is missing
 
-    const result = await saveAnnouncementEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(false, formData);
 
     expect(result).toEqual({
       errorMessage: "missingSummaryContext",
@@ -269,7 +326,7 @@ describe("saveAnnouncementEditAction", () => {
 
     mockCreateAnnouncementSummary.mockResolvedValue(createResponse);
 
-    const result = await saveAnnouncementEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(true, formData);
 
     const firstCall = mockCreateAnnouncementSummary.mock.calls[0];
     expect(firstCall).toBeDefined();
@@ -291,7 +348,7 @@ describe("saveAnnouncementEditAction", () => {
       successfulSummaryUpdateResponse,
     );
 
-    const result = await saveAnnouncementEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(false, formData);
 
     const firstCall = mockUpdateAnnouncementSummary.mock.calls[0];
 
@@ -299,9 +356,11 @@ describe("saveAnnouncementEditAction", () => {
     expect(firstCall?.[0].announcementId).toBe("opp-123");
     expect(firstCall?.[0].announcementSummaryId).toBe("sum-456");
     expect(firstCall?.[0].body.summary_description).toBe("Summary text");
-    expect(firstCall?.[0].body.post_timestamp).toBe("2026-03-11T00:00:00.000Z");
+    expect(firstCall?.[0].body.post_timestamp).toBe(
+      dateToTimestamp(validPostDate),
+    );
     expect(firstCall?.[0].body.close_timestamp).toBe(
-      "2026-04-11T00:00:00.000Z",
+      dateToTimestamp(validCloseDate),
     );
     expect(firstCall?.[0].body.agency_email_address).toBe("grants@example.com");
     expect(result).toEqual({
@@ -318,7 +377,7 @@ describe("saveAnnouncementEditAction", () => {
       new ApiRequestError("forbidden", "APIRequestError", 403),
     );
 
-    const result = await saveAnnouncementEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(false, formData);
 
     expect(result).toEqual({
       errorMessage: "forbidden",
@@ -334,7 +393,7 @@ describe("saveAnnouncementEditAction", () => {
       new ApiRequestError("missing", "APIRequestError", 404),
     );
 
-    const result = await saveAnnouncementEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(false, formData);
 
     expect(result).toEqual({
       errorMessage: "notFound",
@@ -352,7 +411,7 @@ describe("saveAnnouncementEditAction", () => {
       new ApiRequestError("invalid", "APIRequestError", 422),
     );
 
-    const result = await saveAnnouncementEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(false, formData);
 
     expect(result).toEqual({
       errorMessage: "genericError",
@@ -381,7 +440,7 @@ describe("saveAnnouncementEditAction", () => {
       ],
     });
 
-    const result = await saveAnnouncementEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(false, formData);
 
     expect(result).toEqual({
       validationErrors: {
@@ -409,7 +468,7 @@ describe("saveAnnouncementEditAction", () => {
       ],
     });
 
-    const result = await saveAnnouncementEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(false, formData);
 
     expect(result).toEqual({
       validationErrors: undefined,
@@ -432,7 +491,7 @@ describe("saveAnnouncementEditAction", () => {
       errors: [],
     });
 
-    const result = await saveAnnouncementEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(false, formData);
 
     expect(result).toEqual({
       validationErrors: undefined,
@@ -453,7 +512,7 @@ describe("saveAnnouncementEditAction", () => {
       successfulSummaryUpdateResponse,
     );
 
-    await saveAnnouncementEditAction(initialState, formData);
+    await saveAnnouncementEditAction(false, formData);
 
     const firstCall = mockUpdateAnnouncementSummary.mock.calls[0];
     expect(firstCall?.[0].body.estimated_total_program_funding).toBe(1000000);
@@ -475,7 +534,7 @@ describe("saveAnnouncementEditAction", () => {
       data: { announcement_summary_id: "new-sum-789" },
     } as unknown as Awaited<ReturnType<typeof createAnnouncementSummary>>);
 
-    await saveAnnouncementEditAction(initialState, formData);
+    await saveAnnouncementEditAction(false, formData);
 
     const firstCall = mockCreateAnnouncementSummary.mock.calls[0];
     expect(firstCall?.[0].body.estimated_total_program_funding).toBe(1000000);
@@ -492,7 +551,7 @@ describe("saveAnnouncementEditAction", () => {
       new ApiRequestError("unauthenticated", "APIRequestError", 401),
     );
 
-    const result = await saveAnnouncementEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(false, formData);
 
     expect(result).toEqual({
       errorMessage: "unauthenticated",
@@ -506,7 +565,7 @@ describe("saveAnnouncementEditAction", () => {
 
     mockUpdateAnnouncementSummary.mockRejectedValue(new Error("unexpected"));
 
-    const result = await saveAnnouncementEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(false, formData);
 
     expect(result).toEqual({
       errorMessage: "genericError",
@@ -523,7 +582,7 @@ describe("saveAnnouncementEditAction", () => {
         successfulSummaryUpdateResponse,
       );
 
-      await saveAnnouncementEditAction(initialState, formData);
+      await saveAnnouncementEditAction(false, formData);
 
       expect(mockCreateOpportunityAttachment).not.toHaveBeenCalled();
       expect(mockDeleteOpportunityAttachment).not.toHaveBeenCalled();
@@ -548,7 +607,7 @@ describe("saveAnnouncementEditAction", () => {
         ],
       });
 
-      await saveAnnouncementEditAction(initialState, formData);
+      await saveAnnouncementEditAction(false, formData);
 
       expect(mockCreateOpportunityAttachment).not.toHaveBeenCalled();
       expect(mockDeleteOpportunityAttachment).not.toHaveBeenCalled();
@@ -565,7 +624,7 @@ describe("saveAnnouncementEditAction", () => {
         new ApiRequestError("forbidden", "APIRequestError", 403),
       );
 
-      await saveAnnouncementEditAction(initialState, formData);
+      await saveAnnouncementEditAction(false, formData);
 
       expect(mockCreateOpportunityAttachment).not.toHaveBeenCalled();
       expect(mockDeleteOpportunityAttachment).not.toHaveBeenCalled();
@@ -590,7 +649,7 @@ describe("saveAnnouncementEditAction", () => {
         ],
       } as unknown as Awaited<ReturnType<typeof createAnnouncementSummary>>);
 
-      await saveAnnouncementEditAction(initialState, formData);
+      await saveAnnouncementEditAction(false, formData);
 
       expect(mockCreateOpportunityAttachment).not.toHaveBeenCalled();
       expect(mockDeleteOpportunityAttachment).not.toHaveBeenCalled();
@@ -613,7 +672,7 @@ describe("saveAnnouncementEditAction", () => {
         status_code: 200,
       } as unknown as Awaited<ReturnType<typeof createAnnouncementAttachment>>);
 
-      const result = await saveAnnouncementEditAction(initialState, formData);
+      const result = await saveAnnouncementEditAction(false, formData);
 
       expect(mockCreateOpportunityAttachment).toHaveBeenCalledTimes(2);
       expect(mockCreateOpportunityAttachment).toHaveBeenNthCalledWith(
@@ -646,7 +705,7 @@ describe("saveAnnouncementEditAction", () => {
         message: "success",
       });
 
-      await saveAnnouncementEditAction(initialState, formData);
+      await saveAnnouncementEditAction(false, formData);
 
       expect(mockDeleteOpportunityAttachment).toHaveBeenCalledTimes(2);
       expect(mockDeleteOpportunityAttachment).toHaveBeenNthCalledWith(
@@ -683,7 +742,7 @@ describe("saveAnnouncementEditAction", () => {
         message: "success",
       });
 
-      await saveAnnouncementEditAction(initialState, formData);
+      await saveAnnouncementEditAction(false, formData);
 
       expect(mockCreateOpportunityAttachment).toHaveBeenCalledWith(
         "opp-123",
@@ -713,7 +772,7 @@ describe("saveAnnouncementEditAction", () => {
         errors: [],
       } as unknown as Awaited<ReturnType<typeof createAnnouncementAttachment>>);
 
-      const result = await saveAnnouncementEditAction(initialState, formData);
+      const result = await saveAnnouncementEditAction(false, formData);
 
       expect(result).toEqual({
         errorMessage: "This pending file could not be attached.",
@@ -737,7 +796,7 @@ describe("saveAnnouncementEditAction", () => {
         new ApiRequestError("forbidden", "APIRequestError", 403),
       );
 
-      const result = await saveAnnouncementEditAction(initialState, formData);
+      const result = await saveAnnouncementEditAction(false, formData);
 
       expect(result).toEqual({
         errorMessage: "forbidden",
@@ -755,7 +814,7 @@ describe("saveAnnouncementEditAction", () => {
         successfulSummaryUpdateResponse,
       );
 
-      const result = await saveAnnouncementEditAction(initialState, formData);
+      const result = await saveAnnouncementEditAction(false, formData);
 
       expect(mockCreateOpportunityAttachment).not.toHaveBeenCalled();
       expect(result).toEqual({ successMessage: "success" });
@@ -774,7 +833,7 @@ describe("saveAnnouncementEditAction", () => {
         new Error("attachment creation failed"),
       );
 
-      const result = await saveAnnouncementEditAction(initialState, formData);
+      const result = await saveAnnouncementEditAction(false, formData);
 
       expect(result).toEqual({ errorMessage: "genericError" });
     });
@@ -799,7 +858,7 @@ describe("saveAnnouncementEditAction", () => {
         errors: [],
       } as unknown as Awaited<ReturnType<typeof createAnnouncementAttachment>>);
 
-      const result = await saveAnnouncementEditAction(initialState, formData);
+      const result = await saveAnnouncementEditAction(false, formData);
 
       expect(result).toEqual({
         errorMessage:
@@ -825,16 +884,66 @@ describe("saveAnnouncementEditAction", () => {
         errors: [],
       });
 
-      const result = await saveAnnouncementEditAction(initialState, formData);
+      const result = await saveAnnouncementEditAction(false, formData);
 
       expect(result).toEqual({
         errorMessage: "This attachment cannot be deleted after publication.",
       });
     });
   });
+  it("makes request with forecast timestamp fields when creating forecast", async () => {
+    const formData = buildValidFormData();
+    formData.set("announcement_id", "opp-123");
+    formData.set("forecasted_post_timestamp", validPostDate);
+    formData.set("forecasted_close_timestamp", validCloseDate);
+    formData.set("forecasted_close_timestamp_description", "whatever");
+
+    mockCreateAnnouncementSummary.mockResolvedValue({
+      message: "success",
+      status_code: 201,
+      data: { announcement_summary_id: "new-sum-789" },
+    } as unknown as Awaited<ReturnType<typeof createAnnouncementSummary>>);
+
+    await saveAnnouncementEditAction(true, formData);
+
+    const firstCall = mockCreateAnnouncementSummary.mock.calls[0];
+    expect(firstCall?.[0].body.forecasted_post_timestamp).toBe(
+      dateToTimestampOrNull(validPostDate),
+    );
+    expect(firstCall?.[0].body.forecasted_close_timestamp).toBe(
+      dateToTimestampOrNull(validCloseDate),
+    );
+    expect(firstCall?.[0].body.forecasted_close_timestamp_description).toBe(
+      "whatever",
+    );
+  });
+  it("makes request with non forecast timestamp fields when creating synopsis", async () => {
+    const formData = buildValidFormData();
+    formData.set("announcement_id", "opp-123");
+    formData.set("post_timestamp", validPostDate);
+    formData.set("close_timestamp", validCloseDate);
+    formData.set("close_timestamp_description", "whatever");
+
+    mockCreateAnnouncementSummary.mockResolvedValue({
+      message: "success",
+      status_code: 201,
+      data: { announcement_summary_id: "new-sum-789" },
+    } as unknown as Awaited<ReturnType<typeof createAnnouncementSummary>>);
+
+    await saveAnnouncementEditAction(false, formData);
+
+    const firstCall = mockCreateAnnouncementSummary.mock.calls[0];
+    expect(firstCall?.[0].body.post_timestamp).toBe(
+      dateToTimestampOrNull(validPostDate),
+    );
+    expect(firstCall?.[0].body.close_timestamp).toBe(
+      dateToTimestampOrNull(validCloseDate),
+    );
+    expect(firstCall?.[0].body.close_timestamp_description).toBe("whatever");
+  });
 });
 
-describe("announcementEditFormAction", () => {
+describe("announcementEditFormAction error handling", () => {
   beforeEach(() => {
     jest.resetAllMocks();
   });
@@ -845,7 +954,13 @@ describe("announcementEditFormAction", () => {
     formData.set("announcement_summary_id", "sum-456");
     // post_timestamp missing - triggers validation error
 
-    const result = await announcementEditFormAction(initialState, formData);
+    const result = await announcementEditFormAction(
+      false,
+      false,
+      "1",
+      initialState,
+      formData,
+    );
 
     expect(result.validationErrors).toEqual({
       post_timestamp: ["publishDate"],
@@ -869,7 +984,13 @@ describe("announcementEditFormAction", () => {
       new ApiRequestError("forbidden", "APIRequestError", 403),
     );
 
-    const result = await announcementEditFormAction(initialState, formData);
+    const result = await announcementEditFormAction(
+      false,
+      false,
+      "1",
+      initialState,
+      formData,
+    );
 
     expect(result).toEqual({ errorMessage: "forbidden" });
   });
@@ -886,7 +1007,13 @@ describe("announcementEditFormAction", () => {
       new ApiRequestError("not found", "APIRequestError", 404),
     );
 
-    const result = await announcementEditFormAction(initialState, formData);
+    const result = await announcementEditFormAction(
+      false,
+      false,
+      "1",
+      initialState,
+      formData,
+    );
 
     expect(result).toEqual({ errorMessage: "notFound" });
   });
@@ -903,7 +1030,13 @@ describe("announcementEditFormAction", () => {
       new ApiRequestError("unauthenticated", "APIRequestError", 401),
     );
 
-    const result = await announcementEditFormAction(initialState, formData);
+    const result = await announcementEditFormAction(
+      false,
+      false,
+      "1",
+      initialState,
+      formData,
+    );
 
     expect(result).toEqual({ errorMessage: "unauthenticated" });
   });
@@ -914,65 +1047,37 @@ describe("announcementEditFormAction", () => {
     jest.resetAllMocks();
   });
 
-  it("delegates to saveAnnouncementEditAction and redirects to the overview page when submitType = saveAndExit", async () => {
+  it("delegates to saveAnnouncementEditAction and redirects to the overview page in create mode", async () => {
     const formData = buildValidFormData();
     formData.set("announcement_id", "opp-123");
     formData.set("announcement_summary_id", "sum-456");
-    formData.set("submitType", "saveAndExit");
 
     mockUpdateAnnouncementSummary.mockResolvedValue(
       successfulSummaryUpdateResponse,
     );
 
-    await announcementEditFormAction(initialState, formData);
+    await announcementEditFormAction(false, true, "1", initialState, formData);
 
     expect(mockUpdateAnnouncementSummary).toHaveBeenCalledTimes(1);
-    expect(mockRedirect).toHaveBeenCalledWith("../overview");
+    expect(mockRedirect).toHaveBeenCalledWith("/announcement/1/overview");
   });
 
-  it("delegates to saveAnnouncementEditAction and redirects to the overview page when submitType = saveAndGoBack", async () => {
+  it("delegates to saveAnnouncementEditAction and returns success when not in create mode", async () => {
     const formData = buildValidFormData();
     formData.set("announcement_id", "opp-123");
     formData.set("announcement_summary_id", "sum-456");
-    formData.set("submitType", "saveAndGoBack");
 
     mockUpdateAnnouncementSummary.mockResolvedValue(
       successfulSummaryUpdateResponse,
     );
 
-    await announcementEditFormAction(initialState, formData);
-
-    expect(mockUpdateAnnouncementSummary).toHaveBeenCalledTimes(1);
-    expect(mockRedirect).toHaveBeenCalledWith("../overview");
-  });
-
-  it("delegates to saveAnnouncementEditAction and redirects to the applicationPackage page when submitType = saveAndContinue", async () => {
-    const formData = buildValidFormData();
-    formData.set("announcement_id", "opp-123");
-    formData.set("announcement_summary_id", "sum-456");
-    formData.set("submitType", "saveAndContinue");
-
-    mockUpdateAnnouncementSummary.mockResolvedValue(
-      successfulSummaryUpdateResponse,
+    const result = await announcementEditFormAction(
+      false,
+      false,
+      "1",
+      initialState,
+      formData,
     );
-
-    await announcementEditFormAction(initialState, formData);
-
-    expect(mockUpdateAnnouncementSummary).toHaveBeenCalledTimes(1);
-    expect(mockRedirect).toHaveBeenCalledWith("../application-package");
-  });
-
-  it("delegates to saveAnnouncementEditAction and returns success when submitType none of three expected", async () => {
-    const formData = buildValidFormData();
-    formData.set("announcement_id", "opp-123");
-    formData.set("announcement_summary_id", "sum-456");
-    formData.set("submitType", "save");
-
-    mockUpdateAnnouncementSummary.mockResolvedValue(
-      successfulSummaryUpdateResponse,
-    );
-
-    const result = await announcementEditFormAction(initialState, formData);
 
     expect(mockUpdateAnnouncementSummary).toHaveBeenCalledTimes(1);
     expect(result).toEqual({ successMessage: "success" });
@@ -982,17 +1087,22 @@ describe("announcementEditFormAction", () => {
     const formData = buildValidFormData();
     formData.set("announcement_id", "opp-123");
     formData.set("announcement_summary_id", "sum-456");
-    formData.set("submitType", "saveAndContinue");
     formData.set("agency_email_address", "not-an-email");
 
     mockUpdateAnnouncementSummary.mockResolvedValue(
       successfulSummaryUpdateResponse,
     );
 
-    const result = await announcementEditFormAction(initialState, formData);
+    const result = await announcementEditFormAction(
+      false,
+      false,
+      "1",
+      initialState,
+      formData,
+    );
 
     expect(mockUpdateAnnouncementSummary).not.toHaveBeenCalledTimes(1);
-    expect(mockRedirect).not.toHaveBeenCalledWith("../application-package");
+    expect(mockRedirect).not.toHaveBeenCalled();
     expect(result.validationErrors).toEqual({
       agency_email_address: ["contactEmailInvalid"],
     });
