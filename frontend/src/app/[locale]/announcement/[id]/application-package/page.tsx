@@ -128,7 +128,7 @@ export default async function AnnouncementApplicationPackagePage({
   return (
     <div className="bg-white">
       <AnnouncementDetailsHeader
-        opportunityData={opportunityData}
+        announcementData={opportunityData}
         locale={locale}
         hasBackToOverview={true}
       >

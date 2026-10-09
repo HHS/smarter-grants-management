@@ -226,11 +226,10 @@ describe("Announcements", () => {
       new UnauthorizedError("No active session"),
     );
 
-    await expect(
-      AnnouncementsListPage({
-        params: localeParams,
-      }),
-    ).rejects.toThrow(UnauthorizedError);
+    const component = await AnnouncementsListPage({ params: localeParams });
+    render(component);
+
+    expect(await screen.findByTestId("alert")).toBeVisible();
   });
 
   it("shows forecasted status tag for forecast announcements", async () => {

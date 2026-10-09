@@ -5,6 +5,7 @@ import {
   formatDateWithNoPreformattedExpectations,
   isExpired,
   isExpiring,
+  timestampPassed,
   toShortMonthDate,
 } from "src/utils/dateUtil";
 
@@ -99,5 +100,18 @@ describe("dateToTimestampOrNull", () => {
   });
   it("returns null for an empty string", () => {
     expect(dateToTimestampOrNull("")).toBeNull();
+  });
+});
+
+describe("timestampPassed", () => {
+  it("says a time is passed if it is", () => {
+    expect(timestampPassed(new Date(Date.now() - 10000).toISOString())).toEqual(
+      true,
+    );
+  });
+  it("says a time is not passed if it is not", () => {
+    expect(timestampPassed(new Date(Date.now() + 10000).toISOString())).toEqual(
+      false,
+    );
   });
 });

@@ -4,22 +4,18 @@ import {
   parseErrorStatus,
 } from "src/errors";
 import { getAnnouncement } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
-import {
-  GrantorAnnouncementDetail,
-  Summary,
-} from "src/types/announcement/announcementResponseTypes";
+import { GrantorAnnouncementDetail } from "src/types/announcement/announcementResponseTypes";
 import { computeAnnouncementPublishEligibility } from "src/utils/announcement/announcementPublishEligibility";
+import { shouldDisableForecast } from "src/utils/announcement/announcementUtils";
 
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { Alert, Link } from "@trussworks/react-uswds";
+import { Alert, GridContainer, Link } from "@trussworks/react-uswds";
 
+import GeneralErrorAlert from "src/components/core/GeneralErrorAlert";
 import { UnauthorizedMessage } from "src/components/core/UnauthorizedMessage";
 import { AnnouncementDetailsHeader } from "src/components/grantor-announcements/AnnouncementDetailsHeader";
-import {
-  getProgress,
-  ProgressChecker,
-} from "src/components/grantor-announcements/ProgressChecker";
+import { ProgressChecker } from "src/components/grantor-announcements/ProgressChecker";
 import { OverviewButtons } from "./_components/OverviewButtons";
 import {
   applicationPackageRequiredFields,
@@ -29,6 +25,28 @@ import {
 type PageProps = {
   params: Promise<{ id: string; locale: string }>;
   searchParams?: Promise<Record<string, string>>;
+};
+
+const SummaryLink = ({
+  summaryId,
+  isForecast,
+  announcementId,
+  disable,
+}: {
+  summaryId?: string;
+  isForecast?: boolean;
+  announcementId: string;
+  disable?: boolean;
+}) => {
+  const linkTarget = summaryId
+    ? `/announcement/${announcementId}/summary/${summaryId}/edit`
+    : `/announcement/${announcementId}/summary/create/${isForecast ? "forecast" : "synopsis"}`;
+  const linkText = isForecast ? "Forecast Summary" : "Synopsis Summary";
+  return disable ? (
+    <span>{linkText}</span>
+  ) : (
+    <Link href={linkTarget}>{linkText}</Link>
+  );
 };
 
 export default async function OpportunityOverviewPage({
@@ -46,10 +64,11 @@ export default async function OpportunityOverviewPage({
     locale,
     namespace: "AnnouncementDetailsHeader",
   });
-  let opportunityData: GrantorAnnouncementDetail;
+
+  let announcementData: GrantorAnnouncementDetail;
   try {
     const response = await getAnnouncement(id);
-    opportunityData = response.data;
+    announcementData = response.data;
   } catch (error) {
     if (error instanceof MissingAuthError) {
       return <UnauthorizedMessage />;
@@ -61,49 +80,35 @@ export default async function OpportunityOverviewPage({
     if (status === 403) {
       return <UnauthorizedMessage />;
     }
-    throw error;
+    return (
+      <GridContainer>
+        <GeneralErrorAlert />
+      </GridContainer>
+    );
   }
-  const editUrl = "../" + id + "/edit";
-  const applicationPackageUrl = "../" + id + "/application-package";
-  const summary: Summary =
-    opportunityData.summary ??
-    opportunityData.non_forecast_summary ??
-    opportunityData.forecast_summary;
+
+  const applicationPackageUrl = `/announcement/${id}/application-package`;
   let applicationPackage = {};
   if (
-    opportunityData.application_packages &&
-    opportunityData.application_packages.length > 0
+    announcementData.application_packages &&
+    announcementData.application_packages.length > 0
   ) {
     // For now, use the first application package
-    applicationPackage = opportunityData.application_packages[0];
+    applicationPackage = announcementData.application_packages[0];
   }
 
-  const summaryStatus = getProgress(summaryRequiredFields, summary);
-  const applicationPackageStatus = getProgress(
-    applicationPackageRequiredFields,
-    applicationPackage,
-  );
-
-  // TODO(#251): re-enable once the backend implements POST /v1/announcements/{id}/publish
-  const isPublishSupportedByBackend: boolean = false;
-  const publishEnabled =
-    isPublishSupportedByBackend &&
-    computeAnnouncementPublishEligibility(
-      opportunityData.is_draft,
-      summaryStatus,
-      applicationPackageStatus,
-    );
+  const publishEnabled = computeAnnouncementPublishEligibility();
 
   return (
     <div className="bg-white">
       <AnnouncementDetailsHeader
-        opportunityData={opportunityData}
+        announcementData={announcementData}
         locale={locale}
       >
         <OverviewButtons
           opportunityId={id}
           publishEnabled={publishEnabled}
-          postDate={summary.post_timestamp ?? null}
+          postDate={announcementData.forecast_summary?.post_timestamp ?? null}
         />
       </AnnouncementDetailsHeader>
       <div className="grid-container padding-top-4 padding-bottom-4">
@@ -119,15 +124,43 @@ export default async function OpportunityOverviewPage({
         )}
         <div
           className="grid-row grid-gap-2 padding-top-2"
-          data-testid="overview-row-edit"
+          data-testid="overview-row-forecast"
         >
           <div className="tablet:grid-col">
-            <Link href={editUrl}>{t("labels.editOpportunityLink")}</Link>
+            <SummaryLink
+              announcementId={id}
+              summaryId={
+                announcementData.forecast_summary?.announcement_summary_id
+              }
+              isForecast={true}
+              disable={shouldDisableForecast(announcementData)}
+            />
           </div>
           <div className="tablet:grid-col">
             <ProgressChecker
               requiredFields={summaryRequiredFields}
-              dataToCheck={summary}
+              dataToCheck={announcementData.forecast_summary || {}}
+            />
+          </div>
+        </div>
+        <hr />
+        <div
+          className="grid-row grid-gap-2 padding-top-2"
+          data-testid="overview-row-synopsis"
+        >
+          <div className="tablet:grid-col">
+            <SummaryLink
+              announcementId={id}
+              summaryId={
+                announcementData.non_forecast_summary?.announcement_summary_id
+              }
+              isForecast={false}
+            />
+          </div>
+          <div className="tablet:grid-col">
+            <ProgressChecker
+              requiredFields={summaryRequiredFields}
+              dataToCheck={announcementData.non_forecast_summary || {}}
             />
           </div>
         </div>
