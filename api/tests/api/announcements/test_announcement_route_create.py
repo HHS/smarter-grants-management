@@ -44,11 +44,15 @@ def test_announcement_create_200(
         )
     ).scalar_one()
 
-    links = db_session.execute(
-        select(AnnouncementAssistanceListing).where(
-            AnnouncementAssistanceListing.announcement_id == announcement.announcement_id
+    links = (
+        db_session.execute(
+            select(AnnouncementAssistanceListing).where(
+                AnnouncementAssistanceListing.announcement_id == announcement.announcement_id
+            )
         )
-    ).scalars().all()
+        .scalars()
+        .all()
+    )
     assert {link.assistance_listing_id for link in links} == {
         assistance_listing.assistance_listing_id,
         second_assistance_listing.assistance_listing_id,
