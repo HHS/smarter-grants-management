@@ -6,15 +6,20 @@ import { AnnouncementEditFormValues } from "src/utils/announcementEditFormConfig
 import AnnouncementEditForm from "./AnnouncementEditForm";
 
 const mockUseActionState = jest.fn();
+const mockAnnouncementEditFormAction = jest.fn();
 
 jest.mock("react", () => ({
   ...jest.requireActual<typeof import("react")>("react"),
   useActionState: () => mockUseActionState() as unknown,
 }));
 
-jest.mock("src/app/[locale]/announcement/[id]/edit/actions", () => ({
-  announcementEditFormAction: jest.fn(),
-}));
+jest.mock(
+  "src/app/[locale]/announcement/[id]/summary/[summaryId]/actions",
+  () => ({
+    announcementEditFormAction: (args: unknown[]) =>
+      mockAnnouncementEditFormAction(...args) as unknown,
+  }),
+);
 
 jest.mock("next-intl", () => ({
   useTranslations: () => (key: string) => key,
@@ -162,9 +167,7 @@ describe("AnnouncementEditForm - rendering", () => {
 
     fireEvent.click(checkboxOne);
     expect(checkboxOne).toBeChecked();
-    fireEvent.click(
-      screen.getByRole("button", { name: "button.saveAndContinue" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
     expect(mockFormAction).toHaveBeenCalledTimes(1);
     expect(mockFormAction).toHaveBeenCalledWith(expect.any(FormData));
@@ -174,9 +177,7 @@ describe("AnnouncementEditForm - rendering", () => {
 
     fireEvent.click(checkboxTwo);
     expect(checkboxTwo).toBeChecked();
-    fireEvent.click(
-      screen.getByRole("button", { name: "button.saveAndContinue" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
     expect(mockFormAction).toHaveBeenCalledTimes(2);
     expect(mockFormAction).toHaveBeenCalledWith(expect.any(FormData));
@@ -666,9 +667,9 @@ describe("AnnouncementEditForm - funding details interactions", () => {
     const textarea = screen.getByRole("textbox", {
       name: /labels\.closeDateExplanation/i,
     });
-    fireEvent.change(textarea, { target: { value: "No close date set" } });
+    fireEvent.change(textarea, { target: { value: "Test description text" } });
 
-    expect(textarea).toHaveValue("No close date set");
+    expect(textarea).toHaveValue("Test description text");
   });
 });
 
@@ -879,18 +880,14 @@ describe("AnnouncementEditForm - action buttons", () => {
     jest.resetAllMocks();
   });
 
-  it("renders two Save buttons", () => {
+  // the other save button is in the header
+  it("renders a Save button", () => {
     renderAnnouncementEditForm();
-    // NOTE: the third save button is in the header
-    expect(
-      screen.getByRole("button", { name: "button.saveAndGoBack" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "button.saveAndContinue" }),
-    ).toBeInTheDocument();
+    const buttons = screen.getByRole("button", { name: "Save" });
+    expect(buttons).toBeInTheDocument();
   });
 
-  it("calls the form action when saveAndGoBack is clicked", () => {
+  it("calls the form action when save is clicked", () => {
     const mockFormAction = jest.fn();
     mockUseActionState.mockReturnValue([
       { validationErrors: {} },
@@ -900,28 +897,24 @@ describe("AnnouncementEditForm - action buttons", () => {
 
     renderAnnouncementEditForm();
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "button.saveAndGoBack" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
     expect(mockFormAction).toHaveBeenCalledTimes(1);
   });
 
-  it("calls the form action when saveAndContinue is clicked", () => {
-    const mockFormAction = jest.fn();
-    mockUseActionState.mockReturnValue([
-      { validationErrors: {} },
-      mockFormAction,
-      false,
-    ]);
-
+  // would love to test this but the way things are structured it's very difficult at the moment, maybe we'll figure it out later
+  it.skip("calls the form action with context values when save is clicked", () => {
     renderAnnouncementEditForm();
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "button.saveAndContinue" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
-    expect(mockFormAction).toHaveBeenCalledTimes(1);
+    expect(mockAnnouncementEditFormAction).toHaveBeenCalledTimes(1);
+    expect(mockAnnouncementEditFormAction).toHaveBeenLastCalledWith(
+      null,
+      false,
+      false,
+      "1",
+    );
   });
 });
 
@@ -1032,5 +1025,81 @@ describe("AnnouncementEditForm - field validations on exiting the field", () => 
     expect(
       screen.getByText("validationErrors.totalFundingCurrencyInput"),
     ).toBeInTheDocument();
+  });
+
+  it("publishDate should show an error when set to a date in the past", async () => {
+    const user = userEvent.setup();
+    renderAnnouncementEditForm();
+
+    const input = screen.getByRole("textbox", {
+      name: /labels\.publishDate/i,
+    });
+    await user.clear(input);
+    await user.type(input, "01/01/2020");
+    await user.tab();
+
+    expect(
+      screen.getByText("validationErrors.publishDatePast"),
+    ).toBeInTheDocument();
+  });
+
+  it("publishDate should clear its error when changed to a future date", async () => {
+    const user = userEvent.setup();
+    renderAnnouncementEditForm();
+
+    const input = screen.getByRole("textbox", {
+      name: /labels\.publishDate/i,
+    });
+    await user.clear(input);
+    await user.type(input, "01/01/2020");
+    await user.tab();
+    expect(
+      screen.getByText("validationErrors.publishDatePast"),
+    ).toBeInTheDocument();
+
+    await user.clear(input);
+    await user.type(input, "01/01/2099");
+    await user.tab();
+
+    expect(
+      screen.queryByText("validationErrors.publishDatePast"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("renders the correct timestamp fields for each summary type", () => {
+    const mockFormAction = jest.fn<void, [FormData]>();
+    mockUseActionState.mockReturnValue([
+      { validationErrors: {} },
+      mockFormAction,
+      false,
+    ]);
+    render(
+      <AnnouncementEditForm
+        announcementId="opportunity-123"
+        announcementSummaryId="summary-456"
+        initialValues={{
+          ...initialValues,
+          forecasted_post_timestamp: "2026-03-11",
+          forecasted_close_timestamp: "2026-04-11",
+        }}
+        isForecast={true}
+      />,
+    );
+
+    const inputs = screen.getAllByTestId("date-picker-internal-input");
+    expect(inputs).toHaveLength(2);
+    const postInput = inputs[0];
+    const closeInput = inputs[1];
+
+    expect(postInput).toHaveValue("2026-03-11");
+    expect(closeInput).toHaveValue("2026-04-11");
+
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(mockFormAction).toHaveBeenCalledTimes(1);
+    expect(mockFormAction).toHaveBeenCalledWith(expect.any(FormData));
+    const formDataArg = mockFormAction.mock.calls[0][0];
+    expect(formDataArg.get("forecasted_post_timestamp")).toEqual("2026-03-11");
+    expect(formDataArg.get("forecasted_close_timestamp")).toEqual("2026-04-11");
   });
 });

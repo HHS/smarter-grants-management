@@ -15,4 +15,12 @@ describe("Pill", () => {
     await userEvent.click(closeIcon);
     expect(closeSpy).toHaveBeenCalled();
   });
+  it("disables the remove button", async () => {
+    const closeSpy = jest.fn();
+    render(<Pill label="any sort of label" onClose={closeSpy} disabled />);
+    const closeIcon = screen.getByLabelText("Remove any sort of label pill");
+    expect(closeIcon).toBeDisabled();
+    await userEvent.click(closeIcon);
+    expect(closeSpy).not.toHaveBeenCalled();
+  });
 });

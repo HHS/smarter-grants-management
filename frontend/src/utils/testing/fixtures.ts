@@ -1,5 +1,9 @@
 import { JSONSchema7 } from "json-schema";
-import { BaseAnnouncement } from "src/types/announcement/announcementResponseTypes";
+import {
+  AnnouncementSummaryDetail,
+  AnnouncementWithActiveSummary,
+  GrantorAnnouncementDetail,
+} from "src/types/announcement/announcementResponseTypes";
 import { UserProfile } from "src/types/authTypes";
 import {
   AwardRecommendationDetails,
@@ -342,7 +346,7 @@ export const fakeApplicationPackage = {
         "https://cdn.example.com/application-package-instructions/file.pdf",
       file_name: "applicationPackage_instructions.pdf",
       updated_at: "2025-06-13T20:17:16.491Z",
-      applicationPackage_instruction_id: "1",
+      application_package_instruction_id: "1",
     },
   ],
   applicationPackage_title: "cool applicationPackage",
@@ -473,18 +477,82 @@ export const fakeUserProfile: UserProfile = {
   user_id: "an id",
 };
 
-export const mockOpportunity: BaseAnnouncement = {
-  opportunity_id: "63588df8-f2d1-44ed-a201-5804abba696a",
-  legacy_opportunity_id: 12345,
-  opportunity_title: "Test Opportunity",
+export const fakeSynopsisSummary: AnnouncementSummaryDetail = {
+  is_forecast: false,
+  close_timestamp: "2026-06-01",
+  post_timestamp: "2026-05-01",
+  additional_info_url: "https://example.com",
+  additional_info_url_description: "More info",
+  agency_code: "TEST",
+  agency_contact_description: "Contact us",
+  agency_email_address: "test@example.com",
+  agency_email_address_description: "Email us",
+  agency_name: "Test Agency",
+  agency_phone_number: null,
+  applicant_eligibility_description: "Open to all",
+  applicant_types: ["individuals"],
+  archive_date: null,
+  award_ceiling: 100000,
+  award_floor: 1000,
+  close_timestamp_description: null,
+  estimated_total_program_funding: 500000,
+  expected_number_of_awards: 5,
+  fiscal_year: null,
+  forecasted_award_date: null,
+  forecasted_close_timestamp: null,
+  forecasted_close_timestamp_description: null,
+  forecasted_post_timestamp: null,
+  forecasted_project_start_date: null,
+  funding_categories: ["education"],
+  funding_category_description: null,
+  funding_instruments: ["grant"],
+  is_cost_sharing: true,
+  summary_description: "A test synopsis description",
+  updated_at: "2026-01-01",
+  version_number: 1,
+};
+
+export const fakeForecastSummary: AnnouncementSummaryDetail = {
+  ...fakeSynopsisSummary,
+  summary_description: "A FORECAST description",
+  forecasted_close_timestamp: "2026-05-01",
+  is_forecast: true,
+  forecasted_post_timestamp: "2026-04-01",
+  close_timestamp: null,
+  post_timestamp: null,
+};
+
+export const mockAnnouncement: GrantorAnnouncementDetail = {
+  //delete opportunity params
+  opportunity_id: "opp-1",
   opportunity_status: "posted",
-  summary: {
-    archive_date: "2023-01-01",
-    close_date: "2023-02-01",
-    post_date: "2023-01-15",
-    agency_name: "Test Agency",
-    award_ceiling: 50000,
-    award_floor: 10000,
-  },
-  opportunity_number: "OPP-12345",
-} as BaseAnnouncement;
+  opportunity_title: "Test Opportunity",
+  opportunity_number: "OPP-001",
+  legacy_opportunity_id: 1,
+  announcement_id: "opp-1",
+  announcement_status: "posted",
+  announcement_title: "Test Opportunity",
+  announcement_number: "OPP-001",
+  legacy_announcement_id: 1,
+  category: "discretionary",
+  category_explanation: null,
+  agency_code: "TEST",
+  agency_name: "Test Agency",
+  top_level_agency_name: null,
+  created_at: "2026-01-01",
+  updated_at: "2026-01-01",
+  is_draft: true,
+  is_simpler_grants_opportunity: true,
+  opportunity_assistance_listings: [],
+  application_packages: null,
+  saved_to_organizations: [],
+  submitted_application_count: 0,
+  forecast_summary: null,
+  non_forecast_summary: fakeSynopsisSummary,
+};
+
+export const mockAnnouncementWithActiveSummary: AnnouncementWithActiveSummary =
+  {
+    ...mockAnnouncement,
+    summary: fakeSynopsisSummary,
+  };

@@ -140,6 +140,22 @@ class ApplicationPackageOpenToApplicant(StrEnum):
     ORGANIZATION = "organization"
 
 
+class AnnouncementType(StrEnum):
+    DISCRETIONARY = "discretionary"
+    NON_DISCRETIONARY = "non_discretionary"
+    SPECIAL_INSTANCE = "special_instance"
+
+
+class SourceSelectionMethod(StrEnum):
+    SINGLE_SOURCE = "single_source"
+    SOLE_SOURCE = "sole_source"
+
+
+class PerformancePeriodType(StrEnum):
+    SINGLE_YEAR = "single_year"
+    MULTIPLE_YEARS = "multiple_years"
+
+
 class FormFamily(StrEnum):
     SF_424 = "sf-424"
     SF_424_INDIVIDUAL = "sf-424-individual"

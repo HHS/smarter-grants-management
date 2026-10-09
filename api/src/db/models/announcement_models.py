@@ -20,10 +20,13 @@ from src.adapters.db.lookup.lookup_column import LookupColumn
 from src.constants.lookup_constants import (
     AnnouncementAuditEvent,
     AnnouncementCategory,
+    AnnouncementType,
     ApplicantType,
     FundingCategory,
     FundingInstrument,
+    PerformancePeriodType,
     ResourceType,
+    SourceSelectionMethod,
 )
 from src.db.models.assistance_listing_models import AssistanceListing
 from src.db.models.base import TimestampMixin
@@ -31,9 +34,12 @@ from src.db.models.grantor_schema_table import GrantorSchemaTable
 from src.db.models.lookup_models import (
     LkAnnouncementAuditEvent,
     LkAnnouncementCategory,
+    LkAnnouncementType,
     LkApplicantType,
     LkFundingCategory,
     LkFundingInstrument,
+    LkPerformancePeriodType,
+    LkSourceSelectionMethod,
 )
 from src.db.models.resource_models import AbstractResourceTableMixin, Resource
 
@@ -63,6 +69,52 @@ class Announcement(GrantorSchemaTable, TimestampMixin, AbstractResourceTableMixi
         index=True,
     )
     category_explanation: Mapped[str | None]
+
+    announcement_type: Mapped[AnnouncementType] = mapped_column(
+        "announcement_type_id",
+        LookupColumn(LkAnnouncementType),
+        ForeignKey(LkAnnouncementType.announcement_type_id),
+        index=True,
+        default=AnnouncementType.DISCRETIONARY,
+        server_default="1",
+    )
+
+    is_budget_period_renewal: Mapped[bool] = mapped_column(default=False, server_default="false")
+    source_announcement_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID, ForeignKey("grantor.announcement.announcement_id"), index=True
+    )
+    source_announcement: Mapped[Announcement | None] = relationship(
+        "Announcement",
+        remote_side="Announcement.announcement_id",
+        foreign_keys="Announcement.source_announcement_id",
+    )
+    original_announcement_number: Mapped[str | None]
+
+    source_selection_method: Mapped[SourceSelectionMethod | None] = mapped_column(
+        "source_selection_method_id",
+        LookupColumn(LkSourceSelectionMethod),
+        ForeignKey(LkSourceSelectionMethod.source_selection_method_id),
+    )
+
+    cost_sharing_percentage: Mapped[int | None]
+    allows_cash_contributions: Mapped[bool] = mapped_column(default=False, server_default="false")
+    allows_in_kind_contributions: Mapped[bool] = mapped_column(
+        default=False, server_default="false"
+    )
+
+    performance_period_type: Mapped[PerformancePeriodType | None] = mapped_column(
+        "performance_period_type_id",
+        LookupColumn(LkPerformancePeriodType),
+        ForeignKey(LkPerformancePeriodType.performance_period_type_id),
+    )
+    performance_period_years: Mapped[int | None]
+    # No server default so pre-existing rows stay null
+    budget_period_months: Mapped[int | None] = mapped_column(default=12)
+
+    agency_contact_name: Mapped[str | None]
+    agency_contact_phone: Mapped[str | None]
+    agency_email_address: Mapped[str | None]
+    agency_email_address_description: Mapped[str | None]
 
     announcement_assistance_listings: Mapped[list[AnnouncementAssistanceListing]] = relationship(
         back_populates="announcement", uselist=True, cascade="all, delete-orphan"
@@ -184,7 +236,7 @@ class AnnouncementSummary(GrantorSchemaTable, TimestampMixin):
     is_cost_sharing: Mapped[bool]
     is_forecast: Mapped[bool]
 
-    post_timestamp: Mapped[datetime]
+    post_timestamp: Mapped[datetime | None]
     close_timestamp: Mapped[datetime | None]
     close_timestamp_description: Mapped[str | None]
     archive_timestamp: Mapped[datetime | None]
