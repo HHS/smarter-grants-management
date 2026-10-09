@@ -42,7 +42,7 @@ describe("createOpportunityForm", () => {
           announcement_title: "Test Opportunity 001",
           category: "other",
           category_explanation: "",
-          assistance_listing_number: "12.345",
+          assistance_listing_number: ["12.345"],
         },
       },
       noop,

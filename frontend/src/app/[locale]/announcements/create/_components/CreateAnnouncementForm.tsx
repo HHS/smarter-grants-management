@@ -164,7 +164,9 @@ export function CreateAnnouncementForm() {
                 fieldMaxLength={6}
                 isRequired={true}
                 onTextChange={onAlnChange}
-                defaultValue={response?.data?.assistance_listing_number || ""}
+                defaultValue={
+                  response?.data?.assistance_listing_number?.[0] || ""
+                }
               />
             </div>
           </div>

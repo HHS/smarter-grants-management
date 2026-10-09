@@ -49,7 +49,7 @@ describe("create opportunity form action", () => {
       purpose_statement: "Test Purpose Statement 001",
       category: "discretionary",
       category_explanation: null,
-      assistance_listing_number: "12.345",
+      assistance_listing_number: ["12.345"],
     });
   });
   it("returns result of create success with category explanation", async () => {
@@ -75,7 +75,7 @@ describe("create opportunity form action", () => {
       purpose_statement: "Test Purpose Statement 001",
       category: "other",
       category_explanation: "Some explanation",
-      assistance_listing_number: "12.345",
+      assistance_listing_number: ["12.345"],
     });
   });
   it("returns API error when applicable", async () => {

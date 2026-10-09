@@ -739,12 +739,16 @@ class AnnouncementCreateRequestSchema(Schema):
             "example": "Competitive research grant",
         },
     )
-    assistance_listing_number = fields.String(
+    assistance_listing_number = fields.List(
+        fields.String(validate=validators.Length(max=6)),
         required=True,
-        validate=validators.Length(max=6),
+        validate=validators.Length(
+            min=1,
+            error="At least one Assistance Listing Number (ALN) is required.",
+        ),
         metadata={
-            "description": "The Assistance Listing Number",
-            "example": "12.ABC",
+            "description": "The Assistance Listing Numbers",
+            "example": ["10.415", "10.420"],
         },
     )
 

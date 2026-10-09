@@ -8,12 +8,16 @@ from src.db.models.announcement_models import (
     AnnouncementAssistanceListing,
     AnnouncementAudit,
 )
-from tests.db.models.factories import AnnouncementFactory
+from tests.db.models.factories import AnnouncementFactory, AssistanceListingFactory
 
 
 def test_announcement_create_200(
     client, db_session, api_key_headers, announcement_request, assistance_listing
 ):
+    second_assistance_listing = AssistanceListingFactory.create()
+    announcement_request["assistance_listing_number"].append(
+        second_assistance_listing.assistance_listing_number
+    )
 
     response = client.post(
         "/v1/announcements",
@@ -40,12 +44,19 @@ def test_announcement_create_200(
         )
     ).scalar_one()
 
-    link = db_session.execute(
-        select(AnnouncementAssistanceListing).where(
-            AnnouncementAssistanceListing.announcement_id == announcement.announcement_id
+    links = (
+        db_session.execute(
+            select(AnnouncementAssistanceListing).where(
+                AnnouncementAssistanceListing.announcement_id == announcement.announcement_id
+            )
         )
-    ).scalar_one()
-    assert link.assistance_listing_id == assistance_listing.assistance_listing_id
+        .scalars()
+        .all()
+    )
+    assert {link.assistance_listing_id for link in links} == {
+        assistance_listing.assistance_listing_id,
+        second_assistance_listing.assistance_listing_id,
+    }
 
 
 def test_announcement_create_duplicate_number_of_deleted_200(
@@ -112,6 +123,35 @@ def test_announcement_create_duplicate_number_422(
     assert "already exists" in second_response.get_json()["message"]
 
 
+def test_announcement_create_duplicate_assistance_listing_number_422(
+    client,
+    api_key_headers,
+    announcement_request,
+):
+    assistance_listing_number = announcement_request["assistance_listing_number"]
+    if isinstance(assistance_listing_number, list):
+        announcement_request["assistance_listing_number"] = [
+            assistance_listing_number[0],
+            assistance_listing_number[0],
+        ]
+    else:
+        announcement_request["assistance_listing_number"] = [
+            assistance_listing_number,
+            assistance_listing_number,
+        ]
+
+    response = client.post(
+        "/v1/announcements",
+        json=announcement_request,
+        headers=api_key_headers,
+    )
+
+    assert response.status_code == 422
+    assert response.get_json()["message"] == (
+        "A duplicate was found in the list of Assistance Listing Numbers"
+    )
+
+
 def test_announcement_create_missing_required_fields_422(
     client,
     api_key_headers,
@@ -152,7 +192,7 @@ def test_announcement_create_unknown_assistance_listing_404(
     api_key_headers,
     announcement_request,
 ):
-    announcement_request["assistance_listing_number"] = "Zx.Yvb"
+    announcement_request["assistance_listing_number"] = ["Zx.Yvb"]
 
     response = client.post(
         "/v1/announcements",

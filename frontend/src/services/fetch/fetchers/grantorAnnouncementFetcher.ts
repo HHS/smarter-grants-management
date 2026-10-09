@@ -111,7 +111,7 @@ export async function getAnnouncement(
 }
 
 export const createOpportunity = async (
-  createOppSchema: Record<string, string>,
+  createOppSchema: Record<string, unknown>,
 ): Promise<CreateAnnouncementRecord> => {
   const response = await fetchAnnouncementWithMethod("POST")({
     body: createOppSchema,
