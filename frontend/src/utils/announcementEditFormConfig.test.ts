@@ -1,11 +1,18 @@
-import { AnnouncementDetail } from "src/types/announcement/announcementResponseTypes";
+import { AnnouncementWithActiveSummary } from "src/types/announcement/announcementResponseTypes";
 
-import { buildAnnouncementEditInitialValues } from "./announcementEditFormConfig";
+import {
+  buildAnnouncementEditInitialValues,
+  getDefaultAnnouncement,
+} from "./announcementEditFormConfig";
+import {
+  fakeForecastSummary,
+  mockAnnouncementWithActiveSummary,
+} from "./testing/fixtures";
 
 function makeOpportunity(
-  summaryOverrides: Partial<AnnouncementDetail["summary"]> = {},
-  opportunityOverrides: Partial<AnnouncementDetail> = {},
-): AnnouncementDetail {
+  summaryOverrides: Partial<AnnouncementWithActiveSummary["summary"]> = {},
+  opportunityOverrides: Partial<AnnouncementWithActiveSummary> = {},
+): AnnouncementWithActiveSummary {
   return {
     //delete opportunity params
     opportunity_id: "opp-1",
@@ -28,10 +35,11 @@ function makeOpportunity(
     is_draft: true,
     is_simpler_grants_opportunity: true,
     opportunity_assistance_listings: [],
-    attachments: [],
     application_packages: null,
     saved_to_organizations: [],
     submitted_application_count: 0,
+    forecast_summary: null, // in the real world one of these would be populated
+    non_forecast_summary: null,
     summary: {
       close_timestamp: "2026-06-01",
       is_forecast: false,
@@ -145,5 +153,28 @@ describe("buildAnnouncementEditInitialValues", () => {
     );
 
     expect(result.funding_categories).toBe("");
+  });
+  it("returns the correct timestamp keys for forecast summary type", () => {
+    const result = buildAnnouncementEditInitialValues(
+      { ...mockAnnouncementWithActiveSummary, summary: fakeForecastSummary },
+      false,
+      true,
+    );
+
+    expect(result.forecasted_close_timestamp).toBe(
+      fakeForecastSummary.forecasted_close_timestamp,
+    );
+    expect(result.forecasted_post_timestamp).toBe(
+      fakeForecastSummary.forecasted_post_timestamp,
+    );
+    expect(result.forecasted_close_timestamp_description).toBe("");
+  });
+  it("returns an empty summary in create mode", () => {
+    const result = buildAnnouncementEditInitialValues(
+      mockAnnouncementWithActiveSummary,
+      true,
+      true,
+    );
+    expect(result).toEqual(getDefaultAnnouncement(true));
   });
 });

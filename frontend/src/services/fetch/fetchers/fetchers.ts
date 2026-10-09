@@ -5,6 +5,7 @@ import {
   apiKeyLoginEndpoint,
   EndpointConfig,
   fetchApplicationPackageEndpoint,
+  fetchAssistanceListingsEndpoint,
   fetchAwardRecommendationEndpoint,
   fetchFormsEndpoint,
   fetchWorkflowEndpoint,
@@ -120,6 +121,10 @@ export function requesterForEndpoint({
 }
 
 export const fetchForms = cache(requesterForEndpoint(fetchFormsEndpoint));
+
+export const fetchAssistanceListings = requesterForEndpoint(
+  fetchAssistanceListingsEndpoint,
+);
 
 export const fetchApplicationPackage = cache(
   requesterForEndpoint(fetchApplicationPackageEndpoint),

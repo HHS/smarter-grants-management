@@ -208,10 +208,18 @@ export const NavLinks = ({
       return anonymousNavLinks;
     }
 
-    return anonymousNavLinks.toSpliced(anonymousNavLinks.length, 0, {
-      text: t("opportunities"),
-      href: "/announcements",
-    });
+    return anonymousNavLinks.toSpliced(
+      anonymousNavLinks.length,
+      0,
+      {
+        text: t("opportunities"),
+        href: "/announcements",
+      },
+      {
+        text: "Inbox",
+        href: "/inbox",
+      },
+    );
   }, [t, user?.token]);
 
   const getCurrentNavItemIndex = useCallback(

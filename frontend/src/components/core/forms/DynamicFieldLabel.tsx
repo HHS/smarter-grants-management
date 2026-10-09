@@ -66,7 +66,12 @@ export const DynamicFieldLabel = ({
             {labelContent}
           </Label>
           {description && (
-            <p className="text-base-dark margin-top-0">{description}</p>
+            <p
+              id={`description-for-${idFor}`}
+              className="text-base-dark margin-top-0"
+            >
+              {description}
+            </p>
           )}
         </>
       );

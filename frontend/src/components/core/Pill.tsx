@@ -5,9 +5,11 @@ import { USWDSIcon } from "./USWDSIcon";
 export function Pill({
   label,
   onClose,
+  disabled = false,
 }: {
   label: string;
   onClose: () => void;
+  disabled?: boolean;
 }) {
   return (
     <div className="border-secondary-darker border-2px radius-pill display-inline-block padding-x-2 padding-y-1 bg-secondary-lightest">
@@ -16,6 +18,7 @@ export function Pill({
         <Button
           unstyled
           type="button"
+          disabled={disabled}
           aria-label={`Remove ${label} pill`}
           className="display-flex flex-align-center margin-left-1"
           onClick={() => {
@@ -24,7 +27,7 @@ export function Pill({
         >
           <USWDSIcon
             name="close"
-            className="usa-icon--size-3 text-secondary-darker"
+            className={`usa-icon--size-3 ${disabled ? "text-base" : "text-secondary-darker"}`}
           />
         </Button>
       </div>

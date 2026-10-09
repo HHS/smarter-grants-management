@@ -49,7 +49,7 @@ describe("AnnouncementDetailsHeader", () => {
   it("should not have accessibility violations", async () => {
     const { container } = render(
       <AnnouncementDetailsHeader
-        opportunityData={mockOpportunityData}
+        announcementData={mockOpportunityData}
         locale="en"
       />,
     );
@@ -60,7 +60,7 @@ describe("AnnouncementDetailsHeader", () => {
   it("renders the opportunity number in the heading", () => {
     render(
       <AnnouncementDetailsHeader
-        opportunityData={mockOpportunityData}
+        announcementData={mockOpportunityData}
         locale="en"
       />,
     );
@@ -72,7 +72,7 @@ describe("AnnouncementDetailsHeader", () => {
   it("renders the title", () => {
     render(
       <AnnouncementDetailsHeader
-        opportunityData={mockOpportunityData}
+        announcementData={mockOpportunityData}
         locale="en"
       />,
     );
@@ -84,7 +84,7 @@ describe("AnnouncementDetailsHeader", () => {
   it("renders agency and sub-agency", () => {
     render(
       <AnnouncementDetailsHeader
-        opportunityData={mockOpportunityData}
+        announcementData={mockOpportunityData}
         locale="en"
       />,
     );
@@ -95,7 +95,7 @@ describe("AnnouncementDetailsHeader", () => {
   it("renders the Draft badge when is_draft is true", () => {
     render(
       <AnnouncementDetailsHeader
-        opportunityData={mockOpportunityData}
+        announcementData={mockOpportunityData}
         locale="en"
       />,
     );
@@ -105,7 +105,7 @@ describe("AnnouncementDetailsHeader", () => {
   it("does not render the Draft badge when is_draft is false", () => {
     render(
       <AnnouncementDetailsHeader
-        opportunityData={{ ...mockOpportunityData, is_draft: false }}
+        announcementData={{ ...mockOpportunityData, is_draft: false }}
         locale="en"
       />,
     );
@@ -115,7 +115,7 @@ describe("AnnouncementDetailsHeader", () => {
   it("renders the last updated date formatted as MM/dd/YYYY", () => {
     render(
       <AnnouncementDetailsHeader
-        opportunityData={mockOpportunityData}
+        announcementData={mockOpportunityData}
         locale="en"
       />,
     );
@@ -126,7 +126,7 @@ describe("AnnouncementDetailsHeader", () => {
     // 8:38 PM ET on 06/20/2026 is 00:38 UTC on 06/21/2026
     render(
       <AnnouncementDetailsHeader
-        opportunityData={{
+        announcementData={{
           ...mockOpportunityData,
           updated_at: "2026-06-21T00:38:00Z",
         }}
@@ -140,7 +140,7 @@ describe("AnnouncementDetailsHeader", () => {
   it("renders -- for missing title", () => {
     render(
       <AnnouncementDetailsHeader
-        opportunityData={{ ...mockOpportunityData, announcement_title: null }}
+        announcementData={{ ...mockOpportunityData, announcement_title: null }}
         locale="en"
       />,
     );
@@ -150,7 +150,7 @@ describe("AnnouncementDetailsHeader", () => {
   it("does not render sub-agency separator when agency_name is null", () => {
     render(
       <AnnouncementDetailsHeader
-        opportunityData={{ ...mockOpportunityData, agency_name: null }}
+        announcementData={{ ...mockOpportunityData, agency_name: null }}
         locale="en"
       />,
     );
@@ -160,7 +160,7 @@ describe("AnnouncementDetailsHeader", () => {
   it("renders the back to overview link when hasBackToOverview is true", () => {
     render(
       <AnnouncementDetailsHeader
-        opportunityData={{ ...mockOpportunityData, agency_name: null }}
+        announcementData={{ ...mockOpportunityData, agency_name: null }}
         locale="en"
         hasBackToOverview={true}
       />,
@@ -168,13 +168,13 @@ describe("AnnouncementDetailsHeader", () => {
 
     const link = screen.getByRole("link", { name: "backToOverview" });
     expect(link).toBeInTheDocument();
-    expect(link).toHaveAttribute("href", "../abc-123/overview");
+    expect(link).toHaveAttribute("href", "/announcement/abc-123/overview");
   });
 
   it("does not render the back to overview link when hasBackToOverview is false", () => {
     render(
       <AnnouncementDetailsHeader
-        opportunityData={{ ...mockOpportunityData, agency_name: null }}
+        announcementData={{ ...mockOpportunityData, agency_name: null }}
         locale="en"
         hasBackToOverview={false}
       />,
