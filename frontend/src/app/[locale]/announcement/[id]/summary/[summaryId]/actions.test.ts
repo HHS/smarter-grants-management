@@ -8,7 +8,11 @@ import {
   createAnnouncementSummary,
   updateAnnouncementSummary,
 } from "src/services/fetch/fetchers/grantorAnnouncementFetcher";
-import { dateToTimestamp, getConfiguredDayJs } from "src/utils/dateUtil";
+import {
+  dateToTimestamp,
+  dateToTimestampOrNull,
+  getConfiguredDayJs,
+} from "src/utils/dateUtil";
 
 import {
   announcementEditFormAction,
@@ -105,8 +109,8 @@ function buildValidFormData() {
   formData.set("opportunity_title", "Example opportunity");
   formData.set("caetgory", "discretionary");
   formData.set("summary_description", "Summary text");
-  formData.set("post_timestamp", "2026-03-11");
-  formData.set("close_timestamp", "2026-04-11");
+  formData.set("post_timestamp", validPostDate);
+  formData.set("close_timestamp", validCloseDate);
   formData.set("agency_email_address", "grants@example.com");
   formData.set("funding_instruments", "grant");
   formData.set("funding_categories", "health");
@@ -224,7 +228,7 @@ describe("saveAnnouncementEditAction", () => {
     // Keep close_timestamp after post_timestamp so closeDateOrder doesn't also fire.
     formData.set("close_timestamp", validCloseDate);
 
-    const result = await saveAnnouncementEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(false, formData);
 
     expect(result.validationErrors).toEqual({
       post_timestamp: ["publishDatePast"],
@@ -241,7 +245,7 @@ describe("saveAnnouncementEditAction", () => {
     );
     formData.set("announcement_summary_id", "sum-456");
 
-    const result = await saveAnnouncementEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(false, formData);
 
     expect(result.validationErrors).toBeUndefined();
     expect(result.successMessage).toBe("success");
@@ -255,7 +259,7 @@ describe("saveAnnouncementEditAction", () => {
     );
     formData.set("announcement_summary_id", "sum-456");
 
-    const result = await saveAnnouncementEditAction(initialState, formData);
+    const result = await saveAnnouncementEditAction(false, formData);
 
     expect(result.validationErrors).toBeUndefined();
     expect(result.successMessage).toBe("success");
@@ -890,8 +894,8 @@ describe("saveAnnouncementEditAction", () => {
   it("makes request with forecast timestamp fields when creating forecast", async () => {
     const formData = buildValidFormData();
     formData.set("announcement_id", "opp-123");
-    formData.set("forecasted_post_timestamp", "2026-10-07");
-    formData.set("forecasted_close_timestamp", "2026-10-08");
+    formData.set("forecasted_post_timestamp", validPostDate);
+    formData.set("forecasted_close_timestamp", validCloseDate);
     formData.set("forecasted_close_timestamp_description", "whatever");
 
     mockCreateAnnouncementSummary.mockResolvedValue({
@@ -904,10 +908,10 @@ describe("saveAnnouncementEditAction", () => {
 
     const firstCall = mockCreateAnnouncementSummary.mock.calls[0];
     expect(firstCall?.[0].body.forecasted_post_timestamp).toBe(
-      "2026-10-07T00:00:00.000Z",
+      dateToTimestampOrNull(validPostDate),
     );
     expect(firstCall?.[0].body.forecasted_close_timestamp).toBe(
-      "2026-10-08T00:00:00.000Z",
+      dateToTimestampOrNull(validCloseDate),
     );
     expect(firstCall?.[0].body.forecasted_close_timestamp_description).toBe(
       "whatever",
@@ -916,8 +920,8 @@ describe("saveAnnouncementEditAction", () => {
   it("makes request with non forecast timestamp fields when creating synopsis", async () => {
     const formData = buildValidFormData();
     formData.set("announcement_id", "opp-123");
-    formData.set("post_timestamp", "2026-10-07");
-    formData.set("close_timestamp", "2026-10-08");
+    formData.set("post_timestamp", validPostDate);
+    formData.set("close_timestamp", validCloseDate);
     formData.set("close_timestamp_description", "whatever");
 
     mockCreateAnnouncementSummary.mockResolvedValue({
@@ -929,9 +933,11 @@ describe("saveAnnouncementEditAction", () => {
     await saveAnnouncementEditAction(false, formData);
 
     const firstCall = mockCreateAnnouncementSummary.mock.calls[0];
-    expect(firstCall?.[0].body.post_timestamp).toBe("2026-10-07T00:00:00.000Z");
+    expect(firstCall?.[0].body.post_timestamp).toBe(
+      dateToTimestampOrNull(validPostDate),
+    );
     expect(firstCall?.[0].body.close_timestamp).toBe(
-      "2026-10-08T00:00:00.000Z",
+      dateToTimestampOrNull(validCloseDate),
     );
     expect(firstCall?.[0].body.close_timestamp_description).toBe("whatever");
   });

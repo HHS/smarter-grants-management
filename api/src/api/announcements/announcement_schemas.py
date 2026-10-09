@@ -653,16 +653,19 @@ class AnnouncementSummaryBaseRequestSchema(Schema):
 
     @validates_schema
     def validate_forecast_timestamps(self, data: dict, **kwargs: dict) -> None:
-      if data.get("forecasted_post_timestamp") is not None and data.get("forecasted_close_timestamp") is not None:
-        if data["forecasted_post_timestamp"] > data["forecasted_close_timestamp"]:
-            raise ValidationError(
-                [
-                    MarshmallowErrorContainer(
-                        SchemaValidationError.INVALID,
-                        "Post timestamp must be less than or equal to close timestamp",
-                    )
-                ]
-            )
+        if (
+            data.get("forecasted_post_timestamp") is not None
+            and data.get("forecasted_close_timestamp") is not None
+        ):
+            if data["forecasted_post_timestamp"] > data["forecasted_close_timestamp"]:
+                raise ValidationError(
+                    [
+                        MarshmallowErrorContainer(
+                            SchemaValidationError.INVALID,
+                            "Post timestamp must be less than or equal to close timestamp",
+                        )
+                    ]
+                )
 
     @validates_schema
     def set_archive_timestamp(self, data: dict, **kwargs: dict) -> None:
@@ -924,14 +927,14 @@ class ApplicationPackageRequestSchema(Schema):
                 ]
             )
         if forecasted_opening and forecasted_closing and forecasted_closing < forecasted_opening:
-          raise ValidationError(
-              [
-                  MarshmallowErrorContainer(
-                      SchemaValidationError.INVALID_DATE_ORDER,
-                      "Closing timestamp must be on or after opening timestamp.",
-                  )
-              ]
-          )
+            raise ValidationError(
+                [
+                    MarshmallowErrorContainer(
+                        SchemaValidationError.INVALID_DATE_ORDER,
+                        "Closing timestamp must be on or after opening timestamp.",
+                    )
+                ]
+            )
 
 
 class ApplicationPackageCreateRequestSchema(ApplicationPackageRequestSchema):
