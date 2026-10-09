@@ -208,10 +208,18 @@ export const NavLinks = ({
       return anonymousNavLinks;
     }
 
-    return anonymousNavLinks.toSpliced(anonymousNavLinks.length, 0, {
-      text: t("opportunities"),
-      href: "/announcements",
-    });
+    return anonymousNavLinks.toSpliced(
+      anonymousNavLinks.length,
+      0,
+      {
+        text: t("nofos"),
+        children: [
+          { text: t("manageNofos"), href: "/nofo" },
+          { text: t("nofoTemplates"), href: "/nofo-template" },
+        ],
+      },
+      { text: t("opportunities"), href: "/announcements" },
+    );
   }, [t, user?.token]);
 
   const getCurrentNavItemIndex = useCallback(

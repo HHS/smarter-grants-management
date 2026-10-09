@@ -256,6 +256,42 @@ describe("Header", () => {
       expect(accountButton).toBeInTheDocument();
     });
 
+    it("shows NOFOs between Home and Announcements when authenticated", async () => {
+      mockUseUser.mockReturnValue({
+        user: { token: "faketoken" },
+        hasBeenLoggedOut: false,
+        resetHasBeenLoggedOut: jest.fn(),
+      });
+      const user = userEvent.setup();
+      render(<Header {...props} />);
+
+      const nav = screen.getByRole("navigation");
+      const homeLink = within(nav).getByRole("link", { name: "home" });
+      const nofosMenu = within(nav).getByRole("button", { name: "nofos" });
+      const announcementsLink = within(nav).getByRole("link", {
+        name: "opportunities",
+      });
+
+      expect(
+        homeLink.compareDocumentPosition(nofosMenu) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+      expect(
+        nofosMenu.compareDocumentPosition(announcementsLink) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+
+      await user.click(nofosMenu);
+
+      expect(screen.getByRole("link", { name: "manageNofos" })).toHaveAttribute(
+        "href",
+        "/nofo",
+      );
+      expect(
+        screen.getByRole("link", { name: "nofoTemplates" }),
+      ).toHaveAttribute("href", "/nofo-template");
+    });
+
     it("Account dropdown contains Settings, Notifications, and Sign out when opened", async () => {
       mockUseUser.mockReturnValue({
         user: { token: "faketoken" },
