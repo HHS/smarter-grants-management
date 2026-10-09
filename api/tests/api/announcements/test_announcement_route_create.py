@@ -8,6 +8,7 @@ from src.db.models.announcement_models import (
     AnnouncementAssistanceListing,
     AnnouncementAudit,
 )
+from src.services.announcements.create_announcement import DEFAULT_PARTNER_CODE
 from tests.db.models.factories import AnnouncementFactory
 
 
@@ -46,6 +47,8 @@ def test_announcement_create_200(
         )
     ).scalar_one()
     assert link.assistance_listing_id == assistance_listing.assistance_listing_id
+    assert data["partner_code"] == DEFAULT_PARTNER_CODE
+    assert announcement.opportunity.partner_code == DEFAULT_PARTNER_CODE
 
 
 def test_announcement_create_duplicate_number_of_deleted_200(

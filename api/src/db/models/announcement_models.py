@@ -41,6 +41,7 @@ from src.db.models.lookup_models import (
     LkPerformancePeriodType,
     LkSourceSelectionMethod,
 )
+from src.db.models.opportunity_models import Opportunity
 from src.db.models.resource_models import AbstractResourceTableMixin, Resource
 
 
@@ -53,6 +54,11 @@ class Announcement(GrantorSchemaTable, TimestampMixin, AbstractResourceTableMixi
     resource: Mapped[Resource] = relationship(
         Resource, single_parent=True, cascade="all, delete-orphan"
     )
+
+    opportunity_id: Mapped[uuid.UUID] = mapped_column(
+        UUID, ForeignKey(Opportunity.opportunity_id), index=True
+    )
+    opportunity: Mapped[Opportunity] = relationship(Opportunity, back_populates="announcements")
 
     announcement_number: Mapped[str]
     announcement_title: Mapped[str]
@@ -162,6 +168,10 @@ class Announcement(GrantorSchemaTable, TimestampMixin, AbstractResourceTableMixi
     @property
     def resource_name(self) -> str | None:
         return self.announcement_title
+
+    @property
+    def partner_code(self) -> str:
+        return self.opportunity.partner_code
 
     @property
     def forecast_summary(self) -> AnnouncementSummary | None:

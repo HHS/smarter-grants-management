@@ -15,6 +15,7 @@ import src.db.models.application_package_models as application_package_models
 import src.db.models.assistance_listing_models as assistance_listing_models
 import src.db.models.file_upload_models as file_upload_models
 import src.db.models.grantor_organization_models as grantor_organization_models
+import src.db.models.opportunity_models as opportunity_models
 import src.db.models.resource_models as resource_models
 import src.db.models.user_models as user_models
 import src.db.models.workflow_models as workflow_models
@@ -772,11 +773,23 @@ class FileAttachmentFactory(BaseFactory):
 ###################
 
 
+class OpportunityFactory(BaseFactory):
+    class Meta:
+        model = opportunity_models.Opportunity
+
+    opportunity_id = Generators.UuidObj
+
+    partner_code = factory.Faker("pystr", min_chars=3, max_chars=8)
+
+
 class AnnouncementFactory(BaseFactory):
     class Meta:
         model = announcement_models.Announcement
 
     announcement_id = Generators.UuidObj
+
+    opportunity = factory.SubFactory(OpportunityFactory)
+    opportunity_id = factory.LazyAttribute(lambda a: a.opportunity.opportunity_id)
 
     announcement_number = factory.Faker("opportunity_number")
     announcement_title = factory.Faker("opportunity_title")

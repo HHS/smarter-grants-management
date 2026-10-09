@@ -8,6 +8,7 @@ from src.adapters import db
 from src.api.route_utils import raise_flask_error
 from src.constants.lookup_constants import AnnouncementAuditEvent, AnnouncementCategory
 from src.db.models.announcement_models import Announcement, AnnouncementAssistanceListing
+from src.db.models.opportunity_models import Opportunity
 from src.db.models.user_models import User
 from src.services.announcements.announcement_audit import record_announcement_audit
 from src.services.announcements.authorization import has_access
@@ -16,6 +17,9 @@ from src.services.announcements.get_assistance_listing import get_assistance_lis
 from src.util.dict_util import snapshot_fields
 
 logger = logging.getLogger(__name__)
+
+# Temporary until partner / agency modeling is settled
+DEFAULT_PARTNER_CODE = "SGM"
 
 ANNOUNCEMENT_CREATE_FIELDS = (
     "announcement_number",
@@ -60,8 +64,12 @@ def create_announcement(db_session: db.Session, user: User, json_data: dict) -> 
 
     assistance_listing = get_assistance_listing(db_session, request.assistance_listing_number)
 
+    opportunity = Opportunity(opportunity_id=uuid.uuid4(), partner_code=DEFAULT_PARTNER_CODE)
+    db_session.add(opportunity)
+
     announcement = Announcement(
         announcement_id=uuid.uuid4(),
+        opportunity=opportunity,
         announcement_number=request.announcement_number,
         announcement_title=request.announcement_title,
         tagline=request.tagline,

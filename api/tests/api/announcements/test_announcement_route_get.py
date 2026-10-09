@@ -28,6 +28,7 @@ def test_announcement_get_200(
     assert response.status_code == 200
 
     data = response.get_json()["data"]
+    assert data["partner_code"] == announcement.opportunity.partner_code
     assert data["announcement_id"] == str(announcement.announcement_id)
     assert data["announcement_number"] == announcement.announcement_number
     assert data["announcement_title"] == announcement.announcement_title

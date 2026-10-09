@@ -73,6 +73,13 @@ class ApplicationPackageFormSchema(Schema):
 class ApplicationPackageSchema(Schema):
     application_package_id = fields.UUID(metadata={"description": "The application package ID"})
 
+    partner_code = fields.String(
+        metadata={
+            "description": "The partner code of the opportunity this application package belongs to",
+            "example": "SGM",
+        },
+    )
+
     announcement_id = fields.UUID(
         metadata={
             "description": "The announcement ID that the application package is associated with"
@@ -328,6 +335,12 @@ class AnnouncementSummarySchema(Schema):
 
 class AnnouncementSchema(Schema):
     announcement_id = fields.UUID(metadata={"description": "The internal ID of the announcement"})
+    partner_code = fields.String(
+        metadata={
+            "description": "The partner code of the opportunity this announcement belongs to",
+            "example": "SGM",
+        },
+    )
     announcement_number = fields.String(
         allow_none=True,
         metadata={"description": "The funding announcement number", "example": "ABC-123-XYZ-001"},
