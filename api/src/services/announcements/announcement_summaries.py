@@ -4,7 +4,9 @@ import uuid
 from sqlalchemy import select
 
 from src.adapters import db
+from src.api.response import ValidationErrorDetail
 from src.api.route_utils import raise_flask_error
+from src.api.schemas.extension import SchemaValidationError
 from src.constants.lookup_constants import AnnouncementAuditEvent
 from src.db.models.announcement_models import Announcement, AnnouncementSummary
 from src.db.models.user_models import User
@@ -95,45 +97,26 @@ def _validate_summary_timestamps(
     summary_data: dict,
     existing_summary: AnnouncementSummary | None = None,
 ) -> None:
-    """Validate that the appropriate post date is provided based on summary type.
+    field = "forecasted_post_timestamp" if is_forecast else "post_timestamp"
 
-    For forecast summaries, requires forecasted_post_timestamp.
-    For non-forecast summaries, requires post_timestamp.
-
-    When updating:
-    - If field is not in request, uses existing value
-    - If field is in request but None, validates that a value exists (either from request or existing)
-    """
-    if is_forecast:
-        # Check if forecasted_post_timestamp is in the request
-        if "forecasted_post_timestamp" in summary_data:
-            # Explicitly provided (or explicitly set to None)
-            effective_forecasted = summary_data.get("forecasted_post_timestamp")
-        else:
-            # Not provided in request - use existing value
-            effective_forecasted = (
-                existing_summary.forecasted_post_timestamp if existing_summary else None
-            )
-
-        if effective_forecasted is None:
-            raise_flask_error(
-                422,
-                "forecasted_post_timestamp is required for forecast summaries",
-            )
+    # On update the request may omit the field, in which case the saved value counts.
+    if field in summary_data:
+        value = summary_data[field]
     else:
-        # Check if post_timestamp is in the request
-        if "post_timestamp" in summary_data:
-            # Explicitly provided (or explicitly set to None)
-            effective_post = summary_data.get("post_timestamp")
-        else:
-            # Not provided in request - use existing value
-            effective_post = existing_summary.post_timestamp if existing_summary else None
+        value = getattr(existing_summary, field, None)
 
-        if effective_post is None:
-            raise_flask_error(
-                422,
-                "post_timestamp is required for non-forecast summaries",
-            )
+    if value is None:
+        summary_type = "forecast" if is_forecast else "non-forecast"
+        message = f"{field} is required for {summary_type} summaries"
+        raise_flask_error(
+            422,
+            message,
+            validation_issues=[
+                ValidationErrorDetail(
+                    type=SchemaValidationError.REQUIRED, message=message, field=field
+                )
+            ],
+        )
 
 
 def create_announcement_summary(
