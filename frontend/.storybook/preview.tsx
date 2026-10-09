@@ -3,13 +3,22 @@
  * @see https://storybook.js.org/docs/configure#configure-story-rendering
  */
 import { Loader, Preview } from "@storybook/react";
+import { useClientFetch } from "src/hooks/useClientFetch";
+import { mocked, sb } from "storybook/test";
 
 import "src/styles/styles.scss";
 
 import { defaultLocale, locales } from "src/i18n/config";
 import { messages } from "src/i18n/messages/en";
 
+import withMockedClientFetch, {
+  useMockedClientFetch,
+} from "./decorators/withMockedClientFetch";
 import I18nStoryWrapper from "./I18nStoryWrapper";
+
+// stories never call a real API: useClientFetch is replaced in every story by
+// useMockedClientFetch (see the withMockedClientFetch decorator)
+sb.mock("../src/hooks/useClientFetch.ts");
 
 const parameters = {
   nextjs: {
@@ -51,8 +60,11 @@ const i18nMessagesLoader: Loader = () => {
 
 const preview: Preview = {
   loaders: [i18nMessagesLoader],
-  decorators: [I18nStoryWrapper],
+  decorators: [I18nStoryWrapper, withMockedClientFetch],
   parameters,
+  beforeEach: () => {
+    mocked(useClientFetch).mockImplementation(useMockedClientFetch);
+  },
 
   globalTypes: {
     locale: {
