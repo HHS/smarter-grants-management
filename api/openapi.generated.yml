@@ -3244,7 +3244,9 @@ components:
           description: Whether or not the announcement has a cost sharing/matching
             requirement
         post_timestamp:
-          type: string
+          type:
+          - string
+          - 'null'
           format: date-time
           description: The datetime the announcement was posted
         close_timestamp:
@@ -3491,7 +3493,6 @@ components:
       - funding_instruments
       - is_cost_sharing
       - is_forecast
-      - post_timestamp
       - summary_description
     AnnouncementAttachmentDownloadSchema:
       type: object
@@ -4339,7 +4340,9 @@ components:
           description: Whether or not the announcement has a cost sharing/matching
             requirement
         post_timestamp:
-          type: string
+          type:
+          - string
+          - 'null'
           format: date-time
           description: The datetime the announcement was posted
         close_timestamp:
@@ -4523,7 +4526,6 @@ components:
       - funding_categories
       - funding_instruments
       - is_cost_sharing
-      - post_timestamp
       - summary_description
     AnnouncementAttachmentDeleteResponseSchema:
       type: object
