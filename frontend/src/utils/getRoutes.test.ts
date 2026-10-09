@@ -21,6 +21,7 @@ describe("getNextRoutes", () => {
       "/award-recommendation/select-opportunity",
       "/dev/feature-flags",
       "/error",
+      "/inbox",
       "/login",
       "/logout",
       "/maintenance",
