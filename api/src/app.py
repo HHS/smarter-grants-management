@@ -4,6 +4,7 @@ from typing import Any
 from apiflask import APIFlask, exceptions
 from flask_cors import CORS
 from pydantic import Field
+from pydantic_settings import SettingsConfigDict
 
 import src.adapters.db as db
 import src.adapters.db.flask_db as flask_db
@@ -51,9 +52,21 @@ This API is in early development, and is not yet ready for public use.
 
 
 class EndpointConfig(PydanticBaseEnvConfig):
+    # Allow OPENAPI_SERVERS=None to parse as the Python value None, since
+    # APIFlask's SERVERS config is unset (None) by default.
+    model_config = SettingsConfigDict(
+        env_file=PydanticBaseEnvConfig.model_config["env_file"], env_parse_none_str="None"
+    )
+
     # Do not ever change this to True, this controls endpoints we only
     # want to exist for local development.
     enable_local_endpoints: bool = Field(False, alias="ENABLE_LOCAL_ENDPOINTS")
+
+    # APIFlask's SERVERS config is normally set to a "." placeholder to hide
+    # the Swagger UI server dropdown due to accessibility issues, but that
+    # value isn't valid input for our client OpenAPI generation tooling,
+    # which needs it unset via OPENAPI_SERVERS=None.
+    openapi_servers: str | None = Field(default=".", alias="OPENAPI_SERVERS")
 
 
 def create_app() -> APIFlask:
@@ -126,6 +139,7 @@ def register_blueprints(app: APIFlask) -> None:
 
 def configure_app(app: APIFlask) -> None:
     app_config = AppConfig()
+    endpoint_config = EndpointConfig()
 
     # Set maximum file upload size (2 GB)
     app.config["MAX_CONTENT_LENGTH"] = app_config.max_file_upload_size_bytes
@@ -137,8 +151,7 @@ def configure_app(app: APIFlask) -> None:
     app.config["SWAGGER_UI_CONFIG"] = {
         "persistAuthorization": app_config.persist_authorization_openapi
     }
-    # Removing because the server dropdown has accessibility issues.
-    app.config["SERVERS"] = "."
+    app.config["SERVERS"] = endpoint_config.openapi_servers
     app.config["DOCS_FAVICON"] = "https://simpler.grants.gov/img/favicon.ico"
 
     # Set a few values for the Swagger endpoint
