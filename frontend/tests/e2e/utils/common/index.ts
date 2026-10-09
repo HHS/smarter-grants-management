@@ -1,5 +1,8 @@
 /**
  * Shared re-export surface for common E2E helper modules.
+ * This file is the neutral import boundary for reusable page utilities.
+ * Keep higher-level page flow code importing from here instead of reaching
+ * into lower-level helper folders directly.
  *
  * Import pattern:
  * import { ... } from "tests/e2e/utils/common";
@@ -35,9 +38,13 @@ export {
   createPageWithStorageState,
   type AuthenticatedStorageState,
 } from "./auth-storage-state-utils";
+// Single-field fill execution stays in common so page-flow helpers stay layer-neutral.
+export { fillField } from "./shared-field-filling";
 export { runSharedFieldFill } from "./shared-field-filling";
 export { runFieldFillBatch } from "./field-batch-filling";
 export { buildPageFieldsFromDefinitions } from "./build-page-fields-from-definitions";
+export { fillPageField, fillPageFields } from "./general-page-filling";
+export { fillFormPartial, fillForm } from "./general-page-orchestration";
 
 // Metadata-driven page utilities for reset/clear and duplicate-data assertions.
 export {
