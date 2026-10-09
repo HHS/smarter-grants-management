@@ -51,7 +51,7 @@ test.describe("Grantor Opportunity ApplicationPackage Happy Path", () => {
     if (targetEnv === "staging") {
       test.skip(
         testInfo.project.name !== "Chrome",
-        "Staging MFA login is limited to Chrome to avoid OTP rate-limiting",
+        "Staging login target is limited to Chrome to avoid OTP and auth-provider rate-limiting",
       );
     }
   });

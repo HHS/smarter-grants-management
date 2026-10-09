@@ -29,6 +29,8 @@ describe("getNextRoutes", () => {
       "/announcement/1/application-package",
       "/announcement/1/edit",
       "/announcement/1/overview",
+      "/announcement/1/summary/[summaryId]/edit",
+      "/announcement/1/summary/create/[type]",
       "/",
       "/unauthenticated",
     ].sort();

@@ -652,6 +652,22 @@ class AnnouncementSummaryBaseRequestSchema(Schema):
                 )
 
     @validates_schema
+    def validate_forecast_timestamps(self, data: dict, **kwargs: dict) -> None:
+        if (
+            data.get("forecasted_post_timestamp") is not None
+            and data.get("forecasted_close_timestamp") is not None
+        ):
+            if data["forecasted_post_timestamp"] > data["forecasted_close_timestamp"]:
+                raise ValidationError(
+                    [
+                        MarshmallowErrorContainer(
+                            SchemaValidationError.INVALID,
+                            "Post timestamp must be less than or equal to close timestamp",
+                        )
+                    ]
+                )
+
+    @validates_schema
     def set_archive_timestamp(self, data: dict, **kwargs: dict) -> None:
         # Preserve the existing Simpler behavior: archive 30 days after close when omitted.
         if data.get("close_timestamp") is not None and (
@@ -899,7 +915,18 @@ class ApplicationPackageRequestSchema(Schema):
     def validate_dates(self, data: dict, **kwargs: dict) -> None:
         opening = data.get("opening_timestamp")
         closing = data.get("closing_timestamp")
+        forecasted_opening = data.get("forecasted_opening_timestamp")
+        forecasted_closing = data.get("forecasted_closing_timestamp")
         if opening and closing and closing < opening:
+            raise ValidationError(
+                [
+                    MarshmallowErrorContainer(
+                        SchemaValidationError.INVALID_DATE_ORDER,
+                        "Closing timestamp must be on or after opening timestamp.",
+                    )
+                ]
+            )
+        if forecasted_opening and forecasted_closing and forecasted_closing < forecasted_opening:
             raise ValidationError(
                 [
                     MarshmallowErrorContainer(
