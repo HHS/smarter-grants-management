@@ -4,7 +4,9 @@ import uuid
 from sqlalchemy import select
 
 from src.adapters import db
+from src.api.response import ValidationErrorDetail
 from src.api.route_utils import raise_flask_error
+from src.api.schemas.extension import SchemaValidationError
 from src.constants.lookup_constants import AnnouncementAuditEvent
 from src.db.models.announcement_models import Announcement, AnnouncementSummary
 from src.db.models.user_models import User
@@ -90,6 +92,33 @@ def _get_announcement_summary(
     return summary
 
 
+def _validate_summary_timestamps(
+    is_forecast: bool,
+    summary_data: dict,
+    existing_summary: AnnouncementSummary | None = None,
+) -> None:
+    field = "forecasted_post_timestamp" if is_forecast else "post_timestamp"
+
+    # On update the request may omit the field, in which case the saved value counts.
+    if field in summary_data:
+        value = summary_data[field]
+    else:
+        value = getattr(existing_summary, field, None)
+
+    if value is None:
+        summary_type = "forecast" if is_forecast else "non-forecast"
+        message = f"{field} is required for {summary_type} summaries"
+        raise_flask_error(
+            422,
+            message,
+            validation_issues=[
+                ValidationErrorDetail(
+                    type=SchemaValidationError.REQUIRED, message=message, field=field
+                )
+            ],
+        )
+
+
 def create_announcement_summary(
     db_session: db.Session,
     announcement_id: uuid.UUID,
@@ -102,6 +131,12 @@ def create_announcement_summary(
         raise_flask_error(403, "User does not have access to update this announcement")
 
     _check_existing_summary(db_session, announcement_id, summary_data["is_forecast"])
+
+    # Validate that the appropriate timestamp is provided based on summary type
+    _validate_summary_timestamps(
+        is_forecast=summary_data["is_forecast"],
+        summary_data=summary_data,
+    )
 
     before = snapshot_fields(None, ANNOUNCEMENT_SUMMARY_CREATE_FIELDS)
 
@@ -153,6 +188,13 @@ def update_announcement_summary(
         db_session,
         announcement_id,
         announcement_summary_id,
+    )
+
+    # Validate that the appropriate timestamp is provided based on the existing summary type
+    _validate_summary_timestamps(
+        is_forecast=summary.is_forecast,
+        summary_data=summary_data,
+        existing_summary=summary,
     )
 
     before = snapshot_fields(summary, ANNOUNCEMENT_SUMMARY_UPDATE_FIELDS)

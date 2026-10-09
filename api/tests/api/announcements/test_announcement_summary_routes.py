@@ -2,6 +2,7 @@ import random
 import uuid
 from datetime import datetime, timedelta
 
+import pytest
 from sqlalchemy import select
 
 from src.constants.lookup_constants import (
@@ -16,12 +17,10 @@ from tests.db.models.factories import AnnouncementFactory, AnnouncementSummaryFa
 
 
 def build_summary_request(is_forecast: bool = False) -> dict:
-
-    return {
+    now = datetime_util.utcnow()
+    request = {
         "summary_description": "A summary for testing the Announcement API.",
         "is_cost_sharing": False,
-        "post_timestamp": datetime_util.utcnow().isoformat(),
-        "close_timestamp": (datetime_util.utcnow() + timedelta(days=30)).isoformat(),
         "award_floor": 10_000,
         "award_ceiling": 100_000,
         "funding_categories": random.choices(list(FundingCategory)),
@@ -32,6 +31,16 @@ def build_summary_request(is_forecast: bool = False) -> dict:
         "agency_email_address_description": None,
         "is_forecast": is_forecast,
     }
+
+    if is_forecast:
+        # Forecasts use forecasted_post_timestamp instead of post_timestamp
+        request["forecasted_post_timestamp"] = (now + timedelta(days=30)).isoformat()
+    else:
+        # Non-forecasts use post_timestamp and close_timestamp
+        request["post_timestamp"] = now.isoformat()
+        request["close_timestamp"] = (now + timedelta(days=30)).isoformat()
+
+    return request
 
 
 def build_summary_update_request() -> dict:
@@ -468,3 +477,134 @@ def test_announcement_summary_update_records_audit_multiple_fields(
             "after": original_award_ceiling + 50_000,
         },
     }
+
+
+# (is_forecast, the post date field that summary type requires)
+REQUIRED_POST_FIELDS = [(True, "forecasted_post_timestamp"), (False, "post_timestamp")]
+
+
+def _assert_required_error(response, field: str) -> None:
+    assert response.status_code == 422
+    errors = response.get_json()["errors"]
+    assert len(errors) == 1
+    assert errors[0]["field"] == field
+    assert errors[0]["type"] == "required"
+
+
+def test_announcement_summary_create_forecast_without_post_timestamp_200(
+    client,
+    api_key_headers,
+):
+    announcement = AnnouncementFactory.create()
+    request = build_summary_request(is_forecast=True)
+    assert "post_timestamp" not in request
+
+    response = client.post(
+        f"/v1/announcements/{announcement.announcement_id}/summaries",
+        json=request,
+        headers=api_key_headers,
+    )
+
+    assert response.status_code == 200
+    data = response.get_json()["data"]
+    assert data["post_timestamp"] is None
+    assert data["forecasted_post_timestamp"] is not None
+
+
+@pytest.mark.parametrize("is_forecast,field", REQUIRED_POST_FIELDS)
+@pytest.mark.parametrize("explicit_null", [False, True])
+def test_announcement_summary_create_missing_post_date_422(
+    client,
+    api_key_headers,
+    is_forecast,
+    field,
+    explicit_null,
+):
+    announcement = AnnouncementFactory.create()
+    request = build_summary_request(is_forecast=is_forecast)
+    if explicit_null:
+        request[field] = None
+    else:
+        request.pop(field)
+
+    response = client.post(
+        f"/v1/announcements/{announcement.announcement_id}/summaries",
+        json=request,
+        headers=api_key_headers,
+    )
+
+    _assert_required_error(response, field)
+
+
+@pytest.mark.parametrize("is_forecast,field", REQUIRED_POST_FIELDS)
+def test_announcement_summary_update_omitted_post_date_keeps_saved_value_200(
+    client,
+    db_session,
+    api_key_headers,
+    is_forecast,
+    field,
+):
+    summary = AnnouncementSummaryFactory.create(is_forecast=is_forecast)
+    saved_value = getattr(summary, field)
+    request = build_update_request_from_summary(summary)
+    request.pop(field)
+    request["summary_description"] = "Updated summary description"
+
+    response = client.put(
+        f"/v1/announcements/{summary.announcement_id}/summaries/"
+        f"{summary.announcement_summary_id}",
+        json=request,
+        headers=api_key_headers,
+    )
+
+    assert response.status_code == 200
+    db_session.refresh(summary)
+    assert getattr(summary, field) == saved_value
+
+
+@pytest.mark.parametrize("is_forecast,field", REQUIRED_POST_FIELDS)
+@pytest.mark.parametrize("explicit_null", [False, True])
+def test_announcement_summary_update_missing_post_date_422(
+    client,
+    api_key_headers,
+    is_forecast,
+    field,
+    explicit_null,
+):
+    # With a saved null, omitting the field and sending null both leave no date.
+    summary = AnnouncementSummaryFactory.create(is_forecast=is_forecast, **{field: None})
+    request = build_update_request_from_summary(summary)
+    request["summary_description"] = "Short description"
+    if not explicit_null:
+        request.pop(field)
+
+    response = client.put(
+        f"/v1/announcements/{summary.announcement_id}/summaries/"
+        f"{summary.announcement_summary_id}",
+        json=request,
+        headers=api_key_headers,
+    )
+
+    _assert_required_error(response, field)
+
+
+@pytest.mark.parametrize("is_forecast,field", REQUIRED_POST_FIELDS)
+def test_announcement_summary_update_clearing_post_date_422(
+    client,
+    api_key_headers,
+    is_forecast,
+    field,
+):
+    summary = AnnouncementSummaryFactory.create(is_forecast=is_forecast)
+    request = build_update_request_from_summary(summary)
+    request["summary_description"] = "Short description"
+    request[field] = None
+
+    response = client.put(
+        f"/v1/announcements/{summary.announcement_id}/summaries/"
+        f"{summary.announcement_summary_id}",
+        json=request,
+        headers=api_key_headers,
+    )
+
+    _assert_required_error(response, field)
