@@ -1,3 +1,4 @@
+import { UnauthorizedError } from "src/errors";
 import { useUser } from "src/services/auth/useUser";
 
 import { useRouter } from "next/navigation";
@@ -8,12 +9,12 @@ import { useCallback } from "react";
   will automatically handle:
     * checking for token expiration
     * returning json data (by default, though you can opt out with the second parameter)
-    * refreshing the page on unauthenticated requests (optional, controlled by the `authGatedRequest` option)
+    * redirecting to the session-expired on a 401
     * throwing errors on unsuccessful requests
  */
 export const useClientFetch = <T>(
   errorMessage: string,
-  { jsonResponse = true, authGatedRequest = false } = {},
+  { jsonResponse = true } = {},
 ) => {
   const { refreshIfExpired, refreshUser, refreshIfExpiring } = useUser();
   const router = useRouter();
@@ -22,19 +23,17 @@ export const useClientFetch = <T>(
     url: string,
     options: RequestInit = {},
   ): Promise<Response> => {
-    const expired = await refreshIfExpired();
-    if (expired && authGatedRequest) {
-      router.refresh();
-      throw new Error("local token expired, logging out");
-    }
+    await refreshIfExpired();
     await refreshIfExpiring();
     const response = await fetch(url, options);
     if (response.status === 401) {
+      // picks up a session that became empty/invalid server-side and, via
+      // UserProvider, sends the user to the session-expired interstitial
       await refreshUser();
-      if (authGatedRequest) {
-        router.refresh();
-      }
-      return response;
+      router.refresh();
+      throw new UnauthorizedError(
+        `${errorMessage}: session expired or invalid`,
+      );
     }
     return response;
   };

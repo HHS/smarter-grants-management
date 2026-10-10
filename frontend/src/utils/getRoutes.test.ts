@@ -25,6 +25,7 @@ describe("getNextRoutes", () => {
       "/login",
       "/logout",
       "/maintenance",
+      "/session-expired",
       "/announcements/create",
       "/announcements",
       "/announcement/1/application-package",
