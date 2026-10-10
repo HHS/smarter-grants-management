@@ -27,7 +27,6 @@ tags:
 - name: Internal
 - name: Forms
 - name: LOCAL ONLY
-servers: .
 paths:
   /health:
     get:
